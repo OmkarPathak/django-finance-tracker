@@ -262,6 +262,16 @@ class ExpenseListView(generic.ListView):
         context['months_list'] = range(1, 13)
         return context
 
+class ExpenseCreateView(generic.CreateView):
+    model = Expense
+    fields = ['date', 'amount', 'description', 'category']
+    template_name = 'expenses/expense_form.html'
+    success_url = reverse_lazy('expense-list')
+
+    def form_valid(self, form):
+        form.instance.user = self.request.user
+        return super().form_valid(form)
+
 class ExpenseUpdateView(generic.UpdateView):
     model = Expense
     fields = ['date', 'amount', 'description', 'category']

@@ -10,6 +10,14 @@
             <div class="card-body p-4">
                 <form method="post">
                     {% csrf_token %}
+
+                    {% if form.non_field_errors %}
+                    <div class="alert alert-danger">
+                        {% for error in form.non_field_errors %}
+                            {{ error }}
+                        {% endfor %}
+                    </div>
+                    {% endif %}
                     
                     {% for field in form %}
                     <div class="mb-3">
@@ -23,7 +31,7 @@
                                 </label>
                             </div>
                         {% else %}
-                            <input type="{{ field.field.widget.input_type|default:'text' }}" 
+                            <input type="{% if field.name == 'date' %}date{% else %}{{ field.field.widget.input_type|default:'text' }}{% endif %}" 
                                    name="{{ field.name }}" 
                                    class="form-control"
                                    {% if field.value %}value="{{ field.value|date:'Y-m-d'|default:field.value }}"{% endif %} 

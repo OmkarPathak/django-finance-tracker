@@ -5,6 +5,9 @@
     <div class="card-header bg-transparent d-flex justify-content-between align-items-center py-3">
         <h2 class="h4 mb-0 fw-bold">My Expenses</h2>
         <div class="d-flex gap-2">
+           <a href="{% url 'expense-create' %}" class="btn btn-primary btn-sm">
+                <i class="bi bi-plus-lg me-1"></i> Add Expense
+           </a>
            <a href="{% url 'upload' %}" class="btn btn-outline-primary btn-sm">
                <i class="bi bi-cloud-arrow-up me-1"></i> Upload More
            </a>
