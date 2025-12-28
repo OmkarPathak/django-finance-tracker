@@ -18,6 +18,10 @@
     <form method="get" class="mb-4 bg-body-tertiary p-3 rounded shadow-sm border" id="filter-form">
         <div class="row g-3 align-items-end">
             <div class="col-auto">
+                <label for="search" class="form-label small text-muted">Search</label>
+                <input type="text" name="search" id="search" class="form-control form-control-sm" placeholder="Search description..." value="{{ request.GET.search|default:'' }}">
+            </div>
+            <div class="col-auto">
                 <label for="year" class="form-label small text-muted">Year</label>
                 <select name="year" id="year" class="form-select form-select-sm" onchange="showLoaderAndSubmit()">
                     <option value="">All Years</option>
@@ -53,6 +57,7 @@
             <div class="col-auto">
                 <!-- Spacer for alignment -->
                 <div class="d-none d-md-block" style="height: 1.8rem;"></div>
+                <button type="submit" class="btn btn-primary btn-sm" onclick="showLoader()">Search</button>
                 <a href="{% url 'expense-list' %}" class="btn btn-outline-secondary btn-sm" onclick="showLoader()">Reset</a>
             </div>
         </div>
@@ -123,7 +128,7 @@
             <ul class="pagination justify-content-center mb-0">
                 {% if page_obj.has_previous %}
                 <li class="page-item">
-                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if request.GET.year %}&year={{ request.GET.year }}{% endif %}{% if request.GET.month %}&month={{ request.GET.month }}{% endif %}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}">Previous</a>
+                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if request.GET.year %}&year={{ request.GET.year }}{% endif %}{% if request.GET.month %}&month={{ request.GET.month }}{% endif %}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">Previous</a>
                 </li>
                 {% endif %}
                 
@@ -133,7 +138,7 @@
 
                 {% if page_obj.has_next %}
                 <li class="page-item">
-                    <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request.GET.year %}&year={{ request.GET.year }}{% endif %}{% if request.GET.month %}&month={{ request.GET.month }}{% endif %}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}">Next</a>
+                    <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request.GET.year %}&year={{ request.GET.year }}{% endif %}{% if request.GET.month %}&month={{ request.GET.month }}{% endif %}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">Next</a>
                 </li>
                 {% endif %}
             </ul>

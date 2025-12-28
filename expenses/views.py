@@ -4,7 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth import login
 from django.urls import reverse_lazy
 from django.views import generic
-from django.db.models import Sum
+from django.db.models import Sum, Q
 from .models import Expense
 import pandas as pd
 from datetime import datetime
@@ -240,6 +240,7 @@ class ExpenseListView(generic.ListView):
         year = self.request.GET.get('year')
         month = self.request.GET.get('month')
         category = self.request.GET.get('category')
+        search_query = self.request.GET.get('search')
         
         if year:
             queryset = queryset.filter(date__year=year)
@@ -247,6 +248,8 @@ class ExpenseListView(generic.ListView):
             queryset = queryset.filter(date__month=month)
         if category:
             queryset = queryset.filter(category=category)
+        if search_query:
+            queryset = queryset.filter(description__icontains=search_query)
             
         return queryset
 
