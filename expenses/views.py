@@ -1,4 +1,5 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
+from django.forms import modelformset_factory
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import login
@@ -265,15 +266,26 @@ class ExpenseListView(generic.ListView):
         context['months_list'] = range(1, 13)
         return context
 
-class ExpenseCreateView(generic.CreateView):
-    model = Expense
-    fields = ['date', 'amount', 'description', 'category']
+class ExpenseCreateView(generic.TemplateView):
     template_name = 'expenses/expense_form.html'
-    success_url = reverse_lazy('expense-list')
 
-    def form_valid(self, form):
-        form.instance.user = self.request.user
-        return super().form_valid(form)
+    def get(self, request, *args, **kwargs):
+        ExpenseFormSet = modelformset_factory(Expense, fields=('date', 'amount', 'description', 'category'), extra=3, can_delete=True)
+        # Create initial data list for extra forms
+        initial_data = [{'date': datetime.now().date()} for _ in range(3)]
+        formset = ExpenseFormSet(queryset=Expense.objects.none(), initial=initial_data)
+        return render(request, self.template_name, {'formset': formset})
+
+    def post(self, request, *args, **kwargs):
+        ExpenseFormSet = modelformset_factory(Expense, fields=('date', 'amount', 'description', 'category'), extra=3, can_delete=True)
+        formset = ExpenseFormSet(request.POST)
+        if formset.is_valid():
+            instances = formset.save(commit=False)
+            for instance in instances:
+                instance.user = request.user
+                instance.save()
+            return redirect('expense-list')
+        return render(request, self.template_name, {'formset': formset})
 
 class ExpenseUpdateView(generic.UpdateView):
     model = Expense

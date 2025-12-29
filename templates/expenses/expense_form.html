@@ -19,31 +19,93 @@
                     </div>
                     {% endif %}
                     
-                    {% for field in form %}
-                    <div class="mb-3">
-                        <label class="form-label text-muted">{{ field.label }}</label>
-                        <!-- Basic form control class injection for generic views -->
-                        {% if field.field.widget.input_type == "checkbox" %}
-                            <div class="form-check">
-                                {{ field }}
-                                <label class="form-check-label" for="{{ field.id_for_label }}">
-                                    {{ field.help_text }}
-                                </label>
-                            </div>
-                        {% else %}
-                            <input type="{% if field.name == 'date' %}date{% else %}{{ field.field.widget.input_type|default:'text' }}{% endif %}" 
-                                   name="{{ field.name }}" 
-                                   class="form-control"
-                                   {% if field.value %}value="{{ field.value|date:'Y-m-d'|default:field.value }}"{% endif %} 
-                                   {% if field.field.required %}required{% endif %}
-                                   {% if field.field.widget.input_type == "number" %}step="0.01"{% endif %}>
-                        {% endif %}
-                        
-                        {% if field.errors %}
-                        <div class="text-danger small mt-1">{{ field.errors.0 }}</div>
-                        {% endif %}
-                    </div>
-                    {% endfor %}
+                    {% if formset %}
+                        {{ formset.management_form }}
+                        <div class="table-responsive">
+                            <table class="table table-borderless align-middle" id="formset-table">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 20%">Date</th>
+                                        <th style="width: 20%">Amount</th>
+                                        <th style="width: 30%">Description</th>
+                                        <th style="width: 25%">Category</th>
+                                        <th style="width: 5%"></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="formset-container">
+                                    {% for form in formset %}
+                                    <tr class="form-row">
+                                        {% for field in form %}
+                                            {% if field.name in 'date,amount,description,category' %}
+                                            <td class="p-1">
+                                                {% if forloop.first %}
+                                                    {% for hidden in form.hidden_fields %}{{ hidden }}{% endfor %}
+                                                {% endif %}
+                                                <input type="{% if field.name == 'date' %}date{% else %}{{ field.field.widget.input_type|default:'text' }}{% endif %}" 
+                                                    name="{{ field.html_name }}" 
+                                                    class="form-control form-control-sm"
+                                                    {% if field.value %}value="{{ field.value|date:'Y-m-d'|default:field.value }}"{% endif %} 
+                                                    {% if field.field.required %}required{% endif %}
+                                                    id="{{ field.id_for_label }}"
+                                                    placeholder="{{ field.label }}"
+                                                    {% if field.field.widget.input_type == "number" %}step="0.01"{% endif %}>
+                                                {% if field.errors %}
+                                                    <div class="text-danger small" style="font-size: 0.7rem;">{{ field.errors.0 }}</div>
+                                                {% endif %}
+                                            </td>
+                                            {% endif %}
+                                        {% endfor %}
+                                        <td class="text-center">
+                                            {% if form.instance.pk %}
+                                                <div class="d-none">{{ form.DELETE }}</div> <!-- Hidden actual checkbox -->
+                                                <button type="button" class="btn btn-sm btn-link text-danger p-0 delete-row" 
+                                                        title="Delete existing expense">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            {% else %}
+                                                <button type="button" class="btn btn-sm btn-link text-danger p-0 remove-row" 
+                                                        title="Remove row">
+                                                    <i class="bi bi-x-circle"></i>
+                                                </button>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        <button type="button" class="btn btn-sm btn-outline-primary mb-3" id="add-form">
+                            <i class="bi bi-plus-lg me-1"></i> Add Row
+                        </button>
+                    
+                    {% else %}
+                    
+                        {% for field in form %}
+                        <div class="mb-3">
+                            <label class="form-label text-muted">{{ field.label }}</label>
+                            {% if field.field.widget.input_type == "checkbox" %}
+                                <div class="form-check">
+                                    {{ field }}
+                                    <label class="form-check-label" for="{{ field.id_for_label }}">
+                                        {{ field.help_text }}
+                                    </label>
+                                </div>
+                            {% else %}
+                                <input type="{% if field.name == 'date' %}date{% else %}{{ field.field.widget.input_type|default:'text' }}{% endif %}" 
+                                    name="{{ field.name }}" 
+                                    class="form-control"
+                                    {% if field.value %}value="{{ field.value|date:'Y-m-d'|default:field.value }}"{% endif %} 
+                                    {% if field.field.required %}required{% endif %}
+                                    {% if field.field.widget.input_type == "number" %}step="0.01"{% endif %}>
+                            {% endif %}
+                            
+                            {% if field.errors %}
+                            <div class="text-danger small mt-1">{{ field.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+
+                    {% endif %}
 
                     <div class="d-flex justify-content-end gap-2 mt-4">
                         <a href="{% url 'expense-list' %}" class="btn btn-outline-secondary">Cancel</a>
@@ -54,4 +116,105 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const addBtn = document.getElementById('add-form');
+        const container = document.getElementById('formset-container');
+        const totalForms = document.getElementById('id_form-TOTAL_FORMS');
+
+        // Add Row
+        if (addBtn) {
+            addBtn.addEventListener('click', function() {
+                const currentFormCount = parseInt(totalForms.value);
+                const forms = container.getElementsByClassName('form-row');
+                
+                // Clone the first row as a template if no rows exist (edge case), 
+                // but typically we clone the last one. If we deleted all, implementation gets tricky, 
+                // so we won't allow deleting the last new row if it's the only one, or we keep a hidden template.
+                // For simplicity, we assume there's always at least one row or we use the last visible one.
+                
+                let templateRow = forms[forms.length - 1];
+                let newForm = templateRow.cloneNode(true);
+                
+                // Regex to replace numbers in name/id
+                // We need to handle cases where the last row might have index 5 (if we deleted 2,3,4) 
+                // OR we strictly re-index on delete. Strat: strictly re-index on delete makes this simpler?
+                // Actually, just append with new index is safer if we don't hold state.
+                
+                const regex = new RegExp(`form-(\\d+)-`, 'g');
+                newForm.innerHTML = newForm.innerHTML.replace(regex, `form-${currentFormCount}-`);
+                
+                const inputs = newForm.querySelectorAll('input, select');
+                inputs.forEach(input => {
+                    if (input.name.includes('date')) {
+                        input.value = new Date().toISOString().split('T')[0];
+                    } else {
+                        input.value = '';
+                    }
+                    input.classList.remove('is-invalid');
+                    if(input.type === 'checkbox' || input.type === 'radio') input.checked = false;
+                });
+                
+                // Reset text content of non-inputs if any
+                newForm.querySelectorAll('.text-danger').forEach(el => el.remove());
+
+                // IMPORTANT: The cloned row might be an "existing" row (with delete checkbox).
+                // We need to convert it to a "new" row UI (remove hidden DELETE, change button).
+                // But simplified: Just resetting content is usually enough if we verify the "Delete" button.
+                
+                // Change delete button to remove button
+                const actionCell = newForm.querySelector('td.text-center');
+                actionCell.innerHTML = `
+                    <button type="button" class="btn btn-sm btn-link text-danger p-0 remove-row" title="Remove row">
+                        <i class="bi bi-x-circle"></i>
+                    </button>
+                `;
+
+                container.appendChild(newForm);
+                totalForms.value = currentFormCount + 1;
+            });
+        }
+
+        // Delegate click for remove/delete
+        container.addEventListener('click', function(e) {
+            // Handle Remove (New Row)
+            if (e.target.closest('.remove-row')) {
+                const row = e.target.closest('tr');
+                row.remove();
+                updateFormIndices();
+            }
+            
+            // Handle Delete (Existing Row)
+            if (e.target.closest('.delete-row')) {
+                const row = e.target.closest('tr');
+                const deleteInput = row.querySelector('input[name$="-DELETE"]');
+                if (deleteInput) {
+                    deleteInput.checked = true;
+                    row.style.display = 'none';
+                    // We don't verify fields on hidden rows, but good execution would require bypassing required attrs.
+                    // However, standard browser form submission might block if hidden inputs are required. 
+                    // Django forms usually don't put 'required' on fields if it's conditional, but we rely on browser.
+                    // Let's remove 'required' from inputs in this row to avoid submission errors.
+                    row.querySelectorAll('input, select').forEach(input => {
+                        input.removeAttribute('required');
+                    });
+                }
+            }
+        });
+
+        function updateFormIndices() {
+            // Re-index all forms to avoid validation errors with ManagementForm
+            const rows = container.querySelectorAll('.form-row');
+            totalForms.value = rows.length;
+            
+            rows.forEach((row, index) => {
+                row.innerHTML = row.innerHTML.replace(/form-\d+-/g, `form-${index}-`);
+                // Also update ID attributes if they exist specifically not handled by replace above
+            });
+        }
+    });
+</script>
 {% endblock %}
