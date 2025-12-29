@@ -14,11 +14,12 @@
                     {% for field in form %}
                     <div class="mb-3">
                         <label class="form-label text-muted">{{ field.label }}</label>
-                        <input type="{{ field.field.widget.input_type }}" 
+                        <input type="{% if field.name == 'limit' %}number{% else %}{{ field.field.widget.input_type }}{% endif %}" 
                                name="{{ field.name }}" 
                                class="form-control" 
                                {% if field.value %}value="{{ field.value }}"{% endif %} 
-                               required>
+                               {% if field.name == 'limit' %}step="0.01" placeholder="Optional monthly limit"{% endif %}
+                               {% if field.field.required %}required{% endif %}>
                         {% if field.errors %}
                         <div class="text-danger small mt-1">{{ field.errors.0 }}</div>
                         {% endif %}

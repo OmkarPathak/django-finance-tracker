@@ -14,6 +14,7 @@ from .models import Expense, Category
 import pandas as pd
 import pandas as pd
 from datetime import datetime
+import calendar
 
 # Custom signup view to log user in immediately
 class SignUpView(generic.CreateView):
@@ -34,6 +35,11 @@ def home_view(request):
     selected_month = request.GET.get('month')
     selected_category = request.GET.get('category')
     
+    if selected_year is None:
+        selected_year = datetime.now().year
+    if selected_month is None:
+        selected_month = datetime.now().month
+    
     if selected_year:
         expenses = expenses.filter(date__year=selected_year)
     if selected_month:
@@ -46,10 +52,48 @@ def home_view(request):
     years = [d.year for d in all_dates]
     all_categories = Expense.objects.filter(user=request.user).values_list('category', flat=True).distinct().order_by('category')
 
-    # 1. Category Chart Data (Distribution)
-    category_data = expenses.values('category').annotate(total=Sum('amount')).order_by('-total')
+    # 1. Category Chart Data (Distribution) & Summary Table
+    # We need to fetch raw values and merge them in Python to handle whitespace duplicates
+    raw_category_data = expenses.values('category').annotate(total=Sum('amount'))
+    
+    # Process and merge duplicates
+    merged_category_map = {}
+    for item in raw_category_data:
+        # Strip whitespace to normalize
+        cat_name = item['category'].strip()
+        amount = float(item['total'])
+        
+        if cat_name in merged_category_map:
+            merged_category_map[cat_name] += amount
+        else:
+            merged_category_map[cat_name] = amount
+            
+    # Convert back to list of dicts for template/charts, sorted by total
+    # This replaces the DB-ordered queryset with a sorted list
+    category_data = [
+        {'category': cat, 'total': amt} 
+        for cat, amt in merged_category_map.items()
+    ]
+    category_data.sort(key=lambda x: x['total'], reverse=True)
+
+    # Compute limits and usage per category for chart display
+    category_limits = []
+    for item in category_data:
+        try:
+            cat_obj = Category.objects.get(user=request.user, name=item['category'])
+            limit = float(cat_obj.limit) if cat_obj.limit else None
+        except Category.DoesNotExist:
+            limit = None
+        used_percent = round((item['total'] / limit * 100), 1) if limit else None
+        category_limits.append({
+            'name': item['category'],
+            'total': item['total'],
+            'limit': limit,
+            'used_percent': used_percent,
+        })
+    
     categories = [item['category'] for item in category_data]
-    category_amounts = [float(item['total']) for item in category_data]
+    category_amounts = [item['total'] for item in category_data]
     
     # 2. Time Trend (Stacked) Data
     from django.db.models.functions import TruncMonth, TruncDay
@@ -75,14 +119,16 @@ def home_view(request):
     trend_labels = [p.strftime(date_format) for p in periods]
     
     # 2. Build datasets map: { 'CategoryA': [0, 10, 0...], 'CategoryB': ... }
-    # Initialize with zeros
-    dataset_map = { cat: [0] * len(periods) for cat in all_categories }
+    # Initialize with zeros for all unique NORMALIZED categories found in expenses
+    normalized_all_categories = sorted(list(merged_category_map.keys()))
+    dataset_map = { cat: [0] * len(periods) for cat in normalized_all_categories }
     
     for item in stacked_data:
         p_idx = periods.index(item['period'])
-        cat = item['category']
+        # Strip to match our normalized keys
+        cat = item['category'].strip()
         if cat in dataset_map:
-            dataset_map[cat][p_idx] = float(item['total'])
+            dataset_map[cat][p_idx] += float(item['total']) # Add += in case multiple unstripped cats map to same striped cat in same period
             
     # 3. Convert map to list of dataset objects for Chart.js
     trend_datasets = []
@@ -90,10 +136,7 @@ def home_view(request):
     colors = ['#38bdf8', '#818cf8', '#c084fc', '#f472b6', '#fb7185', '#22d3ee', '#34d399', '#fbfb8c']
     
     for i, (cat, data) in enumerate(dataset_map.items()):
-        # If a category is selected, filtering already happened, but we still use this logic
-        # If user filters by 'Food', only 'Food' key will have data, others 0 (or empty query).
-        # Optimization: Only include categories that have non-zero total in the current view?
-        # For stacked, it's nice to keep consistent colors.
+        # Only include non-zero datasets
         if sum(data) > 0:
              trend_datasets.append({
                  'label': cat,
@@ -117,6 +160,7 @@ def home_view(request):
         'categories': categories,
         'category_amounts': category_amounts,
         'category_data': category_data, # Passing full queryset for the summary table
+        'category_limits': category_limits,
         'trend_labels': trend_labels,
         'trend_datasets': trend_datasets,
         'trend_title': trend_title,
@@ -127,7 +171,7 @@ def home_view(request):
         'selected_year': int(selected_year) if selected_year else None,
         'selected_month': int(selected_month) if selected_month else None,
         'selected_category': selected_category,
-        'months_list': range(1, 13),
+        'months_list': [(i, calendar.month_name[i]) for i in range(1, 13)],
         'total_expenses': total_expenses,
         'transaction_count': transaction_count,
         'top_category': top_category,
@@ -279,7 +323,7 @@ class ExpenseListView(generic.ListView):
         
         context['years'] = years
         context['categories'] = categories
-        context['months_list'] = range(1, 13)
+        context['months_list'] = [(i, calendar.month_name[i]) for i in range(1, 13)]
         
         # Determine selected year for UI
         year_param = self.request.GET.get('year')
@@ -361,7 +405,7 @@ class CategoryListView(generic.ListView):
 
 class CategoryCreateView(generic.CreateView):
     model = Category
-    fields = ['name']
+    fields = ['name', 'limit']
     template_name = 'expenses/category_form.html'
     success_url = reverse_lazy('category-list')
 
@@ -371,7 +415,7 @@ class CategoryCreateView(generic.CreateView):
 
 class CategoryUpdateView(generic.UpdateView):
     model = Category
-    fields = ['name']
+    fields = ['name', 'limit']
     template_name = 'expenses/category_form.html'
     success_url = reverse_lazy('category-list')
 

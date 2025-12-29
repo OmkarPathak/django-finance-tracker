@@ -14,8 +14,8 @@
         </select>
         <select name="month" class="form-select form-select-sm" style="width: auto;" onchange="showLoaderAndSubmit()">
             <option value="">All Months</option>
-            {% for m in months_list %}
-                <option value="{{ m }}" {% if selected_month == m %}selected{% endif %}>{{ m }}</option>
+            {% for num, name in months_list %}
+                <option value="{{ num }}" {% if selected_month == num %}selected{% endif %}>{{ name }}</option>
             {% endfor %}
         </select>
          <select name="category" class="form-select form-select-sm" style="width: auto;" onchange="showLoaderAndSubmit()">
@@ -86,7 +86,6 @@
         <div class="card shadow-lg border-0 h-100">
             <div class="card-header bg-transparent fw-bold d-flex justify-content-between">
                 <span>{{ trend_title }} (Stacked by Category)</span>
-                <i class="bi bi-bar-chart-fill text-primary"></i>
             </div>
             <div class="card-body">
                 <canvas id="trendChart"></canvas>
@@ -109,7 +108,7 @@
     </div>
 </div>
 
-<!-- Charts Row 2 -->
+<!-- Charts Row 2: Top 5 + Budget -->
 <div class="row g-4 mb-4">
     <!-- Top Expenses -->
     <div class="col-md-6">
@@ -118,11 +117,29 @@
                 Top 5 Highest Expenses
             </div>
             <div class="card-body">
-                <canvas id="topExpensesChart"></canvas>
+                <canvas id="topExpensesChart" height="200"></canvas>
             </div>
         </div>
     </div>
     
+    <!-- Budget vs Spent Chart -->
+    <div class="col-md-6">
+        <div class="card shadow-lg border-0 h-100">
+            <div class="card-header bg-transparent fw-bold">
+                Budget vs Spent (Categories with Monthly Limits)
+            </div>
+            <div class="card-body">
+                <canvas id="budgetChart" height="200"></canvas>
+                {% if not category_limits %}
+                <div class="text-center text-muted mt-3">No categories with limits set</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Row 3: Recent Transactions + Category Summary -->
+<div class="row g-4 mb-4">
     <!-- Recent Transactions Table -->
     <div class="col-md-6">
         <div class="card shadow-lg border-0 h-100">
@@ -158,12 +175,10 @@
             </div>
         </div>
     </div>
-</div>
 
-<!-- Category Summary Table -->
-<div class="row mb-5">
-    <div class="col-12">
-        <div class="card shadow-lg border-0">
+    <!-- Category Summary Table -->
+    <div class="col-md-6">
+        <div class="card shadow-lg border-0 h-100">
             <div class="card-header bg-transparent fw-bold">
                 Category Summary
             </div>
@@ -201,6 +216,7 @@
 {{ trend_datasets|json_script:"trend-datasets" }}
 {{ top_labels|json_script:"top-labels" }}
 {{ top_amounts|json_script:"top-amounts" }}
+{{ category_limits|json_script:"category-limits-data" }}
 
 <script>
     function showLoader() {
@@ -261,6 +277,36 @@
                         borderWidth: 0
                     }]
                 },
+                plugins: [{
+                    id: 'doughnutLabels',
+                    afterDatasetsDraw(chart) {
+                        const { ctx } = chart;
+                        ctx.save();
+                        
+                        const meta = chart.getDatasetMeta(0);
+                        meta.data.forEach((arc, index) => {
+                            const center = arc.getCenterPoint();
+                            const value = categoryAmounts[index];
+                            const text = '₹' + value.toLocaleString();
+                            
+                            // Only draw if slice is large enough (> 15 degrees approx)
+                            if (arc.circumference > 0.25) {
+                                ctx.font = 'bold 10px sans-serif';
+                                ctx.textAlign = 'center';
+                                ctx.textBaseline = 'middle';
+                                ctx.fillStyle = '#ffffff';
+                                
+                                // Text shadow for better visibility
+                                ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
+                                ctx.shadowBlur = 3;
+                                
+                                ctx.fillText(text, center.x, center.y);
+                                ctx.shadowBlur = 0;
+                            }
+                        });
+                        ctx.restore();
+                    }
+                }],
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
@@ -294,6 +340,125 @@
                 }
             }
         });
+
+        // --- 4. Budget vs Spent Chart (Horizontal Stacked Loader Style) ---
+        const limitsData = JSON.parse(document.getElementById('category-limits-data').textContent);
+        const withLimits = limitsData.filter(item => item.limit !== null && item.limit > 0);
+        
+        if (withLimits.length > 0) {
+            const budgetLabels = withLimits.map(item => item.name);
+            
+            // Calculate data for "Spent" and "Remaining" as percentages of the limit
+            // This ensures every bar is the same total length (100%), acting like a progress bar
+            const spentData = withLimits.map(item => {
+                const pct = (item.total / item.limit) * 100;
+                // Cap at 100% for the visual bar split (if overspent, the whole bar is red)
+                return Math.min(pct, 100);
+            });
+            
+            const remainingData = spentData.map(spentPct => 100 - spentPct);
+            
+            new Chart(document.getElementById('budgetChart'), {
+                type: 'bar',
+                data: {
+                    labels: budgetLabels,
+                    datasets: [
+                        {
+                            label: 'Spent',
+                            data: spentData,
+                            // If spent > limit (used_percent > 100), show red. Else green.
+                            backgroundColor: withLimits.map(item => item.total > item.limit ? '#fb7185' : '#818cf8'),
+                            borderRadius: 4,
+                        },
+                        {
+                            label: 'Remaining',
+                            data: remainingData,
+                            backgroundColor: '#e5e7eb',
+                            borderRadius: 4,
+                        }
+                    ]
+                },
+                plugins: [
+                    {
+                        id: 'customLabels',
+                        afterDatasetsDraw(chart) {
+                            const { ctx, chartArea: { left, width } } = chart;
+                            ctx.save();
+                            
+                            const meta = chart.getDatasetMeta(0); // Spent dataset
+                            meta.data.forEach((bar, index) => {
+                                const item = withLimits[index];
+                                const y = bar.y;
+                                const x = left + width / 2;
+                                
+                                const text = `₹${item.total.toLocaleString()} / ₹${item.limit.toLocaleString()}`;
+                                
+                                ctx.font = 'bold 11px sans-serif';
+                                ctx.textAlign = 'center';
+                                ctx.textBaseline = 'middle';
+                                
+                                // Text shadow for visibility on light backgrounds
+                                ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
+                                ctx.shadowBlur = 3;
+                                
+                                ctx.fillStyle = '#ffffff';
+                                ctx.fillText(text, x, y);
+                                
+                                // Reset shadow
+                                ctx.shadowColor = 'transparent';
+                                ctx.shadowBlur = 0;
+                            });
+                            
+                            ctx.restore();
+                        }
+                    }
+                ],
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { 
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                // Custom title to show Category Name
+                                title: function(context) {
+                                    return context[0].label;
+                                },
+                                // Custom label to show absolute values instead of percentages
+                                label: function(context) {
+                                    const item = withLimits[context.dataIndex];
+                                    if (context.dataset.label === 'Spent') {
+                                        return `Spent: ₹${item.total.toLocaleString()} (${item.used_percent}%)`;
+                                    } else {
+                                        const remaining = Math.max(0, item.limit - item.total);
+                                        return `Remaining: ₹${remaining.toLocaleString()}`;
+                                    }
+                                },
+                                // Add limit info in footer
+                                footer: function(context) {
+                                    const item = withLimits[context[0].dataIndex];
+                                    return `Limit: ₹${item.limit.toLocaleString()}`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: { 
+                            stacked: true, 
+                            display: false, // Hide X axis (0-100) since we want it to look like a loader
+                            min: 0,
+                            max: 100
+                        },
+                        y: { 
+                            stacked: true, 
+                            grid: { display: false },
+                            ticks: { font: { weight: 'bold' } }
+                        }
+                    }
+                }
+            });
+        }
     });
 </script>
 {% endblock %}

@@ -3,7 +3,9 @@
 {% block content %}
 <div class="card shadow-lg border-0 fade-in">
     <div class="card-header bg-transparent d-flex justify-content-between align-items-center py-3">
-        <h2 class="h4 mb-0 fw-bold">My Expenses</h2>
+        <h2 class="h4 mb-0 fw-bold">
+            My Expenses
+        </h2>
         <div class="d-flex gap-2">
            <a href="{% url 'expense-create' %}" class="btn btn-primary btn-sm">
                 <i class="bi bi-plus-lg me-1"></i> Add Expense
@@ -36,9 +38,9 @@
                 <label for="month" class="form-label small text-muted">Month</label>
                 <select name="month" id="month" class="form-select form-select-sm" onchange="showLoaderAndSubmit()">
                     <option value="">All Months</option>
-                    {% for m in months_list %}
-                        <option value="{{ m }}" {% if request.GET.month == m|stringformat:"i" %}selected{% endif %}>
-                            {{ m }}
+                    {% for num, name in months_list %}
+                        <option value="{{ num }}" {% if request.GET.month == num|stringformat:"i" %}selected{% endif %}>
+                            {{ name }}
                         </option>
                     {% endfor %}
                 </select>
@@ -63,6 +65,20 @@
                 <a href="{% url 'expense-list' %}" class="btn btn-outline-secondary btn-sm" onclick="showLoader()">
                     <i class="bi bi-arrow-counterclockwise me-1"></i> Reset
                 </a>
+            </div>
+            <div class="col-auto ms-auto">
+                <!-- Spacer for alignment -->
+                <div class="d-none d-md-block" style="height: 1.8rem;"></div>
+                <div class="px-3 py-1 bg-body-tertiary border rounded shadow-sm d-flex align-items-center">
+                    <span class="small text-muted me-2">Total Records:</span>
+                    <span class="text-muted">
+                        {% if paginator %}
+                            {{ paginator.count }}
+                        {% else %}
+                            {{ expenses|length }}
+                        {% endif %}
+                    </span>
+                </div>
             </div>
         </div>
     </form>

@@ -23,3 +23,9 @@ class ExpenseForm(forms.ModelForm):
             self.fields['category'].widget = forms.Select(choices=choices, attrs={'class': 'form-select'})
         else:
             self.fields['category'].widget = forms.TextInput(attrs={'class': 'form-control'})
+
+    def clean_category(self):
+        category = self.cleaned_data.get('category')
+        if category:
+            return category.strip()
+        return category

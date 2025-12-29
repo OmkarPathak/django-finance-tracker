@@ -10,6 +10,11 @@ class Expense(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    def save(self, *args, **kwargs):
+        if self.category:
+            self.category = self.category.strip()
+        super().save(*args, **kwargs)
+
     class Meta:
         constraints = [
             models.UniqueConstraint(
@@ -24,6 +29,12 @@ class Expense(models.Model):
 class Category(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     name = models.CharField(max_length=255)
+    limit = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+
+    def save(self, *args, **kwargs):
+        if self.name:
+            self.name = self.name.strip()
+        super().save(*args, **kwargs)
 
     class Meta:
         verbose_name_plural = 'Categories'
