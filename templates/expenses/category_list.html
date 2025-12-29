@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 mx-auto">
+        <div class="card shadow-lg border-0">
+            <div class="card-header bg-transparent d-flex justify-content-between align-items-center py-3">
+                 <h2 class="h4 mb-0 fw-bold">Categories</h2>
+                <a href="{% url 'category-create' %}" class="btn btn-primary btn-sm">
+                    <i class="bi bi-plus-lg me-1"></i> Add Category
+                </a>
+            </div>
+
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover table-striped mb-0 text-start align-middle">
+                        <thead>
+                            <tr>
+                                <th class="ps-4">Name</th>
+                                <th class="text-end pe-4">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for category in categories %}
+                            <tr>
+                                <td class="ps-4">{{ category.name }}</td>
+                                <td class="text-end pe-4">
+                                    <a href="{% url 'category-edit' category.pk %}" class="btn btn-sm btn-link text-decoration-none p-0 me-2" title="Edit">
+                                        <i class="bi bi-pencil-square text-primary"></i>
+                                    </a>
+                                    <a href="{% url 'category-delete' category.pk %}" class="btn btn-sm btn-link text-decoration-none p-0" title="Delete">
+                                        <i class="bi bi-trash text-danger"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="2" class="text-center py-5 text-muted">No categories found.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

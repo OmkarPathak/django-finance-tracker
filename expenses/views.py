@@ -1,12 +1,17 @@
 from django.shortcuts import render, redirect, get_object_or_404
+from django.shortcuts import render, redirect, get_object_or_404
 from django.forms import modelformset_factory
+from .forms import ExpenseForm
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import login
 from django.urls import reverse_lazy
 from django.views import generic
 from django.db.models import Sum, Q
-from .models import Expense
+from django.views import generic
+from django.db.models import Sum, Q
+from .models import Expense, Category
+import pandas as pd
 import pandas as pd
 from datetime import datetime
 
@@ -207,6 +212,14 @@ def upload_view(request):
                     if pd.isna(amount) or pd.isna(description):
                         continue
 
+                    # Auto-create category if it doesn't exist
+                    if category:
+                        # Ensure category is a string
+                        category_name = str(category).strip()
+                        if category_name:
+                            Category.objects.get_or_create(user=request.user, name=category_name)
+                            category = category_name # Use standardized name
+
                     # Upsert (Get or Create to avoid duplicates)
                     Expense.objects.get_or_create(
                         user=request.user,
@@ -270,15 +283,25 @@ class ExpenseCreateView(generic.TemplateView):
     template_name = 'expenses/expense_form.html'
 
     def get(self, request, *args, **kwargs):
-        ExpenseFormSet = modelformset_factory(Expense, fields=('date', 'amount', 'description', 'category'), extra=3, can_delete=True)
-        # Create initial data list for extra forms
+        # We need to wrap the formset to pass 'user' to the form constructor
+        ExpenseFormSet = modelformset_factory(Expense, form=ExpenseForm, extra=3, can_delete=True)
+        # Pass user to form kwargs using formset_factory's form_kwargs (requires Django 4.0+)
+        # For older Django or modelformset, we might need a custom formset or curry the form.
+        # Simpler approach: Use a lambda or partial, but modelformset_factory creates a class.
+        
+        # Actually, best way for modelformset with custom init args is to override BaseFormSet or manually iterate.
+        # But simpler hack: Set the widget choices in the view by iterating forms? No, new forms need it.
+        
+        # Let's use form_kwargs in the formset initialization if supported.
+        # Django 1.9+ supports form_kwargs in formset constructor.
+        
         initial_data = [{'date': datetime.now().date()} for _ in range(3)]
-        formset = ExpenseFormSet(queryset=Expense.objects.none(), initial=initial_data)
+        formset = ExpenseFormSet(queryset=Expense.objects.none(), initial=initial_data, form_kwargs={'user': request.user})
         return render(request, self.template_name, {'formset': formset})
 
     def post(self, request, *args, **kwargs):
-        ExpenseFormSet = modelformset_factory(Expense, fields=('date', 'amount', 'description', 'category'), extra=3, can_delete=True)
-        formset = ExpenseFormSet(request.POST)
+        ExpenseFormSet = modelformset_factory(Expense, form=ExpenseForm, extra=3, can_delete=True)
+        formset = ExpenseFormSet(request.POST, form_kwargs={'user': request.user})
         if formset.is_valid():
             instances = formset.save(commit=False)
             for instance in instances:
@@ -289,9 +312,14 @@ class ExpenseCreateView(generic.TemplateView):
 
 class ExpenseUpdateView(generic.UpdateView):
     model = Expense
-    fields = ['date', 'amount', 'description', 'category']
+    form_class = ExpenseForm
     template_name = 'expenses/expense_form.html'
     success_url = reverse_lazy('expense-list')
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['user'] = self.request.user
+        return kwargs
 
     def get_queryset(self):
         # Ensure user can only edit their own expenses
@@ -304,3 +332,51 @@ class ExpenseDeleteView(generic.DeleteView):
 
     def get_queryset(self):
         return Expense.objects.filter(user=self.request.user)
+    def get_queryset(self):
+        return Expense.objects.filter(user=self.request.user)
+
+class CategoryListView(generic.ListView):
+    model = Category
+    template_name = 'expenses/category_list.html'
+    context_object_name = 'categories'
+
+    def get_queryset(self):
+        return Category.objects.filter(user=self.request.user).order_by('name')
+
+class CategoryCreateView(generic.CreateView):
+    model = Category
+    fields = ['name']
+    template_name = 'expenses/category_form.html'
+    success_url = reverse_lazy('category-list')
+
+    def form_valid(self, form):
+        form.instance.user = self.request.user
+        return super().form_valid(form)
+
+class CategoryUpdateView(generic.UpdateView):
+    model = Category
+    fields = ['name']
+    template_name = 'expenses/category_form.html'
+    success_url = reverse_lazy('category-list')
+
+    def get_queryset(self):
+        return Category.objects.filter(user=self.request.user)
+    
+    def form_valid(self, form):
+        # Store old name to update related expenses
+        old_name = self.get_object().name
+        response = super().form_valid(form)
+        new_name = self.object.name
+        
+        if old_name != new_name:
+            Expense.objects.filter(user=self.request.user, category=old_name).update(category=new_name)
+            
+        return response
+
+class CategoryDeleteView(generic.DeleteView):
+    model = Category
+    template_name = 'expenses/category_confirm_delete.html'
+    success_url = reverse_lazy('category-list')
+
+    def get_queryset(self):
+        return Category.objects.filter(user=self.request.user)

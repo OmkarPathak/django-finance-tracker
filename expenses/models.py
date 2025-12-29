@@ -20,3 +20,19 @@ class Expense(models.Model):
 
     def __str__(self):
         return f"{self.date} - {self.description} - {self.amount}"
+
+class Category(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    name = models.CharField(max_length=255)
+
+    class Meta:
+        verbose_name_plural = 'Categories'
+        constraints = [
+            models.UniqueConstraint(
+                fields=['user', 'name'],
+                name='unique_category'
+            )
+        ]
+
+    def __str__(self):
+        return self.name

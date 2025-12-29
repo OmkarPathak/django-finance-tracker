@@ -3,7 +3,7 @@
 {% block content %}
 <div class="row justify-content-center">
     <div class="col-md-6">
-        <div class="card shadow-sm border-0">
+        <div class="card shadow-lg border-0">
             <div class="card-header bg-transparent fw-bold py-3">
                 {% if object %}Edit Expense{% else %}New Expense{% endif %}
             </div>
@@ -41,14 +41,20 @@
                                                 {% if forloop.first %}
                                                     {% for hidden in form.hidden_fields %}{{ hidden }}{% endfor %}
                                                 {% endif %}
-                                                <input type="{% if field.name == 'date' %}date{% else %}{{ field.field.widget.input_type|default:'text' }}{% endif %}" 
-                                                    name="{{ field.html_name }}" 
-                                                    class="form-control form-control-sm"
-                                                    {% if field.value %}value="{{ field.value|date:'Y-m-d'|default:field.value }}"{% endif %} 
-                                                    {% if field.field.required %}required{% endif %}
-                                                    id="{{ field.id_for_label }}"
-                                                    placeholder="{{ field.label }}"
-                                                    {% if field.field.widget.input_type == "number" %}step="0.01"{% endif %}>
+                                                
+                                                {% if field.name == 'category' %}
+                                                    {{ field }} <!-- Renders as Select due to form widget -->
+                                                {% else %}
+                                                    <input type="{% if field.name == 'date' %}date{% else %}{{ field.field.widget.input_type|default:'text' }}{% endif %}" 
+                                                        name="{{ field.html_name }}" 
+                                                        class="form-control form-control-sm"
+                                                        {% if field.value %}value="{{ field.value|date:'Y-m-d'|default:field.value }}"{% endif %} 
+                                                        {% if field.field.required %}required{% endif %}
+                                                        id="{{ field.id_for_label }}"
+                                                        placeholder="{{ field.label }}"
+                                                        {% if field.field.widget.input_type == "number" %}step="0.01"{% endif %}>
+                                                {% endif %}
+
                                                 {% if field.errors %}
                                                     <div class="text-danger small" style="font-size: 0.7rem;">{{ field.errors.0 }}</div>
                                                 {% endif %}
@@ -90,6 +96,8 @@
                                         {{ field.help_text }}
                                     </label>
                                 </div>
+                            {% elif field.name == 'category' %}
+                                {{ field }}
                             {% else %}
                                 <input type="{% if field.name == 'date' %}date{% else %}{{ field.field.widget.input_type|default:'text' }}{% endif %}" 
                                     name="{{ field.name }}" 
