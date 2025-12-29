@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row fade-in">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="h2 mb-0">Income</h1>
+            <a href="{% url 'income-create' %}" class="btn btn-success btn-sm">
+                <i class="bi bi-plus-lg me-1"></i> Add Income
+            </a>
+        </div>
+
+        <!-- List -->
+        <div class="card shadow-sm border-0">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover table-striped mb-0 text-start align-middle">
+                        <thead>
+                            <tr>
+                                <th class="ps-4">Date</th>
+                                <th>Source</th>
+                                <th>Description</th>
+                                <th>Amount</th>
+                                <th class="text-end pe-4">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for income in incomes %}
+                            <tr>
+                                <td class="ps-4 text-nowrap">{{ income.date|date:"d M Y" }}</td>
+                                <td>
+                                    <span class="badge bg-success opacity-75">{{ income.source }}</span>
+                                </td>
+                                <td>{{ income.description|default:"-"|truncatechars:30 }}</td>
+                                <td class="fw-bold text-success">{{ income.amount|floatformat:2 }}</td>
+                                <td class="text-end pe-4">
+                                    <a href="{% url 'income-edit' income.pk %}" class="btn btn-sm btn-link text-decoration-none p-0 me-2" title="Edit">
+                                        <i class="bi bi-pencil-square text-primary"></i>
+                                    </a>
+                                    <button type="button" class="btn btn-sm btn-link text-decoration-none p-0 delete-btn" 
+                                            data-bs-toggle="modal" data-bs-target="#deleteModal" 
+                                            data-url="{% url 'income-delete' income.pk %}"
+                                            data-message="Are you sure you want to delete '{{ income.source }}'?">
+                                        <i class="bi bi-trash text-danger"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5" class="text-center py-5 text-muted">
+                                    No income records found.
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Pagination -->
+            {% if is_paginated %}
+            <div class="card-footer bg-white border-top-0 d-flex justify-content-center py-3">
+                <nav>
+                    <ul class="pagination pagination-sm mb-0">
+                        {% if page_obj.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link border-0 text-muted" href="?page=1">&laquo; First</a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link border-0 text-muted" href="?page={{ page_obj.previous_page_number }}">Previous</a>
+                            </li>
+                        {% endif %}
+
+                        <li class="page-item disabled">
+                            <span class="page-link border-0 text-dark fw-bold">
+                                Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                            </span>
+                        </li>
+
+                        {% if page_obj.has_next %}
+                            <li class="page-item">
+                                <a class="page-link border-0 text-muted" href="?page={{ page_obj.next_page_number }}">Next</a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link border-0 text-muted" href="?page={{ page_obj.paginator.num_pages }}">Last &raquo;</a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+{% endblock %}

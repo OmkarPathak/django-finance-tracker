@@ -3,7 +3,6 @@ from django.http import HttpResponse
 import csv
 from django.shortcuts import render, redirect, get_object_or_404
 from django.forms import modelformset_factory
-from .forms import ExpenseForm
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import login
@@ -12,7 +11,8 @@ from django.views import generic
 from django.db.models import Sum, Q
 from django.views import generic
 from django.db.models import Sum, Q
-from .models import Expense, Category
+from .models import Expense, Category, Income
+from .forms import ExpenseForm, IncomeForm
 import pandas as pd
 import pandas as pd
 from datetime import datetime
@@ -71,8 +71,23 @@ def home_view(request):
 
     if selected_category:
         expenses = expenses.filter(category=selected_category)
+    if selected_category:
+        expenses = expenses.filter(category=selected_category)
         
-    # Get filters
+    # Income Logic (Mirroring Expense Filters)
+    incomes = Income.objects.filter(user=request.user)
+    if start_date or end_date:
+        if start_date:
+            incomes = incomes.filter(date__gte=start_date)
+        if end_date:
+            incomes = incomes.filter(date__lte=end_date)
+    else:
+        if selected_year:
+            incomes = incomes.filter(date__year=selected_year)
+        if selected_month:
+            incomes = incomes.filter(date__month=selected_month)
+    
+    total_income = incomes.aggregate(Sum('amount'))['amount__sum'] or 0
     all_dates = Expense.objects.filter(user=request.user).dates('date', 'year', order='DESC')
     years = [d.year for d in all_dates]
     all_categories = Expense.objects.filter(user=request.user).values_list('category', flat=True).distinct().order_by('category')
@@ -162,8 +177,8 @@ def home_view(request):
             
     # 3. Convert map to list of dataset objects for Chart.js
     trend_datasets = []
-    # Define a color palette
-    colors = ['#38bdf8', '#818cf8', '#c084fc', '#f472b6', '#fb7185', '#22d3ee', '#34d399', '#fbfb8c']
+    # Define a color palette (Light Blue, Blue Green, Prussian Blue, Honey Yellow, Orange)
+    colors = ['#8ECAE6', '#219EBC', '#023047', '#FFB703', '#FB8500']
     
     for i, (cat, data) in enumerate(dataset_map.items()):
         # Only include non-zero datasets
@@ -185,7 +200,11 @@ def home_view(request):
     transaction_count = expenses.count()
     top_category = category_data[0] if category_data else None
     
+    savings = total_income - total_expenses
+    
     context = {
+        'total_income': total_income,
+        'savings': savings,
         'recent_transactions': expenses.order_by('-date')[:5],
         'categories': categories,
         'category_amounts': category_amounts,
@@ -535,4 +554,52 @@ def export_expenses(request):
     for expense in expenses:
         writer.writerow([expense.date, expense.category, expense.description, expense.amount])
 
-    return response
+# --------------------
+# Income Views
+# --------------------
+
+class IncomeListView(generic.ListView):
+    model = Income
+    template_name = 'expenses/income_list.html'
+    context_object_name = 'incomes'
+    paginate_by = 20
+
+    def get_queryset(self):
+        return Income.objects.filter(user=self.request.user).order_by('-date')
+
+class IncomeCreateView(generic.CreateView):
+    model = Income
+    form_class = IncomeForm
+    template_name = 'expenses/income_form.html'
+    success_url = reverse_lazy('income-list')
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['user'] = self.request.user
+        return kwargs
+
+    def form_valid(self, form):
+        form.instance.user = self.request.user
+        return super().form_valid(form)
+
+class IncomeUpdateView(generic.UpdateView):
+    model = Income
+    form_class = IncomeForm
+    template_name = 'expenses/income_form.html'
+    success_url = reverse_lazy('income-list')
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['user'] = self.request.user
+        return kwargs
+
+    def get_queryset(self):
+        return Income.objects.filter(user=self.request.user)
+
+class IncomeDeleteView(generic.DeleteView):
+    model = Income
+    template_name = 'expenses/income_confirm_delete.html'
+    success_url = reverse_lazy('income-list')
+
+    def get_queryset(self):
+        return Income.objects.filter(user=self.request.user)

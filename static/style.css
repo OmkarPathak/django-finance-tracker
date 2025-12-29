@@ -32,3 +32,134 @@ body {
 .bi {
     vertical-align: -0.125em;
 }
+
+/* --- Global Dashboard Theme Overrides --- */
+:root {
+    --color-primary: #023047;   /* Dark Blue */
+    --color-secondary: #8ECAE6; /* Light Blue */
+    --color-success: #219EBC;   /* Teal */
+    --color-danger: #FB8500;    /* Orange */
+    --color-warning: #FFB703;   /* Yellow */
+}
+
+/* Navbar */
+.bg-custom-dark {
+    background-color: var(--color-primary) !important;
+}
+
+/* Primary Button (Teal - Custom) */
+.btn-primary {
+    background-color: var(--color-success);
+    border-color: var(--color-success);
+}
+.btn-primary:hover, .btn-primary:active, .btn-primary:focus {
+    background-color: #1a7fa8;
+    border-color: #1a7fa8;
+}
+
+/* Success Button (Teal) */
+.btn-success {
+    background-color: var(--color-success);
+    border-color: var(--color-success);
+}
+.btn-success:hover, .btn-success:active, .btn-success:focus {
+    background-color: #1a7fa8;
+    border-color: #1a7fa8;
+}
+
+/* Danger Button (Orange) */
+.btn-danger {
+    background-color: var(--color-danger);
+    border-color: var(--color-danger);
+    color: #fff;
+}
+.btn-danger:hover, .btn-danger:active, .btn-danger:focus {
+    background-color: #d97300;
+    border-color: #d97300;
+    color: #fff;
+}
+
+/* Links */
+a {
+    color: var(--color-primary);
+    text-decoration: none;
+}
+a:hover {
+    color: var(--color-success);
+}
+
+/* Outline Buttons (for secondary actions) */
+.btn-outline-primary {
+    color: var(--color-success);
+    border-color: var(--color-success);
+}
+.btn-outline-primary:hover, .btn-outline-primary:active {
+    background-color: var(--color-success) !important;
+    border-color: var(--color-success) !important;
+    color: #fff !important;
+}
+
+.btn-outline-secondary {
+    color: var(--color-primary);
+    border-color: var(--color-primary);
+}
+.btn-outline-secondary:hover, .btn-outline-secondary:active {
+    background-color: var(--color-primary) !important;
+    border-color: var(--color-primary) !important;
+    color: #fff !important;
+}
+
+/* Specific Link Overrides */
+.btn-link {
+    color: var(--color-success); /* Teal for actions */
+    text-decoration: none;
+}
+.btn-link:hover {
+    color: #1a7fa8;
+}
+
+/* Navbar Links (Dark Blue on Light Background) */
+.nav-link {
+    color: var(--color-primary);
+}
+.nav-link:hover, .nav-link.active {
+    color: var(--color-success) !important;
+}
+
+/* Pagination */
+.page-link {
+    color: var(--color-primary);
+}
+.page-link:hover {
+    color: var(--color-success);
+    background-color: #f8f9fa;
+    border-color: #dee2e6;
+}
+.page-item.active .page-link {
+    background-color: var(--color-primary); /* Dark Blue selected page */
+    border-color: var(--color-primary);
+    color: #fff;
+}
+
+/* Sidebar / List Group Active State */
+.list-group-item.active {
+    background-color: var(--color-success); /* Teal */
+    border-color: var(--color-success);
+}
+
+/* Text Colors */
+.text-primary {
+    color: var(--color-success) !important; /* Teal to match Primary Buttons */
+}
+.text-secondary {
+    color: var(--color-primary) !important; /* Dark Blue for secondary text */
+}
+.text-success {
+    color: var(--color-success) !important;
+}
+.text-danger {
+    color: var(--color-danger) !important;
+}
+.text-warning {
+    color: var(--color-warning) !important;
+}

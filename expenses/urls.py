@@ -14,4 +14,10 @@ urlpatterns = [
     path('category/add/', views.CategoryCreateView.as_view(), name='category-create'),
     path('category/<int:pk>/edit/', views.CategoryUpdateView.as_view(), name='category-edit'),
     path('category/<int:pk>/delete/', views.CategoryDeleteView.as_view(), name='category-delete'),
+    
+    # Income
+    path('income/list/', views.IncomeListView.as_view(), name='income-list'),
+    path('income/add/', views.IncomeCreateView.as_view(), name='income-create'),
+    path('income/<int:pk>/edit/', views.IncomeUpdateView.as_view(), name='income-edit'),
+    path('income/<int:pk>/delete/', views.IncomeDeleteView.as_view(), name='income-delete'),
 ]

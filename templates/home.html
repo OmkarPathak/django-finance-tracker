@@ -35,7 +35,7 @@
             {% endfor %}
         </select>
         <!-- Reset Button -->
-        <a href="{% url 'home' %}" class="btn btn-outline-secondary btn-sm" onclick="showLoader()">
+        <a href="{% url 'home' %}" class="btn btn-outline-primary btn-sm" onclick="showLoader()">
             <i class="bi bi-arrow-counterclockwise me-1"></i> Reset
         </a>
     </form>
@@ -43,13 +43,37 @@
 
 <!-- Summary Cards Row -->
 <div class="row g-4 mb-4">
-    <div class="col-md-4">
+    <!-- Total Income -->
+    <div class="col-md-3">
+        <div class="card shadow-lg border-0 h-100 hover-lift fade-in" style="animation-delay: 0.0s">
+            <div class="card-body">
+                <h5 class="card-title opacity-75"><i class="bi bi-cash-coin me-2"></i>Total Income</h5>
+                <h2 class="display-6 fw-bold mb-0">₹{{ total_income|floatformat:0 }}</h2>
+                <small class="text-muted">
+                    {% if start_date %}
+                        Custom Range
+                    {% elif selected_month and selected_year %}
+                        For {{ selected_month }}/{{ selected_year }}
+                    {% elif selected_year %}
+                         For {{ selected_year }}
+                    {% else %}
+                        All Time
+                    {% endif %}
+                </small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Total Expenses -->
+    <div class="col-md-3">
         <div class="card shadow-lg border-0 h-100 hover-lift fade-in" style="animation-delay: 0.1s">
             <div class="card-body">
                 <h5 class="card-title opacity-75"><i class="bi bi-wallet2 me-2"></i>Total Expenses</h5>
-                <h2 class="display-6 fw-bold mb-0">₹{{ total_expenses|floatformat:2 }}</h2>
-                <small class="opacity-75">
-                    {% if selected_month and selected_year %}
+                <h2 class="display-6 fw-bold mb-0">₹{{ total_expenses|floatformat:0 }}</h2>
+                <small class="text-muted">
+                    {% if start_date %}
+                        Custom Range
+                    {% elif selected_month and selected_year %}
                         For {{ selected_month }}/{{ selected_year }}
                     {% elif selected_year %}
                          For {{ selected_year }}
@@ -61,8 +85,47 @@
         </div>
     </div>
     
+    <!-- Savings -->
+    <div class="col-md-3">
+        <div class="card shadow-lg border-0 h-100 hover-lift fade-in" style="animation-delay: 0.2s">
+            <div class="card-body">
+                <h5 class="card-title opacity-75"><i class="bi bi-piggy-bank me-2"></i>Savings</h5>
+                <h2 class="display-6 fw-bold mb-0">₹{{ savings|floatformat:0 }}</h2>
+                <small class="text-muted">
+                    {% if start_date %}
+                        Custom Range
+                    {% elif selected_month and selected_year %}
+                        For {{ selected_month }}/{{ selected_year }}
+                    {% elif selected_year %}
+                         For {{ selected_year }}
+                    {% else %}
+                        All Time
+                    {% endif %}
+                </small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Top Category (Restored) -->
+    <div class="col-md-3">
+        <div class="card shadow-lg border-0 h-100 hover-lift fade-in" style="animation-delay: 0.3s">
+            <div class="card-body">
+                <h5 class="card-title opacity-75"><i class="bi bi-tags-fill me-2"></i>Top Category</h5>
+                {% if top_category %}
+                    <h2 class="display-6 fw-bold mb-0">{{ top_category.category }}</h2>
+                    <small class="text-muted">₹{{ top_category.total|floatformat:2 }}</small>
+                {% else %}
+                    <h2 class="display-6 fw-bold mb-0">-</h2>
+                    <small class="text-muted">No data</small>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
     <!-- Top Category KPI -->
-    <div class="col-md-4">
+    <!-- <div class="col-md-4">
         <div class="card shadow-lg border-0 h-100 hover-lift fade-in" style="animation-delay: 0.2s">
             <div class="card-body">
                 <h5 class="card-title opacity-75"><i class="bi bi-tags-fill me-2"></i>Top Category</h5>
@@ -75,15 +138,18 @@
                 {% endif %}
             </div>
         </div>
-    </div>
+    </div> -->
 
-    <!-- Transaction Count KPI -->
-    <div class="col-md-4">
+    <!-- Income vs Expenses Chart -->
+    <div class="col-md-12">
         <div class="card shadow-lg border-0 h-100 hover-lift fade-in" style="animation-delay: 0.3s">
+            <div class="card-header bg-transparent fw-bold">
+                Income vs Expenses
+            </div>
             <div class="card-body">
-                <h5 class="card-title opacity-75"><i class="bi bi-receipt me-2"></i>Transactions</h5>
-                <h2 class="display-6 fw-bold mb-0">{{ transaction_count }}</h2>
-                <small class="opacity-75">Total Records</small>
+                <div style="height: 200px;">
+                    <canvas id="incomeExpensesChart"></canvas>
+                </div>
             </div>
         </div>
     </div>
@@ -248,6 +314,107 @@
         const topLabels = JSON.parse(document.getElementById('top-labels').textContent);
         const topAmounts = JSON.parse(document.getElementById('top-amounts').textContent);
 
+        Chart.defaults.font.family = "'Segoe UI', 'Roboto', 'Helvetica', 'Arial', sans-serif";
+        Chart.defaults.color = '#6c757d';
+
+        // --- 0. Income vs Expenses Chart (Single Stacked Horizontal Bar) ---
+        const totalIncome = {{ total_income|stringformat:"f"|default:0 }};
+        const totalExpenses = {{ total_expenses|stringformat:"f"|default:0 }};
+        // If expenses > income, savings is 0 (or negative, but we clip to 0 for chart)
+        // If expenses > income, savings is 0 (or negative, but we clip to 0 for chart)
+        const savings = Math.max(0, totalIncome - totalExpenses);
+
+        // Custom Plugin to draw text
+        const customLabelsPlugin = {
+            id: 'customLabels',
+            afterDatasetsDraw(chart) {
+                const { ctx } = chart;
+                ctx.save();
+                
+                chart.data.datasets.forEach((dataset, i) => {
+                    const meta = chart.getDatasetMeta(i);
+                    meta.data.forEach((bar, index) => {
+                        const value = dataset.data[index];
+                        if (value > 0 && totalIncome > 0) {
+                            const pct = ((value / totalIncome) * 100).toFixed(0);
+                            const text = `₹${value.toLocaleString()} (${pct}%)`;
+                            
+                            // Position text in center of bar
+                            // For horizontal: base is left, x is right (or vice versa)
+                            const centerX = (bar.base + bar.x) / 2;
+                            const centerY = bar.y;
+                            
+                            // Check if bar is wide enough 
+                            if (Math.abs(bar.base - bar.x) > 40) {
+                                ctx.font = 'bold 11px sans-serif';
+                                ctx.fillStyle = '#ffffff';
+                                ctx.textAlign = 'center';
+                                ctx.textBaseline = 'middle';
+                                // Add shadow for better readability
+                                ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
+                                ctx.shadowBlur = 2;
+                                
+                                ctx.fillText(text, centerX, centerY);
+                                ctx.shadowBlur = 0;
+                            }
+                        }
+                    });
+                });
+                ctx.restore();
+            }
+        };
+
+        new Chart(document.getElementById('incomeExpensesChart'), {
+            type: 'bar',
+            data: {
+                labels: ['Income Distribution'],
+                datasets: [
+                    {
+                        label: 'Expenses',
+                        data: [totalExpenses],
+                        backgroundColor: '#FB8500', // Orange
+                        borderRadius: 4,
+                        barThickness: 50 // Slightly thicker
+                    },
+                    {
+                        label: 'Savings',
+                        data: [savings],
+                        backgroundColor: '#219EBC', // Teal
+                        borderRadius: 4,
+                        barThickness: 50
+                    }
+                ]
+            },
+            plugins: [customLabelsPlugin], // Register the plugin
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { 
+                    legend: { display: true, position: 'bottom' },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.dataset.label + ': ₹' + context.raw.toLocaleString();
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: { 
+                        stacked: true,
+                        grid: { color: 'rgba(0,0,0,0.05)' },
+                        max: totalIncome > 0 ? totalIncome : 1, // Force max width to Total Income
+                    },
+                    y: { 
+                        stacked: true,
+                        grid: { display: false }, 
+                        ticks: { display: false } 
+                    } 
+                }
+            }
+        });
+
         // --- 1. Trend Chart (Stacked Bar) ---
         new Chart(document.getElementById('trendChart'), {
             type: 'bar',
@@ -282,7 +449,7 @@
                     datasets: [{
                         data: categoryAmounts,
                         backgroundColor: [
-                            '#38bdf8', '#818cf8', '#c084fc', '#f472b6', '#fb7185', '#22d3ee'
+                            '#8ECAE6', '#219EBC', '#023047', '#FFB703', '#FB8500'
                         ],
                         borderWidth: 0
                     }]
@@ -335,7 +502,7 @@
                 datasets: [{
                     label: 'Amount',
                     data: topAmounts,
-                    backgroundColor: '#818cf8',
+                    backgroundColor: '#FB8500', // Orange
                     borderRadius: 4
                 }]
             },
@@ -376,8 +543,8 @@
                         {
                             label: 'Spent',
                             data: spentData,
-                            // If spent > limit (used_percent > 100), show red. Else green.
-                            backgroundColor: withLimits.map(item => item.total > item.limit ? '#fb7185' : '#818cf8'),
+                            // If spent > limit (used_percent > 100), show Orange. Else Teal.
+                            backgroundColor: withLimits.map(item => item.total > item.limit ? '#FB8500' : '#219EBC'),
                             borderRadius: 4,
                         },
                         {
@@ -407,7 +574,7 @@
                                 ctx.textAlign = 'center';
                                 ctx.textBaseline = 'middle';
                                 
-                                // Text shadow for visibility on light backgrounds
+                                // Text shadow for visibility (softer than stroke)
                                 ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
                                 ctx.shadowBlur = 3;
                                 

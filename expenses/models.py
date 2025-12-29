@@ -47,3 +47,28 @@ class Category(models.Model):
 
     def __str__(self):
         return self.name
+
+class Income(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    date = models.DateField()
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    description = models.TextField(blank=True, null=True)
+    source = models.CharField(max_length=255) # e.g. Salary, Freelance, Dividend
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def save(self, *args, **kwargs):
+        if self.source:
+            self.source = self.source.strip()
+        super().save(*args, **kwargs)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['user', 'date', 'amount', 'source'],
+                name='unique_income'
+            )
+        ]
+
+    def __str__(self):
+        return f"{self.date} - {self.source} - {self.amount}"

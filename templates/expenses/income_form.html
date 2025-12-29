@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row justify-content-center fade-in">
+    <div class="col-md-6 col-lg-5">
+        <div class="card shadow border-0">
+            <div class="card-header bg-success text-white py-3">
+                <h4 class="card-title mb-0 h5">
+                    <i class="bi bi-wallet2 me-2"></i>{% if form.instance.pk %}Edit Income{% else %}Add Income{% endif %}
+                </h4>
+            </div>
+            <div class="card-body p-4">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    {% if form.non_field_errors %}
+                        <div class="alert alert-danger mb-3">
+                            {{ form.non_field_errors }}
+                        </div>
+                    {% endif %}
+
+                    {% for field in form %}
+                        <div class="mb-3">
+                            <label for="{{ field.id_for_label }}" class="form-label small text-muted fw-bold">{{ field.label }}</label>
+                            {{ field }}
+                            {% if field.errors %}
+                                <div class="text-danger small mt-1">
+                                    {{ field.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+
+                    <div class="d-grid gap-2 mt-4">
+                        <button type="submit" class="btn btn-success">
+                            <i class="bi bi-check-lg me-1"></i> Save Income
+                        </button>
+                        <a href="{% url 'income-list' %}" class="btn btn-light text-muted">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
