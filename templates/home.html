@@ -6,6 +6,16 @@
     
     <!-- Filter Form -->
     <form method="get" class="d-flex gap-2 align-items-center bg-body-tertiary p-2 rounded shadow-sm flex-wrap" id="filter-form">
+        <!-- Date Range -->
+        <div class="input-group input-group-sm" style="width: auto;">
+            <span class="input-group-text bg-body-tertiary">From</span>
+            <input type="date" name="start_date" id="start_date" class="form-control" value="{{ start_date|default:'' }}" onchange="showLoaderAndSubmit()">
+        </div>
+        <div class="input-group input-group-sm" style="width: auto;">
+            <span class="input-group-text bg-body-tertiary">To</span>
+            <input type="date" name="end_date" id="end_date" class="form-control" value="{{ end_date|default:'' }}" onchange="showLoaderAndSubmit()">
+        </div>
+
         <select name="year" class="form-select form-select-sm" style="width: auto;" onchange="showLoaderAndSubmit()">
             <option value="">All Years</option>
             {% for y in years %}

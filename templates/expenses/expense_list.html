@@ -10,9 +10,12 @@
            <a href="{% url 'expense-create' %}" class="btn btn-primary btn-sm">
                 <i class="bi bi-plus-lg me-1"></i> Add Expense
            </a>
-           <a href="{% url 'upload' %}" class="btn btn-outline-primary btn-sm">
+           <!-- <a href="{% url 'upload' %}" class="btn btn-outline-primary btn-sm">
                <i class="bi bi-cloud-arrow-up me-1"></i> Bulk Upload
-           </a>
+           </a> -->
+           <a href="{% url 'export-expenses' %}?{{ request.GET.urlencode }}" class="btn btn-outline-primary btn-sm">
+                <i class="bi bi-file-earmark-spreadsheet me-1"></i> Export
+            </a>
         </div>
     </div>
     
@@ -21,7 +24,21 @@
         <div class="row g-3 align-items-end">
             <div class="col-auto">
                 <label for="search" class="form-label small text-muted">Search</label>
-                <input type="text" name="search" id="search" class="form-control form-control-sm" placeholder="Search description..." value="{{ request.GET.search|default:'' }}">
+                <input type="text" name="search" id="search" class="form-control form-control-sm" placeholder="Search..." value="{{ request.GET.search|default:'' }}">
+            </div>
+            <div class="col-auto">
+                <label for="start_date" class="form-label small text-muted d-none d-md-block">From</label>
+                <div class="input-group input-group-sm">
+                    <span class="input-group-text d-md-none">From</span>
+                    <input type="date" name="start_date" id="start_date" class="form-control" value="{{ start_date|default:'' }}" onchange="showLoaderAndSubmit()">
+                </div>
+            </div>
+            <div class="col-auto">
+                <label for="end_date" class="form-label small text-muted d-none d-md-block">To</label>
+                <div class="input-group input-group-sm">
+                    <span class="input-group-text d-md-none">To</span>
+                    <input type="date" name="end_date" id="end_date" class="form-control" value="{{ end_date|default:'' }}" onchange="showLoaderAndSubmit()">
+                </div>
             </div>
             <div class="col-auto">
                 <label for="year" class="form-label small text-muted">Year</label>

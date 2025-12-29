@@ -1,4 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
+from django.http import HttpResponse
+import csv
 from django.shortcuts import render, redirect, get_object_or_404
 from django.forms import modelformset_factory
 from .forms import ExpenseForm
@@ -31,19 +33,42 @@ def home_view(request):
     expenses = Expense.objects.filter(user=request.user).order_by('-date')
     
     # Filter Logic
+    # Filter Logic
     selected_year = request.GET.get('year')
     selected_month = request.GET.get('month')
     selected_category = request.GET.get('category')
+    start_date = request.GET.get('start_date')
+    end_date = request.GET.get('end_date')
     
-    if selected_year is None:
-        selected_year = datetime.now().year
-    if selected_month is None:
-        selected_month = datetime.now().month
-    
-    if selected_year:
-        expenses = expenses.filter(date__year=selected_year)
-    if selected_month:
-        expenses = expenses.filter(date__month=selected_month)
+    # Date Range takes precedence
+    if start_date or end_date:
+        if start_date:
+            expenses = expenses.filter(date__gte=start_date)
+        if end_date:
+            expenses = expenses.filter(date__lte=end_date)
+        
+        # Reset year/month selection for UI clarity since we are in custom range mode
+        selected_year = None
+        selected_month = None
+        
+        trend_title = "Expenses Trend (Custom Range)"
+    else:
+        # Default to current month/year if nothing selected
+        if selected_year is None:
+            selected_year = datetime.now().year
+        if selected_month is None:
+            selected_month = datetime.now().month
+        
+        if selected_year:
+            expenses = expenses.filter(date__year=selected_year)
+        if selected_month:
+            expenses = expenses.filter(date__month=selected_month)
+            
+        if selected_month and selected_year:
+            trend_title = f"Daily Expenses for {selected_month}/{selected_year}"
+        else:
+            trend_title = "Monthly Expenses Trend"
+
     if selected_category:
         expenses = expenses.filter(category=selected_category)
         
@@ -99,16 +124,21 @@ def home_view(request):
     from django.db.models.functions import TruncMonth, TruncDay
     
     # Determine Labels (X-Axis)
-    if selected_month and selected_year:
+    # Determine Labels (X-Axis)
+    if start_date or end_date:
+        # For custom range, if range < 60 days, show daily. Else monthly.
+        # Simple heuristic: Always show daily for custom range for now, or let logic decide.
+        # Let's stick to: if explicit month selected -> daily. If range -> daily (usually granular).
+        trend_qs = expenses.annotate(period=TruncDay('date'))
+        date_format = '%d %b'
+    elif selected_month and selected_year:
         # Daily view
         trend_qs = expenses.annotate(period=TruncDay('date'))
         date_format = '%d %b'
-        trend_title = f"Daily Expenses for {selected_month}/{selected_year}"
     else:
         # Monthly view
         trend_qs = expenses.annotate(period=TruncMonth('date'))
         date_format = '%b %Y'
-        trend_title = "Monthly Expenses Trend"
 
     # Aggregate by Period AND Category for Stacking
     stacked_data = trend_qs.values('period', 'category').annotate(total=Sum('amount')).order_by('period')
@@ -175,6 +205,8 @@ def home_view(request):
         'total_expenses': total_expenses,
         'transaction_count': transaction_count,
         'top_category': top_category,
+        'start_date': start_date,
+        'end_date': end_date,
     }
     return render(request, 'home.html', context)
 
@@ -299,14 +331,24 @@ class ExpenseListView(generic.ListView):
         month = self.request.GET.get('month')
         category = self.request.GET.get('category')
         search_query = self.request.GET.get('search')
+        start_date = self.request.GET.get('start_date')
+        end_date = self.request.GET.get('end_date')
         
-        if year is None:
-            year = datetime.now().year
-            queryset = queryset.filter(date__year=year)
-        elif year:
-            queryset = queryset.filter(date__year=year)
-        if month:
-            queryset = queryset.filter(date__month=month)
+        # Date Range Logic (Precedence over Year/Month)
+        if start_date or end_date:
+            if start_date:
+                queryset = queryset.filter(date__gte=start_date)
+            if end_date:
+                queryset = queryset.filter(date__lte=end_date)
+        else:
+            # Standard Year/Month Logic
+            if year is None:
+                year = datetime.now().year
+                queryset = queryset.filter(date__year=year)
+            elif year:
+                queryset = queryset.filter(date__year=year)
+            if month:
+                queryset = queryset.filter(date__month=month)
         if category:
             queryset = queryset.filter(category=category)
         if search_query:
@@ -326,8 +368,17 @@ class ExpenseListView(generic.ListView):
         context['months_list'] = [(i, calendar.month_name[i]) for i in range(1, 13)]
         
         # Determine selected year for UI
+        # Determine selected year for UI
         year_param = self.request.GET.get('year')
-        if year_param is None:
+        start_date = self.request.GET.get('start_date')
+        end_date = self.request.GET.get('end_date')
+
+        context['start_date'] = start_date
+        context['end_date'] = end_date
+        
+        if start_date or end_date:
+            context['selected_year'] = None
+        elif year_param is None:
             context['selected_year'] = datetime.now().year
         elif year_param:
             try:
@@ -440,3 +491,48 @@ class CategoryDeleteView(generic.DeleteView):
 
     def get_queryset(self):
         return Category.objects.filter(user=self.request.user)
+
+@login_required
+def export_expenses(request):
+    """
+    Export expenses to CSV based on current filters.
+    """
+    expenses = Expense.objects.filter(user=request.user).order_by('-date')
+
+    # Filter Logic (Duplicate of ExpenseListView logic)
+    year = request.GET.get('year')
+    month = request.GET.get('month')
+    category = request.GET.get('category')
+    search_query = request.GET.get('search')
+    start_date = request.GET.get('start_date')
+    end_date = request.GET.get('end_date')
+
+    if start_date or end_date:
+        if start_date:
+            expenses = expenses.filter(date__gte=start_date)
+        if end_date:
+            expenses = expenses.filter(date__lte=end_date)
+    else:
+        if year is None:
+            year = datetime.now().year
+            expenses = expenses.filter(date__year=year)
+        elif year:
+            expenses = expenses.filter(date__year=year)
+        if month:
+            expenses = expenses.filter(date__month=month)
+
+    if category:
+        expenses = expenses.filter(category=category)
+    if search_query:
+        expenses = expenses.filter(description__icontains=search_query)
+
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="expenses.csv"'
+
+    writer = csv.writer(response)
+    writer.writerow(['Date', 'Category', 'Description', 'Amount'])
+
+    for expense in expenses:
+        writer.writerow([expense.date, expense.category, expense.description, expense.amount])
+
+    return response
