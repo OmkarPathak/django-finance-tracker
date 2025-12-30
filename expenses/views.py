@@ -1,22 +1,21 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse
 import csv
-from django.shortcuts import render, redirect, get_object_or_404
 from django.forms import modelformset_factory
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth import login
 from django.urls import reverse_lazy
 from django.views import generic
-from django.db.models import Sum, Q
-from django.views import generic
+from django.views.generic import TemplateView
 from django.db.models import Sum, Q
 from .models import Expense, Category, Income
 from .forms import ExpenseForm, IncomeForm
 import pandas as pd
-import pandas as pd
-from datetime import datetime
+from datetime import datetime, date
 import calendar
+
 
 # Custom signup view to log user in immediately
 class SignUpView(generic.CreateView):
@@ -336,7 +335,7 @@ def upload_view(request):
     
     return render(request, 'upload.html', {'years': years, 'current_year': current_year})
 
-class ExpenseListView(generic.ListView):
+class ExpenseListView(LoginRequiredMixin, generic.ListView):
     model = Expense
     template_name = 'expenses/expense_list.html'
     context_object_name = 'expenses'
@@ -409,7 +408,7 @@ class ExpenseListView(generic.ListView):
             
         return context
 
-class ExpenseCreateView(generic.TemplateView):
+class ExpenseCreateView(LoginRequiredMixin, generic.TemplateView):
     template_name = 'expenses/expense_form.html'
 
     def get(self, request, *args, **kwargs):
@@ -440,7 +439,7 @@ class ExpenseCreateView(generic.TemplateView):
             return redirect('expense-list')
         return render(request, self.template_name, {'formset': formset})
 
-class ExpenseUpdateView(generic.UpdateView):
+class ExpenseUpdateView(LoginRequiredMixin, generic.UpdateView):
     model = Expense
     form_class = ExpenseForm
     template_name = 'expenses/expense_form.html'
@@ -455,7 +454,7 @@ class ExpenseUpdateView(generic.UpdateView):
         # Ensure user can only edit their own expenses
         return Expense.objects.filter(user=self.request.user)
 
-class ExpenseDeleteView(generic.DeleteView):
+class ExpenseDeleteView(LoginRequiredMixin, generic.DeleteView):
     model = Expense
     template_name = 'expenses/expense_confirm_delete.html'
     success_url = reverse_lazy('expense-list')
@@ -465,7 +464,7 @@ class ExpenseDeleteView(generic.DeleteView):
     def get_queryset(self):
         return Expense.objects.filter(user=self.request.user)
 
-class CategoryListView(generic.ListView):
+class CategoryListView(LoginRequiredMixin, generic.ListView):
     model = Category
     template_name = 'expenses/category_list.html'
     context_object_name = 'categories'
@@ -473,7 +472,7 @@ class CategoryListView(generic.ListView):
     def get_queryset(self):
         return Category.objects.filter(user=self.request.user).order_by('name')
 
-class CategoryCreateView(generic.CreateView):
+class CategoryCreateView(LoginRequiredMixin, generic.CreateView):
     model = Category
     fields = ['name', 'limit']
     template_name = 'expenses/category_form.html'
@@ -483,7 +482,7 @@ class CategoryCreateView(generic.CreateView):
         form.instance.user = self.request.user
         return super().form_valid(form)
 
-class CategoryUpdateView(generic.UpdateView):
+class CategoryUpdateView(LoginRequiredMixin, generic.UpdateView):
     model = Category
     fields = ['name', 'limit']
     template_name = 'expenses/category_form.html'
@@ -503,7 +502,7 @@ class CategoryUpdateView(generic.UpdateView):
             
         return response
 
-class CategoryDeleteView(generic.DeleteView):
+class CategoryDeleteView(LoginRequiredMixin, generic.DeleteView):
     model = Category
     template_name = 'expenses/category_confirm_delete.html'
     success_url = reverse_lazy('category-list')
@@ -558,7 +557,7 @@ def export_expenses(request):
 # Income Views
 # --------------------
 
-class IncomeListView(generic.ListView):
+class IncomeListView(LoginRequiredMixin, generic.ListView):
     model = Income
     template_name = 'expenses/income_list.html'
     context_object_name = 'incomes'
@@ -591,7 +590,7 @@ class IncomeListView(generic.ListView):
         }
         return context
 
-class IncomeCreateView(generic.CreateView):
+class IncomeCreateView(LoginRequiredMixin, generic.CreateView):
     model = Income
     form_class = IncomeForm
     template_name = 'expenses/income_form.html'
@@ -606,7 +605,7 @@ class IncomeCreateView(generic.CreateView):
         form.instance.user = self.request.user
         return super().form_valid(form)
 
-class IncomeUpdateView(generic.UpdateView):
+class IncomeUpdateView(LoginRequiredMixin, generic.UpdateView):
     model = Income
     form_class = IncomeForm
     template_name = 'expenses/income_form.html'
@@ -620,19 +619,17 @@ class IncomeUpdateView(generic.UpdateView):
     def get_queryset(self):
         return Income.objects.filter(user=self.request.user)
 
-class IncomeDeleteView(generic.DeleteView):
+class IncomeDeleteView(LoginRequiredMixin, generic.DeleteView):
     model = Income
     template_name = 'expenses/income_confirm_delete.html'
     success_url = reverse_lazy('income-list')
 
     def get_queryset(self):
         return Income.objects.filter(user=self.request.user)
-from django.views.generic import TemplateView
-import calendar
-from datetime import datetime, date
-from django.db.models import Sum
 
-class CalendarView(TemplateView):
+
+
+class CalendarView(LoginRequiredMixin, TemplateView):
     template_name = 'expenses/calendar.html'
 
     def get_context_data(self, **kwargs):
