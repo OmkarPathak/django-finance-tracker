@@ -3,18 +3,34 @@
 {% block content %}
 <div class="card shadow-lg border-0 fade-in">
     <!-- Header -->
-    <div class="card-header bg-transparent d-flex justify-content-between align-items-center py-3">
+    <div class="card-header bg-transparent d-flex flex-column flex-md-row justify-content-between align-items-center py-3 gap-3">
         <div class="d-flex align-items-center gap-3">
-            <a href="{% url 'calendar-month' prev_year prev_month %}" class="btn btn-sm">
+            <a href="{% url 'calendar-month' prev_year prev_month %}{% if search_query %}?search={{ search_query }}{% endif %}" class="btn btn-sm">
                 <i class="bi bi-chevron-left"></i>
             </a>
             <h2 class="h4 mb-0 fw-bold">{{ month_name }} {{ current_year }}</h2>
-            <a href="{% url 'calendar-month' next_year next_month %}" class="btn btn-sm">
+            <a href="{% url 'calendar-month' next_year next_month %}{% if search_query %}?search={{ search_query }}{% endif %}" class="btn btn-sm">
                 <i class="bi bi-chevron-right"></i>
             </a>
         </div>
-        <div>
-            <a href="{% url 'home' %}" class="btn btn-outline-primary btn-sm">
+        
+        <div class="d-flex w-100 w-md-auto gap-2 ms-md-auto justify-content-end">
+            <!-- Search Form -->
+            <form method="get" class="d-flex flex-grow-1 flex-md-grow-0" role="search">
+                <div class="input-group input-group-sm">
+                    <span class="input-group-text bg-transparent border-end-0"><i class="bi bi-search"></i></span>
+                    <input class="form-control border-start-0 border-end-0" type="search" name="search" placeholder="Search entries..." value="{{ search_query }}" aria-label="Search">
+                    {% if search_query %}
+                    <a href="{% url 'calendar-month' current_year current_month %}" class="input-group-text bg-transparent border-start-0 text-decoration-none" title="Clear search">
+                        <i class="bi bi-x-lg"></i>
+                    </a>
+                    {% else %}
+                    <span class="input-group-text bg-transparent border-start-0"></span>
+                    {% endif %}
+                </div>
+            </form>
+            
+            <a href="{% url 'home' %}" class="btn btn-outline-primary btn-sm text-nowrap">
                  Back to Dashboard
             </a>
         </div>
@@ -47,11 +63,17 @@
                          data-bs-html="true"
                          data-bs-custom-class="custom-popover"
                          data-bs-title="<b>{{ day_data.day }} {{ month_name }}</b>"
-                         data-bs-content="{% if day_data.income > 0 %}<div class='text-success mb-1'>Income: <b>₹{{ day_data.income|floatformat:0 }}</b></div>{% endif %}{% if day_data.expense > 0 %}<div class='text-danger'>Expense: <b>₹{{ day_data.expense|floatformat:0 }}</b></div>{% endif %}{% if day_data.income == 0 and day_data.expense == 0 %}<div class='text-muted'>No activity</div>{% endif %}">
+                         data-bs-content="{% if day_data.income > 0 %}<div class='text-success mb-1'>Income: <b>₹{{ day_data.income|floatformat:0 }}</b></div>{% endif %}{% if day_data.expense > 0 %}<div class='text-danger mb-1'>Expense: <b>₹{{ day_data.expense|floatformat:0 }}</b></div>{% endif %}{% if day_data.income == 0 and day_data.expense == 0 %}<div class='text-muted mb-1'>No activity</div>{% endif %}<a href='{% url 'expense-list' %}?start_date={{ current_year }}-{{ current_month|stringformat:'02d' }}-{{ day_data.day|stringformat:'02d' }}&end_date={{ current_year }}-{{ current_month|stringformat:'02d' }}-{{ day_data.day|stringformat:'02d' }}' class='btn btn-sm btn-outline-primary w-100 mt-2'>View Details</a>">
                         
-                        <!-- Date Number -->
-                        <div class="small fw-bold mb-1 mb-md-2">
-                            {{ day_data.day }}
+                        <!-- Date Number & Link -->
+                        <div class="d-flex justify-content-between w-100 px-1 mb-1 mb-md-2">
+                            <span class="small fw-bold">{{ day_data.day }}</span>
+                            <a href="{% url 'expense-list' %}?start_date={{ current_year }}-{{ current_month|stringformat:'02d' }}-{{ day_data.day|stringformat:'02d' }}&end_date={{ current_year }}-{{ current_month|stringformat:'02d' }}-{{ day_data.day|stringformat:'02d' }}" 
+                               class="text-decoration-none text-muted d-none d-md-inline" 
+                               title="View expenses for this day"
+                               onclick="event.stopPropagation();">
+                                <i class="bi bi-box-arrow-up-right" style="font-size: 0.75rem;"></i>
+                            </a>
                         </div>
 
                         <!-- Desktop Financials (Text Badges) -->

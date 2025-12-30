@@ -661,18 +661,23 @@ class CalendarView(LoginRequiredMixin, TemplateView):
         else:
             next_month_date = date(year, month + 1, 1)
 
-        # Get Expense and Income Data for the month
-        expenses = Expense.objects.filter(
-            user=self.request.user,
-            date__year=year,
-            date__month=month
-        ).values('date').annotate(total=Sum('amount'))
+        # Get search query
+        search_query = self.request.GET.get('search', '')
+
+        # Base filters
+        expense_filters = Q(user=self.request.user, date__year=year, date__month=month)
+        income_filters = Q(user=self.request.user, date__year=year, date__month=month)
         
-        incomes = Income.objects.filter(
-            user=self.request.user,
-            date__year=year,
-            date__month=month
-        ).values('date').annotate(total=Sum('amount'))
+        if search_query:
+            # Filter expenses by description or category
+            expense_filters &= (Q(description__icontains=search_query) | Q(category__icontains=search_query))
+            # Filter income by source or description
+            income_filters &= (Q(source__icontains=search_query) | Q(description__icontains=search_query))
+
+        # Get Expense and Income Data for the month
+        expenses = Expense.objects.filter(expense_filters).values('date').annotate(total=Sum('amount'))
+        
+        incomes = Income.objects.filter(income_filters).values('date').annotate(total=Sum('amount'))
         
         # Map data for easy lookup by day
         # Keys are integers (day of month)
@@ -706,5 +711,6 @@ class CalendarView(LoginRequiredMixin, TemplateView):
         context['prev_month'] = prev_month_date.month
         context['next_year'] = next_month_date.year
         context['next_month'] = next_month_date.month
+        context['search_query'] = search_query
         
         return context
