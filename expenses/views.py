@@ -44,16 +44,16 @@ class RecurringTransactionMixin:
                         user=user,
                         date=current_date,
                         amount=rt.amount,
-                        description=description,
-                        category=rt.category or 'Uncategorized'
+                        category=rt.category or 'Uncategorized',
+                        defaults={'description': description}
                     )
                 else:
                     Income.objects.get_or_create(
                         user=user,
                         date=current_date,
                         amount=rt.amount,
-                        description=description,
-                        source=rt.source or 'Other'
+                        source=rt.source or 'Other',
+                        defaults={'description': description}
                     )
                 
                 rt.last_processed_date = current_date
