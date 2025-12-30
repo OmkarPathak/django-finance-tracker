@@ -565,7 +565,31 @@ class IncomeListView(generic.ListView):
     paginate_by = 20
 
     def get_queryset(self):
-        return Income.objects.filter(user=self.request.user).order_by('-date')
+        queryset = Income.objects.filter(user=self.request.user).order_by('-date')
+        
+        # Date Filter
+        date_from = self.request.GET.get('date_from')
+        date_to = self.request.GET.get('date_to')
+        if date_from:
+            queryset = queryset.filter(date__gte=date_from)
+        if date_to:
+            queryset = queryset.filter(date__lte=date_to)
+            
+        # Source Filter
+        source = self.request.GET.get('source')
+        if source:
+            queryset = queryset.filter(source__icontains=source)
+            
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['filter_form'] = {
+            'date_from': self.request.GET.get('date_from', ''),
+            'date_to': self.request.GET.get('date_to', ''),
+            'source': self.request.GET.get('source', ''),
+        }
+        return context
 
 class IncomeCreateView(generic.CreateView):
     model = Income

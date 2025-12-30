@@ -314,23 +314,33 @@
         const topLabels = JSON.parse(document.getElementById('top-labels').textContent);
         const topAmounts = JSON.parse(document.getElementById('top-amounts').textContent);
 
+        // --- Theme handling ---
+        const getThemeColor = () => {
+            const isDark = document.documentElement.getAttribute('data-bs-theme') === 'dark';
+            return {
+                text: isDark ? '#adb5bd' : '#6c757d',
+                grid: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)',
+                remaining: isDark ? '#495057' : '#e9ecef' // Darker gray for dark mode, Light gray for light mode
+            };
+        };
+
+        let currentColors = getThemeColor();
         Chart.defaults.font.family = "'Segoe UI', 'Roboto', 'Helvetica', 'Arial', sans-serif";
-        Chart.defaults.color = '#6c757d';
+        Chart.defaults.color = currentColors.text;
+        
+        // Store chart instances to update them later
+        const charts = {};
 
         // --- 0. Income vs Expenses Chart (Single Stacked Horizontal Bar) ---
         const totalIncome = {{ total_income|stringformat:"f"|default:0 }};
         const totalExpenses = {{ total_expenses|stringformat:"f"|default:0 }};
-        // If expenses > income, savings is 0 (or negative, but we clip to 0 for chart)
-        // If expenses > income, savings is 0 (or negative, but we clip to 0 for chart)
         const savings = Math.max(0, totalIncome - totalExpenses);
 
-        // Custom Plugin to draw text
         const customLabelsPlugin = {
             id: 'customLabels',
             afterDatasetsDraw(chart) {
                 const { ctx } = chart;
                 ctx.save();
-                
                 chart.data.datasets.forEach((dataset, i) => {
                     const meta = chart.getDatasetMeta(i);
                     meta.data.forEach((bar, index) => {
@@ -338,22 +348,15 @@
                         if (value > 0 && totalIncome > 0) {
                             const pct = ((value / totalIncome) * 100).toFixed(0);
                             const text = `₹${value.toLocaleString()} (${pct}%)`;
-                            
-                            // Position text in center of bar
-                            // For horizontal: base is left, x is right (or vice versa)
                             const centerX = (bar.base + bar.x) / 2;
                             const centerY = bar.y;
-                            
-                            // Check if bar is wide enough 
                             if (Math.abs(bar.base - bar.x) > 40) {
                                 ctx.font = 'bold 11px sans-serif';
                                 ctx.fillStyle = '#ffffff';
                                 ctx.textAlign = 'center';
                                 ctx.textBaseline = 'middle';
-                                // Add shadow for better readability
                                 ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
                                 ctx.shadowBlur = 2;
-                                
                                 ctx.fillText(text, centerX, centerY);
                                 ctx.shadowBlur = 0;
                             }
@@ -364,7 +367,7 @@
             }
         };
 
-        new Chart(document.getElementById('incomeExpensesChart'), {
+        charts.incomeExpenses = new Chart(document.getElementById('incomeExpensesChart'), {
             type: 'bar',
             data: {
                 labels: ['Income Distribution'],
@@ -372,20 +375,20 @@
                     {
                         label: 'Expenses',
                         data: [totalExpenses],
-                        backgroundColor: '#FB8500', // Orange
+                        backgroundColor: '#FB8500',
                         borderRadius: 4,
-                        barThickness: 50 // Slightly thicker
+                        barThickness: 50
                     },
                     {
                         label: 'Savings',
                         data: [savings],
-                        backgroundColor: '#219EBC', // Teal
+                        backgroundColor: '#219EBC',
                         borderRadius: 4,
                         barThickness: 50
                     }
                 ]
             },
-            plugins: [customLabelsPlugin], // Register the plugin
+            plugins: [customLabelsPlugin],
             options: {
                 indexAxis: 'y',
                 responsive: true,
@@ -393,18 +396,14 @@
                 plugins: { 
                     legend: { display: true, position: 'bottom' },
                     tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                return context.dataset.label + ': ₹' + context.raw.toLocaleString();
-                            }
-                        }
+                        callbacks: { label: (c) => c.dataset.label + ': ₹' + c.raw.toLocaleString() }
                     }
                 },
                 scales: {
                     x: { 
                         stacked: true,
-                        grid: { color: 'rgba(0,0,0,0.05)' },
-                        max: totalIncome > 0 ? totalIncome : 1, // Force max width to Total Income
+                        grid: { color: currentColors.grid },
+                        max: totalIncome > 0 ? totalIncome : 1,
                     },
                     y: { 
                         stacked: true,
@@ -415,42 +414,30 @@
             }
         });
 
-        // --- 1. Trend Chart (Stacked Bar) ---
-        new Chart(document.getElementById('trendChart'), {
+        // --- 1. Trend Chart ---
+        charts.trend = new Chart(document.getElementById('trendChart'), {
             type: 'bar',
-            data: {
-                labels: trendLabels,
-                datasets: trendDatasets
-            },
+            data: { labels: trendLabels, datasets: trendDatasets },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: { legend: { position: 'bottom', labels: { boxWidth: 12 } } },
                 scales: {
-                    x: { 
-                        stacked: true,
-                        grid: { display: false } 
-                    },
-                    y: { 
-                        stacked: true,
-                        grid: { color: 'rgba(0,0,0,0.05)' }, 
-                        beginAtZero: true 
-                    }
+                    x: { stacked: true, grid: { display: false } },
+                    y: { stacked: true, grid: { color: currentColors.grid }, beginAtZero: true }
                 }
             }
         });
 
-        // --- 2. Category Chart (Doughnut) ---
+        // --- 2. Category Chart ---
         if (categories.length > 0) {
-            new Chart(document.getElementById('categoryChart'), {
+            charts.category = new Chart(document.getElementById('categoryChart'), {
                 type: 'doughnut',
                 data: {
                     labels: categories,
                     datasets: [{
                         data: categoryAmounts,
-                        backgroundColor: [
-                            '#8ECAE6', '#219EBC', '#023047', '#FFB703', '#FB8500'
-                        ],
+                        backgroundColor: ['#8ECAE6', '#219EBC', '#023047', '#FFB703', '#FB8500'],
                         borderWidth: 0
                     }]
                 },
@@ -459,24 +446,18 @@
                     afterDatasetsDraw(chart) {
                         const { ctx } = chart;
                         ctx.save();
-                        
                         const meta = chart.getDatasetMeta(0);
                         meta.data.forEach((arc, index) => {
                             const center = arc.getCenterPoint();
                             const value = categoryAmounts[index];
                             const text = '₹' + value.toLocaleString();
-                            
-                            // Only draw if slice is large enough (> 15 degrees approx)
                             if (arc.circumference > 0.25) {
                                 ctx.font = 'bold 10px sans-serif';
                                 ctx.textAlign = 'center';
                                 ctx.textBaseline = 'middle';
                                 ctx.fillStyle = '#ffffff';
-                                
-                                // Text shadow for better visibility
                                 ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
                                 ctx.shadowBlur = 3;
-                                
                                 ctx.fillText(text, center.x, center.y);
                                 ctx.shadowBlur = 0;
                             }
@@ -487,22 +468,20 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: { 
-                        legend: { position: 'bottom', labels: { boxWidth: 12, font: {size: 11} } } 
-                    }
+                    plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: {size: 11} } } }
                 }
             });
         }
 
-        // --- 3. Top Expenses Chart (Horizontal Bar) ---
-        new Chart(document.getElementById('topExpensesChart'), {
+        // --- 3. Top Expenses Chart ---
+        charts.topExpenses = new Chart(document.getElementById('topExpensesChart'), {
             type: 'bar',
             data: {
                 labels: topLabels,
                 datasets: [{
                     label: 'Amount',
                     data: topAmounts,
-                    backgroundColor: '#FB8500', // Orange
+                    backgroundColor: '#FB8500',
                     borderRadius: 4
                 }]
             },
@@ -512,30 +491,22 @@
                 maintainAspectRatio: false,
                 plugins: { legend: { display: false } },
                 scales: {
-                    x: { grid: { color: 'rgba(0,0,0,0.05)' } },
+                    x: { grid: { color: currentColors.grid } },
                     y: { grid: { display: false } }
                 }
             }
         });
 
-        // --- 4. Budget vs Spent Chart (Horizontal Stacked Loader Style) ---
+        // --- 4. Budget vs Spent Chart ---
         const limitsData = JSON.parse(document.getElementById('category-limits-data').textContent);
         const withLimits = limitsData.filter(item => item.limit !== null && item.limit > 0);
         
         if (withLimits.length > 0) {
             const budgetLabels = withLimits.map(item => item.name);
-            
-            // Calculate data for "Spent" and "Remaining" as percentages of the limit
-            // This ensures every bar is the same total length (100%), acting like a progress bar
-            const spentData = withLimits.map(item => {
-                const pct = (item.total / item.limit) * 100;
-                // Cap at 100% for the visual bar split (if overspent, the whole bar is red)
-                return Math.min(pct, 100);
-            });
-            
+            const spentData = withLimits.map(item => Math.min((item.total / item.limit) * 100, 100));
             const remainingData = spentData.map(spentPct => 100 - spentPct);
             
-            new Chart(document.getElementById('budgetChart'), {
+            charts.budget = new Chart(document.getElementById('budgetChart'), {
                 type: 'bar',
                 data: {
                     labels: budgetLabels,
@@ -543,53 +514,41 @@
                         {
                             label: 'Spent',
                             data: spentData,
-                            // If spent > limit (used_percent > 100), show Orange. Else Teal.
                             backgroundColor: withLimits.map(item => item.total > item.limit ? '#FB8500' : '#219EBC'),
                             borderRadius: 4,
                         },
                         {
                             label: 'Remaining',
                             data: remainingData,
-                            backgroundColor: '#e5e7eb',
+                            backgroundColor: currentColors.remaining, // Dynamic color
                             borderRadius: 4,
                         }
                     ]
                 },
-                plugins: [
-                    {
-                        id: 'customLabels',
-                        afterDatasetsDraw(chart) {
-                            const { ctx, chartArea: { left, width } } = chart;
-                            ctx.save();
-                            
-                            const meta = chart.getDatasetMeta(0); // Spent dataset
-                            meta.data.forEach((bar, index) => {
-                                const item = withLimits[index];
-                                const y = bar.y;
-                                const x = left + width / 2;
-                                
-                                const text = `₹${item.total.toLocaleString()} / ₹${item.limit.toLocaleString()}`;
-                                
-                                ctx.font = 'bold 11px sans-serif';
-                                ctx.textAlign = 'center';
-                                ctx.textBaseline = 'middle';
-                                
-                                // Text shadow for visibility (softer than stroke)
-                                ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
-                                ctx.shadowBlur = 3;
-                                
-                                ctx.fillStyle = '#ffffff';
-                                ctx.fillText(text, x, y);
-                                
-                                // Reset shadow
-                                ctx.shadowColor = 'transparent';
-                                ctx.shadowBlur = 0;
-                            });
-                            
-                            ctx.restore();
-                        }
+                plugins: [{
+                    id: 'customLabels',
+                    afterDatasetsDraw(chart) {
+                        const { ctx, chartArea: { left, width } } = chart;
+                        ctx.save();
+                        const meta = chart.getDatasetMeta(0);
+                        meta.data.forEach((bar, index) => {
+                            const item = withLimits[index];
+                            const y = bar.y;
+                            const x = left + width / 2;
+                            const text = `₹${item.total.toLocaleString()} / ₹${item.limit.toLocaleString()}`;
+                            ctx.font = 'bold 11px sans-serif';
+                            ctx.textAlign = 'center';
+                            ctx.textBaseline = 'middle';
+                            ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
+                            ctx.shadowBlur = 3;
+                            ctx.fillStyle = '#ffffff';
+                            ctx.fillText(text, x, y);
+                            ctx.shadowColor = 'transparent';
+                            ctx.shadowBlur = 0;
+                        });
+                        ctx.restore();
                     }
-                ],
+                }],
                 options: {
                     indexAxis: 'y',
                     responsive: true,
@@ -598,44 +557,54 @@
                         legend: { display: false },
                         tooltip: {
                             callbacks: {
-                                // Custom title to show Category Name
-                                title: function(context) {
-                                    return context[0].label;
+                                title: (c) => c[0].label,
+                                label: (c) => {
+                                    const item = withLimits[c.dataIndex];
+                                    if (c.dataset.label === 'Spent') return `Spent: ₹${item.total.toLocaleString()} (${item.used_percent}%)`;
+                                    const remaining = Math.max(0, item.limit - item.total);
+                                    return `Remaining: ₹${remaining.toLocaleString()}`;
                                 },
-                                // Custom label to show absolute values instead of percentages
-                                label: function(context) {
-                                    const item = withLimits[context.dataIndex];
-                                    if (context.dataset.label === 'Spent') {
-                                        return `Spent: ₹${item.total.toLocaleString()} (${item.used_percent}%)`;
-                                    } else {
-                                        const remaining = Math.max(0, item.limit - item.total);
-                                        return `Remaining: ₹${remaining.toLocaleString()}`;
-                                    }
-                                },
-                                // Add limit info in footer
-                                footer: function(context) {
-                                    const item = withLimits[context[0].dataIndex];
-                                    return `Limit: ₹${item.limit.toLocaleString()}`;
-                                }
+                                footer: (c) => `Limit: ₹${withLimits[c[0].dataIndex].limit.toLocaleString()}`
                             }
                         }
                     },
                     scales: {
-                        x: { 
-                            stacked: true, 
-                            display: false, // Hide X axis (0-100) since we want it to look like a loader
-                            min: 0,
-                            max: 100
-                        },
-                        y: { 
-                            stacked: true, 
-                            grid: { display: false },
-                            ticks: { font: { weight: 'bold' } }
-                        }
+                        x: { stacked: true, display: false, min: 0, max: 100 },
+                        y: { stacked: true, grid: { display: false }, ticks: { font: { weight: 'bold' } } }
                     }
                 }
             });
         }
+
+        // --- Theme Change Observer ---
+        const observer = new MutationObserver(function(mutations) {
+            mutations.forEach(function(mutation) {
+                if (mutation.type === 'attributes' && mutation.attributeName === 'data-bs-theme') {
+                    const newColors = getThemeColor();
+                    Chart.defaults.color = newColors.text;
+                    
+                    // Update Budget Chart color
+                    if (charts.budget) {
+                        charts.budget.data.datasets[1].backgroundColor = newColors.remaining;
+                        charts.budget.update();
+                    }
+                    
+                    // Update Grid Lines for other charts
+                    [charts.incomeExpenses, charts.trend, charts.topExpenses].forEach(chart => {
+                        if (chart) {
+                            if (chart.options.scales.x) chart.options.scales.x.grid.color = newColors.grid;
+                            if (chart.options.scales.y) chart.options.scales.y.grid.color = newColors.grid;
+                            chart.update();
+                        }
+                    });
+                }
+            });
+        });
+
+        observer.observe(document.documentElement, {
+            attributes: true,
+            attributeFilter: ['data-bs-theme']
+        });
     });
 </script>
 {% endblock %}

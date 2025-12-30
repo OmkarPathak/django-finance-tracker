@@ -1,96 +1,125 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="row fade-in">
-    <div class="col-12">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h1 class="h2 mb-0">Income</h1>
+<div class="card shadow-lg border-0 fade-in">
+    <div class="card-header bg-transparent d-flex justify-content-between align-items-center py-3">
+        <h2 class="h4 mb-0 fw-bold">
+            Income
+        </h2>
+        <div class="d-flex gap-2">
             <a href="{% url 'income-create' %}" class="btn btn-success btn-sm">
                 <i class="bi bi-plus-lg me-1"></i> Add Income
             </a>
         </div>
+    </div>
 
-        <!-- List -->
-        <div class="card shadow-sm border-0">
-            <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="table table-hover table-striped mb-0 text-start align-middle">
-                        <thead>
-                            <tr>
-                                <th class="ps-4">Date</th>
-                                <th>Source</th>
-                                <th>Description</th>
-                                <th>Amount</th>
-                                <th class="text-end pe-4">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for income in incomes %}
-                            <tr>
-                                <td class="ps-4 text-nowrap">{{ income.date|date:"d M Y" }}</td>
-                                <td>
-                                    <span class="badge bg-success opacity-75">{{ income.source }}</span>
-                                </td>
-                                <td>{{ income.description|default:"-"|truncatechars:30 }}</td>
-                                <td class="fw-bold text-success">{{ income.amount|floatformat:2 }}</td>
-                                <td class="text-end pe-4">
-                                    <a href="{% url 'income-edit' income.pk %}" class="btn btn-sm btn-link text-decoration-none p-0 me-2" title="Edit">
-                                        <i class="bi bi-pencil-square text-primary"></i>
-                                    </a>
-                                    <button type="button" class="btn btn-sm btn-link text-decoration-none p-0 delete-btn" 
-                                            data-bs-toggle="modal" data-bs-target="#deleteModal" 
-                                            data-url="{% url 'income-delete' income.pk %}"
-                                            data-message="Are you sure you want to delete '{{ income.source }}'?">
-                                        <i class="bi bi-trash text-danger"></i>
-                                    </button>
-                                </td>
-                            </tr>
-                            {% empty %}
-                            <tr>
-                                <td colspan="5" class="text-center py-5 text-muted">
-                                    No income records found.
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
+    <!-- Filter Form -->
+    <form method="get" class="mb-4 bg-body-tertiary p-3 rounded shadow-sm">
+        <div class="row g-3 align-items-end">
+            <div class="col-md-3">
+                <label for="date_from" class="form-label small text-muted">Date From</label>
+                <input type="date" class="form-control form-control-sm" id="date_from" name="date_from" value="{{ filter_form.date_from }}">
             </div>
-            
-            <!-- Pagination -->
-            {% if is_paginated %}
-            <div class="card-footer bg-white border-top-0 d-flex justify-content-center py-3">
-                <nav>
-                    <ul class="pagination pagination-sm mb-0">
-                        {% if page_obj.has_previous %}
-                            <li class="page-item">
-                                <a class="page-link border-0 text-muted" href="?page=1">&laquo; First</a>
-                            </li>
-                            <li class="page-item">
-                                <a class="page-link border-0 text-muted" href="?page={{ page_obj.previous_page_number }}">Previous</a>
-                            </li>
-                        {% endif %}
-
-                        <li class="page-item disabled">
-                            <span class="page-link border-0 text-dark fw-bold">
-                                Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
-                            </span>
-                        </li>
-
-                        {% if page_obj.has_next %}
-                            <li class="page-item">
-                                <a class="page-link border-0 text-muted" href="?page={{ page_obj.next_page_number }}">Next</a>
-                            </li>
-                            <li class="page-item">
-                                <a class="page-link border-0 text-muted" href="?page={{ page_obj.paginator.num_pages }}">Last &raquo;</a>
-                            </li>
-                        {% endif %}
-                    </ul>
-                </nav>
+            <div class="col-md-3">
+                <label for="date_to" class="form-label small text-muted">Date To</label>
+                <input type="date" class="form-control form-control-sm" id="date_to" name="date_to" value="{{ filter_form.date_to }}">
             </div>
-            {% endif %}
+            <div class="col-md-3">
+                <label for="source" class="form-label small text-muted">Source</label>
+                <input type="text" class="form-control form-control-sm" id="source" name="source" value="{{ filter_form.source }}" placeholder="Search source...">
+            </div>
+            <div class="col-md-3">
+                <button type="submit" class="btn btn-primary btn-sm">
+                    <i class="bi bi-filter me-1"></i> Filter
+                </button>
+                <a href="{% url 'income-list' %}" class="btn btn-outline-primary btn-sm">
+                    <i class="bi bi-x-circle me-1"></i> Clear
+                </a>
+            </div>
+        </div>
+    </form>
+
+    <!-- List -->
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover table-striped mb-0 text-start align-middle">
+                <thead>
+                    <tr>
+                        <th class="ps-4">Date</th>
+                        <th>Source</th>
+                        <th>Description</th>
+                        <th>Amount</th>
+                        <th class="text-end pe-4">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for income in incomes %}
+                    <tr>
+                        <td class="ps-4 text-nowrap">{{ income.date|date:"d M Y" }}</td>
+                        <td>
+                            <span class="badge bg-success opacity-75">{{ income.source }}</span>
+                        </td>
+                        <td>{{ income.description|default:"-"|truncatechars:30 }}</td>
+                        <td class="fw-bold text-success">{{ income.amount|floatformat:2 }}</td>
+                        <td class="text-end pe-4">
+                            <a href="{% url 'income-edit' income.pk %}" class="btn btn-sm btn-link text-decoration-none p-0 me-2" title="Edit">
+                                <i class="bi bi-pencil-square text-primary"></i>
+                            </a>
+                            <button type="button" class="btn btn-sm btn-link text-decoration-none p-0 delete-btn" 
+                                    data-bs-toggle="modal" data-bs-target="#deleteModal" 
+                                    data-url="{% url 'income-delete' income.pk %}"
+                                    data-message="Are you sure you want to delete '{{ income.source }}'?">
+                                <i class="bi bi-trash text-danger"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center py-5 text-muted">
+                            {% if filter_form.date_from or filter_form.date_to or filter_form.source %}
+                                No income records found matching your filters.
+                            {% else %}
+                                No income records found.
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
     </div>
-</div>
+    
+    <!-- Pagination -->
+    {% if is_paginated %}
+    <div class="card-footer bg-transparent py-3">
+        <nav>
+            <ul class="pagination justify-content-center mb-0">
+                {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page=1{% if filter_form.date_from %}&date_from={{ filter_form.date_from }}{% endif %}{% if filter_form.date_to %}&date_to={{ filter_form.date_to }}{% endif %}{% if filter_form.source %}&source={{ filter_form.source }}{% endif %}">&laquo; First</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if filter_form.date_from %}&date_from={{ filter_form.date_from }}{% endif %}{% if filter_form.date_to %}&date_to={{ filter_form.date_to }}{% endif %}{% if filter_form.source %}&source={{ filter_form.source }}{% endif %}">Previous</a>
+                    </li>
+                {% endif %}
 
+                <li class="page-item disabled">
+                    <span class="page-link">
+                        Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                    </span>
+                </li>
+
+                {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if filter_form.date_from %}&date_from={{ filter_form.date_from }}{% endif %}{% if filter_form.date_to %}&date_to={{ filter_form.date_to }}{% endif %}{% if filter_form.source %}&source={{ filter_form.source }}{% endif %}">Next</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if filter_form.date_from %}&date_from={{ filter_form.date_from }}{% endif %}{% if filter_form.date_to %}&date_to={{ filter_form.date_to }}{% endif %}{% if filter_form.source %}&source={{ filter_form.source }}{% endif %}">Last &raquo;</a>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
+    {% endif %}
+</div>
 {% endblock %}
