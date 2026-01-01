@@ -45,8 +45,8 @@
                 <select name="year" id="year" class="form-select form-select-sm" onchange="showLoaderAndSubmit()">
                     <option value="">All Years</option>
                     {% for dt in years %}
-                        <option value="{{ dt|date:'Y' }}" {% if selected_year == dt.year %}selected{% endif %}>
-                            {{ dt|date:'Y' }}
+                        <option value="{{ dt }}" {% if selected_year == dt %}selected{% endif %}>
+                            {{ dt }}
                         </option>
                     {% endfor %}
                 </select>
@@ -56,7 +56,7 @@
                 <select name="month" id="month" class="form-select form-select-sm" onchange="showLoaderAndSubmit()">
                     <option value="">All Months</option>
                     {% for num, name in months_list %}
-                        <option value="{{ num }}" {% if request.GET.month == num|stringformat:"i" %}selected{% endif %}>
+                        <option value="{{ num }}" {% if selected_month == num %}selected{% endif %}>
                             {{ name }}
                         </option>
                     {% endfor %}
@@ -151,8 +151,28 @@
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="5" class="text-center py-5 text-muted">
-                            No expenses found matching your criteria.
+                        <td colspan="5" class="text-center py-5">
+                            <div class="py-4">
+                                <i class="bi bi-receipt text-muted display-1 mb-3 d-block"></i>
+                                <h4 class="fw-bold text-muted">No Expenses Found</h4>
+                                <p class="text-muted mb-4">
+                                    {% if request.GET.search or request.GET.start_date or request.GET.end_date or request.GET.category or request.GET.year or request.GET.month %}
+                                        We couldn't find any expenses matching your filters.
+                                    {% else %}
+                                        You haven't added any expenses yet. Start tracking your spending!
+                                    {% endif %}
+                                </p>
+                                <div class="d-flex justify-content-center gap-2">
+                                    <a href="{% url 'expense-create' %}" class="btn btn-primary">
+                                        <i class="bi bi-plus-lg me-1"></i> Add Expense
+                                    </a>
+                                    {% if request.GET.search or request.GET.start_date or request.GET.end_date or request.GET.category or request.GET.year or request.GET.month %}
+                                        <a href="{% url 'expense-list' %}" class="btn btn-outline-secondary">
+                                            <i class="bi bi-arrow-counterclockwise me-1"></i> Clear Filters
+                                        </a>
+                                    {% endif %}
+                                </div>
+                            </div>
                         </td>
                     </tr>
                     {% endfor %}

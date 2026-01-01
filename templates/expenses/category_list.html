@@ -38,7 +38,16 @@
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="3" class="text-center py-5 text-muted">No categories found.</td>
+                        <td colspan="3" class="text-center py-5">
+                            <div class="py-4">
+                                <i class="bi bi-tags text-muted display-1 mb-3 d-block"></i>
+                                <h4 class="fw-bold text-muted">No Categories Yet</h4>
+                                <p class="text-muted mb-4">Organize your transactions by creating custom categories.</p>
+                                <a href="{% url 'category-create' %}" class="btn btn-primary">
+                                    <i class="bi bi-plus-lg me-1"></i> Add Category
+                                </a>
+                            </div>
+                        </td>
                     </tr>
                     {% endfor %}
                 </tbody>

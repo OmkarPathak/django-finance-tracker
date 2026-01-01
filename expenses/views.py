@@ -35,7 +35,7 @@ class RecurringTransactionMixin:
             if not rt.last_processed_date:
                 current_date = rt.start_date
             else:
-                current_date = self.get_next_date(rt.last_processed_date, rt.frequency)
+                current_date = rt.get_next_date(rt.last_processed_date, rt.frequency)
 
             while current_date <= today:
                 description = f"{rt.description} (Recurring)"
@@ -58,28 +58,7 @@ class RecurringTransactionMixin:
                 
                 rt.last_processed_date = current_date
                 rt.save()
-                current_date = self.get_next_date(current_date, rt.frequency)
-
-    def get_next_date(self, current_date, frequency):
-        if frequency == 'DAILY':
-            return current_date + timedelta(days=1)
-        elif frequency == 'WEEKLY':
-            return current_date + timedelta(weeks=1)
-        elif frequency == 'MONTHLY':
-            month = current_date.month % 12 + 1
-            year = current_date.year + (current_date.month // 12)
-            try:
-                return current_date.replace(year=year, month=month)
-            except ValueError:
-                # Handle Feb 29/30/31
-                next_month = current_date + timedelta(days=31)
-                return next_month.replace(day=1) - timedelta(days=1)
-        elif frequency == 'YEARLY':
-            try:
-                return current_date.replace(year=current_date.year + 1)
-            except ValueError:
-                return current_date.replace(year=current_date.year + 1, month=2, day=28)
-        return current_date + timedelta(days=365)
+                current_date = rt.get_next_date(current_date, rt.frequency)
 
 
 # Custom signup view to log user in immediately
@@ -125,11 +104,27 @@ def home_view(request):
         
         trend_title = "Expenses Trend (Custom Range)"
     else:
-        # Default to current month/year if nothing selected
+        # Default to current month/year ONLY on initial land (None)
+        # If user explicitly chooses "" (All Years), it will be an empty string.
         if selected_year is None:
             selected_year = datetime.now().year
+        elif selected_year == "":
+            selected_year = None
+        else:
+            try:
+                selected_year = int(selected_year)
+            except ValueError:
+                selected_year = None
+
         if selected_month is None:
             selected_month = datetime.now().month
+        elif selected_month == "":
+            selected_month = None
+        else:
+            try:
+                selected_month = int(selected_month)
+            except ValueError:
+                selected_month = None
         
         if selected_year:
             expenses = expenses.filter(date__year=selected_year)
@@ -161,7 +156,7 @@ def home_view(request):
     
     total_income = incomes.aggregate(Sum('amount'))['amount__sum'] or 0
     all_dates = Expense.objects.filter(user=request.user).dates('date', 'year', order='DESC')
-    years = [d.year for d in all_dates]
+    years = sorted(list(set([d.year for d in all_dates] + [datetime.now().year])), reverse=True)
     all_categories = Expense.objects.filter(user=request.user).values_list('category', flat=True).distinct().order_by('category')
 
     # 1. Category Chart Data (Distribution) & Summary Table
@@ -433,12 +428,14 @@ class ExpenseListView(LoginRequiredMixin, RecurringTransactionMixin, ListView):
                 queryset = queryset.filter(date__lte=end_date)
         else:
             # Standard Year/Month Logic
+            # Default to current year ONLY if no param present (None)
             if year is None:
                 year = datetime.now().year
+            
+            if year: # If not "All Years"
                 queryset = queryset.filter(date__year=year)
-            elif year:
-                queryset = queryset.filter(date__year=year)
-            if month:
+            
+            if month: # If not "All Months"
                 queryset = queryset.filter(date__month=month)
         if category:
             queryset = queryset.filter(category=category)
@@ -451,7 +448,8 @@ class ExpenseListView(LoginRequiredMixin, RecurringTransactionMixin, ListView):
         context = super().get_context_data(**kwargs)
         # Get unique years and categories for validation
         user_expenses = Expense.objects.filter(user=self.request.user)
-        years = user_expenses.dates('date', 'year', order='DESC')
+        years_dates = user_expenses.dates('date', 'year', order='DESC')
+        years = sorted(list(set([d.year for d in years_dates] + [datetime.now().year])), reverse=True)
         categories = user_expenses.values_list('category', flat=True).distinct().order_by('category')
         
         context['years'] = years
@@ -469,15 +467,29 @@ class ExpenseListView(LoginRequiredMixin, RecurringTransactionMixin, ListView):
         
         if start_date or end_date:
             context['selected_year'] = None
-        elif year_param is None:
-            context['selected_year'] = datetime.now().year
-        elif year_param:
-            try:
-                context['selected_year'] = int(year_param)
-            except ValueError:
-                context['selected_year'] = None
+            context['selected_month'] = None
         else:
-            context['selected_year'] = None
+            year_param = self.request.GET.get('year')
+            if year_param is None:
+                context['selected_year'] = datetime.now().year
+            elif year_param == "":
+                context['selected_year'] = None
+            else:
+                try:
+                    context['selected_year'] = int(year_param)
+                except ValueError:
+                    context['selected_year'] = None
+
+            month_param = self.request.GET.get('month')
+            if month_param is None:
+                context['selected_month'] = datetime.now().month
+            elif month_param == "":
+                context['selected_month'] = None
+            else:
+                try:
+                    context['selected_month'] = int(month_param)
+                except ValueError:
+                    context['selected_month'] = None
             
         return context
 
@@ -799,8 +811,15 @@ class BudgetDashboardView(LoginRequiredMixin, RecurringTransactionMixin, Templat
         user = self.request.user
         today = date.today()
         
-        month = int(self.request.GET.get('month', today.month))
-        year = int(self.request.GET.get('year', today.year))
+        month_param = self.request.GET.get('month')
+        year_param = self.request.GET.get('year')
+        
+        month = int(month_param) if month_param else today.month
+        year = int(year_param) if year_param else today.year
+        
+        # Ensure context variables for filters are correct
+        context['current_month'] = month
+        context['current_year'] = year
         
         categories = Category.objects.filter(user=user)
         budget_data = []

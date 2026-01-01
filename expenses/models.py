@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from datetime import timedelta
 
 class Expense(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -97,6 +98,34 @@ class RecurringTransaction(models.Model):
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    @staticmethod
+    def get_next_date(current_date, frequency):
+        if frequency == 'DAILY':
+            return current_date + timedelta(days=1)
+        elif frequency == 'WEEKLY':
+            return current_date + timedelta(weeks=1)
+        elif frequency == 'MONTHLY':
+            month = current_date.month % 12 + 1
+            year = current_date.year + (current_date.month // 12)
+            try:
+                return current_date.replace(year=year, month=month)
+            except ValueError:
+                # Handle Feb 29/30/31
+                next_month = current_date + timedelta(days=31)
+                return next_month.replace(day=1) - timedelta(days=1)
+        elif frequency == 'YEARLY':
+            try:
+                return current_date.replace(year=current_date.year + 1)
+            except ValueError:
+                return current_date.replace(year=current_date.year + 1, month=2, day=28)
+        return current_date + timedelta(days=365)
+
+    @property
+    def next_due_date(self):
+        if not self.last_processed_date:
+            return self.start_date
+        return self.get_next_date(self.last_processed_date, self.frequency)
 
     def __str__(self):
         return f"{self.transaction_type} - {self.description} ({self.frequency})"
