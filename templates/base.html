@@ -120,6 +120,13 @@
                     </li>
                     {% endif %}
 
+                    <!-- Donation Button -->
+                    <li class="nav-item">
+                        <a href="https://rzp.io/rzp/AP7kBG2" target="_blank" class="nav-link donation-btn px-3 rounded-pill">
+                            <i class="bi bi-heart-fill me-1 text-danger"></i> Support Us
+                        </a>
+                    </li>
+
                     <!-- Simple Theme Toggle -->
                     <li class="nav-item">
                         <button class="btn btn-link nav-link p-1" id="theme-toggle" title="Toggle theme">
@@ -276,6 +283,47 @@
         </div>
     </div>
     {% endif %}
+
+    <!-- Donation Notification Toast -->
+    <div class="toast-container position-fixed bottom-0 start-0 p-3" style="z-index: 1100;">
+        <div id="donationToast" class="toast border-0 shadow-lg" role="alert" aria-live="assertive" aria-atomic="true" data-bs-autohide="false">
+            <div class="toast-header bg-primary text-white">
+                <i class="bi bi-heart-fill me-2"></i>
+                <strong class="me-auto">Support TrackMyRupee</strong>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+            <div class="toast-body bg-body-tertiary">
+                <p class="mb-2">If you find this app helpful, please consider supporting its development!</p>
+                <a href="https://rzp.io/rzp/AP7kBG2" target="_blank" class="btn btn-primary btn-sm w-100">
+                    <i class="bi bi-box-arrow-up-right me-1"></i> Donate Now
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const NAG_INTERVAL = 5 * 60 * 1000; // 5 minutes
+            const toastElement = document.getElementById('donationToast');
+            const donationToast = new bootstrap.Toast(toastElement);
+
+            function showDonationNag() {
+                const lastNag = localStorage.getItem('last_donation_nag');
+                const now = Date.now();
+
+                if (!lastNag || (now - parseInt(lastNag)) > NAG_INTERVAL) {
+                    donationToast.show();
+                    localStorage.setItem('last_donation_nag', now.toString());
+                }
+            }
+
+            // check every minute
+            setInterval(showDonationNag, 60 * 1000);
+            
+            // Initial check after 10 seconds
+            setTimeout(showDonationNag, 10000);
+        });
+    </script>
 
     {% block scripts %}{% endblock %}
 </body>
