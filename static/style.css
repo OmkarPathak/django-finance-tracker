@@ -69,10 +69,20 @@ h1, h2, h3, .h1, .h2, .h3, .navbar-brand {
 }
 
 /* Navbar Unification */
-[data-bs-theme="dark"] .navbar {
+/* Navbar & Footer Unification */
+[data-bs-theme="dark"] .navbar,
+[data-bs-theme="dark"] footer {
     background-color: rgba(17, 19, 21, 0.9) !important;
     backdrop-filter: blur(10px);
+    border-color: rgba(255, 255, 255, 0.05) !important;
+}
+
+[data-bs-theme="dark"] .navbar {
     border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+}
+
+[data-bs-theme="dark"] footer {
+    border-top: 1px solid rgba(255, 255, 255, 0.05) !important;
 }
 
 [data-bs-theme="dark"] .card {
@@ -240,4 +250,23 @@ a:hover {
     height: 31px !important;
     padding-top: 0;
     padding-bottom: 0;
+}
+
+/* Donation Button Styling */
+.donation-btn {
+    background: linear-gradient(135deg, rgba(251, 133, 0, 0.1) 0%, rgba(255, 183, 3, 0.1) 100%);
+    border: 1px solid rgba(251, 133, 0, 0.3);
+    color: var(--color-warning) !important;
+    font-weight: 600 !important;
+    transition: all 0.3s ease;
+}
+
+.donation-btn:hover {
+    background: linear-gradient(135deg, rgba(251, 133, 0, 0.2) 0%, rgba(255, 183, 3, 0.2) 100%);
+    border-color: var(--color-warning);
+    transform: scale(1.05);
+}
+
+[data-bs-theme="dark"] .donation-btn {
+    background: linear-gradient(135deg, rgba(251, 133, 0, 0.2) 0%, rgba(255, 183, 3, 0.2) 100%);
 }

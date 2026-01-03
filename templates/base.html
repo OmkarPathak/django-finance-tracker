@@ -221,7 +221,7 @@
     </script>
 </head>
 
-<body>
+<body class="d-flex flex-column min-vh-100">
     <nav class="navbar navbar-expand-lg bg-body-tertiary border-bottom">
         <div class="container">
             <a class="navbar-brand fw-bold" href="{% url 'home' %}">
@@ -288,6 +288,8 @@
                     </li>
                     {% endif %}
 
+
+
                     <!-- Simple Theme Toggle -->
                     <li class="nav-item">
                         <button class="btn btn-link nav-link p-1" id="theme-toggle" title="Toggle theme">
@@ -299,9 +301,18 @@
         </div>
     </nav>
 
-    <main class="container py-4">
+    <main class="container py-4 flex-grow-1">
         {% block content %}{% endblock %}
     </main>
+
+    <footer class="mt-auto bg-body-tertiary border-top" style="height: 56px;">
+        <div class="container h-100 d-flex align-items-center justify-content-center gap-3">
+            <p class="text-muted small mb-0">&copy; {% now "Y" %} TrackMyRupee. All rights reserved.</p>
+            <a href="https://rzp.io/rzp/AP7kBG2" target="_blank" class="btn btn-primary btn-sm rounded-pill px-3">
+                <i class="bi bi-heart-fill me-1 text-white"></i> Support Us
+            </a>
+        </div>
+    </footer>
 
     <!-- Delete Confirmation Modal -->
     <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
@@ -477,6 +488,47 @@
             initGlobalMultiselects();
         });
     </script>
+    <!-- Donation Notification Toast -->
+    <div class="toast-container position-fixed bottom-0 start-0 p-3" style="z-index: 1100;">
+        <div id="donationToast" class="toast border-0 shadow-lg" role="alert" aria-live="assertive" aria-atomic="true" data-bs-autohide="false">
+            <div class="toast-header bg-primary text-white">
+                <i class="bi bi-heart-fill me-2"></i>
+                <strong class="me-auto">Support TrackMyRupee</strong>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+            <div class="toast-body bg-body-tertiary">
+                <p class="mb-2">If you find this app helpful, please consider supporting its development!</p>
+                <a href="https://rzp.io/rzp/AP7kBG2" target="_blank" class="btn btn-primary btn-sm w-100">
+                    <i class="bi bi-box-arrow-up-right me-1"></i> Donate Now
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const NAG_INTERVAL = 5 * 60 * 1000; // 5 minutes
+            const toastElement = document.getElementById('donationToast');
+            const donationToast = new bootstrap.Toast(toastElement);
+
+            function showDonationNag() {
+                const lastNag = localStorage.getItem('last_donation_nag');
+                const now = Date.now();
+
+                if (!lastNag || (now - parseInt(lastNag)) > NAG_INTERVAL) {
+                    donationToast.show();
+                    localStorage.setItem('last_donation_nag', now.toString());
+                }
+            }
+
+            // check every minute
+            setInterval(showDonationNag, 60 * 1000);
+            
+            // Initial check after 10 seconds
+            setTimeout(showDonationNag, 10000);
+        });
+    </script>
+
     {% block scripts %}{% endblock %}
 </body>
 
