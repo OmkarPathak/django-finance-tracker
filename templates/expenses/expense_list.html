@@ -1,19 +1,24 @@
 {% extends 'base.html' %}
 
 {% block content %}
+<style>
+    /* Responsive Filter Widths */
+    @media (min-width: 992px) {
+        .filter-w-search { width: 140px; }
+        .filter-w-date { width: 130px; }
+        .filter-w-year { width: 110px; }
+        .filter-w-month { width: 140px; }
+        .filter-w-category { width: 160px; }
+    }
+</style>
 <div class="card shadow-lg border-0 fade-in">
     <div class="card-header bg-transparent d-flex justify-content-between align-items-center py-3">
-        <h2 class="h4 mb-0 fw-bold">
-            My Expenses
-        </h2>
-        <div class="d-flex gap-2">
-           <a href="{% url 'expense-create' %}" class="btn btn-primary btn-sm">
+        <h2 class="h4 mb-0 fw-bold">Expenses</h2>
+        <div class="d-flex align-items-center gap-2">
+            <a href="{% url 'expense-create' %}" class="btn btn-primary btn-sm d-inline-flex align-items-center text-nowrap">
                 <i class="bi bi-plus-lg me-1"></i> Add Expense
-           </a>
-           <!-- <a href="{% url 'upload' %}" class="btn btn-outline-primary btn-sm">
-               <i class="bi bi-cloud-arrow-up me-1"></i> Bulk Upload
-           </a> -->
-           <a href="{% url 'export-expenses' %}?{{ request.GET.urlencode }}" class="btn btn-outline-secondary btn-sm">
+            </a>
+            <a href="{% url 'export-expenses' %}?{{ request.GET.urlencode }}" class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center">
                 <i class="bi bi-file-earmark-spreadsheet me-1"></i> Export
             </a>
         </div>
@@ -21,26 +26,31 @@
     
     <!-- Filter Form -->
     <form method="get" class="mb-4 bg-body-tertiary p-3 rounded shadow-sm" id="filter-form" style="position: relative; z-index: 1060;">
-        <div class="row g-2 align-items-end flex-nowrap">
-            <div class="col-auto">
+        <div class="row g-2 align-items-end flex-lg-nowrap">
+            <!-- Search -->
+            <div class="col-12 col-md-auto filter-w-search">
                 <label for="search" class="form-label small text-muted">Search</label>
-                <input type="text" name="search" id="search" class="form-control form-control-sm" placeholder="Search..." value="{{ request.GET.search|default:'' }}" style="width: 140px;">
+                <input type="text" name="search" id="search" class="form-control form-control-sm" placeholder="Search..." value="{{ request.GET.search|default:'' }}">
             </div>
-            <div class="col-auto">
+            
+            <!-- Date Range -->
+            <div class="col-6 col-md-auto filter-w-date">
                 <label for="start_date" class="form-label small text-muted d-none d-md-block">From</label>
                 <div class="input-group input-group-sm">
                     <span class="input-group-text d-md-none">From</span>
-                    <input type="date" name="start_date" id="start_date" class="form-control" value="{{ start_date|default:'' }}" onchange="showLoaderAndSubmit()">
+                    <input type="date" name="start_date" id="start_date" class="form-control" value="{{ start_date|default:'' }}">
                 </div>
             </div>
-            <div class="col-auto">
+            <div class="col-6 col-md-auto filter-w-date">
                 <label for="end_date" class="form-label small text-muted d-none d-md-block">To</label>
                 <div class="input-group input-group-sm">
                     <span class="input-group-text d-md-none">To</span>
-                    <input type="date" name="end_date" id="end_date" class="form-control" value="{{ end_date|default:'' }}" onchange="showLoaderAndSubmit()">
+                    <input type="date" name="end_date" id="end_date" class="form-control" value="{{ end_date|default:'' }}">
                 </div>
             </div>
-            <div class="col-auto" style="width: 120px;">
+
+            <!-- Year & Month -->
+            <div class="col-6 col-md-auto filter-w-year">
                 <label for="year-select" class="form-label small text-muted">Year</label>
                 <select name="year" id="year-select" class="form-control django-multi-select" multiple placeholder="Years...">
                     {% for dt in years %}
@@ -50,7 +60,7 @@
                     {% endfor %}
                 </select>
             </div>
-            <div class="col-auto" style="width: 150px;">
+            <div class="col-6 col-md-auto filter-w-month">
                 <label for="month-select" class="form-label small text-muted">Month</label>
                 <select name="month" id="month-select" class="form-control django-multi-select" multiple placeholder="Months...">
                     {% for num, name in months_list %}
@@ -60,7 +70,9 @@
                     {% endfor %}
                 </select>
             </div>
-            <div class="col-auto" style="width: 170px;">
+
+            <!-- Category -->
+            <div class="col-12 col-md-auto filter-w-category">
                 <label for="category-select" class="form-label small text-muted">Category</label>
                 <select name="category" id="category-select" class="form-control django-multi-select" multiple placeholder="Categories...">
                     {% for cat in categories %}
@@ -70,18 +82,22 @@
                     {% endfor %}
                 </select>
             </div>
-            <div class="col-auto">
-                <button type="submit" class="btn btn-primary btn-sm" onclick="showLoader()">
+
+            <!-- Buttons -->
+            <div class="col-6 col-md-auto">
+                <button type="submit" class="btn btn-primary btn-sm w-100 w-md-auto" onclick="showLoader()">
                     <i class="bi bi-search me-1"></i> Search
                 </button>
             </div>
-            <div class="col-auto">
-                <a href="{% url 'expense-list' %}" class="btn btn-outline-secondary btn-sm" onclick="showLoader()">
+            <div class="col-6 col-md-auto">
+                <a href="{% url 'expense-list' %}" class="btn btn-outline-secondary btn-sm w-100 w-md-auto" onclick="showLoader()">
                     <i class="bi bi-arrow-counterclockwise me-1"></i> Reset
                 </a>
             </div>
-            <div class="col-auto ms-auto">
-                <div class="px-3 py-1 bg-body-tertiary border rounded shadow-sm d-flex align-items-center">
+
+            <!-- Total Records -->
+            <div class="col-12 col-md-auto ms-auto mt-3 mt-md-0">
+                <div class="px-3 py-1 bg-body-tertiary border rounded shadow-sm d-flex align-items-center justify-content-center justify-content-md-start">
                     <span class="small text-muted me-2">Total Records:</span>
                     <span class="text-muted">
                         {% if paginator %}

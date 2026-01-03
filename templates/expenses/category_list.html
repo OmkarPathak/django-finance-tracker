@@ -2,11 +2,20 @@
 
 {% block settings_content %}
 <div class="card shadow-lg border-0 fade-in">
-    <div class="card-header bg-transparent d-flex justify-content-between align-items-center py-3">
+    <div class="card-header bg-transparent py-3">
+        <div class="d-flex justify-content-between align-items-center mb-3">
             <h2 class="h4 mb-0 fw-bold">Categories</h2>
-        <a href="{% url 'category-create' %}" class="btn btn-primary btn-sm">
-            <i class="bi bi-plus-lg me-1"></i> Add Category
-        </a>
+            <a href="{% url 'category-create' %}" class="btn btn-primary btn-sm">
+                <i class="bi bi-plus-lg me-1"></i> Add Category
+            </a>
+        </div>
+        <form method="get" class="d-flex" role="search">
+            <input class="form-control me-2" type="search" name="search" placeholder="Search categories..." aria-label="Search" value="{{ search_query }}">
+            <button class="btn btn-outline-primary" type="submit">Search</button>
+            {% if search_query %}
+                <a href="{% url 'category-list' %}" class="btn btn-outline-secondary ms-2">Reset</a>
+            {% endif %}
+        </form>
     </div>
 
     <div class="card-body p-0">
@@ -54,5 +63,47 @@
             </table>
         </div>
     </div>
+    
+    {% if is_paginated %}
+    <div class="card-footer bg-transparent py-3">
+        <nav aria-label="Category pagination">
+            <ul class="pagination justify-content-center mb-0">
+                {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}" aria-label="Previous">
+                            <span aria-hidden="true">&laquo;</span>
+                        </a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">&laquo;</span>
+                    </li>
+                {% endif %}
+
+                {% for num in page_obj.paginator.page_range %}
+                    {% if page_obj.number == num %}
+                        <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ num }}{% if search_query %}&search={{ search_query }}{% endif %}">{{ num }}</a>
+                        </li>
+                    {% endif %}
+                {% endfor %}
+
+                {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}" aria-label="Next">
+                            <span aria-hidden="true">&raquo;</span>
+                        </a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">&raquo;</span>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
+    {% endif %}
 </div>
 {% endblock %}

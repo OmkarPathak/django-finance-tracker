@@ -582,9 +582,19 @@ class CategoryListView(LoginRequiredMixin, generic.ListView):
     model = Category
     template_name = 'expenses/category_list.html'
     context_object_name = 'categories'
+    paginate_by = 10
 
     def get_queryset(self):
-        return Category.objects.filter(user=self.request.user).order_by('name')
+        queryset = Category.objects.filter(user=self.request.user).order_by('name')
+        search_query = self.request.GET.get('search')
+        if search_query:
+            queryset = queryset.filter(name__icontains=search_query)
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['search_query'] = self.request.GET.get('search', '')
+        return context
 
 class CategoryCreateView(LoginRequiredMixin, generic.CreateView):
     model = Category
