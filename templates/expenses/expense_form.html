@@ -2,7 +2,7 @@
 
 {% block content %}
 <div class="row justify-content-center">
-    <div class="col-md-6">
+    <div class="col-md-10">
         <div class="card shadow-lg border-0">
             <div class="card-header fw-bold py-3">
                 <h4 class="card-title mb-0 h5">
@@ -24,14 +24,14 @@
                     {% if formset %}
                         {{ formset.management_form }}
                         <div class="table-responsive">
-                            <table class="table table-borderless align-middle" id="formset-table">
+                            <table class="table table-borderless align-top" id="formset-table">
                                 <thead>
                                     <tr>
-                                        <th style="width: 20%">Date</th>
-                                        <th style="width: 20%">Amount</th>
-                                        <th style="width: 30%">Description</th>
-                                        <th style="width: 25%">Category</th>
-                                        <th style="width: 5%"></th>
+                                        <th style="min-width: 140px;">Date</th>
+                                        <th style="min-width: 130px;">Amount</th>
+                                        <th style="min-width: 200px;">Description</th>
+                                        <th style="min-width: 200px;">Category</th>
+                                        <th style="width: 50px;"></th>
                                     </tr>
                                 </thead>
                                 <tbody id="formset-container">
@@ -45,11 +45,17 @@
                                                 {% endif %}
                                                 
                                                 {% if field.name == 'category' %}
-                                                    {{ field }} <!-- Renders as Select due to form widget -->
+                                                    <div class="input-group">
+                                                        {{ field }}
+                                                        <button type="button" class="btn btn-outline-secondary add-category-btn"
+                                                                title="Add new category">
+                                                            <i class="bi bi-plus-lg"></i>
+                                                        </button>
+                                                    </div>
                                                 {% else %}
                                                     <input type="{% if field.name == 'date' %}date{% else %}{{ field.field.widget.input_type|default:'text' }}{% endif %}" 
                                                         name="{{ field.html_name }}" 
-                                                        class="form-control form-control-sm"
+                                                        class="form-control"
                                                         {% if field.value %}value="{{ field.value|date:'Y-m-d'|default:field.value }}"{% endif %} 
                                                         {% if field.field.required %}required{% endif %}
                                                         id="{{ field.id_for_label }}"
@@ -97,9 +103,16 @@
                                     <label class="form-check-label" for="{{ field.id_for_label }}">
                                         {{ field.help_text }}
                                     </label>
+
                                 </div>
                             {% elif field.name == 'category' %}
-                                {{ field }}
+                                <div class="input-group">
+                                    {{ field }}
+                                    <button type="button" class="btn btn-outline-secondary add-category-btn"
+                                            title="Add new category">
+                                        <i class="bi bi-plus-lg"></i>
+                                    </button>
+                                </div>
                             {% else %}
                                 <input type="{% if field.name == 'date' %}date{% else %}{{ field.field.widget.input_type|default:'text' }}{% endif %}" 
                                     name="{{ field.name }}" 
@@ -128,6 +141,30 @@
         </div>
     </div>
 </div>
+    <!-- Add Category Modal -->
+    <div class="modal fade" id="addCategoryModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add New Category</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-danger d-none" id="categoryError"></div>
+                    <form id="addCategoryForm">
+                        <div class="mb-3">
+                            <label for="newCategoryName" class="form-label">Category Name</label>
+                            <input type="text" class="form-control" id="newCategoryName" required>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="saveCategoryBtn">Save Category</button>
+                </div>
+            </div>
+        </div>
+    </div>
 {% endblock %}
 
 {% block scripts %}
@@ -246,6 +283,102 @@
                 
                 // Update hidden DELETE inputs or other specifics if needed
                 // The above generic input handler covers typical django form fields.
+            });
+        }
+    });
+</script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // --- Dynamic Category Logic ---
+        const modalEl = document.getElementById('addCategoryModal');
+        // Check if modal exists (might not be rendered if not authenticated or other reasons, though unlikely here)
+        if (modalEl) {
+            const modal = new bootstrap.Modal(modalEl);
+            const saveBtn = document.getElementById('saveCategoryBtn');
+            const errorAlert = document.getElementById('categoryError');
+            let activeSelectId = null; 
+
+            // Delegation for + buttons (covers both formset and single form)
+            // We attach to document.body to ensure we catch everything, or a common wrapper if available.
+            document.body.addEventListener('click', function(e) {
+                const btn = e.target.closest('.add-category-btn');
+                if (btn) {
+                    const select = btn.previousElementSibling;
+                    activeSelectId = select.id;
+                    document.getElementById('addCategoryForm').reset();
+                    errorAlert.classList.add('d-none');
+                    modal.show();
+                    setTimeout(() => document.getElementById('newCategoryName').focus(), 500);
+                }
+            });
+
+            saveBtn.addEventListener('click', function() {
+                const nameInput = document.getElementById('newCategoryName');
+                const name = nameInput.value.trim();
+                
+                if (!name) {
+                    errorAlert.textContent = "Category name cannot be empty.";
+                    errorAlert.classList.remove('d-none');
+                    return;
+                }
+
+                saveBtn.disabled = true;
+                saveBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Saving...';
+
+                fetch("{% url 'category-create-ajax' %}", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    },
+                    body: JSON.stringify({ name: name })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const allSelects = document.querySelectorAll('select[name*="category"]'); // Matches 'category' in name
+                        allSelects.forEach(select => {
+                            // Check if option exists
+                            let exists = false;
+                            for (let i = 0; i < select.options.length; i++) {
+                                if (select.options[i].value === data.name) {
+                                    exists = true;
+                                    break;
+                                }
+                            }
+                            if (!exists) {
+                                const option = new Option(data.name, data.name);
+                                select.add(option);
+                            }
+                        });
+
+                        if (activeSelectId) {
+                            const activeEl = document.getElementById(activeSelectId);
+                            if (activeEl) activeEl.value = data.name;
+                        }
+
+                        modal.hide();
+                    } else {
+                        errorAlert.textContent = data.error || "An error occurred.";
+                        errorAlert.classList.remove('d-none');
+                    }
+                })
+                .catch(err => {
+                    console.error('Error:', err);
+                    errorAlert.textContent = "A network error occurred.";
+                    errorAlert.classList.remove('d-none');
+                })
+                .finally(() => {
+                    saveBtn.disabled = false;
+                    saveBtn.textContent = 'Save Category';
+                });
+            });
+            
+             document.getElementById('newCategoryName').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    saveBtn.click();
+                }
             });
         }
     });

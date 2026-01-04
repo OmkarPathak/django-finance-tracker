@@ -13,6 +13,29 @@ from django.urls import reverse_lazy
 from django.views import generic
 from django.views.generic import TemplateView, ListView, CreateView, UpdateView, DeleteView
 from django.db.models import Sum, Q
+from django.http import JsonResponse
+import json
+
+# ... existing imports ...
+
+def create_category_ajax(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            name = data.get('name', '').strip()
+            
+            if not name:
+                return JsonResponse({'success': False, 'error': 'Category name cannot be empty.'}, status=400)
+                
+            category = Category.objects.create(user=request.user, name=name)
+            return JsonResponse({'success': True, 'id': category.id, 'name': category.name})
+            
+        except IntegrityError:
+            return JsonResponse({'success': False, 'error': 'This category already exists.'}, status=400)
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)}, status=500)
+            
+    return JsonResponse({'success': False, 'error': 'Invalid request method.'}, status=405)
 from .models import Expense, Category, Income, RecurringTransaction, UserProfile
 from .forms import ExpenseForm, IncomeForm, RecurringTransactionForm
 import openpyxl

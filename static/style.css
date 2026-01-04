@@ -270,3 +270,67 @@ a:hover {
 [data-bs-theme="dark"] .donation-btn {
     background: linear-gradient(135deg, rgba(251, 133, 0, 0.2) 0%, rgba(255, 183, 3, 0.2) 100%);
 }
+
+/* Fix for gray background behind inputs in Expense Form (Dark Mode) */
+[data-bs-theme="dark"] #formset-table,
+[data-bs-theme="dark"] #formset-table th,
+[data-bs-theme="dark"] #formset-table td {
+    background-color: transparent !important;
+    --bs-table-bg: transparent !important;
+    color: var(--color-text); /* Ensure text remains visible */
+}
+
+/* Ensure table borders don't look weird if they exist (though it is table-borderless) */
+[data-bs-theme="dark"] #formset-table th {
+    border-bottom: 1px solid rgba(255,255,255,0.1); /* Subtle separator for header */
+}
+
+/* --- Mobile Responsive Formset Table --- */
+@media (max-width: 768px) {
+    #formset-table thead {
+        display: none;
+    }
+
+    #formset-table tbody, 
+    #formset-table tr, 
+    #formset-table td {
+        display: block;
+        width: 100%;
+    }
+
+    #formset-table tr {
+        margin-bottom: 1.5rem;
+        border: 1px solid var(--bs-border-color);
+        border-radius: 0.75rem;
+        padding: 1.25rem;
+        background-color: rgba(var(--bs-body-bg-rgb), 0.5); /* Slight separation */
+        position: relative;
+    }
+
+    #formset-table td {
+        padding: 0.5rem 0;
+        border: none;
+    }
+    
+    /* Add labels visually for context if needed, but placeholders help. 
+       Let's ensure the delete button is well positioned. */
+    #formset-table td:last-child {
+        text-align: right;
+        margin-top: 0.5rem;
+        border-top: 1px dashed var(--bs-border-color);
+        padding-top: 0.75rem;
+    }
+    
+    /* Make the remove button look more like a distinct action on mobile */
+    .remove-row, .delete-row {
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.9rem;
+    }
+    
+    .remove-row::after, .delete-row::after {
+        content: "Remove Item";
+    }
+}

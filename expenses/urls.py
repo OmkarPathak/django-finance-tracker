@@ -12,6 +12,7 @@ urlpatterns = [
     path('expenses/add/', views.ExpenseCreateView.as_view(), name='expense-create'),
     path('expenses/<int:pk>/edit/', views.ExpenseUpdateView.as_view(), name='expense-edit'),
     path('expenses/<int:pk>/delete/', views.ExpenseDeleteView.as_view(), name='expense-delete'),
+    path('category/create/ajax/', views.create_category_ajax, name='category-create-ajax'),
     path('category/list/', views.CategoryListView.as_view(), name='category-list'),
     path('category/add/', views.CategoryCreateView.as_view(), name='category-create'),
     path('category/<int:pk>/edit/', views.CategoryUpdateView.as_view(), name='category-edit'),
