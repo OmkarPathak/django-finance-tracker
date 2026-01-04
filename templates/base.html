@@ -78,7 +78,12 @@
             padding-left: 0 !important; /* Reset default UL padding */
             min-width: 100%;
             z-index: 1050;
+            max-height: 350px; /* Approx 10 items */
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
         }
+
+
 
         /* Dropdown Items */
         .multiselect-container > li > a {
@@ -492,7 +497,7 @@
 
     <!-- jQuery (Required for Bootstrap Multiselect) -->
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-multiselect/1.1.2/js/bootstrap-multiselect.min.js"></script>
+    <script src="{% static 'js/bootstrap-multiselect.js' %}"></script>
 
     <script>
         // Global Bootstrap Multiselect Initialization
@@ -517,6 +522,8 @@
                 });
             });
         };
+
+
 
         $(document).ready(function() {
             initGlobalMultiselects();
