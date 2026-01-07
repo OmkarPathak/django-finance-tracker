@@ -2,13 +2,32 @@
 
 A personal finance application to track expenses, analyze spending trends, and visualize data.
 
-## Features
+## Standout Features
 
--   **Dashboard**: Visualize spending with category distribution charts and monthly/daily trend graphs.
--   **Expense Management**: Add, edit, and delete expenses.
--   **Bulk Upload**: Upload Excel files with multiple sheets to import expenses.
--   **Advanced Filtering**: Filter expenses by Year, Month, Category, and Search by description.
--   **Data Privacy**: Each user sees only their own data.
+### 1. Interactive Budget Dashboard
+Visualize your monthly spending against your budget goals. Get instant alerts when you're nearing your limits.
+![Budget Dashboard Screenshot](misc/dashboard1.png)
+![Budget Dashboard Screenshot](misc/dashboard2.png)
+
+### 2. Smart Excel Import
+Bulk upload your expenses with intelligence. The system automatically enforces the selected year and handles various date formats.
+![Upload Page Screenshot](misc/upload.png)
+
+### 3. Comprehensive Filtering
+Slice and dice your financial data. Filter by **Year**, **Month**, **Category**, and **Date Range** to get the insights you need.
+![Filtering Screenshot](misc/filters.png)
+
+### 4. Recurring Transactions
+Set it and forget it. Automate your regular income and expenses (like rent or subscriptions) so you never miss an entry.
+![Recurring Transactions Screenshot](misc/recurring.png)
+
+### 5. Category Management & Limits
+Create custom categories and set monthly spending limits. The dashboard visualizes your progress against these limits.
+![Category Limits Screenshot](misc/limits.png)
+
+### 6. Multi-Currency Support
+Work with your preferred currency. Update your profile settings to display your local currency symbol across the app.
+
 
 ## Prerequisites
 
