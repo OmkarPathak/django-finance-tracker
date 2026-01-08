@@ -4,14 +4,53 @@
 <div class="d-flex flex-column flex-md-row justify-content-between align-items-center mb-4 gap-3 fade-in" style="position: relative; z-index: 100;">
     <!-- Mobile Header (One Line) -->
     <div class="d-flex d-md-none justify-content-between align-items-center w-100">
-        <h1 class="h2 mb-0">Dashboard</h1>
+        <div class="d-flex align-items-center gap-2">
+            {% if prev_month_url %}
+                <a href="{{ prev_month_url }}" class="btn btn-sm d-flex align-items-center justify-content-center" title="Previous Month">
+                    <i class="bi bi-chevron-left"></i>
+                </a>
+            {% endif %}
+            <h1 class="h3 mb-0">
+                {% if selected_month and selected_year %}
+                    {{ selected_month }}
+                {% else %}
+                    Dashboard
+                {% endif %}
+            </h1>
+            {% if next_month_url %}
+                <a href="{{ next_month_url }}" class="btn btn-sm d-flex align-items-center justify-content-center" title="Next Month">
+                    <i class="bi bi-chevron-right"></i>
+                </a>
+            {% endif %}
+        </div>
         <button class="btn btn-link text-decoration-none text-muted p-0 border-0 fs-6" type="button" data-bs-toggle="collapse" data-bs-target="#dashboardFilters" aria-expanded="false" aria-controls="dashboardFilters">
             <i class="bi bi-funnel me-1"></i> Filters
         </button>
     </div>
 
     <!-- Desktop Header -->
-    <h1 class="h2 mb-0 d-none d-md-block">Dashboard</h1>
+    <!-- Desktop Header -->
+    <div class="d-none d-md-flex align-items-center gap-2">
+        {% if prev_month_url %}
+            <a href="{{ prev_month_url }}" class="btn btn-sm d-flex align-items-center justify-content-center" title="Previous Month">
+                <i class="bi bi-chevron-left"></i>
+            </a>
+        {% endif %}
+        
+        <h1 class="h2 mb-0">
+            {% if selected_month and selected_year %}
+                {{ selected_month }} {{ selected_year }}
+            {% else %}
+                Dashboard
+            {% endif %}
+        </h1>
+
+        {% if next_month_url %}
+            <a href="{{ next_month_url }}" class="btn btn-sm d-flex align-items-center justify-content-center" title="Next Month">
+                <i class="bi bi-chevron-right"></i>
+            </a>
+        {% endif %}
+    </div>
     
 
 

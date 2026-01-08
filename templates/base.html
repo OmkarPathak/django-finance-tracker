@@ -245,6 +245,11 @@
                         </a>
                     </li>
                     <li class="nav-item">
+                        <a href="{% url 'calendar' %}" class="nav-link {% if 'calendar' in request.resolver_match.url_name %}active{% endif %}">
+                            Calendar
+                        </a>
+                    </li>
+                    <li class="nav-item">
                         <a href="{% url 'expense-list' %}" class="nav-link {% if 'expense' in request.resolver_match.url_name %}active{% endif %}">
                             Expenses
                         </a>
@@ -252,11 +257,6 @@
                     <li class="nav-item">
                         <a href="{% url 'income-list' %}" class="nav-link {% if 'income' in request.resolver_match.url_name %}active{% endif %}">
                             Income
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="{% url 'calendar' %}" class="nav-link {% if 'calendar' in request.resolver_match.url_name %}active{% endif %}">
-                            Calendar
                         </a>
                     </li>
                     <li class="nav-item">

@@ -343,6 +343,45 @@ def home_view(request):
             display_month = calendar.month_name[m_idx]
         except (ValueError, IndexError):
             pass
+
+    # NEW: Calculate Previous/Next Month URLs
+    prev_month_url = None
+    next_month_url = None
+
+    if len(selected_years) == 1 and len(selected_months) == 1:
+        try:
+            curr_year = int(selected_years[0])
+            curr_month = int(selected_months[0])
+            
+            # Previous Month
+            if curr_month == 1:
+                pm = 12
+                py = curr_year - 1
+            else:
+                pm = curr_month - 1
+                py = curr_year
+            
+            # Next Month
+            if curr_month == 12:
+                nm = 1
+                ny = curr_year + 1
+            else:
+                nm = curr_month + 1
+                ny = curr_year
+
+            # Construct Query String (Preserve Categories)
+            base_qs = []
+            for c in selected_categories:
+                base_qs.append(f'category={c}')
+            
+            qs_prev = base_qs + [f'year={py}', f'month={pm}']
+            qs_next = base_qs + [f'year={ny}', f'month={nm}']
+            
+            prev_month_url = f"{reverse('home')}?{'&'.join(qs_prev)}"
+            next_month_url = f"{reverse('home')}?{'&'.join(qs_next)}"
+            
+        except ValueError:
+            pass
     
     context = {
         'total_income': total_income,
@@ -371,6 +410,8 @@ def home_view(request):
         'start_date': start_date,
         'end_date': end_date,
         'prev_month_data': prev_month_data,
+        'prev_month_url': prev_month_url,
+        'next_month_url': next_month_url,
     }
     return render(request, 'home.html', context)
 
