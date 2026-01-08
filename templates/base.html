@@ -305,10 +305,18 @@
         {% block content %}{% endblock %}
     </main>
 
-    <footer class="mt-auto bg-body-tertiary border-top" style="height: 56px;">
-        <div class="container h-100 d-flex align-items-center justify-content-center gap-2 pe-5 pe-md-0">
-            <p class="text-muted small mb-0">&copy; {% now "Y" %} TrackMyRupee.<span class="d-none d-md-inline"> All rights reserved.</span></p>
-            <a href="https://rzp.io/rzp/AP7kBG2" target="_blank" class="btn btn-primary btn-sm rounded-pill px-2 px-md-3">
+    <footer class="mt-auto bg-body-tertiary border-top py-3">
+        <div class="container d-flex flex-column flex-md-row align-items-center justify-content-center justify-content-md-between gap-3">
+            <div class="text-center text-md-start">
+                <p class="text-muted small mb-1">&copy; {% now "Y" %} TrackMyRupee. All rights reserved.</p>
+                <div class="d-flex gap-3 small justify-content-center justify-content-md-start">
+                    <a href="{% url 'privacy-policy' %}" class="text-decoration-none text-muted">Privacy</a>
+                    <a href="{% url 'terms-of-service' %}" class="text-decoration-none text-muted">Terms</a>
+                    <a href="{% url 'contact' %}" class="text-decoration-none text-muted">Contact</a>
+                </div>
+            </div>
+            
+            <a href="https://rzp.io/rzp/AP7kBG2" target="_blank" class="btn btn-primary btn-sm rounded-pill px-3 shadow-sm">
                 <i class="bi bi-heart-fill me-1 text-white"></i> <span class="d-none d-sm-inline">Support Us</span><span class="d-inline d-sm-none">Donate</span>
             </a>
         </div>

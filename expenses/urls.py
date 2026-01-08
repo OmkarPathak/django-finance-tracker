@@ -1,5 +1,6 @@
 from django.urls import path
 from . import views
+from django.views.generic import TemplateView
 
 urlpatterns = [
     path('signup/', views.SignUpView.as_view(), name='signup'),
@@ -36,4 +37,9 @@ urlpatterns = [
     path('settings/profile/', views.ProfileUpdateView.as_view(), name='profile-settings'),
     path('account/delete/', views.AccountDeleteView.as_view(), name='account-delete'),
     path('tutorial/complete/', views.complete_tutorial, name='complete-tutorial'),
+    
+    # Static Pages
+    path('privacy-policy/', TemplateView.as_view(template_name='privacy_policy.html'), name='privacy-policy'),
+    path('terms-of-service/', TemplateView.as_view(template_name='terms_of_service.html'), name='terms-of-service'),
+    path('contact/', TemplateView.as_view(template_name='contact.html'), name='contact'),
 ]

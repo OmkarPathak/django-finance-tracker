@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container py-5 fade-in">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <h1 class="display-4 fw-bold mb-4 text-center">Terms of Service</h1>
+            <p class="text-muted text-center mb-5">Last updated: January 2026</p>
+
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-4 p-md-5">
+                    <h3 class="h5 fw-bold mb-3">1. Acceptance of Terms</h3>
+                    <p class="text-muted mb-4">
+                        By accessing or using TrackMyRupee, you agree to be bound by these Terms of Service. If you disagree with any part of the terms, 
+                        you may not access the service.
+                    </p>
+
+                    <h3 class="h5 fw-bold mb-3">2. Use of Service</h3>
+                    <p class="text-muted mb-4">
+                        You are responsible for maintaining the confidentiality of your account and password. You agree to accept responsibility for all 
+                        activities that occur under your account.
+                    </p>
+
+                    <h3 class="h5 fw-bold mb-3">3. User Content</h3>
+                    <p class="text-muted mb-4">
+                        You retain ownership of the data you enter into the application. We claim no intellectual property rights over the material 
+                        you provide to the service.
+                    </p>
+
+                    <h3 class="h5 fw-bold mb-3">4. Limitation of Liability</h3>
+                    <p class="text-muted mb-4">
+                        In no event shall TrackMyRupee be liable for any indirect, incidental, special, consequential or punitive damages, including without 
+                        limitation, loss of profits, data, use, goodwill, or other intangible losses.
+                    </p>
+                    
+                    <h3 class="h5 fw-bold mb-3">5. Changes to Terms</h3>
+                    <p class="text-muted mb-0">
+                        We reserve the right to modify or replace these Terms at any time. We will try to provide at least 30 days' notice prior to any 
+                        new terms taking effect.
+                    </p>
+                </div>
+            </div>
+             <div class="text-center mt-4">
+                <a href="{% url 'home' %}" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left me-1"></i> Back to Home
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
