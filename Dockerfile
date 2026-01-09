@@ -27,6 +27,9 @@ RUN pip install --upgrade pip && pip install -r requirements.txt
 # Copy project
 COPY . /app/
 
+# Set entrypoint
+ENTRYPOINT ["/app/entrypoint.sh"]
+
 # Expose port
 EXPOSE 8000
 

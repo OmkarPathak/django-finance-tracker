@@ -57,7 +57,12 @@ Work with your preferred currency. Update your profile settings to display your 
     ```bash
     python manage.py migrate
     ```
+5.  **Setup Demo User** (Optional but recommended):
+    ```bash
+    python manage.py setup_demo_user
+    ```
 
+    **Note**: This command populates the database with sample data for the demo mode.
 ## Docker Setup
 
 1.  **Clone the repository**:
@@ -83,6 +88,7 @@ Work with your preferred currency. Update your profile settings to display your 
     ```bash
     docker-compose up --build
     ```
+    **Note**: The container defaults to running migrations and setting up the demo user automatically on startup.
 
 4.  **Access the application**:
     Open your browser and navigate to `http://localhost:8000`.
