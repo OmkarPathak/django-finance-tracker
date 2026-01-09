@@ -56,22 +56,46 @@ import calendar
 # import calendar
 # from datetime import datetime, date, timedelta
 
+from django.core.management import call_command
+
 def demo_login(request):
     """
     Logs in the read-only 'demo' user without password authentication.
+    Ensures data is always fresh (current month).
     """
-    # Clear any existing messages (e.g. from previous logout)
+    # Clear messages
     list(messages.get_messages(request))
 
     try:
         user = User.objects.get(username='demo')
-        # Manually set the backend to allow login without authentication
-        login(request, user, backend='django.contrib.auth.backends.ModelBackend')
-        messages.success(request, "🚀 Welcome to Demo Mode! Feel free to explore the app.")
-        return redirect('home')
+        
+        # Check if data is stale (i.e. not from this month)
+        # We check the latest expense. If no expenses or old date, refresh.
+        last_expense = Expense.objects.filter(user=user).order_by('-date').first()
+        is_stale = False
+        
+        if not last_expense:
+            is_stale = True
+        else:
+            today = date.today()
+            if last_expense.date.month != today.month or last_expense.date.year != today.year:
+                is_stale = True
+        
+        if is_stale:
+            # Data is old, refresh it
+            call_command('setup_demo_user')
+            # Refetch the new user object since the old one might have been deleted/recreated
+            user = User.objects.get(username='demo')
+
     except User.DoesNotExist:
-        messages.error(request, "Demo user does not exist. Please run the setup command.")
-        return redirect('account_login')
+        # User doesn't exist, create it
+        call_command('setup_demo_user')
+        user = User.objects.get(username='demo')
+
+    # Manually set the backend to allow login without authentication
+    login(request, user, backend='django.contrib.auth.backends.ModelBackend')
+    messages.success(request, "🚀 Welcome to Demo Mode! Feel free to explore the app.")
+    return redirect('home')
 
 def demo_signup(request):
     """
@@ -595,7 +619,7 @@ def home_view(request):
 
     context = {
         'is_new_user': not has_any_data,
-        'insights': insights,
+        'insights': insights[::-1],
         'total_income': total_income,
         'savings': savings,
         'recent_transactions': expenses.order_by('-date')[:5],
