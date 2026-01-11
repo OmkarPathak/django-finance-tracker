@@ -1804,3 +1804,6 @@ def demo_login(request):
     except User.DoesNotExist:
         messages.error(request, "Demo user not setup. Please contact admin.")
         return redirect('account_login')
+
+class PricingView(TemplateView):
+    template_name = 'expenses/pricing.html'

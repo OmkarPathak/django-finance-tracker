@@ -238,7 +238,7 @@
     {% endif %}
     <nav class="navbar navbar-expand-lg bg-body-tertiary border-bottom">
         <div class="container">
-            <a class="navbar-brand fw-bold" href="{% url 'home' %}">
+            <a class="navbar-brand fw-bold" href="{% if user.is_authenticated %}{% url 'home' %}{% else %}{% url 'landing' %}{% endif %}">
                 <i class="bi bi-graph-up-arrow me-2"></i>TrackMyRupee
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -313,6 +313,11 @@
                         </form>
                     </li>
                     {% else %}
+                    <li class="nav-item">
+                        <a href="{% url 'landing' %}" class="nav-link">
+                            Home
+                        </a>
+                    </li>
                     <li class="nav-item">
                         <a href="{% url 'account_login' %}" class="nav-link">
                             <i class="bi bi-box-arrow-in-right me-1"></i> Login
@@ -453,7 +458,7 @@
                 } else if (isLogin) {
                     loadingText = 'Logging in';
                 } else if (isLogout) {
-                    loadingText = 'Logging out';
+                    loadingText = 'Bye';
                 }
                 
                 setButtonLoading(submitBtn, loadingText);

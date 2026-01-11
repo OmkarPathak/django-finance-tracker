@@ -1,0 +1,118 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="row justify-content-center text-center mb-5 fade-in">
+    <div class="col-lg-8">
+        <span class="badge rounded-pill bg-primary bg-opacity-10 text-primary px-3 py-2 mb-3 fw-bold">
+            <i class="bi bi-stars me-1"></i> Simple, Transparent Pricing
+        </span>
+        <h1 class="display-4 fw-bold mb-3">Choose the plan that fits your financial goals</h1>
+        <p class="lead text-muted">Start for free, upgrade when you need more power. No hidden fees.</p>
+    </div>
+</div>
+
+<div class="row row-cols-1 row-cols-md-3 mb-3 text-center fade-in">
+    <!-- Free Plan -->
+    <div class="col">
+        <div class="card mb-4 rounded-4 shadow-sm border-0 h-100 position-relative hover-lift">
+            <div class="card-header py-3 bg-transparent border-0">
+                <h4 class="my-0 fw-normal">Free</h4>
+            </div>
+            <div class="card-body d-flex flex-column">
+                <h1 class="card-title pricing-card-title display-5 fw-bold">₹0<small class="text-muted fw-light fs-4">/mo</small></h1>
+                <ul class="list-unstyled mt-3 mb-4 text-start small mx-auto">
+                    <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Unlimited Expenses</li>
+                    <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Unlimited Income Entries</li>
+                    <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>1 Budget Category</li>
+                    <li class="mb-2 text-muted"><i class="bi bi-dash-circle me-2"></i>Basic Reports</li>
+                    <li class="mb-2 text-muted"><i class="bi bi-dash-circle me-2"></i>Recurring Transactions</li>
+                </ul>
+                <a href="{% url 'signup' %}" class="w-100 btn btn-lg btn-outline-primary mt-auto rounded-pill fw-bold">Sign up for free</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Premium Plan -->
+    <div class="col">
+        <div class="card mb-4 rounded-4 shadow border-primary h-100 position-relative transform-scale-sm">
+            <div class="position-absolute top-0 start-50 translate-middle">
+                <span class="badge rounded-pill text-bg-primary px-3 py-2 shadow-sm">MOST POPULAR</span>
+            </div>
+            <div class="card-header py-3 bg-primary bg-opacity-10 border-0">
+                <h4 class="my-0 fw-bold text-primary">Premium</h4>
+            </div>
+            <div class="card-body d-flex flex-column">
+                <h1 class="card-title pricing-card-title display-5 fw-bold">₹99<small class="text-muted fw-light fs-4">/yr</small></h1>
+                <ul class="list-unstyled mt-3 mb-4 text-start small mx-auto">
+                    <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i><strong>Everything in Free</strong></li>
+                    <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Up to 5 Budget Categories</li>
+                    <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Advanced Reports</li>
+                    <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Export to CSV/Excel</li>
+                    <li class="mb-2 text-muted"><i class="bi bi-dash-circle me-2"></i>Recurring Transactions</li>
+                </ul>
+                <button type="button" class="w-100 btn btn-lg btn-primary mt-auto rounded-pill fw-bold shadow-lg">Get Premium</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pro Plan -->
+    <div class="col">
+        <div class="card mb-4 rounded-4 shadow-sm border-0 h-100 position-relative hover-lift">
+            <div class="card-header py-3 bg-transparent border-0">
+                <h4 class="my-0 fw-normal">Pro</h4>
+            </div>
+            <div class="card-body d-flex flex-column">
+                <h1 class="card-title pricing-card-title display-5 fw-bold">₹299<small class="text-muted fw-light fs-4">/yr</small></h1>
+                <ul class="list-unstyled mt-3 mb-4 text-start small mx-auto">
+                    <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i><strong>Everything in Premium</strong></li>
+                    <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Unlimited Budgets</li>
+                    <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i><strong>Recurring Transactions</strong></li>
+                    <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>AI Spending Insights</li>
+                    <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Priority Support</li>
+                </ul>
+                <button type="button" class="w-100 btn btn-lg btn-outline-primary mt-auto rounded-pill fw-bold">Contact Sales</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- FAQ Section -->
+<div class="row justify-content-center mt-5 fade-in" style="animation-delay: 0.2s;">
+    <div class="col-lg-8">
+        <h3 class="text-center fw-bold mb-4">Frequently Asked Questions</h3>
+        <div class="accordion accordion-flush" id="pricingFAQ">
+            <div class="accordion-item bg-transparent">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed bg-transparent" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">
+                        Can I switch plans later?
+                    </button>
+                </h2>
+                <div id="faq1" class="accordion-collapse collapse" data-bs-parent="#pricingFAQ">
+                    <div class="accordion-body text-muted">A: Absolutely! You can upgrade or downgrade your plan at any time from your account settings. Prorated charges will apply.</div>
+                </div>
+            </div>
+            <div class="accordion-item bg-transparent">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed bg-transparent" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">
+                        Is my data safe?
+                    </button>
+                </h2>
+                <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#pricingFAQ">
+                    <div class="accordion-body text-muted">A: Yes, we use industry-standard encryption to protect your data. We never sell your personal information to third parties.</div>
+                </div>
+            </div>
+            <div class="accordion-item bg-transparent">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed bg-transparent" type="button" data-bs-toggle="collapse" data-bs-target="#faq3">
+                        Do you offer refunds?
+                    </button>
+                </h2>
+                <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#pricingFAQ">
+                    <div class="accordion-body text-muted">A: If you're not satisfied with TrackMyRupee Pro within the first 14 days, contact us for a full refund.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

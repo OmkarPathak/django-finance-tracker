@@ -578,7 +578,7 @@
             return {
                 text: isDark ? '#adb5bd' : '#6c757d',
                 grid: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)',
-                remaining: isDark ? '#495057' : '#e9ecef' // Darker gray for dark mode, Light gray for light mode
+                remaining: isDark ? '#495057' : '#e9ecef' 
             };
         };
 
@@ -586,13 +586,24 @@
         Chart.defaults.font.family = "'Segoe UI', 'Roboto', 'Helvetica', 'Arial', sans-serif";
         Chart.defaults.color = currentColors.text;
         
-        // Store chart instances to update them later
         const charts = {};
 
-        // --- 0. Income vs Expenses Chart (Single Stacked Horizontal Bar) ---
+        // --- Gradient Helper ---
+        const createGradient = (ctx, colorStart, colorEnd) => {
+            const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+            gradient.addColorStop(0, colorStart);
+            gradient.addColorStop(1, colorEnd);
+            return gradient;
+        };
+
+        // --- 0. Income vs Expenses Chart ---
         const totalIncome = {{ total_income|stringformat:"f"|default:0 }};
         const totalExpenses = {{ total_expenses|stringformat:"f"|default:0 }};
         const savings = Math.max(0, totalIncome - totalExpenses);
+
+        const ctxIncome = document.getElementById('incomeExpensesChart').getContext('2d');
+        const gradExpenses = createGradient(ctxIncome, '#FF416C', '#FF4B2B'); // Red/Pink
+        const gradSavings = createGradient(ctxIncome, '#00F260', '#0575E6');  // Green/Blue
 
         const customLabelsPlugin = {
             id: 'customLabels',
@@ -625,7 +636,7 @@
             }
         };
 
-        charts.incomeExpenses = new Chart(document.getElementById('incomeExpensesChart'), {
+        charts.incomeExpenses = new Chart(ctxIncome, {
             type: 'bar',
             data: {
                 labels: ['Income Distribution'],
@@ -633,14 +644,14 @@
                     {
                         label: 'Expenses',
                         data: [totalExpenses],
-                        backgroundColor: '#023047',
+                        backgroundColor: gradExpenses,
                         borderRadius: 4,
                         barThickness: 50
                     },
                     {
                         label: 'Savings',
                         data: [savings],
-                        backgroundColor: '#219EBC',
+                        backgroundColor: gradSavings,
                         borderRadius: 4,
                         barThickness: 50
                     }
@@ -673,7 +684,23 @@
         });
 
         // --- 1. Trend Chart ---
-        charts.trend = new Chart(document.getElementById('trendChart'), {
+        const ctxTrend = document.getElementById('trendChart').getContext('2d');
+        // Define Gradient Palette (Cohesive: Blues, Teals, Purples)
+        const trendGradients = [
+            createGradient(ctxTrend, '#00c6ff', '#0072ff'), // Blue
+            createGradient(ctxTrend, '#43e97b', '#38f9d7'), // Teal
+            createGradient(ctxTrend, '#8E2DE2', '#4A00E0'), // Purple
+            createGradient(ctxTrend, '#4facfe', '#00f2fe'), // Cyan
+            createGradient(ctxTrend, '#30cfd0', '#330867')  // Sea-Blue
+        ];
+
+        // Apply gradients to datasets
+        trendDatasets.forEach((ds, i) => {
+            ds.backgroundColor = trendGradients[i % trendGradients.length];
+            ds.borderRadius = 2;
+        });
+
+        charts.trend = new Chart(ctxTrend, {
             type: 'bar',
             data: { labels: trendLabels, datasets: trendDatasets },
             options: {
@@ -698,13 +725,22 @@
 
         // --- 2. Category Chart ---
         if (categories.length > 0) {
-            charts.category = new Chart(document.getElementById('categoryChart'), {
+            const ctxCat = document.getElementById('categoryChart').getContext('2d');
+            const catGradients = [
+                 createGradient(ctxCat, '#00c6ff', '#0072ff'), // Blue
+                 createGradient(ctxCat, '#43e97b', '#38f9d7'), // Teal
+                 createGradient(ctxCat, '#8E2DE2', '#4A00E0'), // Purple
+                 createGradient(ctxCat, '#4facfe', '#00f2fe'), // Cyan
+                 createGradient(ctxCat, '#30cfd0', '#330867')  // Sea-Blue
+            ];
+
+            charts.category = new Chart(ctxCat, {
                 type: 'doughnut',
                 data: {
                     labels: categories,
                     datasets: [{
                         data: categoryAmounts,
-                        backgroundColor: ['#219EBC', '#023047', '#8ECAE6', '#FFB703', '#0575E6'],
+                        backgroundColor: catGradients,
                         borderWidth: 0
                     }]
                 },
@@ -741,14 +777,17 @@
         }
 
         // --- 3. Top Expenses Chart ---
-        charts.topExpenses = new Chart(document.getElementById('topExpensesChart'), {
+        const ctxTop = document.getElementById('topExpensesChart').getContext('2d');
+        const gradTop = createGradient(ctxTop, '#4facfe', '#00f2fe'); // Cyan-Blue
+
+        charts.topExpenses = new Chart(ctxTop, {
             type: 'bar',
             data: {
                 labels: topLabels,
                 datasets: [{
                     label: 'Amount',
                     data: topAmounts,
-                    backgroundColor: '#219EBC',
+                    backgroundColor: gradTop,
                     borderRadius: 4
                 }]
             },
@@ -769,11 +808,19 @@
         const withLimits = limitsData.filter(item => item.limit !== null && item.limit > 0);
         
         if (withLimits.length > 0) {
+            const ctxBudget = document.getElementById('budgetChart').getContext('2d');
             const budgetLabels = withLimits.map(item => item.name);
             const spentData = withLimits.map(item => Math.min((item.total / item.limit) * 100, 100));
             const remainingData = spentData.map(spentPct => 100 - spentPct);
             
-            charts.budget = new Chart(document.getElementById('budgetChart'), {
+            // Dynamic Gradients for Budgets
+            const spentColors = withLimits.map(item => {
+                if (item.total > item.limit) return createGradient(ctxBudget, '#ed213a', '#93291e'); // Red (Over)
+                if (item.total > item.limit * 0.8) return createGradient(ctxBudget, '#f7b733', '#fc4a1a'); // Orange (Warning)
+                return createGradient(ctxBudget, '#11998e', '#38ef7d'); // Green (Safe)
+            });
+
+            charts.budget = new Chart(ctxBudget, {
                 type: 'bar',
                 data: {
                     labels: budgetLabels,
@@ -781,13 +828,13 @@
                         {
                             label: 'Spent',
                             data: spentData,
-                            backgroundColor: withLimits.map(item => item.total > item.limit ? '#dc3545' : '#219EBC'),
+                            backgroundColor: spentColors,
                             borderRadius: 4,
                         },
                         {
                             label: 'Remaining',
                             data: remainingData,
-                            backgroundColor: currentColors.remaining, // Dynamic color
+                            backgroundColor: currentColors.remaining,
                             borderRadius: 4,
                         }
                     ]
@@ -850,7 +897,7 @@
                     const newColors = getThemeColor();
                     Chart.defaults.color = newColors.text;
                     
-                    // Update Budget Chart color
+                    // Update Budget Chart remaining color
                     if (charts.budget) {
                         charts.budget.data.datasets[1].backgroundColor = newColors.remaining;
                         charts.budget.update();

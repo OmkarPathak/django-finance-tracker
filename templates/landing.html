@@ -83,6 +83,8 @@
             box-shadow: 0 30px 60px rgba(0,0,0,0.5);
             border: 1px solid rgba(255,255,255,0.1);
             background: var(--surface-color);
+            max-width: 90%;
+            margin: 0 auto;
         }
 
         .mockup-container img {
@@ -190,15 +192,31 @@
 <body>
 
     <!-- Navbar -->
+    <!-- Navbar -->
     <nav class="navbar navbar-expand-lg fixed-top">
         <div class="container">
             <a class="navbar-brand fw-bold d-flex align-items-center gap-2" href="#">
                 <i class="bi bi-graph-up-arrow text-gradient" style="font-size: 1.5rem;"></i>
                 <span class="fs-4">TrackMyRupee</span>
             </a>
-            <div class="ms-auto d-flex align-items-center gap-2 gap-md-3">
-                <a href="{% url 'account_login' %}" class="btn btn-sm text-white px-4">Login</a>
-                <a href="{% url 'signup' %}" class="cta-button btn-sm">Join Now</a>
+            
+            <button class="navbar-toggler border-0 shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent" aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
+                <i class="bi bi-list fs-2 text-white"></i>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarContent">
+                <div class="d-flex flex-column flex-lg-row align-items-lg-center ms-auto gap-3 pt-3 pt-lg-0">
+                    <a href="#features" class="text-decoration-none text-muted small fw-bold px-2">Features</a>
+                    <a href="#pricing" class="text-decoration-none text-muted small fw-bold px-2">Pricing</a>
+                    
+                    <div class="vr d-none d-lg-block text-white opacity-25 mx-2"></div>
+                    <hr class="d-lg-none my-1 border-secondary border-opacity-25 w-100">
+                    
+                    <div class="d-flex align-items-center gap-3">
+                        <a href="{% url 'account_login' %}" class="btn btn-sm text-white px-3">Login</a>
+                        <a href="{% url 'signup' %}" class="cta-button btn-sm py-2 px-4 shadow-sm" style="font-size: 0.9rem;">Join Now</a>
+                    </div>
+                </div>
             </div>
         </div>
     </nav>
@@ -232,7 +250,7 @@
                 </div>
                 <div class="col-lg-6 mt-5 mt-lg-0" data-aos="zoom-in" data-aos-duration="1200">
                     <div class="floating-ui mockup-container">
-                        <img src="{% static 'img/analytics_view.png' %}" alt="Analytics Dashboard">
+                        <img src="{% static 'img/hero_dashboard.svg' %}" alt="Analytics Dashboard">
                     </div>
                 </div>
             </div>
@@ -261,7 +279,7 @@
                     </div>
                     <div class="col-lg-7" data-aos="fade-left">
                         <div class="mockup-container">
-                            <img src="{% static 'img/analytics_view.png' %}" alt="Analytics View">
+                            <img src="{% static 'img/analytics_modern.svg' %}" alt="Analytics View">
                         </div>
                     </div>
                 </div>
@@ -274,7 +292,7 @@
                 <div class="row align-items-center flex-column-reverse flex-lg-row">
                     <div class="col-lg-7" data-aos="fade-right">
                         <div class="mockup-container">
-                            <img src="{% static 'img/calender_view.png' %}" alt="Calendar View">
+                            <img src="{% static 'img/calendar_modern.svg' %}" alt="Calendar View">
                         </div>
                     </div>
                     <div class="col-lg-5 mb-5 mb-lg-0 text-lg-start ps-lg-5" data-aos="fade-up">
@@ -300,7 +318,40 @@
             </div>
         </div>
 
-        <!-- Showcase 3: Lists & Management -->
+        <!-- Showcase 3: Subscriptions -->
+        <div class="feature-showcase">
+            <div class="container">
+                <div class="row align-items-center">
+                    <div class="col-lg-5 mb-5 mb-lg-0" data-aos="fade-up">
+                        <div class="feature-icon-box" style="background: linear-gradient(135deg, #ff4d6d 0%, #ff8c42 100%); box-shadow: 0 10px 20px rgba(255, 77, 109, 0.2);">
+                            <i class="bi bi-credit-card-2-front-fill"></i>
+                        </div>
+                        <h2 class="display-5 fw-bold mb-4">Never Miss a <span class="text-gradient" style="background: linear-gradient(135deg, #ff4d6d 0%, #ff8c42 100%); -webkit-background-clip: text;">Bill Again</span></h2>
+                        <p class="text-muted fs-5 mb-4">
+                            Consolidate all your subscriptions in one dashboard. Get timely renewal alerts, spot rising costs, and identify unused services instantly.
+                        </p>
+                        <div class="d-flex gap-3 text-muted mb-4">
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-bell-fill text-danger me-2"></i> Renewal Alerts
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-graph-down-arrow text-success me-2"></i> Cost Tracking
+                            </div>
+                        </div>
+                        <div class="p-3 bg-body-tertiary rounded-4 border border-danger border-opacity-10 mb-4">
+                            <p class="small text-muted mb-0">"Saved me ₹4,500/year just by cancelling forgotten subscriptions!"</p>
+                        </div>
+                    </div>
+                    <div class="col-lg-7" data-aos="fade-left">
+                        <div class="mockup-container">
+                            <img src="{% static 'img/subscriptions_modern.svg' %}" alt="Subscriptions Dashboard">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Showcase 4: Lists & Management -->
         <div class="feature-showcase">
             <div class="container">
                 <div class="row align-items-center">
@@ -318,7 +369,7 @@
                     </div>
                     <div class="col-lg-7" data-aos="fade-left">
                         <div class="mockup-container">
-                            <img src="{% static 'img/expenses_view.png' %}" alt="Expenses View">
+                            <img src="{% static 'img/expenses_modern.svg' %}" alt="Expenses View">
                         </div>
                     </div>
                 </div>
@@ -355,6 +406,125 @@
                         <i class="bi bi-shield-lock-fill fs-1 text-info mb-4 d-block"></i>
                         <h3 class="fw-bold mb-3">Master</h3>
                         <p class="text-muted">Set budgets, monitor limits, and watch your financial health improve month after month.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing Section -->
+    <section id="pricing" class="py-5 position-relative">
+        <div class="container py-5">
+            <div class="row justify-content-center text-center mb-5" data-aos="fade-up">
+                <div class="col-lg-8">
+                    <span class="stats-badge mb-3 text-primary border-primary">
+                        <i class="bi bi-stars"></i> Simple, Transparent Pricing
+                    </span>
+                    <h2 class="display-4 fw-bold mb-3">Choose the plan that fits <span class="text-gradient">your goals</span></h2>
+                    <p class="lead text-muted">Start for free, upgrade when you need more power. No hidden fees.</p>
+                </div>
+            </div>
+
+            <div class="row row-cols-1 row-cols-md-3 g-4 mb-3 text-center">
+                <!-- Free Plan -->
+                <div class="col" data-aos="fade-up" data-aos-delay="100">
+                    <div class="card mb-4 rounded-4 shadow-sm border-0 h-100 position-relative" style="background: var(--surface-color);">
+                        <div class="card-header py-3 bg-transparent border-0">
+                            <h4 class="my-0 fw-normal">Free</h4>
+                        </div>
+                        <div class="card-body d-flex flex-column">
+                            <h1 class="card-title pricing-card-title display-5 fw-bold">₹0<small class="text-muted fw-light fs-4">/mo</small></h1>
+                            <ul class="list-unstyled mt-3 mb-4 text-start small mx-auto text-muted">
+                                <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Unlimited Expenses</li>
+                                <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Unlimited Income Entries</li>
+                                <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>1 Budget Category</li>
+                                <li class="mb-2 text-muted"><i class="bi bi-dash-circle me-2"></i>Basic Reports</li>
+                                <li class="mb-2 text-muted"><i class="bi bi-dash-circle me-2"></i>Recurring Transactions</li>
+                            </ul>
+                            <a href="{% url 'signup' %}" class="w-100 btn btn-lg btn-outline-light mt-auto rounded-pill fw-bold">Sign up for free</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Premium Plan -->
+                <div class="col" data-aos="fade-up" data-aos-delay="200">
+                    <div class="card mb-4 rounded-4 shadow border-primary h-100 position-relative" style="background: var(--surface-color); border: 2px solid #0575e6;">
+                        <div class="position-absolute top-0 start-50 translate-middle">
+                            <span class="badge rounded-pill text-bg-primary px-3 py-2 shadow-sm">MOST POPULAR</span>
+                        </div>
+                        <div class="card-header py-3 bg-primary bg-opacity-10 border-0">
+                            <h4 class="my-0 fw-bold text-primary">Premium</h4>
+                        </div>
+                        <div class="card-body d-flex flex-column">
+                            <h1 class="card-title pricing-card-title display-5 fw-bold">₹99<small class="text-muted fw-light fs-4">/yr</small></h1>
+                            <ul class="list-unstyled mt-3 mb-4 text-start small mx-auto text-muted">
+                                <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i><strong>Everything in Free</strong></li>
+                                <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Up to 5 Budget Categories</li>
+                                <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Advanced Reports</li>
+                                <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Export to CSV/Excel</li>
+                                <li class="mb-2 text-muted"><i class="bi bi-dash-circle me-2"></i>Recurring Transactions</li>
+                            </ul>
+                            <button type="button" class="w-100 btn btn-lg btn-primary mt-auto rounded-pill fw-bold shadow-lg" style="background: var(--primary-gradient); border: none;">Get Premium</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pro Plan -->
+                <div class="col" data-aos="fade-up" data-aos-delay="300">
+                    <div class="card mb-4 rounded-4 shadow-sm border-0 h-100 position-relative" style="background: var(--surface-color);">
+                        <div class="card-header py-3 bg-transparent border-0">
+                            <h4 class="my-0 fw-normal">Pro</h4>
+                        </div>
+                        <div class="card-body d-flex flex-column">
+                            <h1 class="card-title pricing-card-title display-5 fw-bold">₹299<small class="text-muted fw-light fs-4">/yr</small></h1>
+                            <ul class="list-unstyled mt-3 mb-4 text-start small mx-auto text-muted">
+                                <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i><strong>Everything in Premium</strong></li>
+                                <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Unlimited Budgets</li>
+                                <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i><strong>Recurring Transactions</strong></li>
+                                <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>AI Spending Insights</li>
+                                <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Priority Support</li>
+                            </ul>
+                            <button type="button" class="w-100 btn btn-lg btn-outline-light mt-auto rounded-pill fw-bold">Contact Sales</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- FAQ Partial -->
+            <div class="row justify-content-center mt-5" data-aos="fade-up">
+                <div class="col-lg-8">
+                    <h3 class="text-center fw-bold mb-4">Common Questions</h3>
+                    <div class="accordion accordion-flush" id="pricingFAQ">
+                        <div class="accordion-item bg-transparent border-bottom border-light border-opacity-10">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed bg-transparent text-white shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">
+                                    Can I switch plans later?
+                                </button>
+                            </h2>
+                            <div id="faq1" class="accordion-collapse collapse" data-bs-parent="#pricingFAQ">
+                                <div class="accordion-body text-muted">A: Absolutely! You can upgrade or downgrade your plan at any time from your account settings. Prorated charges will apply.</div>
+                            </div>
+                        </div>
+                        <div class="accordion-item bg-transparent border-bottom border-light border-opacity-10">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed bg-transparent text-white shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">
+                                    Is my data safe?
+                                </button>
+                            </h2>
+                            <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#pricingFAQ">
+                                <div class="accordion-body text-muted">A: Yes, we use industry-standard encryption to protect your data. We never sell your personal information to third parties.</div>
+                            </div>
+                        </div>
+                        <div class="accordion-item bg-transparent border-bottom border-light border-opacity-10">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed bg-transparent text-white shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#faq3">
+                                    Do you offer refunds?
+                                </button>
+                            </h2>
+                            <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#pricingFAQ">
+                                <div class="accordion-body text-muted">A: If you're not satisfied with TrackMyRupee Pro within the first 14 days, contact us for a full refund.</div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
