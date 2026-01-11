@@ -445,12 +445,15 @@
                 // If it's a delete button, use "Deleting..."
                 const isDelete = submitBtn.classList.contains('btn-danger') || submitBtn.textContent.toLowerCase().includes('delete');
                 const isLogin = submitBtn.textContent.toLowerCase().includes('sign in') || submitBtn.textContent.toLowerCase().includes('login');
+                const isLogout = submitBtn.textContent.toLowerCase().includes('logout');
                 
                 let loadingText = 'Saving';
                 if (isDelete) {
                     loadingText = 'Deleting';
                 } else if (isLogin) {
                     loadingText = 'Logging in';
+                } else if (isLogout) {
+                    loadingText = 'Logging out';
                 }
                 
                 setButtonLoading(submitBtn, loadingText);

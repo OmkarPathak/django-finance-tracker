@@ -1475,7 +1475,7 @@ class RecurringTransactionListView(LoginRequiredMixin, ListView):
     context_object_name = 'recurring_transactions'
 
     def get_queryset(self):
-        queryset = RecurringTransaction.objects.filter(user=self.request.user).order_by('-created_at')
+        queryset = RecurringTransaction.objects.filter(user=self.request.user, transaction_type='EXPENSE').order_by('-created_at')
         
         # Filter by Category
         categories = self.request.GET.getlist('category')
