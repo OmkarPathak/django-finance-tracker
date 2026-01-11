@@ -1594,6 +1594,9 @@ class RecurringTransactionListView(LoginRequiredMixin, ListView):
         })
         return context
 
+class RecurringTransactionManageView(RecurringTransactionListView):
+    template_name = 'expenses/recurring_transaction_manage.html'
+
 class RecurringTransactionCreateView(LoginRequiredMixin, CreateView):
     model = RecurringTransaction
     form_class = RecurringTransactionForm

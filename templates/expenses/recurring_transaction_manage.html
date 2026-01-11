@@ -1,0 +1,130 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="fade-in">
+    <div class="row mb-4 align-items-center gy-3">
+        <div class="col">
+            <h2 class="h3 fw-bold mb-0">Manage Subscriptions</h2>
+            <p class="text-muted small mb-0">View and manage all your recurring commitments.</p>
+        </div>
+        <div class="col-auto">
+            <a href="{% url 'recurring-list' %}" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-arrow-left me-1"></i> Back to Dashboard
+            </a>
+            <a href="{% url 'recurring-create' %}" class="btn btn-primary btn-sm ms-2">
+                <i class="bi bi-plus-lg me-1"></i> Add Subscription
+            </a>
+        </div>
+    </div>
+
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover table-striped mb-0 text-start align-middle">
+                    <thead>
+                        <tr>
+                            <th class="ps-4">Description</th>
+                            <th>Type</th>
+                            <th>Amount</th>
+                            <th>Frequency</th>
+                            <th>Next Due</th>
+                            <th>Status</th>
+                            <th class="text-end pe-4">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for sub in active_subs %}
+                        <tr>
+                            <td class="ps-4">
+                                <div class="fw-bold">{{ sub.description }}</div>
+                                <div class="text-muted small">{{ sub.category }}</div>
+                            </td>
+                            <td>
+                                {% if sub.transaction_type == 'EXPENSE' %}
+                                    <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill">Expense</span>
+                                {% else %}
+                                    <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill">Income</span>
+                                {% endif %}
+                            </td>
+                            <td class="fw-bold">{{ currency_symbol }}{{ sub.amount|floatformat:2 }}</td>
+                            <td>{{ sub.get_frequency_display }}</td>
+                            <td>
+                                <div>{{ sub.annotated_next_date|date:"M d, Y" }}</div>
+                                {% if sub.annotated_days_until <= 30 and sub.transaction_type == 'EXPENSE' %}
+                                    <div class="small fw-bold {% if sub.annotated_days_until <= 3 %}text-danger{% elif sub.annotated_days_until <= 7 %}text-warning{% else %}text-muted{% endif %}">
+                                        {% if sub.annotated_days_until == 0 %}Today{% elif sub.annotated_days_until == 1 %}Tomorrow{% else %}In {{ sub.annotated_days_until }} days{% endif %}
+                                    </div>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <span class="badge bg-success rounded-pill px-3">Active</span>
+                            </td>
+                            <td class="text-end pe-4">
+                                <a href="{% url 'recurring-edit' sub.pk %}?next={{ request.path }}" class="btn btn-sm btn-link text-decoration-none p-0 me-2" title="Edit">
+                                    <i class="bi bi-pencil-square text-primary"></i>
+                                </a>
+                                <button type="button" class="btn btn-sm btn-link text-decoration-none p-0 delete-btn" 
+                                        data-bs-toggle="modal" data-bs-target="#deleteModal" 
+                                        data-url="{% url 'recurring-delete' sub.pk %}"
+                                        data-message="Are you sure you want to delete subscription '{{ sub.description|escapejs }}'? This will stop all future tracking for this item.">
+                                    <i class="bi bi-trash text-danger"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                        
+                        <!-- Cancelled Subscriptions (Optional) -->
+                        {% for sub in cancelled_subs %}
+                        <tr class="opacity-50">
+                            <td class="ps-4">
+                                <div class="fw-bold text-decoration-line-through">{{ sub.description }}</div>
+                                <div class="text-muted small">{{ sub.category }}</div>
+                            </td>
+                            <td>
+                                {% if sub.transaction_type == 'EXPENSE' %}
+                                    <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle rounded-pill">Expense</span>
+                                {% else %}
+                                    <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle rounded-pill">Income</span>
+                                {% endif %}
+                            </td>
+                            <td class="fw-bold text-muted">{{ currency_symbol }}{{ sub.amount|floatformat:2 }}</td>
+                            <td>{{ sub.get_frequency_display }}</td>
+                            <td>-</td>
+                            <td>
+                                <span class="badge bg-secondary rounded-pill px-3">Cancelled</span>
+                            </td>
+                            <td class="text-end pe-4">
+                                <a href="{% url 'recurring-edit' sub.pk %}?next={{ request.path }}" class="btn btn-sm btn-outline-primary py-0" style="font-size: 0.75rem;">
+                                    Reactivate
+                                </a>
+                                <button type="button" class="btn btn-sm btn-link text-decoration-none p-0 delete-btn ms-2" 
+                                        data-bs-toggle="modal" data-bs-target="#deleteModal" 
+                                        data-url="{% url 'recurring-delete' sub.pk %}"
+                                        data-message="Are you sure you want to delete subscription '{{ sub.description|escapejs }}'? This will permanently remove it.">
+                                    <i class="bi bi-trash text-danger"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+
+                        {% if not active_subs and not cancelled_subs %}
+                        <tr>
+                            <td colspan="7" class="text-center py-5">
+                                <div class="py-4">
+                                    <i class="bi bi-calendar-x text-muted display-1 mb-3 d-block"></i>
+                                    <h4 class="fw-bold text-muted">No Subscriptions Found</h4>
+                                    <p class="text-muted mb-4">You haven't added any subscriptions yet.</p>
+                                    <a href="{% url 'recurring-create' %}" class="btn btn-primary">
+                                        <i class="bi bi-plus-lg me-1"></i> Add Subscription
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

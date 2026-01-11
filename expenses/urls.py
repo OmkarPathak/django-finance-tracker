@@ -33,6 +33,7 @@ urlpatterns = [
     path('calendar/<int:year>/<int:month>/', views.CalendarView.as_view(), name='calendar-month'),
     # Recurring Transactions
     path('recurring/', views.RecurringTransactionListView.as_view(), name='recurring-list'),
+    path('recurring/manage/', views.RecurringTransactionManageView.as_view(), name='recurring-manage'),
     path('recurring/create/', views.RecurringTransactionCreateView.as_view(), name='recurring-create'),
     path('recurring/<int:pk>/edit/', views.RecurringTransactionUpdateView.as_view(), name='recurring-edit'),
     path('recurring/<int:pk>/delete/', views.RecurringTransactionDeleteView.as_view(), name='recurring-delete'),
