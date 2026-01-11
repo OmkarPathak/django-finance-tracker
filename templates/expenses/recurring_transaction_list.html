@@ -30,19 +30,54 @@
         color: var(--bs-secondary-color) !important;
     }
 </style>
-<div class="row fade-in">
+<div class="fade-in">
     <!-- Header Summary Section -->
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <h2 class="h3 fw-bold mb-0">Subscriptions</h2>
-            <div class="d-flex gap-2">
-                <a href="{% url 'recurring-manage' %}" class="btn btn-sm btn-outline-secondary d-flex align-items-center shadow-sm">
+        <div class="d-flex flex-column flex-sm-row justify-content-between align-items-stretch align-items-sm-center mb-3">
+            <h2 class="h3 fw-bold mb-3 mb-sm-0">Subscriptions</h2>
+            <div class="d-flex gap-2 justify-content-end">
+                <a href="{% url 'recurring-manage' %}" class="btn btn-sm btn-outline-secondary d-flex align-items-center shadow-sm flex-grow-1 flex-sm-grow-0 justify-content-center">
                     <i class="bi bi-table me-2"></i> Manage
                 </a>
-                <a href="{% url 'recurring-create' %}" class="btn btn-sm btn-primary d-flex align-items-center shadow-sm">
-                    <i class="bi bi-plus-lg me-2"></i> <span>Add <span class="d-none d-sm-inline">Subscription</span></span>
+                <a href="{% url 'recurring-create' %}" class="btn btn-sm btn-primary d-flex align-items-center shadow-sm flex-grow-1 flex-sm-grow-0 justify-content-center">
+                    <i class="bi bi-plus-lg me-2"></i> <span>Add <span class="d-none d-md-inline">Subscription</span></span>
                 </a>
+                <button class="btn btn-sm btn-outline-secondary d-md-none shadow-sm" type="button" data-bs-toggle="collapse" data-bs-target="#subscriptionFilters" aria-expanded="false" aria-controls="subscriptionFilters">
+                    <i class="bi bi-funnel"></i>
+                </button>
             </div>
         </div>
+
+    <!-- Filter Form -->
+    <div class="collapse d-md-block" id="subscriptionFilters">
+        <form method="get" class="mb-4 bg-body-tertiary p-3 rounded shadow-sm" id="filter-form">
+            <div class="row g-2 align-items-end">
+                <!-- Category -->
+                <div class="col-12 col-md-auto" style="min-width: 200px;">
+                    <label for="category-select" class="form-label small text-muted">Category</label>
+                    <select name="category" id="category-select" class="form-control django-multi-select" multiple placeholder="Categories...">
+                        {% for cat in categories %}
+                            <option value="{{ cat }}" {% if cat in selected_categories %}selected{% endif %}>
+                                {{ cat }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Buttons -->
+                <div class="col-6 col-md-auto">
+                    <button type="submit" class="btn btn-primary btn-sm w-100 w-md-auto">
+                        <i class="bi bi-filter me-1"></i> Apply
+                    </button>
+                </div>
+                <!-- Reset -->
+                <div class="col-6 col-md-auto">
+                    <a href="{% url 'recurring-list' %}" class="btn btn-outline-secondary btn-sm w-100 w-md-auto">
+                        <i class="bi bi-arrow-counterclockwise me-1"></i> Reset
+                    </a>
+                </div>
+            </div>
+        </form>
+    </div>
         
         <div class="card shadow-sm border-0 bg-white summary-card mb-4">
             <div class="card-body p-4">
@@ -76,10 +111,7 @@
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- Tabs Navigation -->
-    <div class="col-12">
         <ul class="nav nav-pills mb-4 gap-2 flex-nowrap overflow-auto" id="subscriptionTabs" role="tablist" style="scrollbar-width: none; -ms-overflow-style: none;">
             <li class="nav-item" role="presentation">
                 <button class="nav-link active px-4 rounded-pill text-nowrap" id="all-tab" data-bs-toggle="tab" data-bs-target="#all" type="button" role="tab" aria-selected="true">

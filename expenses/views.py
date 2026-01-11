@@ -1475,12 +1475,28 @@ class RecurringTransactionListView(LoginRequiredMixin, ListView):
     context_object_name = 'recurring_transactions'
 
     def get_queryset(self):
-        return RecurringTransaction.objects.filter(user=self.request.user).order_by('-created_at')
+        queryset = RecurringTransaction.objects.filter(user=self.request.user).order_by('-created_at')
+        
+        # Filter by Category
+        categories = self.request.GET.getlist('category')
+        if categories:
+            queryset = queryset.filter(category__in=categories)
+            
+        return queryset
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         all_transactions = self.object_list
         today = date.today()
+        
+        # Categories for filter
+        user_transactions = RecurringTransaction.objects.filter(user=self.request.user)
+        categories = user_transactions.values_list('category', flat=True).distinct().order_by('category')
+        # Filter out None/Empty if any
+        categories = [c for c in categories if c]
+        
+        context['categories'] = categories
+        context['selected_categories'] = self.request.GET.getlist('category')
         
         # Split into Active and Cancelled
         active_subs = [t for t in all_transactions if t.is_active]
