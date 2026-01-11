@@ -1473,9 +1473,13 @@ class RecurringTransactionListView(LoginRequiredMixin, ListView):
     model = RecurringTransaction
     template_name = 'expenses/recurring_transaction_list.html'
     context_object_name = 'recurring_transactions'
+    filter_expenses_only = True
 
     def get_queryset(self):
-        queryset = RecurringTransaction.objects.filter(user=self.request.user, transaction_type='EXPENSE').order_by('-created_at')
+        queryset = RecurringTransaction.objects.filter(user=self.request.user)
+        if self.filter_expenses_only:
+            queryset = queryset.filter(transaction_type='EXPENSE')
+        queryset = queryset.order_by('-created_at')
         
         # Filter by Category
         categories = self.request.GET.getlist('category')
@@ -1612,6 +1616,7 @@ class RecurringTransactionListView(LoginRequiredMixin, ListView):
 
 class RecurringTransactionManageView(RecurringTransactionListView):
     template_name = 'expenses/recurring_transaction_manage.html'
+    filter_expenses_only = False
 
 class RecurringTransactionCreateView(LoginRequiredMixin, CreateView):
     model = RecurringTransaction
