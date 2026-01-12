@@ -48,4 +48,7 @@ urlpatterns = [
     path('privacy-policy/', TemplateView.as_view(template_name='privacy_policy.html'), name='privacy-policy'),
     path('terms-of-service/', TemplateView.as_view(template_name='terms_of_service.html'), name='terms-of-service'),
     path('contact/', TemplateView.as_view(template_name='contact.html'), name='contact'),
+
+    # to keep alive on render
+    path('ping/', views.ping, name='ping'),
 ]

@@ -1807,3 +1807,6 @@ def demo_login(request):
 
 class PricingView(TemplateView):
     template_name = 'expenses/pricing.html'
+
+def ping(request):
+    return HttpResponse("Pong", status=200)
