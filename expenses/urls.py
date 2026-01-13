@@ -48,6 +48,8 @@ urlpatterns = [
     path('privacy-policy/', TemplateView.as_view(template_name='privacy_policy.html'), name='privacy-policy'),
     path('terms-of-service/', TemplateView.as_view(template_name='terms_of_service.html'), name='terms-of-service'),
     path('contact/', TemplateView.as_view(template_name='contact.html'), name='contact'),
+    path('sitemap.xml', TemplateView.as_view(template_name='sitemap.xml', content_type='text/xml')),
+    path('robots.txt', TemplateView.as_view(template_name='robots.txt', content_type='text/plain')),
 
     # to keep alive on render
     path('ping/', views.ping, name='ping'),

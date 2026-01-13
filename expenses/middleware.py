@@ -22,3 +22,26 @@ class DemoReadOnlyMiddleware:
 
         response = self.get_response(request)
         return response
+
+class TimezoneMiddleware:
+    """
+    Activates the timezone stored in the 'django_timezone' cookie.
+    """
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        import zoneinfo
+        from django.utils import timezone
+        
+        tzname = request.COOKIES.get('django_timezone')
+        if tzname:
+            try:
+                timezone.activate(zoneinfo.ZoneInfo(tzname))
+            except Exception:
+                # If cookie is invalid, fallback to default
+                pass
+        else:
+            timezone.deactivate()
+            
+        return self.get_response(request)

@@ -4,6 +4,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script>
+        const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        document.cookie = "django_timezone=" + tz + "; path=/; SameSite=Lax";
+    </script>
     <meta name="description" content="Turn financial chaos into clarity. TrackMyRupee gives you a precision dashboard to visualize your spending, spot trends, and master your monthly budget—all in one place.">
     <meta name="keywords" content="TrackMyRupee, finance, expense tracker, budget, personal finance, money management, django, rupee tracker">
     <meta name="author" content="Omkar Pathak">
@@ -684,6 +688,30 @@
 
     <!-- Driver.js for Tutorial -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/driver.js@1.0.1/dist/driver.css"/>
+    
+    <!-- Cookie Consent Banner -->
+    <div id="cookieBanner" class="position-fixed bottom-0 start-0 w-100 bg-dark text-white p-3 shadow-lg" style="display: none; z-index: 1050; border-top: 1px solid rgba(255,255,255,0.1);">
+        <div class="container d-flex flex-column flex-md-row justify-content-between align-items-center">
+            <p class="mb-2 mb-md-0 small">
+                We use cookies to enhance your experience and analyze our traffic. By continuing to visit this site you agree to our use of cookies.
+                <a href="{% url 'privacy-policy' %}" class="text-white text-decoration-underline ms-1">Privacy Policy</a>
+            </p>
+            <button id="acceptCookies" class="btn btn-sm btn-primary px-4 rounded-pill fw-bold">Got it!</button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            if (!localStorage.getItem('cookieConsent')) {
+                document.getElementById('cookieBanner').style.display = 'block';
+            }
+            
+            document.getElementById('acceptCookies').addEventListener('click', function() {
+                localStorage.setItem('cookieConsent', 'true');
+                document.getElementById('cookieBanner').style.display = 'none';
+            });
+        });
+    </script>
     
     {% block scripts %}{% endblock %}
 

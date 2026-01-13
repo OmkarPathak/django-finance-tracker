@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /dashboard/
+Disallow: /expenses/
+Disallow: /settings/
+Disallow: /accounts/
+
+Sitemap: https://trackmyrupee.onrender.com/sitemap.xml
