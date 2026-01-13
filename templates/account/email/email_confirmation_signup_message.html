@@ -1,0 +1,44 @@
+{% load i18n %}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>{% trans "Confirm E-mail Address" %}</title>
+</head>
+<body style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+    
+    <div style="text-align: center; margin-bottom: 30px;">
+        <h1 style="color: #0575e6; margin-bottom: 5px;">TrackMyRupee</h1>
+        <p style="color: #666; font-size: 14px; margin-top: 0;">Master Your Money</p>
+    </div>
+
+    <div style="background: #ffffff; border-radius: 8px; border: 1px solid #e1e1e1; padding: 30px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+        <h2 style="color: #333; margin-top: 0;">Welcome aboard!</h2>
+        
+        <p>Hi {{ user.username }},</p>
+        
+        <p>Thank you for joining <strong>TrackMyRupee</strong>. We're excited to help you take control of your finances!</p>
+        
+        <p>To get started, please confirm your email address by clicking the button below:</p>
+        
+        <div style="text-align: center; margin: 30px 0;">
+            <a href="{{ activate_url }}" style="background: linear-gradient(135deg, #00f260 0%, #0575e6 100%); color: white; text-decoration: none; padding: 12px 30px; border-radius: 50px; font-weight: bold; display: inline-block;">Confirm Email Address</a>
+        </div>
+        
+        <p style="font-size: 14px; color: #666;">
+            If the button doesn't work, copy and paste this link into your browser:<br>
+            <a href="{{ activate_url }}" style="color: #0575e6;">{{ activate_url }}</a>
+        </p>
+        
+        <p style="font-size: 14px; color: #999; margin-top: 30px; border-top: 1px solid #eee; padding-top: 20px;">
+            If you didn't create an account with TrackMyRupee, you can safely ignore this email.
+        </p>
+    </div>
+    
+    <div style="text-align: center; margin-top: 20px; font-size: 12px; color: #999;">
+        &copy; {% now "Y" %} TrackMyRupee. All rights reserved.<br>
+        <a href="https://trackmyrupee.onrender.com" style="color: #999; text-decoration: none;">www.trackmyrupee.onrender.com</a>
+    </div>
+
+</body>
+</html>
