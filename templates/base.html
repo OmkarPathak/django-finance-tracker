@@ -463,6 +463,8 @@
                     loadingText = 'Logging in';
                 } else if (isLogout) {
                     loadingText = 'Bye';
+                } else if (submitBtn.textContent.toLowerCase().includes('continue')) {
+                    loadingText = 'Signing in';
                 }
                 
                 setButtonLoading(submitBtn, loadingText);
