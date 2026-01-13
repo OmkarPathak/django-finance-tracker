@@ -58,3 +58,18 @@ class SubscriptionPlanAdmin(admin.ModelAdmin):
     list_display = ('name', 'tier', 'price', 'is_active')
     list_editable = ('price', 'is_active')
     ordering = ('price',)
+
+# Re-register User Admin to include Email Verification inline
+from django.contrib.auth.models import User
+from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
+from allauth.account.models import EmailAddress
+
+class EmailAddressInline(admin.StackedInline):
+    model = EmailAddress
+    extra = 0
+
+class UserAdmin(BaseUserAdmin):
+    inlines = (EmailAddressInline,)
+
+admin.site.unregister(User)
+admin.site.register(User, UserAdmin)

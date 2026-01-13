@@ -352,6 +352,13 @@
 
 
                     <!-- Simple Theme Toggle -->
+                    <!-- Install App Button (Hidden by default) -->
+                    <li class="nav-item" id="installAppContainer" style="display: none;">
+                        <button class="btn btn-outline-primary btn-sm rounded-pill d-flex align-items-center gap-2" id="installAppBtn">
+                            <i class="bi bi-phone"></i> <span>Install App</span>
+                        </button>
+                    </li>
+
                     <li class="nav-item">
                         <button class="btn btn-link nav-link p-1" id="theme-toggle" title="Toggle theme">
                             <i class="bi bi-moon-stars-fill" id="theme-icon"></i>
@@ -361,6 +368,79 @@
             </div>
         </div>
     </nav>
+
+    <!-- iOS Install Instructions Modal -->
+    <div class="modal fade" id="iosInstallModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header border-0 pb-0">
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center pt-0 pb-4">
+                    <div class="mb-3 text-primary">
+                        <i class="bi bi-apple display-1"></i>
+                    </div>
+                    <h5 class="fw-bold mb-3">Install TrackMyRupee</h5>
+                    <p class="text-muted mb-4">Install this app on your iPhone for the best experience.</p>
+                    
+                    <div class="d-flex align-items-center justify-content-center gap-2 mb-3 text-start bg-body-tertiary p-3 rounded">
+                        <i class="bi bi-share fs-4 text-primary"></i>
+                        <span>1. Tap the <strong>Share</strong> button</span>
+                    </div>
+                    <div class="d-flex align-items-center justify-content-center gap-2 text-start bg-body-tertiary p-3 rounded">
+                        <i class="bi bi-plus-square fs-4 text-primary"></i>
+                        <span>2. Scroll down and tap <strong>Add to Home Screen</strong></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PWA Install Logic -->
+    <script>
+        let deferredPrompt;
+        const installBtn = document.getElementById('installAppBtn');
+        const installContainer = document.getElementById('installAppContainer');
+        const isIos = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+        const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+
+        // Only show if not already installed
+        if (!isStandalone) {
+            // Android/Chrome
+            window.addEventListener('beforeinstallprompt', (e) => {
+                e.preventDefault();
+                deferredPrompt = e;
+                installContainer.style.display = 'block';
+            });
+
+            // iOS (Keep visible if iOS, but check specific heuristic if needed)
+            if (isIos) {
+                installContainer.style.display = 'block';
+            }
+        }
+
+        if (installBtn) {
+            installBtn.addEventListener('click', (e) => {
+                if (isIos) {
+                    new bootstrap.Modal(document.getElementById('iosInstallModal')).show();
+                } else if (deferredPrompt) {
+                    deferredPrompt.prompt();
+                    deferredPrompt.userChoice.then((choiceResult) => {
+                        if (choiceResult.outcome === 'accepted') {
+                            installContainer.style.display = 'none';
+                        }
+                        deferredPrompt = null;
+                    });
+                }
+            });
+        }
+
+        window.addEventListener('appinstalled', () => {
+             installContainer.style.display = 'none';
+             deferredPrompt = null;
+             console.log('PWA was installed');
+        });
+    </script>
 
     <main class="container py-4 flex-grow-1">
         {% block content %}{% endblock %}

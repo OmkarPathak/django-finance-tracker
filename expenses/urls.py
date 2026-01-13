@@ -55,8 +55,10 @@ urlpatterns = [
     path('ping/', views.ping, name='ping'),
 
     # Payments
-    path('create-order/', views_payment.create_order, name='create-order'),
-    path('verify-payment/', views_payment.verify_payment, name='verify-payment'),
+    # Payments
+    path('api/create-order/', views_payment.create_order, name='create-order'),
+    path('api/verify-payment/', views_payment.verify_payment, name='verify-payment'),
+    path('api/resend-verification/', views.resend_verification_email, name='resend-verification'),
     
     # Sentry Debug
     path('sentry-debug/', lambda request: 1 / 0),

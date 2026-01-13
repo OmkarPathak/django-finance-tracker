@@ -52,6 +52,23 @@ function startTour(mode = 'standard') {
         if (!el) console.warn(`Step ${index + 1} element not found:`, step.element);
     });
 
+    // Check if Install App button is visible and add step dynamically
+    const installBtn = document.getElementById('installAppBtn');
+    const installContainer = document.getElementById('installAppContainer');
+    
+    // Check if container is visible (style.display not none)
+    if (installContainer && installContainer.offsetWidth > 0 && installContainer.offsetHeight > 0) {
+        steps.push({ 
+            element: '#installAppBtn', 
+            popover: { 
+                title: 'Install App 📲', 
+                description: 'Add TrackMyRupee to your home screen for a fast, native app experience.', 
+                side: "bottom", 
+                align: 'end' 
+            } 
+        });
+    }
+
     // Destroy existing driver if it exists to clean up
     if (tourDriver) {
         tourDriver.destroy();

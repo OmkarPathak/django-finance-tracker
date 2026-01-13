@@ -68,6 +68,52 @@ import calendar
 # from datetime import datetime, date, timedelta
 
 from django.core.management import call_command
+from allauth.account.models import EmailAddress
+import json
+
+def resend_verification_email(request):
+    """
+    AJAX view to resend verification email.
+    """
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            email = data.get('email')
+            
+            # If email is not in body, try to get from logged in user
+            if not email and request.user.is_authenticated:
+                email = request.user.email
+            
+            # Fallback: Check allauth session key
+            if not email:
+                email = request.session.get('account_email')
+
+            if not email:
+                return JsonResponse({'success': False, 'error': 'Email is missing.'}, status=400)
+            
+            try:
+                # Case-insensitive lookup just in case
+                email_address = EmailAddress.objects.filter(email__iexact=email).first()
+                if not email_address:
+                     return JsonResponse({'success': False, 'error': f'Email {email} not found in system.'}, status=404)
+                
+                # Check if already verified
+                if email_address.verified:
+                    return JsonResponse({'success': True, 'message': 'Email already verified.'})
+
+                email_address.send_confirmation(request)
+                return JsonResponse({'success': True, 'message': 'Verification email sent!'})
+
+            except Exception as e:
+                # Log the actual error for debugging
+                import traceback
+                print(traceback.format_exc())
+                return JsonResponse({'success': False, 'error': f'Send failed: {str(e)}'}, status=500)
+                
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': f'Server Error: {str(e)}'}, status=500)
+            
+    return JsonResponse({'success': False, 'error': 'Invalid request method.'}, status=400)
 
 def demo_login(request):
     """
