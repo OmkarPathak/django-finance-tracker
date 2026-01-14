@@ -27,14 +27,24 @@
         // Handle Accept
         document.getElementById('btn-accept-cookies').addEventListener('click', function() {
             localStorage.setItem('cookieConsent', 'accepted');
+            
+            // Update Consent Mode
+            if (typeof gtag === 'function') {
+                gtag('consent', 'update', {
+                    'ad_storage': 'granted',
+                    'ad_user_data': 'granted',
+                    'ad_personalization': 'granted',
+                    'analytics_storage': 'granted'
+                });
+            }
+
             banner.classList.add('d-none');
-            // Reload to enable tracking immediately
-            window.location.reload(); 
         });
 
         // Handle Decline
         document.getElementById('btn-decline-cookies').addEventListener('click', function() {
             localStorage.setItem('cookieConsent', 'declined');
+            // Default is already denied, so just hide banner
             banner.classList.add('d-none');
         });
     });

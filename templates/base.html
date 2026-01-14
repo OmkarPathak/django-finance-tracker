@@ -3,22 +3,34 @@
 
 <head>
     {% if GOOGLE_ANALYTICS_ID %}
-    <!-- Google Analytics (Consent-Aware) -->
+    {% if GOOGLE_ANALYTICS_ID %}
+    <!-- Google Consent Mode v2 -->
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            if (localStorage.getItem('cookieConsent') === 'accepted') {
-                const script = document.createElement('script');
-                script.async = true;
-                script.src = "https://www.googletagmanager.com/gtag/js?id={{ GOOGLE_ANALYTICS_ID }}";
-                document.head.appendChild(script);
+        // Define dataLayer and the gtag function.
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
 
-                window.dataLayer = window.dataLayer || [];
-                function gtag(){dataLayer.push(arguments);}
-                gtag('js', new Date());
-                gtag('config', '{{ GOOGLE_ANALYTICS_ID }}');
-            }
+        // Set default consent to 'denied' as a placeholder
+        // Determine actual status from localStorage
+        const grantState = localStorage.getItem('cookieConsent') === 'accepted' ? 'granted' : 'denied';
+
+        gtag('consent', 'default', {
+          'ad_storage': grantState,
+          'ad_user_data': grantState,
+          'ad_personalization': grantState,
+          'analytics_storage': grantState
         });
     </script>
+    
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id={{ GOOGLE_ANALYTICS_ID }}"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', '{{ GOOGLE_ANALYTICS_ID }}');
+    </script>
+    {% endif %}
     {% endif %}
 
     <meta charset="UTF-8">
