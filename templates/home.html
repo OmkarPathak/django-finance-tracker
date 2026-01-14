@@ -409,27 +409,65 @@
     <!-- Income vs Expenses Chart -->
     <div class="col-md-4">
         <div class="card shadow-lg border-0 h-100 hover-lift fade-in" style="animation-delay: 0.3s">
-            <div class="card-header bg-transparent fw-bold">
-                Income vs Expenses
+            <div class="card-header bg-transparent border-bottom">
+                <span class="fw-bold">Income vs Expenses</span>
             </div>
-            <div class="card-body">
-                <div style="height: 250px; width: 100%;">
+            <div class="card-body d-flex align-items-center justify-content-center p-4">
+                <div class="position-relative" style="height: 180px; width: 180px;">
                     <canvas id="incomeExpensesChart"></canvas>
+                    <div class="position-absolute top-50 start-50 translate-middle text-center">
+                        <span class="h2 fw-bold mb-0" id="ie-percentage">0%</span>
+                    </div>
+                </div>
+                <div class="ms-5">
+                    <h3 class="fw-bold mb-1">Expenses</h3>
+                    <p class="text-muted mb-0 h6">
+                        <span class="fw-bold text-body-emphasis">{{ currency_symbol }}{{ total_expenses|floatformat:0 }}</span> 
+                        of {{ currency_symbol }}{{ total_income|floatformat:0 }} used
+                    </p>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Budget vs Spent Chart -->
+    <!-- Budget vs Spent List -->
     <div class="col-md-4" id="tour-budget-card">
         <div class="card shadow-lg border-0 h-100 hover-lift fade-in" style="animation-delay: 0.4s">
-            <div class="card-header bg-transparent fw-bold">
-                Budget vs Spent
+            <div class="card-header bg-transparent border-bottom">
+                <span class="fw-bold">Budget vs Spent</span>
             </div>
-            <div class="card-body">
+            <div class="card-body px-3 pb-4">
                 {% if has_any_budget %}
-                    <div style="height: 250px; width: 100%;">
-                        <canvas id="budgetChart"></canvas>
+                    <div class="d-flex flex-column gap-1">
+                        {% for item in category_limits|slice:":5" %}
+                            {% if item.limit %}
+                            <div class="category-list-item py-1 px-2 d-flex align-items-center gap-3">
+                                <!-- Left: Name -->
+                                <div class="d-flex align-items-center gap-2" style="width: 35%; flex-shrink: 0;">
+                                    <div class="text-truncate">
+                                        <h6 class="mb-0 fw-semibold text-truncate" title="{{ item.name }}">{{ item.name }}</h6>
+                                    </div>
+                                </div>
+
+                                <!-- Middle: Amount & Progress -->
+                                <div class="d-flex flex-column align-items-end flex-grow-1">
+                                    <div class="d-flex justify-content-between w-100 mb-1 small">
+                                        <span class="fw-bold">{{ currency_symbol }}{{ item.total|floatformat:0 }}</span>
+                                        <span class="text-muted">{{ currency_symbol }}{{ item.limit|floatformat:0 }}</span>
+                                    </div>
+                                    
+                                    <div class="progress w-100 progress-thin">
+                                        <div class="progress-bar {% if item.used_percent > 90 %}progress-gradient-danger{% elif item.used_percent > 80 %}progress-gradient-warning{% else %}progress-gradient-success{% endif %}" 
+                                             role="progressbar" 
+                                             style="width: {{ item.used_percent }}%" 
+                                             aria-valuenow="{{ item.used_percent }}" 
+                                             aria-valuemin="0" 
+                                             aria-valuemax="100"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+                        {% endfor %}
                     </div>
                 {% else %}
                     <div class="h-100 d-flex flex-column justify-content-center align-items-center text-center p-3" style="min-height: 250px;">
@@ -438,9 +476,7 @@
                         </div>
                         <h6 class="fw-bold mb-2">No Budgets Set</h6>
                         <p class="small text-muted mb-3">Set limits for your categories to track spending.</p>
-                        <a href="{% url 'category-list' %}" class="btn btn-outline-primary btn-sm rounded-pill px-3">
-                            <i class="bi bi-plus-lg me-1"></i> Set Budget
-                        </a>
+                        <a href="{% url 'category-list' %}" class="btn btn-primary btn-sm rounded-pill px-4">Set Budget</a>
                     </div>
                 {% endif %}
             </div>
@@ -450,7 +486,7 @@
     <!-- Top 5 Highest Expenses -->
     <div class="col-md-4">
         <div class="card shadow-lg border-0 h-100 hover-lift fade-in" style="animation-delay: 0.5s">
-            <div class="card-header bg-transparent fw-bold">
+            <div class="card-header bg-transparent border-bottom fw-bold">
                 Top 5 Highest Expenses
             </div>
             <div class="card-body">
@@ -467,7 +503,7 @@
     <!-- Trend Chart (Stacked) -->
     <div class="col-md-8">
         <div class="card shadow-lg border-0 h-100">
-            <div class="card-header bg-transparent fw-bold d-flex justify-content-between">
+            <div class="card-header bg-transparent border-bottom fw-bold d-flex justify-content-between">
                 <span>{{ trend_title }} (Stacked by Category)</span>
             </div>
             <div class="card-body">
@@ -480,7 +516,7 @@
     <!-- Category Chart -->
     <div class="col-md-4">
         <div class="card shadow-lg border-0 h-100">
-            <div class="card-header bg-transparent fw-bold">
+            <div class="card-header bg-transparent border-bottom fw-bold">
                 Category Distribution
             </div>
             <div class="card-body">
@@ -502,9 +538,9 @@
     <!-- Recent Transactions Table -->
     <div class="col-md-6">
         <div class="card shadow-lg border-0 h-100">
-            <div class="card-header bg-transparent fw-bold d-flex justify-content-between align-items-center">
-                <span>Recent Transactions</span>
-                <a href="{% url 'expense-list' %}" class="btn btn-sm btn-link text-decoration-none">View All</a>
+            <div class="card-header bg-transparent border-bottom d-flex justify-content-between align-items-center">
+                <span class="fw-bold">Recent Transactions</span>
+                <a href="{% url 'expense-list' %}" class="btn btn-sm btn-link text-decoration-none fw-bold">View All</a>
             </div>
             <div class="card-body p-0">
                 <div class="table-responsive">
@@ -513,6 +549,7 @@
                             <tr>
                                 <th class="ps-3">Date</th>
                                 <th>Description</th>
+                                <th>Category</th>
                                 <th class="text-end pe-3">Amount</th>
                             </tr>
                         </thead>
@@ -521,11 +558,12 @@
                             <tr>
                                 <td class="ps-3 text-nowrap small">{{ expense.date|date:"d M" }}</td>
                                 <td class="text-truncate" style="max-width: 150px;">{{ expense.description }}</td>
+                                <td class="text-nowrap">{{ expense.category }}</td>
                                 <td class="text-end pe-3 fw-bold">{{ expense.amount }}</td>
                             </tr>
                             {% empty %}
                             <tr>
-                                <td colspan="3" class="text-center py-4 text-muted">None</td>
+                                <td colspan="4" class="text-center py-4 text-muted">None</td>
                             </tr>
                             {% endfor %}
                         </tbody>
@@ -535,36 +573,64 @@
         </div>
     </div>
 
-    <!-- Category Summary Table -->
+    <!-- Category Summary List -->
     <div class="col-md-6">
         <div class="card shadow-lg border-0 h-100">
-            <div class="card-header bg-transparent fw-bold">
-                Category Summary
+            <div class="card-header bg-transparent border-bottom d-flex justify-content-between align-items-center">
+                <span class="fw-bold mb-0">Top Categories</span>
+                <a href="{% url 'expense-list' %}" class="btn btn-sm btn-link text-decoration-none fw-bold">View All</a>
             </div>
-            <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="table table-hover table-striped mb-0 text-start align-middle">
-                        <thead>
-                            <tr>
-                                <th class="ps-4">Category</th>
-                                <th class="text-end pe-4">Total Amount</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for item in category_data %}
-                            <tr>
-                                <td class="ps-4">{{ item.category }}</td>
-                                <td class="text-end pe-4 fw-bold">{{ currency_symbol }}{{ item.total|floatformat:2 }}</td>
-                            </tr>
-                            {% empty %}
-                            <tr>
-                                <td colspan="2" class="text-center py-4 text-muted">No data available</td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+            <div class="card-body px-3 pb-4">
+                <div class="d-flex flex-column gap-1">
+                    {% for item in category_limits %}
+                    <div class="category-list-item py-1 px-2 d-flex align-items-center gap-3">
+                        <!-- Left: Name -->
+                        <div class="d-flex align-items-center gap-2" style="width: 35%; flex-shrink: 0;">
+                            <div class="text-truncate">
+                                <h6 class="mb-0 fw-semibold text-truncate" title="{{ item.name }}">{{ item.name }}</h6>
+                            </div>
+                        </div>
+
+                        <!-- Middle: Amount & Progress -->
+                        <div class="d-flex flex-column align-items-end flex-grow-1">
+                            <div class="d-flex justify-content-between w-100 mb-1 small">
+                                <span class="fw-bold">{{ currency_symbol }}{{ item.total|floatformat:0 }}</span>
+                                {% if item.limit %}
+                                    <span class="text-muted">{{ currency_symbol }}{{ item.limit|floatformat:0 }}</span>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Progress Bar -->
+                            {% if item.limit %}
+                            <div class="progress w-100 progress-thin">
+                                <div class="progress-bar {% if item.used_percent > 90 %}progress-gradient-danger{% elif item.used_percent > 80 %}progress-gradient-warning{% else %}progress-gradient-success{% endif %}" 
+                                     role="progressbar" 
+                                     style="width: {{ item.used_percent }}%" 
+                                     aria-valuenow="{{ item.used_percent }}" 
+                                     aria-valuemin="0" 
+                                     aria-valuemax="100"></div>
+                            </div>
+                            {% else %}
+                            <!-- No limit set -> Just a full bar or different visual -->
+                            <!-- No limit set -> Use Info color -->
+                            <div class="progress w-100 progress-thin">
+                                <div class="progress-bar progress-gradient-info" 
+                                     role="progressbar" 
+                                     style="width: 100%; opacity: 0.5;" 
+                                     title="No limit set"></div>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="text-center py-5 text-muted">
+                        <i class="bi bi-inbox fs-1 d-block mb-3 opacity-50"></i>
+                        No expense data available
+                    </div>
+                    {% endfor %}
                 </div>
             </div>
+        </div>
     </div>
 </div>
 {% include 'partials/savings_modal.html' %}
@@ -624,89 +690,62 @@
             return gradient;
         };
 
-        // --- 0. Income vs Expenses Chart ---
+        // --- 0. Income vs Expenses Chart (Donut) ---
         const totalIncome = {{ total_income|stringformat:"f"|default:0 }};
         const totalExpenses = {{ total_expenses|stringformat:"f"|default:0 }};
-        const savings = Math.max(0, totalIncome - totalExpenses);
-
+        let iePercentage = 0;
         const ctxIncome = document.getElementById('incomeExpensesChart').getContext('2d');
-        const gradExpenses = createGradient(ctxIncome, '#FF416C', '#FF4B2B'); // Red/Pink
-        const gradSavings = createGradient(ctxIncome, '#00F260', '#0575E6');  // Green/Blue
+        const gradBlue = createGradient(ctxIncome, '#219EBC', '#8ECAE6');
+        const gradRed = createGradient(ctxIncome, '#E74C3C', '#C0392B');
+        const gradOrange = createGradient(ctxIncome, '#F39C12', '#F1C40F');
 
-        const customLabelsPlugin = {
-            id: 'customLabels',
-            afterDatasetsDraw(chart) {
-                const { ctx } = chart;
-                ctx.save();
-                chart.data.datasets.forEach((dataset, i) => {
-                    const meta = chart.getDatasetMeta(i);
-                    meta.data.forEach((bar, index) => {
-                        const value = dataset.data[index];
-                        if (value > 0 && totalIncome > 0) {
-                            const pct = ((value / totalIncome) * 100).toFixed(0);
-                            const text = `{{ currency_symbol }}${value.toLocaleString()} (${pct}%)`;
-                            const centerX = (bar.base + bar.x) / 2;
-                            const centerY = bar.y;
-                            if (Math.abs(bar.base - bar.x) > 40) {
-                                ctx.font = 'bold 11px sans-serif';
-                                ctx.fillStyle = '#ffffff';
-                                ctx.textAlign = 'center';
-                                ctx.textBaseline = 'middle';
-                                ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
-                                ctx.shadowBlur = 2;
-                                ctx.fillText(text, centerX, centerY);
-                                ctx.shadowBlur = 0;
-                            }
-                        }
-                    });
-                });
-                ctx.restore();
-            }
-        };
+        let chartColor = gradBlue; // Default Blue
+
+        if (totalIncome > 0) {
+            iePercentage = Math.round((totalExpenses / totalIncome) * 100);
+        } else if (totalExpenses > 0) {
+            iePercentage = 100; // No income but expenses exists
+        }
+
+        // Set color based on percentage
+        if (iePercentage > 100) {
+            chartColor = gradRed; // Red if over budget
+            document.getElementById('ie-percentage').classList.add('text-danger');
+        } else if (iePercentage > 80) {
+            chartColor = gradOrange; // Orange warning
+        } else {
+            document.getElementById('ie-percentage').classList.add('text-primary'); // Blue default
+            chartColor = gradBlue; 
+        }
+        
+        document.getElementById('ie-percentage').innerText = iePercentage + '%';
+        if (iePercentage > 100) document.getElementById('ie-percentage').innerText = '>100%';
 
         charts.incomeExpenses = new Chart(ctxIncome, {
-            type: 'bar',
+            type: 'doughnut',
             data: {
-                labels: ['Income Distribution'],
-                datasets: [
-                    {
-                        label: 'Expenses',
-                        data: [totalExpenses],
-                        backgroundColor: gradExpenses,
-                        borderRadius: 4,
-                        barThickness: 50
-                    },
-                    {
-                        label: 'Savings',
-                        data: [savings],
-                        backgroundColor: gradSavings,
-                        borderRadius: 4,
-                        barThickness: 50
-                    }
-                ]
+                labels: ['Expenses', 'Remaining'],
+                datasets: [{
+                    data: [totalExpenses, Math.max(0, totalIncome - totalExpenses)],
+                    backgroundColor: [
+                        chartColor,
+                        currentColors.remaining // Light gray for remaining
+                    ],
+                    borderWidth: 0,
+                    borderRadius: 20,
+                    cutout: '85%',   // Thin ring
+                }]
             },
-            plugins: [customLabelsPlugin],
             options: {
-                indexAxis: 'y',
                 responsive: true,
                 maintainAspectRatio: false,
-                plugins: { 
-                    legend: { display: true, position: 'bottom' },
-                    tooltip: {
-                        callbacks: { label: (c) => c.dataset.label + ': {{ currency_symbol }}' + c.raw.toLocaleString() }
-                    }
+                plugins: {
+                    legend: { display: false },
+                    tooltip: { enabled: false } // Disable tooltip for cleaner look
                 },
-                scales: {
-                    x: { 
-                        stacked: true,
-                        grid: { color: currentColors.grid },
-                        max: totalIncome > 0 ? totalIncome : 1,
-                    },
-                    y: { 
-                        stacked: true,
-                        grid: { display: false }, 
-                        ticks: { display: false } 
-                    } 
+                animation: {
+                    animateScale: true,
+                    animateRotate: true
                 }
             }
         });

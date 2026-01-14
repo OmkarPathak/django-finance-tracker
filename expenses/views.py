@@ -403,6 +403,32 @@ def home_view(request):
     top_labels = [e.description[:20] + '...' if len(e.description) > 20 else e.description for e in top_expenses_qs]
     top_amounts = [float(e.amount) for e in top_expenses_qs]
 
+    # --- NEW: Income vs Expenses Trend Data ---
+    # Re-use the truncation logic determined above
+    if start_date or end_date or (len(selected_months) == 1 and len(selected_years) == 1):
+        trunc_func = TruncDay
+    else:
+        trunc_func = TruncMonth
+        
+    inc_trend = incomes.annotate(period=trunc_func('date')).values('period').annotate(total=Sum('amount')).order_by('period')
+    exp_trend = expenses.annotate(period=trunc_func('date')).values('period').annotate(total=Sum('amount')).order_by('period')
+    
+    # Merge periods
+    inc_periods = set(i['period'] for i in inc_trend)
+    exp_periods = set(e['period'] for e in exp_trend)
+    all_periods_sorted = sorted(list(inc_periods.union(exp_periods)))
+    
+    ie_labels = [p.strftime(date_format) for p in all_periods_sorted]
+    ie_income_data = [float(inc_trend.get(period=p)['total']) if inc_trend.filter(period=p).exists() else 0 for p in all_periods_sorted]
+    # Optimization: Use dict lookup instead of filter inside loop
+    inc_map = {i['period']: float(i['total']) for i in inc_trend}
+    exp_map = {e['period']: float(e['total']) for e in exp_trend}
+    
+    ie_income_data = [inc_map.get(p, 0.0) for p in all_periods_sorted]
+    ie_expense_data = [exp_map.get(p, 0.0) for p in all_periods_sorted]
+    ie_savings_data = [inc_map.get(p, 0.0) - exp_map.get(p, 0.0) for p in all_periods_sorted]
+
+
     # 4. Summary Stats
     total_expenses = expenses.aggregate(Sum('amount'))['amount__sum'] or 0
     transaction_count = expenses.count()
@@ -701,6 +727,11 @@ def home_view(request):
         'trend_title': trend_title,
         'top_labels': top_labels,
         'top_amounts': top_amounts,
+        # New Context
+        'ie_labels': ie_labels,
+        'ie_income_data': ie_income_data,
+        'ie_expense_data': ie_expense_data,
+        'ie_savings_data': ie_savings_data,
         'years': years,
         'all_categories': all_categories,
         'selected_years': selected_years,

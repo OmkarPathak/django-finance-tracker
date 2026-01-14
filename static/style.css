@@ -500,3 +500,46 @@ a:hover {
 .blog-content > *:first-child {
     margin-top: 0;
 }
+
+/* Dashboard Category List Redesign */
+.category-list-item {
+    transition: background-color 0.2s;
+    border-radius: 8px;
+}
+.category-list-item:hover {
+    background-color: rgba(255, 255, 255, 0.03);
+}
+
+.category-icon {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    background-color: rgba(255, 255, 255, 0.05);
+    color: var(--text-muted);
+}
+
+/* Progress Bars */
+.progress-thin {
+    height: 6px;
+    border-radius: 3px;
+    background-color: rgba(255, 255, 255, 0.1);
+}
+[data-bs-theme="light"] .progress-thin {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+/* Category Colors (cycling) */
+.cat-color-0 { background: linear-gradient(45deg, #FFB703, #FF8E00); } /* Honey Yellow */
+.cat-color-1 { background: linear-gradient(45deg, #2ecc71, #25d366); } /* Green */
+.cat-color-2 { background: linear-gradient(45deg, #ff6b6b, #ff4500); } /* OrangeRed */
+.cat-color-3 { background: linear-gradient(45deg, #3498db, #0077b5); } /* Blue */
+.cat-color-4 { background: linear-gradient(45deg, #8E2DE2, #4A00E0); } /* Purple */
+
+/* Semantic Gradient Colors */
+.progress-gradient-success { background: linear-gradient(45deg, #2ecc71, #25d366); }
+.progress-gradient-warning { background: linear-gradient(45deg, #FFB703, #FF8E00); }
+.progress-gradient-danger { background: linear-gradient(45deg, #ff6b6b, #ff4500); }
+.progress-gradient-info { background: linear-gradient(45deg, #3498db, #0077b5); }
