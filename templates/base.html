@@ -3,13 +3,30 @@
 
 <head>
     {% if GOOGLE_ANALYTICS_ID %}
-    <!-- Google Analytics (Standard - No Consent Mode) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id={{ GOOGLE_ANALYTICS_ID }}"></script>
+    <!-- 1. Google Consent Mode v2 (Must be first) -->
     <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-      gtag('config', '{{ GOOGLE_ANALYTICS_ID }}');
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        
+        // Define default consent (denied by default)
+        const grantState = localStorage.getItem('cookieConsent') === 'accepted' ? 'granted' : 'denied';
+        gtag('consent', 'default', {
+            'ad_storage': grantState,
+            'ad_user_data': grantState,
+            'ad_personalization': grantState,
+            'analytics_storage': grantState
+        });
+    </script>
+
+    <!-- 2. Google Tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id={{ GOOGLE_ANALYTICS_ID }}"></script>
+
+    <!-- 3. Google Analytics Config -->
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', '{{ GOOGLE_ANALYTICS_ID }}');
     </script>
     {% endif %}
 
