@@ -20,13 +20,13 @@
 {% endif %}
 
 <!-- Twitter -->
-<meta property="twitter:card" content="summary_large_image">
-<meta property="twitter:title" content="{{ post.title }}">
-<meta property="twitter:description" content="{{ post.summary }}">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="{{ post.title }}">
+<meta name="twitter:description" content="{{ post.summary }}">
 {% if post.image %}
-<meta property="twitter:image" content="{{ post.image.url }}">
+<meta name="twitter:image" content="{{ post.image.url }}">
 {% else %}
-<meta property="twitter:image" content="https://trackmyrupee.com/static/img/og-preview.png">
+<meta name="twitter:image" content="https://trackmyrupee.com/static/img/og-preview.png">
 {% endif %}
 
 <script type="application/ld+json">
