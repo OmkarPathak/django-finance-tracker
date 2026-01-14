@@ -445,3 +445,15 @@ a:hover {
 [data-bs-theme="light"] .img-dark {
     display: none !important;
 }
+
+/* Fix Dropdown Z-Index Issue */
+.navbar .dropdown-menu {
+    z-index: 10000 !important; /* Ensure it sits above everything */
+}
+
+/* Ensure Navbar sits above filters (which have z-index: 1060) */
+/* Essential because backdrop-filter in dark mode creates a new stacking context */
+.navbar:not(.fixed-top) {
+    position: relative;
+    z-index: 2000;
+}

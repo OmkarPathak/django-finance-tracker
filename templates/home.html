@@ -42,6 +42,8 @@
             {% endif %}
             <h1 class="h3 mb-0 d-flex align-items-center gap-2">
                 {% if selected_month and selected_year %}
+                    {{ selected_month|slice:":3" }} {{ selected_year }}
+                {% elif selected_month %}
                     {{ selected_month }}
                 {% else %}
                     Dashboard
@@ -73,7 +75,9 @@
         
         <h1 class="h2 mb-0">
             {% if selected_month and selected_year %}
-                {{ selected_month }} {{ selected_year }}
+                {{ selected_month|slice:":3" }} {{ selected_year }}
+            {% elif selected_month %}
+                {{ selected_month }}
             {% else %}
                 Dashboard
             {% endif %}
