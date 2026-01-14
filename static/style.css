@@ -436,3 +436,12 @@ a:hover {
 .driver-popover {
     transition-duration: 0.1s !important;
 }
+
+/* Theme-aware Image Utility Classes */
+[data-bs-theme="dark"] .img-light {
+    display: none !important;
+}
+
+[data-bs-theme="light"] .img-dark {
+    display: none !important;
+}

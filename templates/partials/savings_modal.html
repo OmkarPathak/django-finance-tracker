@@ -1,0 +1,77 @@
+{% load static %}
+<div class="modal fade" id="savingsMethodModal" tabindex="-1" aria-labelledby="savingsMethodModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+            <div class="modal-header border-0 bg-body-tertiary">
+                <h5 class="modal-title fw-bold d-flex align-items-center" id="savingsMethodModalLabel">
+                    <i class="bi bi-lightbulb-fill text-warning me-2"></i> Our Methodology
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-0">
+                 <section class="py-4 overflow-hidden">
+                    <div class="container-fluid px-4 px-md-5">
+                        <div class="row align-items-center">
+                            <div class="col-lg-5 mb-4 mb-lg-0">
+                                <span class="badge rounded-pill bg-primary bg-opacity-10 text-primary px-3 py-2 mb-3 fw-bold border border-primary border-opacity-10">
+                                    <i class="bi bi-lightbulb-fill me-1"></i> Core Philosophy
+                                </span>
+                                <h2 class="display-6 fw-bold mb-4">The "Pay Yourself First" <span class="text-gradient">Method</span></h2>
+                                <p class="text-muted mb-4">
+                                    TrackMyRupee is designed around a simple but powerful rule: <strong>Treat Savings as an Expense.</strong>
+                                </p>
+                                <div class="d-flex flex-column gap-3">
+                                    <div class="d-flex gap-3">
+                                        <div class="flex-shrink-0">
+                                            <div class="rounded-circle bg-success bg-opacity-10 p-2 text-success">
+                                                <i class="bi bi-1-circle-fill fs-5"></i>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <h6 class="fw-bold mb-1">Income Arrives</h6>
+                                            <p class="text-muted small mb-0">Your monthly salary hits your account.</p>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex gap-3">
+                                        <div class="flex-shrink-0">
+                                            <div class="rounded-circle bg-primary bg-opacity-10 p-2 text-primary">
+                                                <i class="bi bi-2-circle-fill fs-5"></i>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <h6 class="fw-bold mb-1">Savings are Deducted</h6>
+                                            <p class="text-muted small mb-0">Record SIPs, RDs, and Investments as an <strong>Expense Category</strong> named "Savings".</p>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex gap-3">
+                                        <div class="flex-shrink-0">
+                                            <div class="rounded-circle bg-info bg-opacity-10 p-2 text-info">
+                                                <i class="bi bi-3-circle-fill fs-5"></i>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <h6 class="fw-bold mb-1">True Balance</h6>
+                                            <p class="text-muted small mb-0">Income - Expenses (incl. Savings) = Your <strong>Guilt-Free Spending Money</strong>.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-7 text-center">
+                                <div class="mockup-container overflow-x-auto pb-3" style="max-width: 100%;">
+                                    <img src="{% static 'img/savings_method_dark.svg' %}" alt="Savings as Expense Method" class="w-100 hover-scale transition-transform img-dark rounded-4" style="min-width: 700px;">
+                                    <img src="{% static 'img/savings_method.svg' %}" alt="Savings as Expense Method" class="w-100 hover-scale transition-transform img-light rounded-4" style="min-width: 700px;">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+            <div class="modal-footer border-0 bg-body-tertiary justify-content-center">
+                <a href="{% url 'expense-create' %}" class="btn btn-primary rounded-pill px-4">
+                    <i class="bi bi-plus-lg me-2"></i> Add "Savings" Expense
+                </a>
+                <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">Got it</button>
+            </div>
+        </div>
+    </div>
+</div>

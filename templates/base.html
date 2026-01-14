@@ -583,11 +583,69 @@
 
     <!-- Global Loader Overlay -->
     <div id="page-loader" class="position-fixed top-0 start-0 w-100 h-100 d-none justify-content-center align-items-center" 
-         style="background: rgba(255, 255, 255, 0.7); z-index: 9999; backdrop-filter: blur(2px);">
+         style="background: rgba(var(--bs-body-bg-rgb), 0.8); z-index: 10000; backdrop-filter: blur(2px);">
         <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
             <span class="visually-hidden">Loading...</span>
         </div>
     </div>
+
+    <!-- Global Loader Logic -->
+    <script>
+        const loader = document.getElementById('page-loader');
+
+        window.showLoader = function() {
+            if (loader) loader.classList.remove('d-none');
+            if (loader) loader.classList.add('d-flex');
+        };
+
+        window.hideLoader = function() {
+            if (loader) loader.classList.remove('d-flex');
+            if (loader) loader.classList.add('d-none');
+        };
+
+        // Handle Form Submits
+        document.addEventListener('submit', function(e) {
+            // Don't show if default is prevented (validation error)
+            if (!e.defaultPrevented) {
+                const form = e.target;
+                // Check if it's a "no-loader" form or has target="_blank"
+                if (!form.classList.contains('no-loader') && form.target !== '_blank') {
+                    showLoader();
+                }
+            }
+        });
+
+        // Handle Link Clicks
+        document.addEventListener('click', function(e) {
+            const link = e.target.closest('a');
+            
+            // Criteria to show loader:
+            // 1. Is an anchor tag
+            // 2. Has an href
+            // 3. Not opening in new tab/window
+            // 4. Not a hash link (internal anchor)
+            // 5. Not a javascript: link
+            // 6. Does not have 'no-loader' class
+            // 7. Not a download link
+            if (link && link.href && 
+                !e.ctrlKey && !e.metaKey && !e.shiftKey && !e.altKey && 
+                link.target !== '_blank' && 
+                !link.href.includes('#') && 
+                !link.href.startsWith('javascript:') && 
+                !link.classList.contains('no-loader') &&
+                !link.hasAttribute('download')) {
+                
+                // Allow time for ripple effects or other immediate interactions
+                // But generally show immediately
+                showLoader();
+            }
+        });
+
+        // Hide on Back Button (bfcache)
+        window.addEventListener('pageshow', function(event) {
+            hideLoader();
+        });
+    </script>
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"

@@ -40,7 +40,7 @@
                     <i class="bi bi-chevron-left"></i>
                 </a>
             {% endif %}
-            <h1 class="h3 mb-0">
+            <h1 class="h3 mb-0 d-flex align-items-center gap-2">
                 {% if selected_month and selected_year %}
                     {{ selected_month }}
                 {% else %}
@@ -53,9 +53,14 @@
                 </a>
             {% endif %}
         </div>
-        <button class="btn btn-link text-decoration-none text-muted p-0 border-0 fs-6" type="button" data-bs-toggle="collapse" data-bs-target="#dashboardFilters" aria-expanded="false" aria-controls="dashboardFilters">
-            <i class="bi bi-funnel me-1"></i> Filters
-        </button>
+        <div class="d-flex align-items-center gap-2">
+            <button class="btn btn-sm btn-link text-muted p-0" data-bs-toggle="modal" data-bs-target="#savingsMethodModal" title="How it works">
+                <i class="bi bi-info-circle fs-5"></i>
+            </button>
+            <button class="btn btn-link text-decoration-none text-muted p-0 border-0 fs-6" type="button" data-bs-toggle="collapse" data-bs-target="#dashboardFilters" aria-expanded="false" aria-controls="dashboardFilters">
+                <i class="bi bi-funnel me-1"></i> Filters
+            </button>
+        </div>
     </div>
 
     <!-- Desktop Header -->
@@ -74,56 +79,64 @@
             {% endif %}
         </h1>
 
+
         {% if next_month_url %}
             <a href="{{ next_month_url }}" class="btn btn-sm d-flex align-items-center justify-content-center" title="Next Month">
                 <i class="bi bi-chevron-right"></i>
             </a>
         {% endif %}
+
     </div>
     
-    <!-- Desktop Filter Form (Original, Unwrapped) -->
-    <form method="get" class="d-none d-md-flex gap-2 align-items-center bg-body-tertiary p-2 rounded shadow-sm flex-wrap" id="filter-form" style="position: relative; z-index: 1060;">
-        <!-- Date Range -->
-        <div class="input-group input-group-sm" style="width: auto;">
-            <span class="input-group-text bg-body-tertiary">From</span>
-            <input type="date" name="start_date" id="start_date" class="form-control" value="{{ start_date|default:'' }}">
-        </div>
-        <div class="input-group input-group-sm" style="width: auto;">
-            <span class="input-group-text bg-body-tertiary">To</span>
-            <input type="date" name="end_date" id="end_date" class="form-control" value="{{ end_date|default:'' }}">
-        </div>
+    <div class="d-none d-md-flex align-items-center gap-2">
+        <button class="btn btn-sm btn-link text-muted p-0 me-2" data-bs-toggle="modal" data-bs-target="#savingsMethodModal" title="How it works">
+            <i class="bi bi-info-circle fs-5"></i>
+        </button>
+        
+        <!-- Desktop Filter Form (Original, Unwrapped) -->
+        <form method="get" class="d-flex gap-2 align-items-center bg-body-tertiary p-2 rounded shadow-sm flex-wrap" id="filter-form" style="position: relative; z-index: 1060;">
+            <!-- Date Range -->
+            <div class="input-group input-group-sm" style="width: auto;">
+                <span class="input-group-text bg-body-tertiary">From</span>
+                <input type="date" name="start_date" id="start_date" class="form-control" value="{{ start_date|default:'' }}">
+            </div>
+            <div class="input-group input-group-sm" style="width: auto;">
+                <span class="input-group-text bg-body-tertiary">To</span>
+                <input type="date" name="end_date" id="end_date" class="form-control" value="{{ end_date|default:'' }}">
+            </div>
 
-        <div style="min-width: 120px;">
-            <select name="year" id="year-select" class="form-control form-control-sm django-multi-select" multiple placeholder="Years...">
-                {% for y in years %}
-                    <option value="{{ y }}" {% if y|stringformat:"s" in selected_years %}selected{% endif %}>{{ y }}</option>
-                {% endfor %}
-            </select>
-        </div>
-        <div style="min-width: 150px;">
-            <select name="month" id="month-select" class="form-control form-control-sm django-multi-select" multiple placeholder="Months...">
-                {% for num, name in months_list %}
-                    <option value="{{ num }}" {% if num|stringformat:"s" in selected_months %}selected{% endif %}>{{ name }}</option>
-                {% endfor %}
-            </select>
-        </div>
-        <div style="min-width: 150px;">
-             <select name="category" id="category-select" class="form-control form-control-sm django-multi-select" multiple placeholder="Categories...">
-                {% for c in all_categories %}
-                    <option value="{{ c }}" {% if c in selected_categories %}selected{% endif %}>{{ c }}</option>
-                {% endfor %}
-            </select>
-        </div>
-        <!-- Apply & Reset -->
-        <div class="d-flex gap-2">
-            <button type="submit" class="btn btn-primary btn-sm" onclick="showLoader()">
-                <i class="bi bi-filter me-1"></i> Apply
-            </button>
-            <a href="{% url 'home' %}" class="btn btn-outline-secondary btn-sm" onclick="showLoader()">
-                <i class="bi bi-arrow-counterclockwise me-1"></i> Reset
-            </a>
-        </div>
-    </form>
+            <div style="min-width: 120px;">
+                <select name="year" id="year-select" class="form-control form-control-sm django-multi-select" multiple placeholder="Years...">
+                    {% for y in years %}
+                        <option value="{{ y }}" {% if y|stringformat:"s" in selected_years %}selected{% endif %}>{{ y }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div style="min-width: 150px;">
+                <select name="month" id="month-select" class="form-control form-control-sm django-multi-select" multiple placeholder="Months...">
+                    {% for num, name in months_list %}
+                        <option value="{{ num }}" {% if num|stringformat:"s" in selected_months %}selected{% endif %}>{{ name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div style="min-width: 150px;">
+                 <select name="category" id="category-select" class="form-control form-control-sm django-multi-select" multiple placeholder="Categories...">
+                    {% for c in all_categories %}
+                        <option value="{{ c }}" {% if c in selected_categories %}selected{% endif %}>{{ c }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <!-- Apply & Reset -->
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary btn-sm" onclick="showLoader()">
+                    <i class="bi bi-filter me-1"></i> Apply
+                </button>
+                <a href="{% url 'home' %}" class="btn btn-outline-secondary btn-sm" onclick="showLoader()">
+                    <i class="bi bi-arrow-counterclockwise me-1"></i> Reset
+                </a>
+            </div>
+        </form>
+    </div>
 </div>
 
 
@@ -277,66 +290,76 @@
 <div class="row g-4 mb-4">
     <!-- Total Income -->
     <div class="col-6 col-md-3" id="tour-income-card">
-        <div class="card shadow-lg border-0 h-100 hover-lift fade-in" style="animation-delay: 0.0s">
-            <div class="card-body">
-                <h5 class="card-title opacity-75"><i class="bi bi-cash-coin me-2"></i>Total Income</h5>
-                <div class="d-flex flex-wrap align-items-center mb-0 gap-2">
-                    <h2 class="display-6 fw-bold mb-0">{{ currency_symbol }}{{ total_income|floatformat:0 }}</h2>
-                    {% if prev_month_data.income_pct is not None %}
-                        <span class="badge rounded-pill {% if prev_month_data.income_pct >= 0 %}bg-success{% else %}bg-danger{% endif %}" style="font-size: 0.75rem;" title="vs last month">
-                            <i class="bi bi-arrow-{% if prev_month_data.income_pct >= 0 %}up{% else %}down{% endif %}"></i>
-                            {{ prev_month_data.income_pct_abs|floatformat:1 }}%
-                        </span>
-                    {% endif %}
+        <a href="{% url 'income-list' %}" class="text-decoration-none">
+            <div class="card shadow-lg border-0 h-100 hover-lift fade-in" style="animation-delay: 0.0s">
+                <div class="position-absolute top-0 end-0 p-3 opacity-25">
+                    <i class="bi bi-box-arrow-up-right"></i>
                 </div>
-                <small class="text-muted">
-                    {% if start_date %}
-                        Custom Range
-                    {% elif selected_month and selected_year %}
-                        For {{ selected_month }} {{ selected_year }}
-                    {% elif selected_year %}
-                         For {{ selected_year }}
-                    {% else %}
-                        All Time
-                    {% endif %}
-                </small>
+                <div class="card-body">
+                    <h5 class="card-title opacity-75 text-body"><i class="bi bi-cash-coin me-2"></i>Total Income</h5>
+                    <div class="d-flex flex-wrap align-items-center mb-0 gap-2">
+                        <h2 class="display-6 fw-bold mb-0 text-body">{{ currency_symbol }}{{ total_income|floatformat:0 }}</h2>
+                        {% if prev_month_data.income_pct is not None %}
+                            <span class="badge rounded-pill {% if prev_month_data.income_pct >= 0 %}bg-success{% else %}bg-danger{% endif %}" style="font-size: 0.75rem;" title="vs last month">
+                                <i class="bi bi-arrow-{% if prev_month_data.income_pct >= 0 %}up{% else %}down{% endif %}"></i>
+                                {{ prev_month_data.income_pct_abs|floatformat:1 }}%
+                            </span>
+                        {% endif %}
+                    </div>
+                    <small class="text-muted">
+                        {% if start_date %}
+                            Custom Range
+                        {% elif selected_month and selected_year %}
+                            For {{ selected_month }} {{ selected_year }}
+                        {% elif selected_year %}
+                            For {{ selected_year }}
+                        {% else %}
+                            All Time
+                        {% endif %}
+                    </small>
+                </div>
             </div>
-        </div>
+        </a>
     </div>
     <!-- Total Expenses -->
     <div class="col-6 col-md-3" id="tour-expenses-card">
-        <div class="card shadow-lg border-0 h-100 hover-lift fade-in" style="animation-delay: 0.1s">
-            <div class="card-body">
-                <h5 class="card-title opacity-75"><i class="bi bi-wallet2 me-2"></i>Total Expenses</h5>
-                <div class="d-flex flex-wrap align-items-center mb-0 gap-2">
-                    <h2 class="display-6 fw-bold mb-0">{{ currency_symbol }}{{ total_expenses|floatformat:0 }}</h2>
-                    {% if prev_month_data.expense_pct is not None %}
-                        <span class="badge rounded-pill {% if prev_month_data.expense_pct > 0 %}bg-danger{% else %}bg-success{% endif %}" style="font-size: 0.75rem;" title="vs last month">
-                            <i class="bi bi-arrow-{% if prev_month_data.expense_pct > 0 %}up{% else %}down{% endif %}"></i>
-                            {{ prev_month_data.expense_pct_abs|floatformat:1 }}%
-                        </span>
-                    {% endif %}
+        <a href="{% url 'expense-list' %}" class="text-decoration-none">
+            <div class="card shadow-lg border-0 h-100 hover-lift fade-in" style="animation-delay: 0.1s">
+                <div class="position-absolute top-0 end-0 p-3 opacity-25">
+                    <i class="bi bi-box-arrow-up-right"></i>
                 </div>
-                <small class="text-muted">
-                    {% if start_date %}
-                        Custom Range
-                    {% elif selected_month and selected_year %}
-                        For {{ selected_month }} {{ selected_year }}
-                    {% elif selected_year %}
-                         For {{ selected_year }}
-                    {% else %}
-                        All Time
-                    {% endif %}
-                </small>
+                <div class="card-body">
+                    <h5 class="card-title opacity-75 text-body"><i class="bi bi-wallet2 me-2"></i>Total Expenses</h5>
+                    <div class="d-flex flex-wrap align-items-center mb-0 gap-2">
+                        <h2 class="display-6 fw-bold mb-0 text-body">{{ currency_symbol }}{{ total_expenses|floatformat:0 }}</h2>
+                        {% if prev_month_data.expense_pct is not None %}
+                            <span class="badge rounded-pill {% if prev_month_data.expense_pct > 0 %}bg-danger{% else %}bg-success{% endif %}" style="font-size: 0.75rem;" title="vs last month">
+                                <i class="bi bi-arrow-{% if prev_month_data.expense_pct > 0 %}up{% else %}down{% endif %}"></i>
+                                {{ prev_month_data.expense_pct_abs|floatformat:1 }}%
+                            </span>
+                        {% endif %}
+                    </div>
+                    <small class="text-muted">
+                        {% if start_date %}
+                            Custom Range
+                        {% elif selected_month and selected_year %}
+                            For {{ selected_month }} {{ selected_year }}
+                        {% elif selected_year %}
+                            For {{ selected_year }}
+                        {% else %}
+                            All Time
+                        {% endif %}
+                    </small>
+                </div>
             </div>
-        </div>
+        </a>
     </div>
     
     <!-- Savings -->
     <div class="col-6 col-md-3">
         <div class="card shadow-lg border-0 h-100 hover-lift fade-in" style="animation-delay: 0.2s">
             <div class="card-body">
-                <h5 class="card-title opacity-75"><i class="bi bi-piggy-bank me-2"></i>Savings</h5>
+                <h5 class="card-title opacity-75"><i class="bi bi-piggy-bank me-2"></i>Balance</h5>
                 <div class="d-flex flex-wrap align-items-center mb-0 gap-2">
                     <h2 class="display-6 fw-bold mb-0">{{ currency_symbol }}{{ savings|floatformat:0 }}</h2>
                     {% if prev_month_data.savings_pct is not None %}
@@ -540,6 +563,7 @@
             </div>
     </div>
 </div>
+{% include 'partials/savings_modal.html' %}
 {% endif %}
 
 {{ categories|json_script:"categories-data" }}
