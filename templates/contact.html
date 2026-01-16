@@ -7,59 +7,53 @@
             <h1 class="display-4 fw-bold mb-4 text-center">Contact Us</h1>
             <p class="text-muted text-center mb-5">We'd love to hear from you!</p>
 
-            <div class="card shadow-sm border-0 mb-4">
-                <div class="card-body p-4 p-md-5">
-                    <h3 class="h4 fw-bold mb-4 text-center">Send us a message</h3>
-                    <form method="post" action="{% url 'contact' %}">
-                        {% csrf_token %}
-                        <div class="mb-3">
-                            <label for="name" class="form-label">Name</label>
-                            <input type="text" class="form-control" id="name" name="name" required placeholder="Your Name">
-                        </div>
-                        <div class="mb-3">
-                            <label for="email" class="form-label">Email</label>
-                            <input type="email" class="form-control" id="email" name="email" required placeholder="name@example.com" value="{{ request.user.email }}">
-                        </div>
-                        <div class="mb-3">
-                            <label for="subject" class="form-label">Subject</label>
-                            <input type="text" class="form-control" id="subject" name="subject" required placeholder="What is this about?">
-                        </div>
-                        <div class="mb-3">
-                            <label for="message" class="form-label">Message</label>
-                            <textarea class="form-control" id="message" name="message" rows="5" required placeholder="How can we help you?"></textarea>
-                        </div>
-                        <div class="d-grid">
-                            <button type="submit" class="btn btn-primary btn-lg">
-                                <i class="bi bi-send me-2"></i> Send Message
-                            </button>
-                        </div>
-                    </form>
-                </div>
+            <div class="mb-5">
+                <h3 class="h4 fw-bold mb-4 text-center">Send us a message</h3>
+                <form method="post" action="{% url 'contact' %}">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Name</label>
+                        <input type="text" class="form-control" id="name" name="name" required placeholder="Your Name">
+                    </div>
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="email" name="email" required placeholder="name@example.com" value="{{ request.user.email }}">
+                    </div>
+                    <div class="mb-3">
+                        <label for="subject" class="form-label">Subject</label>
+                        <input type="text" class="form-control" id="subject" name="subject" required placeholder="What is this about?">
+                    </div>
+                    <div class="mb-3">
+                        <label for="message" class="form-label">Message</label>
+                        <textarea class="form-control" id="message" name="message" rows="5" required placeholder="How can we help you?"></textarea>
+                    </div>
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="bi bi-send me-2"></i> Send Message
+                        </button>
+                    </div>
+                </form>
             </div>
 
-            <div class="row g-4">
+            <div class="row g-4 justify-content-center">
                 <div class="col-md-6">
-                    <div class="card h-100 shadow-sm border-0">
-                        <div class="card-body p-4 text-center">
-                            <i class="bi bi-github fs-1 text-primary mb-3"></i>
-                            <h4 class="h5 fw-bold">Open Source</h4>
-                            <p class="text-muted small">Check out our code, report bugs, or contribute feature requests on GitHub.</p>
-                            <a href="https://github.com/OmkarPathak/django-finance-tracker" class="btn btn-outline-primary btn-sm" target="_blank">
-                                <i class="bi bi-github me-1"></i> Visit GitHub
-                            </a>
-                        </div>
+                    <div class="p-4 text-center bg-body-tertiary rounded h-100">
+                        <i class="bi bi-github fs-1 text-primary mb-3"></i>
+                        <h4 class="h5 fw-bold">Open Source</h4>
+                        <p class="text-muted small">Check out our code, report bugs, or contribute feature requests on GitHub.</p>
+                        <a href="https://github.com/OmkarPathak/django-finance-tracker" class="btn btn-outline-primary btn-sm" target="_blank">
+                            <i class="bi bi-github me-1"></i> Visit GitHub
+                        </a>
                     </div>
                 </div>
                 <div class="col-md-6">
-                    <div class="card h-100 shadow-sm border-0">
-                         <div class="card-body p-4 text-center">
-                            <i class="bi bi-twitter-x fs-1 text-primary mb-3"></i>
-                            <h4 class="h5 fw-bold">Social</h4>
-                            <p class="text-muted small">Follow us for the latest updates and finance tips.</p>
-                            <a href="#" class="btn btn-outline-primary btn-sm">
-                                <i class="bi bi-twitter-x me-1"></i> Follow @TrackMyRupee
-                            </a>
-                        </div>
+                    <div class="p-4 text-center bg-body-tertiary rounded h-100">
+                        <i class="bi bi-twitter-x fs-1 text-primary mb-3"></i>
+                        <h4 class="h5 fw-bold">Social</h4>
+                        <p class="text-muted small">Follow us for the latest updates and finance tips.</p>
+                        <a href="#" class="btn btn-outline-primary btn-sm">
+                            <i class="bi bi-twitter-x me-1"></i> Follow @TrackMyRupee
+                        </a>
                     </div>
                 </div>
             </div>

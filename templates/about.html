@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+
+{% block title %}About Us - TrackMyRupee{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10 col-xl-8">
+            <h1 class="display-4 fw-bold mb-4 text-center">About Us</h1>
+            
+                    <p class="lead mb-5 text-center">
+                        We are on a mission to simplify personal finance for everyone. TrackMyRupee is built to give you clarity, control, and confidence over your money.
+                    </p>
+
+                    <div class="mb-5">
+                        <h3 class="h4 fw-bold mb-3">Our Story</h3>
+                        <p class="text-muted">
+                            TrackMyRupee started with a simple idea: understanding your finances shouldn't be complicated. We realized that many people struggle to keep track of their daily expenses, subscriptions, and budgets because existing tools were either too complex or too manual.
+                        </p>
+                        <p class="text-muted">
+                            We built TrackMyRupee to be the intuitive, powerful, and privacy-focused solution we always wanted for ourselves. Today, we help thousands of users track their spending, spot trends, and make smarter financial decisions.
+                        </p>
+                    </div>
+
+                    <div class="mb-5">
+                        <h3 class="h4 fw-bold mb-3">What We Belief In</h3>
+                        <ul class="text-muted">
+                            <li class="mb-3"><strong>Simplicity First:</strong> Finance is hard enough. Your tools shouldn't be. We prioritize clean design and ease of use.</li>
+                            <li class="mb-3"><strong>Privacy by Design:</strong> Your financial data is yours. We optimize for security and privacy in everything we build.</li>
+                            <li class="mb-3"><strong>Empowerment:</strong> We believe that financial clarity leads to financial freedom. We give you the data you need to take charge.</li>
+                        </ul>
+                    </div>
+
+                    <div class="mb-0">
+                        <h3 class="h4 fw-bold mb-3">Get in Touch</h3>
+                        <p class="text-muted mb-0">
+                            We love hearing from our users. Whether you have a feature request, feedback, or just want to say hi, feel free to reach out to us.
+                        </p>
+                    </div>
+            
+            <div class="text-center mt-5">
+                <a href="{% url 'contact' %}" class="btn btn-primary btn-lg px-5 rounded-pill shadow-sm">
+                    Contact Us
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

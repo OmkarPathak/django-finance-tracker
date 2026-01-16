@@ -364,20 +364,70 @@
         {% block content %}{% endblock %}
     </main>
 
-    <footer class="mt-auto bg-body-tertiary border-top py-3">
-        <div class="container d-flex flex-column flex-md-row align-items-center justify-content-center justify-content-md-between gap-3">
-            <div class="text-center text-md-start">
-                <p class="text-muted small mb-1">&copy; {% now "Y" %} TrackMyRupee. All rights reserved.</p>
-                <div class="d-flex gap-3 small justify-content-center justify-content-md-start">
-                    <a href="{% url 'privacy-policy' %}" class="text-decoration-none text-muted">Privacy</a>
-                    <a href="{% url 'terms-of-service' %}" class="text-decoration-none text-muted">Terms</a>
-                    <a href="{% url 'contact' %}" class="text-decoration-none text-muted">Contact</a>
+    <footer class="mt-auto bg-body-tertiary border-top pt-5 pb-3">
+        <div class="container">
+            <div class="row g-4 justify-content-between">
+                <!-- Brand & Description -->
+                <div class="col-lg-4 mb-4 mb-lg-0">
+                    <a href="/" class="d-flex align-items-center gap-2 mb-3 text-decoration-none">
+                        <img src="{% static 'img/logo.svg' %}" alt="TMR" width="32" height="32" class="d-inline-block align-text-top rounded-3">
+                        <span class="fs-4 fw-bold text-body">TrackMyRupee</span>
+                    </a>
+                    <p class="text-muted small mb-4">
+                        Turn financial chaos into clarity. TrackMyRupee gives you a precision dashboard to visualize your spending, spot trends, and master your monthly budget.
+                    </p>
+                    <a href="https://rzp.io/rzp/AP7kBG2" target="_blank" class="btn btn-primary btn-sm rounded-pill px-3 shadow-sm">
+                        <i class="bi bi-heart-fill me-1 text-white"></i> Support Us
+                    </a>
+                </div>
+
+                <!-- Links Columns -->
+                <div class="col-lg-8">
+                    <div class="row g-4 justify-content-lg-end">
+                        
+                        <!-- Product Column -->
+                        <div class="col-6 col-sm-4">
+                            <h5 class="fw-bold mb-3 small text-uppercase tracking-wider">Product</h5>
+                            <ul class="list-unstyled mb-0 d-flex flex-column gap-2">
+                                <li><a href="{% if not user.is_authenticated %}{% url 'landing' %}#features{% else %}{% url 'home' %}{% endif %}" class="text-decoration-none text-muted small hover-primary">Features</a></li>
+                                <li><a href="{% if not user.is_authenticated %}{% url 'landing' %}#pricing{% else %}{% url 'pricing' %}{% endif %}" class="text-decoration-none text-muted small hover-primary">Pricing</a></li>
+                                <li><a href="{% url 'blog_list' %}" class="text-decoration-none text-muted small hover-primary">Blog</a></li>
+                                <li><a href="{% url 'demo_login' %}" class="text-decoration-none text-muted small hover-primary">Live Demo</a></li>
+                            </ul>
+                        </div>
+
+                        <!-- Company Column -->
+                        <div class="col-6 col-sm-4">
+                            <h5 class="fw-bold mb-3 small text-uppercase tracking-wider">Company</h5>
+                            <ul class="list-unstyled mb-0 d-flex flex-column gap-2">
+                                <li><a href="{% url 'about' %}" class="text-decoration-none text-muted small hover-primary">About</a></li>
+                                <li><a href="{% url 'contact' %}" class="text-decoration-none text-muted small hover-primary">Contact</a></li>
+                                <!-- <li><a href="#" class="text-decoration-none text-muted small hover-primary">FAQs</a></li> -->
+                            </ul>
+                        </div>
+
+                        <!-- Legal Column -->
+                        <div class="col-6 col-sm-4">
+                            <h5 class="fw-bold mb-3 small text-uppercase tracking-wider">Legal</h5>
+                            <ul class="list-unstyled mb-0 d-flex flex-column gap-2">
+                                <li><a href="{% url 'privacy-policy' %}" class="text-decoration-none text-muted small hover-primary">Privacy Policy</a></li>
+                                <li><a href="{% url 'terms-of-service' %}" class="text-decoration-none text-muted small hover-primary">Terms of Service</a></li>
+                            </ul>
+                        </div>
+                    </div>
                 </div>
             </div>
-            
-            <a href="https://rzp.io/rzp/AP7kBG2" target="_blank" class="btn btn-primary btn-sm rounded-pill px-3 shadow-sm">
-                <i class="bi bi-heart-fill me-1 text-white"></i> <span class="d-none d-sm-inline">Support Us</span><span class="d-inline d-sm-none">Donate</span>
-            </a>
+
+            <hr class="my-4 opacity-10">
+
+            <div class="row align-items-center">
+                <div class="col-md-6 text-center text-md-start mb-3 mb-md-0">
+                    <p class="text-muted small mb-0">&copy; {% now "Y" %} TrackMyRupee. All rights reserved.</p>
+                </div>
+                <div class="col-md-6 text-center text-md-end">
+                   <!-- Social links could go here -->
+                </div>
+            </div>
         </div>
     </footer>
 
@@ -501,7 +551,7 @@
 
     <!-- Global Loader Overlay -->
     <div id="page-loader" class="position-fixed top-0 start-0 w-100 h-100 d-none justify-content-center align-items-center" 
-         style="background: rgba(var(--bs-body-bg-rgb), 0.8); z-index: 10000; backdrop-filter: blur(2px);">
+         style="background: rgba(var(--bs-body-bg-rgb), 0.8); z-index: 20000; backdrop-filter: blur(2px);">
         <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
             <span class="visually-hidden">Loading...</span>
         </div>
@@ -521,42 +571,76 @@
             if (loader) loader.classList.add('d-none');
         };
 
-        // Handle Form Submits
+        // 1. Handle Programmatic Form Submits
+        (function() {
+            const originalSubmit = HTMLFormElement.prototype.submit;
+            HTMLFormElement.prototype.submit = function() {
+                if (!this.classList.contains('no-loader') && this.target !== '_blank') {
+                    showLoader();
+                }
+                originalSubmit.apply(this, arguments);
+            };
+        })();
+
+        // 2. Handle Standard Form Submits
         document.addEventListener('submit', function(e) {
-            // Don't show if default is prevented (validation error)
             if (!e.defaultPrevented) {
                 const form = e.target;
-                // Check if it's a "no-loader" form or has target="_blank"
                 if (!form.classList.contains('no-loader') && form.target !== '_blank') {
                     showLoader();
                 }
             }
         });
 
-        // Handle Link Clicks
+        // 3. Handle Link Clicks
         document.addEventListener('click', function(e) {
             const link = e.target.closest('a');
             
-            // Criteria to show loader:
-            // 1. Is an anchor tag
-            // 2. Has an href
-            // 3. Not opening in new tab/window
-            // 4. Not a hash link (internal anchor)
-            // 5. Not a javascript: link
-            // 6. Does not have 'no-loader' class
-            // 7. Not a download link
-            if (link && link.href && 
-                !e.ctrlKey && !e.metaKey && !e.shiftKey && !e.altKey && 
-                link.target !== '_blank' && 
-                !link.href.includes('#') && 
-                !link.href.startsWith('javascript:') && 
-                !link.classList.contains('no-loader') &&
-                !link.hasAttribute('download')) {
-                
-                // Allow time for ripple effects or other immediate interactions
-                // But generally show immediately
-                showLoader();
+            if (!link || !link.href) return;
+            
+            // Ignore modifiers and new tabs
+            if (e.ctrlKey || e.metaKey || e.shiftKey || e.altKey || link.target === '_blank') return;
+            
+            // Ignore download links
+            if (link.hasAttribute('download')) return;
+            
+            // Ignore explicit no-loader
+            if (link.classList.contains('no-loader')) return;
+
+            // Ignore UI Toggles (Bootstrap, etc)
+            if (link.hasAttribute('data-bs-toggle') || link.hasAttribute('data-bs-dismiss')) return;
+
+            // Ignore standard protocols that don't unload page
+            if (link.href.startsWith('javascript:') || 
+                link.href.startsWith('mailto:') || 
+                link.href.startsWith('tel:')) return;
+
+            // Robust Hash Check
+            const hrefAttr = link.getAttribute('href');
+            if (!hrefAttr || hrefAttr === '#') return; // Empty or just hash
+            
+            // Check for in-page anchors
+            if (hrefAttr.startsWith('#')) {
+                return;
             }
+
+            // Check if it's a full URL processing to the same page with a hash
+            // e.g. /path/to/page#section vs /path/to/page
+            try {
+                const url = new URL(link.href);
+                const isSamePage = (url.origin === location.origin) && 
+                                   (url.pathname === location.pathname) && 
+                                   (url.search === location.search);
+                
+                if (isSamePage && url.hash) {
+                    return;
+                }
+            } catch (err) {
+                // If URL parsing fails, assume it's just a path and proceed
+            }
+
+            // Show loader for all valid navigations
+            showLoader();
         });
 
         // Hide on Back Button (bfcache)

@@ -192,98 +192,67 @@
 
 <!-- Emotional Insights Section -->
 {% if insights %}
-<!-- Desktop: Collapsible Insight Bar -->
-<div class="d-none d-md-block mb-4 fade-in">
-    <div class="card border-0 shadow-lg overflow-hidden">
-        <button class="btn btn-card-header w-100 text-start d-flex justify-content-between align-items-center p-3 border-0 bg-body-tertiary" 
-                type="button" data-bs-toggle="collapse" data-bs-target="#desktopInsightsCollapse" 
-                aria-expanded="false" aria-controls="desktopInsightsCollapse" id="desktopInsightsToggle">
-            <div class="d-flex align-items-center">
-                <i class="bi bi-lightbulb-fill text-warning me-2 fs-5"></i> 
-                <span class="fw-bold h6 mb-0">This Month's Insights</span>
-                <span class="badge rounded-pill bg-primary ms-2 opacity-75">{{ insights|length }}</span>
-            </div>
-            <i class="bi bi-chevron-down transition-transform" id="desktopInsightsIcon"></i>
-        </button>
-        <div class="collapse" id="desktopInsightsCollapse">
-            <div class="card-body p-3 bg-body bg-opacity-50">
-                <div class="row g-3">
-                    {% for insight in insights %}
-                    <div class="col-12">
-                        <div class="alert alert-{{ insight.type }} border-0 shadow-sm d-flex align-items-center justify-content-between gap-3 mb-0" role="alert">
-                            <div class="d-flex align-items-center gap-3">
-                                <div class="p-2 rounded-circle bg-white bg-opacity-25 d-flex align-items-center justify-content-center flex-shrink-0" style="width: 42px; height: 42px;">
-                                    <i class="bi bi-{{ insight.icon }} fs-5"></i>
-                                </div>
-                                <div>
-                                    <h6 class="alert-heading fw-bold mb-1 small">{{ insight.title }}</h6>
-                                    <p class="mb-0 small opacity-75">{{ insight.message|safe }}</p>
+<!-- Collapsible Insight Bar (Mobile & Desktop) -->
+<div class="mb-4 fade-in">
+    <div class="accordion" id="insightsAccordion">
+        <div class="accordion-item border-0 shadow-lg overflow-hidden rounded-3">
+            <h2 class="accordion-header" id="headingInsights">
+                <button class="accordion-button collapsed bg-body-tertiary fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#insightsCollapse" aria-expanded="false" aria-controls="insightsCollapse">
+                    <div class="d-flex align-items-center w-100">
+                        <i class="bi bi-lightbulb-fill text-warning me-2 fs-5"></i> 
+                        <span class="fw-bold me-2">This Month's Insights</span>
+                        <span class="badge rounded-pill bg-primary opacity-75 ms-auto me-3">{{ insights|length }}</span>
+                    </div>
+                </button>
+            </h2>
+            <div id="insightsCollapse" class="accordion-collapse collapse" aria-labelledby="headingInsights" data-bs-parent="#insightsAccordion">
+                <div class="accordion-body p-3 bg-body bg-opacity-50">
+                    <div class="row g-3">
+                        {% for insight in insights %}
+                        <div class="col-12">
+                            <div class="alert alert-{{ insight.type }} border-0 shadow-sm d-flex align-items-center justify-content-between gap-3 mb-0" role="alert">
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="p-2 rounded-circle bg-white bg-opacity-25 d-flex align-items-center justify-content-center flex-shrink-0" style="width: 42px; height: 42px;">
+                                        <i class="bi bi-{{ insight.icon }} fs-5"></i>
+                                    </div>
+                                    <div>
+                                        <h6 class="alert-heading fw-bold mb-1 small">{{ insight.title }}</h6>
+                                        <p class="mb-0 small opacity-75">{{ insight.message|safe }}</p>
+                                    </div>
                                 </div>
                             </div>
                         </div>
+                        {% endfor %}
                     </div>
-                    {% endfor %}
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Mobile: Swipeable Carousel -->
-<div class="d-md-none mb-4 fade-in">
-    <h6 class="fw-bold mb-2 ps-1 small text-muted text-uppercase ls-1">Insights</h6>
-    <div id="mobileInsightsCarousel" class="carousel slide shadow-lg rounded-4 overflow-hidden" data-bs-ride="carousel" data-bs-interval="6000">
-        <div class="carousel-inner">
-            {% for insight in insights %}
-            <div class="carousel-item {% if forloop.first %}active{% endif %}">
-                <div class="alert alert-{{ insight.type }} border-0 mb-0 d-flex flex-column justify-content-center p-4 text-center position-relative" style="min-height: 200px;">
-                    <div class="mb-3 d-inline-flex p-3 rounded-circle bg-white bg-opacity-25 mx-auto">
-                        <i class="bi bi-{{ insight.icon }} display-6"></i>
-                    </div>
-                    <h5 class="alert-heading fw-bold mb-2">{{ insight.title }}</h5>
-                    <p class="mb-0 opacity-85">{{ insight.message|safe }}</p>
-                </div>
-            </div>
-            {% endfor %}
-        </div>
-        {% if insights|length > 1 %}
-        <div class="carousel-indicators position-absolute bottom-0 mb-2">
-            {% for insight in insights %}
-            <button type="button" data-bs-target="#mobileInsightsCarousel" data-bs-slide-to="{{ forloop.counter0 }}" 
-                    class="{% if forloop.first %}active{% endif %} bg-secondary opacity-50" aria-current="true" 
-                    style="width: 6px; height: 6px; border-radius: 50%;"></button>
-            {% endfor %}
-        </div>
-        {% endif %}
-    </div>
-</div>
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Desktop Collapse Persistance
-        const collapseElement = document.getElementById('desktopInsightsCollapse');
-        const toggleIcon = document.getElementById('desktopInsightsIcon');
+        // Insights Collapse Persistence
+        const collapseElement = document.getElementById('insightsCollapse');
         const storageKey = 'trackmyrupee_insights_expanded';
         
         // 1. Restore State
-        const isExpanded = localStorage.getItem(storageKey) === 'true';
-        if (isExpanded && collapseElement) {
-            collapseElement.classList.add('show');
-            if(toggleIcon) toggleIcon.style.transform = 'rotate(180deg)';
-            if(document.getElementById('desktopInsightsToggle')) {
-                document.getElementById('desktopInsightsToggle').setAttribute('aria-expanded', 'true');
-            }
+        if (collapseElement) {
+             const isExpanded = localStorage.getItem(storageKey) === 'true';
+             if (isExpanded) {
+                 const bsCollapse = new bootstrap.Collapse(collapseElement, { toggle: false });
+                 bsCollapse.show();
+             }
         }
 
         // 2. Listen for Toggles
         if (collapseElement) {
-            collapseElement.addEventListener('show.bs.collapse', function () {
+            collapseElement.addEventListener('shown.bs.collapse', function () {
                 localStorage.setItem(storageKey, 'true');
-                if(toggleIcon) toggleIcon.style.transform = 'rotate(180deg)';
             });
-            collapseElement.addEventListener('hide.bs.collapse', function () {
+            collapseElement.addEventListener('hidden.bs.collapse', function () {
                 localStorage.setItem(storageKey, 'false');
-                if(toggleIcon) toggleIcon.style.transform = 'rotate(0deg)';
             });
         }
     });

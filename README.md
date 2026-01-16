@@ -21,7 +21,7 @@ Slice and dice your financial data. Filter by **Year**, **Month**, **Category**,
 
 ### 4. Recurring Transactions
 Set it and forget it. Automate your regular income and expenses (like rent or subscriptions) so you never miss an entry.
-![Recurring Transactions Screenshot](misc/recurring.png)
+![Recurring Transactions Screenshot](misc/subscriptions.png)
 
 ### 5. Category Management & Limits
 Create custom categories and set monthly spending limits. The dashboard visualizes your progress against these limits.

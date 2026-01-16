@@ -682,18 +682,67 @@
     </section>
 
     <!-- Footer -->
-    <footer class="py-5 border-top border-secondary border-opacity-10 text-center">
+    <!-- Footer -->
+    <footer class="mt-auto bg-body-tertiary border-top pt-5 pb-3">
         <div class="container">
-            <div class="navbar-brand fw-bold mb-4 d-inline-block">
-                <i class="bi bi-graph-up-arrow text-gradient me-2"></i> TrackMyRupee
+            <div class="row g-4 justify-content-between">
+                <!-- Brand & Description -->
+                <div class="col-lg-4 mb-4 mb-lg-0">
+                    <a href="/" class="d-flex align-items-center gap-2 mb-3 text-decoration-none">
+                        <img src="{% static 'img/logo.svg' %}" alt="TMR" width="32" height="32" class="d-inline-block align-text-top rounded-3">
+                        <span class="fs-4 fw-bold text-body">TrackMyRupee</span>
+                    </a>
+                    <p class="text-muted small mb-4">
+                        Turn financial chaos into clarity. TrackMyRupee gives you a precision dashboard to visualize your spending, spot trends, and master your monthly budget.
+                    </p>
+                    <a href="https://rzp.io/rzp/AP7kBG2" target="_blank" class="btn btn-primary btn-sm rounded-pill px-3 shadow-sm">
+                        <i class="bi bi-heart-fill me-1 text-white"></i> Support Us
+                    </a>
+                </div>
+
+                <!-- Links Columns -->
+                <div class="col-lg-8">
+                    <div class="row g-4 justify-content-lg-end">
+                        
+                        <!-- Product Column -->
+                        <div class="col-6 col-sm-4">
+                            <h5 class="fw-bold mb-3 small text-uppercase tracking-wider">Product</h5>
+                            <ul class="list-unstyled mb-0 d-flex flex-column gap-2">
+                                <li><a href="#features" class="text-decoration-none text-muted small hover-primary">Features</a></li>
+                                <li><a href="#pricing" class="text-decoration-none text-muted small hover-primary">Pricing</a></li>
+                                <li><a href="{% url 'blog_list' %}" class="text-decoration-none text-muted small hover-primary">Blog</a></li>
+                                <li><a href="{% url 'demo_login' %}" class="text-decoration-none text-muted small hover-primary">Live Demo</a></li>
+                            </ul>
+                        </div>
+
+                        <!-- Company Column -->
+                        <div class="col-6 col-sm-4">
+                            <h5 class="fw-bold mb-3 small text-uppercase tracking-wider">Company</h5>
+                            <ul class="list-unstyled mb-0 d-flex flex-column gap-2">
+                                <li><a href="{% url 'about' %}" class="text-decoration-none text-muted small hover-primary">About</a></li>
+                                <li><a href="{% url 'contact' %}" class="text-decoration-none text-muted small hover-primary">Contact</a></li>
+                            </ul>
+                        </div>
+
+                        <!-- Legal Column -->
+                        <div class="col-6 col-sm-4">
+                            <h5 class="fw-bold mb-3 small text-uppercase tracking-wider">Legal</h5>
+                            <ul class="list-unstyled mb-0 d-flex flex-column gap-2">
+                                <li><a href="{% url 'privacy-policy' %}" class="text-decoration-none text-muted small hover-primary">Privacy Policy</a></li>
+                                <li><a href="{% url 'terms-of-service' %}" class="text-decoration-none text-muted small hover-primary">Terms of Service</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="d-flex justify-content-center gap-4 mb-4">
-                <a href="{% url 'privacy-policy' %}" class="text-secondary text-decoration-none">Privacy Policy</a>
-                <a href="{% url 'terms-of-service' %}" class="text-secondary text-decoration-none">Terms of Service</a>
-                <a href="{% url 'blog_list' %}" class="text-secondary text-decoration-none">Blogs</a>
-                <a href="{% url 'contact' %}" class="text-secondary text-decoration-none">Contact Us</a>
+
+            <hr class="my-4 opacity-10">
+
+            <div class="row align-items-center">
+                <div class="col-md-6 text-center text-md-start mb-3 mb-md-0">
+                    <p class="text-muted small mb-0">&copy; {% now "Y" %} TrackMyRupee. All rights reserved.</p>
+                </div>
             </div>
-            <p class="text-muted small mb-0">&copy; 2026 TrackMyRupee Platform. All rights reserved.</p>
         </div>
     </footer>
 
