@@ -16,7 +16,7 @@
         </button>
 
         <div class="collapse navbar-collapse" id="navbarContent">
-            <ul class="navbar-nav ms-auto align-items-center gap-lg-3">
+            <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-3">
                 
                 <!-- Authenticated User Links -->
                 {% if user.is_authenticated %}
@@ -40,11 +40,7 @@
                             Calendar
                         </a>
                     </li>
-                    <li class="nav-item">
-                        <a href="{% url 'settings-home' %}" class="nav-link {% if 'settings' in request.resolver_match.url_name or 'profile' in request.resolver_match.url_name %}active{% endif %}">
-                            Settings
-                        </a>
-                    </li>
+                    <!-- Settings Link (Removed, moving to dropdown) -->
 
                     <!-- Vertical Divider (Desktop) -->
                     <li class="nav-item d-none d-lg-flex align-items-center mx-2">
@@ -63,10 +59,73 @@
                         </ul>
                     </li>
 
-                    <li class="nav-item">
+                    <!-- User Dropdown (Desktop Only) -->
+                    <li class="nav-item dropdown d-none d-lg-block ms-2">
+                        <a class="nav-link dropdown-toggle d-flex align-items-center no-arrow p-0" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <div class="rounded-circle text-primary fw-bold border d-flex align-items-center justify-content-center" style="width: 38px; height: 38px; font-size: 0.9rem;">
+                                {% if user.first_name and user.last_name %}
+                                    {{ user.first_name|slice:":1" }}{{ user.last_name|slice:":1" }}
+                                {% else %}
+                                    {{ user.username|slice:":2"|upper }}
+                                {% endif %}
+                            </div>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 mt-2 p-2" style="min-width: 200px; border-radius: 12px;">
+                            <li>
+                                <div class="px-3 py-2 border-bottom mb-2">
+                                    <h6 class="mb-0 fw-bold text-truncate">{{ user.get_full_name|default:user.username }}</h6>
+                                    <small class="text-muted text-truncate d-block" style="max-width: 180px;">{{ user.email }}</small>
+                                </div>
+                            </li>
+                            <li>
+                                <a class="dropdown-item rounded py-2 d-flex align-items-center gap-2" href="{% url 'settings-home' %}">
+                                    <i class="bi bi-gear"></i> Settings
+                                </a>
+                            </li>
+                            <li>
+                                <button class="dropdown-item rounded py-2 d-flex align-items-center gap-2 theme-toggle-btn" type="button">
+                                    <i class="bi bi-moon-stars-fill theme-icon-active"></i> Theme
+                                </button>
+                            </li>
+                            <li><hr class="dropdown-divider my-2"></li>
+                            <li>
+                                <form action="{% url 'account_logout' %}" method="post" class="d-block w-100 mb-0">
+                                    {% csrf_token %}
+                                    <button type="submit" class="dropdown-item rounded py-2 d-flex align-items-center gap-2 text-danger">
+                                        <i class="bi bi-box-arrow-right"></i> Logout
+                                    </button>
+                                </form>
+                            </li>
+                        </ul>
+                    </li>
+
+                    <!-- Mobile User Options (Visible only on mobile) -->
+                    <li class="nav-item d-lg-none mt-3 border-top pt-3">
+                        <div class="mb-2">
+                            <div class="d-flex align-items-center gap-2">
+                                <div>
+                                    <h6 class="mb-0 fw-bold small text-truncate">{{ user.get_full_name|default:user.username }}</h6>
+                                    <small class="text-muted small text-truncate d-block">{{ user.email }}</small>
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+                    <li class="nav-item d-lg-none">
+                        <a href="{% url 'settings-home' %}" class="nav-link">
+                           <i class="bi bi-gear me-2"></i> Settings
+                        </a>
+                    </li>
+                    <li class="nav-item d-lg-none">
+                        <button class="nav-link btn btn-link text-decoration-none ps-0 ms-0 theme-toggle-btn w-100 text-start" type="button">
+                            <i class="bi bi-moon-stars-fill theme-icon-active me-2"></i> Theme
+                        </button>
+                    </li>
+                    <li class="nav-item d-lg-none">
                         <form action="{% url 'account_logout' %}" method="post" class="d-inline">
                             {% csrf_token %}
-                            <button type="submit" class="nav-link btn btn-link text-decoration-none">Logout</button>
+                            <button type="submit" class="nav-link btn btn-link text-decoration-none text-danger ps-0 ms-0">
+                                <i class="bi bi-box-arrow-right me-2"></i> Logout
+                            </button>
                         </form>
                     </li>
 
@@ -99,11 +158,7 @@
                 {% endif %}
 
                 <!-- Theme Toggle & Install App -->
-                <li class="nav-item ms-lg-2">
-                    <button class="btn btn-link nav-link p-1" id="theme-toggle" title="Toggle theme">
-                        <i class="bi bi-moon-stars-fill" id="theme-icon"></i>
-                    </button>
-                </li>
+                <!-- Theme Toggle & Install App (Removed, moved to dropdown) -->
             </ul>
         </div>
     </div>
