@@ -513,16 +513,16 @@
             <div class="card-body p-0">
                 <div class="list-group list-group-flush">
                     {% for expense in recent_transactions %}
-                    <div class="list-group-item border-0 d-flex align-items-center py-3 px-3 hover-bg-light position-relative">
+                    <div class="list-group-item border-0 d-flex align-items-center py-3 px-2 px-md-3 hover-bg-light position-relative">
                         <!-- Icon / Avatar -->
-                        <div class="icon-shape icon-shape-md rounded-circle bg-primary-subtle text-primary fw-bold fs-5 me-3 d-flex align-items-center justify-content-center flex-shrink-0" style="width: 45px; height: 45px;">
+                        <div class="icon-shape icon-shape-md rounded-circle bg-primary-subtle text-primary fw-bold fs-5 me-2 me-md-3 d-flex align-items-center justify-content-center flex-shrink-0" style="width: 45px; height: 45px;">
                             {{ expense.category|first|upper }}
                         </div>
                         
                         <!-- Middle Content -->
-                        <div class="flex-grow-1 min-w-0 me-3">
+                        <div class="flex-grow-1 me-2 me-md-3" style="min-width: 0;">
                             <h6 class="mb-0 fw-bold text-truncate">{{ expense.description }}</h6>
-                            <small class="text-muted">
+                            <small class="text-muted d-block text-truncate">
                                 {{ expense.date|date:"M d" }} • {{ expense.category }}
                             </small>
                         </div>
