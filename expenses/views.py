@@ -19,10 +19,11 @@ from django.utils import timezone
 from datetime import datetime, date, timedelta
 import calendar
 
-from .models import Expense, Category, Income, RecurringTransaction, UserProfile
+from .models import Expense, Category, Income, RecurringTransaction, UserProfile, SubscriptionPlan
 from .forms import ExpenseForm, IncomeForm, RecurringTransactionForm, ProfileUpdateForm, CustomSignupForm
 from allauth.socialaccount.models import SocialAccount
 import openpyxl
+import calendar
 
 
 # ... existing imports ...
@@ -56,17 +57,7 @@ def create_category_ajax(request):
             return JsonResponse({'success': False, 'error': str(e)}, status=500)
             
     return JsonResponse({'success': False, 'error': 'Invalid request method.'}, status=405)
-from .models import Expense, Category, Income, RecurringTransaction, UserProfile, SubscriptionPlan
-from .forms import ExpenseForm, IncomeForm, RecurringTransactionForm
-import openpyxl
-import calendar
-# Duplicate imports removed for clarity, assuming they were part of the original document's structure.
-# from .models import Expense, Category, Income, RecurringTransaction, UserProfile
-# from .forms import ExpenseForm, IncomeForm, RecurringTransactionForm
-# import openpyxl
-# import calendar
-# from datetime import datetime, date, timedelta
-
+# Duplicate imports removed
 from django.core.management import call_command
 from allauth.account.models import EmailAddress
 import json
