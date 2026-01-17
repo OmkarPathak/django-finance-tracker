@@ -155,6 +155,17 @@
                             <a href="{% url 'signup' %}" class="btn btn-primary"><i class="bi bi-person-plus me-1"></i> Sign Up</a>
                         {% endif %}
                     </li>
+                    <!-- Theme Toggle for Guests -->
+                    <li class="nav-item ms-lg-2 d-none d-lg-block">
+                         <button class="nav-link btn btn-link text-decoration-none theme-toggle-btn p-2" type="button" title="Toggle Theme">
+                            <i class="bi bi-moon-stars-fill theme-icon-active fs-5"></i>
+                        </button>
+                    </li>
+                    <li class="nav-item d-lg-none mt-2 border-top pt-2">
+                         <button class="nav-link btn btn-link text-decoration-none ps-0 ms-0 theme-toggle-btn w-100 text-start" type="button">
+                            <i class="bi bi-moon-stars-fill theme-icon-active me-2"></i> Theme
+                        </button>
+                    </li>
                 {% endif %}
 
                 <!-- Theme Toggle & Install App -->

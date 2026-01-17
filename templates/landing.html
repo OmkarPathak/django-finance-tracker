@@ -756,29 +756,31 @@
         });
 
         // Theme Toggle Logic
+        // Theme Toggle Logic
         document.addEventListener('DOMContentLoaded', () => {
-            const toggleBtn = document.getElementById('theme-toggle');
-            const icon = toggleBtn.querySelector('i');
             const html = document.documentElement;
             
             // Check saved theme or default to light
             const savedTheme = localStorage.getItem('theme') || 'light';
             setTheme(savedTheme);
 
-            if(toggleBtn) {
-                toggleBtn.addEventListener('click', () => {
+            // Bind click events to ALL toggle buttons (desktop & mobile)
+            const toggleBtns = document.querySelectorAll('.theme-toggle-btn');
+            toggleBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
                     const currentTheme = html.getAttribute('data-bs-theme');
                     const newTheme = currentTheme === 'light' ? 'dark' : 'light';
                     setTheme(newTheme);
                 });
-            }
+            });
 
             function setTheme(theme) {
                 html.setAttribute('data-bs-theme', theme);
                 localStorage.setItem('theme', theme);
                 
-                // Update Icon
-                if(icon) {
+                // Update ALL Icons
+                const icons = document.querySelectorAll('.theme-icon-active');
+                icons.forEach(icon => {
                     if (theme === 'dark') {
                         icon.classList.remove('bi-moon-stars-fill');
                         icon.classList.add('bi-sun-fill');
@@ -786,7 +788,7 @@
                         icon.classList.remove('bi-sun-fill');
                         icon.classList.add('bi-moon-stars-fill');
                     }
-                }
+                });
             }
         });
     </script>

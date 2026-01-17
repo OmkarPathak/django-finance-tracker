@@ -25,10 +25,17 @@
         }
 
         document.getElementById('btn-accept-cookies').addEventListener('click', function() {
+            // Show loader
+            const btn = this;
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Accepting...';
+            
             localStorage.setItem('cookieConsent', 'accepted');
             
             // Reload to ensure a fresh "Granted" page load for the scanner
-            window.location.reload();
+            setTimeout(() => {
+                window.location.reload();
+            }, 500); // Small delay to let user see the interaction
         });
 
         // Handle Decline
