@@ -232,7 +232,11 @@ RAZORPAY_KEY_SECRET = os.environ.get('RAZORPAY_KEY_SECRET')
 
 # Email Backend Configuration (SMTP)
 # EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_BACKEND = "anymail.backends.brevo.EmailBackend"
+# Email Backend Configuration
+if DEBUG:
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+else:
+    EMAIL_BACKEND = "anymail.backends.brevo.EmailBackend"
 
 # Helper to load key from environment
 ANYMAIL = {
