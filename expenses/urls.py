@@ -61,6 +61,9 @@ urlpatterns = [
     path('api/verify-payment/', views_payment.verify_payment, name='verify-payment'),
     path('api/resend-verification/', views.resend_verification_email, name='resend-verification'),
     
+    # Shared Expenses
+    path('balance-summary/', views.BalanceSummaryView.as_view(), name='balance-summary'),
+    
     # Sentry Debug
     path('sentry-debug/', lambda request: 1 / 0),
 ]

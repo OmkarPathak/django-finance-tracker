@@ -3,10 +3,31 @@ from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
 from allauth.socialaccount.models import SocialAccount
 from .models import Expense, Category, Income, RecurringTransaction
+import json
+from decimal import Decimal
 
 from datetime import date
 
 class ExpenseForm(forms.ModelForm):
+    # Add expense type selection field
+    expense_type = forms.ChoiceField(
+        choices=[('personal', 'Personal Expense'), ('shared', 'Shared Expense')],
+        widget=forms.RadioSelect(attrs={'class': 'form-check-input'}),
+        initial='personal',
+        required=True
+    )
+    
+    # Hidden fields for shared expense data
+    participants_json = forms.CharField(
+        widget=forms.HiddenInput(),
+        required=False
+    )
+    
+    payer_id = forms.CharField(
+        widget=forms.HiddenInput(),
+        required=False
+    )
+    
     class Meta:
         model = Expense
         fields = ['date', 'amount', 'description', 'category', 'payment_method', 'has_cashback', 'cashback_type', 'cashback_value']
@@ -23,6 +44,7 @@ class ExpenseForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
+        self.user = user
         self.fields['date'].initial = date.today
         
         # Make cashback fields optional
@@ -36,6 +58,14 @@ class ExpenseForm(forms.ModelForm):
             # Create choices list: [(name, name), ...]
             choices = [(cat.name, cat.name) for cat in categories]
             self.fields['category'].widget = forms.Select(choices=choices, attrs={'class': 'form-select'})
+            
+            # Pre-populate user as first participant in participants_json
+            default_participant = {
+                'name': user.username,
+                'is_user': True,
+                'share_amount': ''
+            }
+            self.fields['participants_json'].initial = json.dumps([default_participant])
         else:
             self.fields['category'].widget = forms.TextInput(attrs={'class': 'form-control'})
 
@@ -45,11 +75,76 @@ class ExpenseForm(forms.ModelForm):
             return category.strip()
         return category
     
+    def clean_participants_json(self):
+        """Parse and validate participants JSON data."""
+        participants_json = self.cleaned_data.get('participants_json')
+        expense_type = self.data.get('expense_type')
+        
+        # Only validate for shared expenses
+        if expense_type != 'shared':
+            return participants_json
+        
+        if not participants_json:
+            raise forms.ValidationError('Participants data is required for shared expenses.')
+        
+        try:
+            participants = json.loads(participants_json)
+        except json.JSONDecodeError:
+            raise forms.ValidationError('Invalid participants data format.')
+        
+        if not isinstance(participants, list):
+            raise forms.ValidationError('Participants data must be a list.')
+        
+        if len(participants) < 2:
+            raise forms.ValidationError('Shared expenses require at least 2 participants.')
+        
+        # Validate each participant
+        participant_names = []
+        for participant in participants:
+            if not isinstance(participant, dict):
+                raise forms.ValidationError('Each participant must be an object.')
+            
+            name = participant.get('name', '').strip()
+            if not name:
+                raise forms.ValidationError('Participant name cannot be empty.')
+            
+            # Check for duplicate names
+            if name in participant_names:
+                raise forms.ValidationError(f'Participant name must be unique within this expense: {name}')
+            participant_names.append(name)
+            
+            # Validate share amount if provided
+            share_amount = participant.get('share_amount')
+            if share_amount is not None and share_amount != '':
+                try:
+                    share_decimal = Decimal(str(share_amount))
+                    if share_decimal <= 0:
+                        raise forms.ValidationError(f'Share amount must be positive for {name}.')
+                except (ValueError, TypeError):
+                    raise forms.ValidationError(f'Invalid share amount for {name}.')
+        
+        return participants_json
+    
+    def clean_payer_id(self):
+        """Validate payer_id field."""
+        payer_id = self.cleaned_data.get('payer_id')
+        expense_type = self.data.get('expense_type')
+        
+        # Only validate for shared expenses
+        if expense_type != 'shared':
+            return payer_id
+        
+        if not payer_id:
+            raise forms.ValidationError('Payer selection is required for shared expenses.')
+        
+        return payer_id
+    
     def clean(self):
         cleaned_data = super().clean()
         has_cashback = cleaned_data.get('has_cashback')
         cashback_type = cleaned_data.get('cashback_type')
         cashback_value = cleaned_data.get('cashback_value')
+        expense_type = self.data.get('expense_type')
         
         # If cashback is enabled, validate type and value
         if has_cashback:
@@ -57,6 +152,44 @@ class ExpenseForm(forms.ModelForm):
                 self.add_error('cashback_type', 'Please select a cashback type.')
             if not cashback_value or cashback_value <= 0:
                 self.add_error('cashback_value', 'Please enter a valid cashback value.')
+        
+        # Validate shared expense specific fields
+        if expense_type == 'shared':
+            participants_json = cleaned_data.get('participants_json')
+            payer_id = cleaned_data.get('payer_id')
+            amount = cleaned_data.get('amount')
+            
+            if participants_json and amount:
+                try:
+                    participants = json.loads(participants_json)
+                    
+                    # Validate share sum equals total amount
+                    total_shares = Decimal('0')
+                    payer_found = False
+                    
+                    for participant in participants:
+                        share_amount = participant.get('share_amount')
+                        if share_amount is not None and share_amount != '':
+                            total_shares += Decimal(str(share_amount))
+                        
+                        # Check if payer is in participants list
+                        if payer_id and participant.get('name') == payer_id:
+                            payer_found = True
+                    
+                    # Validate share sum equals total
+                    if total_shares > 0 and total_shares != amount:
+                        difference = abs(amount - total_shares)
+                        self.add_error(
+                            None, 
+                            f'Share amounts must sum to total expense amount. Difference: ₹{difference}'
+                        )
+                    
+                    # Validate payer is a participant
+                    if payer_id and not payer_found:
+                        self.add_error('payer_id', 'Payer must be one of the participants.')
+                
+                except (json.JSONDecodeError, ValueError, TypeError) as e:
+                    self.add_error(None, f'Error validating shared expense data: {str(e)}')
         
         return cleaned_data
 

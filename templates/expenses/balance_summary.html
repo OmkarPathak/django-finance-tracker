@@ -1,0 +1,233 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<style>
+    /* Responsive Filter Widths */
+    @media (min-width: 992px) {
+        .filter-w-year { width: 110px; }
+        .filter-w-month { width: 140px; }
+    }
+</style>
+<div class="fade-in">
+    <!-- Mobile Header -->
+    <div class="card-header bg-transparent d-md-none py-3">
+        <div class="d-flex justify-content-between align-items-center">
+            <h2 class="h4 mb-0 fw-bold">Balance Summary</h2>
+            <button class="btn btn-sm btn-link text-decoration-none text-muted p-0 border-0 fs-6" type="button" data-bs-toggle="collapse" data-bs-target="#balanceFilters" aria-expanded="false" aria-controls="balanceFilters">
+                <i class="bi bi-funnel me-1"></i> Filters
+            </button>
+        </div>
+        <p class="text-muted small mb-0 mt-1">Track who owes you and whom you owe.</p>
+    </div>
+
+    <!-- Desktop Header -->
+    <div class="card-header bg-transparent d-none d-md-block py-3">
+        <div class="d-flex justify-content-between align-items-center">
+            <h2 class="h4 mb-0 fw-bold">Balance Summary</h2>
+        </div>
+        <p class="text-muted small mb-0 mt-1">Track who owes you and whom you owe.</p>
+    </div>
+
+    <!-- Filter Form -->
+    <div class="collapse d-md-block" id="balanceFilters" style="z-index: 1040; position: relative;">
+        <form method="get" class="mb-4 bg-body-tertiary p-3 rounded shadow-sm" id="filter-form">
+            <div class="row g-2 align-items-end flex-lg-nowrap">
+                <!-- Year -->
+                <div class="col-6 col-md-auto filter-w-year">
+                    <label for="year-select" class="form-label small text-muted">Year</label>
+                    <select name="year" id="year-select" class="form-control form-control-sm">
+                        <option value="">All Years</option>
+                        {% for yr in years %}
+                            <option value="{{ yr }}" {% if yr == selected_year %}selected{% endif %}>
+                                {{ yr }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <!-- Month -->
+                <div class="col-6 col-md-auto filter-w-month">
+                    <label for="month-select" class="form-label small text-muted">Month</label>
+                    <select name="month" id="month-select" class="form-control form-control-sm">
+                        <option value="">All Months</option>
+                        {% for num, name in months_list %}
+                            <option value="{{ num }}" {% if num == selected_month %}selected{% endif %}>
+                                {{ name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Buttons -->
+                <div class="col-6 col-md-auto">
+                    <button type="submit" class="btn btn-primary btn-sm w-100 w-md-auto">
+                        <i class="bi bi-filter me-1"></i> Apply
+                    </button>
+                </div>
+                <!-- Reset -->
+                <div class="col-6 col-md-auto">
+                    <a href="{% url 'balance-summary' %}" class="btn btn-outline-secondary btn-sm w-100 w-md-auto">
+                        <i class="bi bi-arrow-counterclockwise me-1"></i> Reset
+                    </a>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Filter Status -->
+    {% if filter_applied %}
+    <div class="px-3 mb-3">
+        <div class="alert alert-info py-2 mb-0">
+            <i class="bi bi-info-circle me-1"></i>
+            Showing balances for 
+            {% if selected_month and selected_year %}
+                <strong>{{ month_name }} {{ selected_year }}</strong>
+            {% elif selected_year %}
+                <strong>{{ selected_year }}</strong>
+            {% endif %}
+        </div>
+    </div>
+    {% else %}
+    <div class="px-3 mb-3">
+        <div class="alert alert-secondary py-2 mb-0">
+            <i class="bi bi-calendar-range me-1"></i>
+            Showing balances for <strong>all time</strong>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Overall Summary Cards -->
+    <div class="px-3 mb-3">
+        <div class="row g-2">
+            <div class="col-12 col-md-4">
+                <div class="p-3 border rounded bg-body-tertiary shadow-sm">
+                    <small class="text-muted d-block text-uppercase" style="font-size: 0.7rem; letter-spacing: 0.5px;">People Owe You</small>
+                    <span class="fw-bold text-success fs-4">{{ currency_symbol }}{{ total_owed_to_user|floatformat:2 }}</span>
+                </div>
+            </div>
+            <div class="col-12 col-md-4">
+                <div class="p-3 border rounded bg-body-tertiary shadow-sm">
+                    <small class="text-muted d-block text-uppercase" style="font-size: 0.7rem; letter-spacing: 0.5px;">You Owe People</small>
+                    <span class="fw-bold text-danger fs-4">{{ currency_symbol }}{{ total_user_owes|floatformat:2 }}</span>
+                </div>
+            </div>
+            <div class="col-12 col-md-4">
+                <div class="p-3 border rounded bg-body-tertiary shadow-sm">
+                    <small class="text-muted d-block text-uppercase" style="font-size: 0.7rem; letter-spacing: 0.5px;">Overall Net</small>
+                    <span class="fw-bold {% if overall_net > 0 %}text-success{% elif overall_net < 0 %}text-danger{% else %}text-muted{% endif %} fs-4">
+                        {{ currency_symbol }}{{ overall_net|floatformat:2 }}
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Balance Details -->
+    <div class="card-body p-3">
+        {% if people_owe_user or user_owes_people or settled_people %}
+            
+            <!-- People Who Owe User -->
+            {% if people_owe_user %}
+            <div class="mb-4">
+                <h5 class="fw-bold text-success mb-3">
+                    <i class="bi bi-arrow-down-circle-fill me-2"></i>People Owe You
+                </h5>
+                <div class="list-group">
+                    {% for balance in people_owe_user %}
+                    <div class="list-group-item">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1 fw-bold">{{ balance.name }}</h6>
+                                <small class="text-muted">
+                                    Lent: {{ currency_symbol }}{{ balance.lent|floatformat:2 }} | 
+                                    Borrowed: {{ currency_symbol }}{{ balance.borrowed|floatformat:2 }}
+                                </small>
+                            </div>
+                            <div class="text-end">
+                                <span class="badge bg-success fs-6 px-3 py-2">
+                                    {{ currency_symbol }}{{ balance.net_abs|floatformat:2 }}
+                                </span>
+                                <div class="small text-muted mt-1">owes you</div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- People User Owes -->
+            {% if user_owes_people %}
+            <div class="mb-4">
+                <h5 class="fw-bold text-danger mb-3">
+                    <i class="bi bi-arrow-up-circle-fill me-2"></i>You Owe People
+                </h5>
+                <div class="list-group">
+                    {% for balance in user_owes_people %}
+                    <div class="list-group-item">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1 fw-bold">{{ balance.name }}</h6>
+                                <small class="text-muted">
+                                    Lent: {{ currency_symbol }}{{ balance.lent|floatformat:2 }} | 
+                                    Borrowed: {{ currency_symbol }}{{ balance.borrowed|floatformat:2 }}
+                                </small>
+                            </div>
+                            <div class="text-end">
+                                <span class="badge bg-danger fs-6 px-3 py-2">
+                                    {{ currency_symbol }}{{ balance.net_abs|floatformat:2 }}
+                                </span>
+                                <div class="small text-muted mt-1">you owe</div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Settled People -->
+            {% if settled_people %}
+            <div class="mb-4">
+                <h5 class="fw-bold text-muted mb-3">
+                    <i class="bi bi-check-circle-fill me-2"></i>Settled Up
+                </h5>
+                <div class="list-group">
+                    {% for balance in settled_people %}
+                    <div class="list-group-item">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1 fw-bold">{{ balance.name }}</h6>
+                                <small class="text-muted">
+                                    Lent: {{ currency_symbol }}{{ balance.lent|floatformat:2 }} | 
+                                    Borrowed: {{ currency_symbol }}{{ balance.borrowed|floatformat:2 }}
+                                </small>
+                            </div>
+                            <div class="text-end">
+                                <span class="badge bg-secondary fs-6 px-3 py-2">
+                                    Settled
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+        {% else %}
+            <!-- Empty State -->
+            <div class="text-center py-5">
+                <i class="bi bi-people text-muted display-1 mb-3 d-block"></i>
+                <h4 class="fw-bold text-muted">No Shared Expenses Yet</h4>
+                <p class="text-muted mb-4">
+                    Start creating shared expenses to track balances with friends and family.
+                </p>
+                <a href="{% url 'expense-create' %}" class="btn btn-primary">
+                    <i class="bi bi-plus-lg me-1"></i> Add Shared Expense
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

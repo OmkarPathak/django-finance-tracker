@@ -391,6 +391,34 @@
     </div>
 </div>
 
+<!-- Shared Expenses Balance Card -->
+<div class="row g-4 mb-4">
+    <div class="col-12">
+        <a href="{% url 'balance-summary' %}" class="text-decoration-none">
+            <div class="card shadow-lg border-0 h-100 hover-lift fade-in" style="animation-delay: 0.4s">
+                <div class="position-absolute top-0 end-0 p-3 opacity-25">
+                    <i class="bi bi-box-arrow-up-right"></i>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <h5 class="card-title opacity-75 mb-3">
+                                <i class="bi bi-people-fill me-2"></i>Shared Expenses
+                            </h5>
+                            <p class="text-muted mb-0">
+                                View who owes you and whom you owe for shared expenses
+                            </p>
+                        </div>
+                        <div class="d-none d-md-flex align-items-center justify-content-center bg-primary bg-opacity-10 rounded-circle" style="width: 80px; height: 80px;">
+                            <i class="bi bi-arrow-left-right text-primary display-6"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </a>
+    </div>
+</div>
+
 <div class="row g-4 mb-4">
     <!-- Income vs Expenses Chart -->
     <div class="col-md-4">

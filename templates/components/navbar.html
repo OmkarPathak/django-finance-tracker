@@ -40,6 +40,11 @@
                             Calendar
                         </a>
                     </li>
+                    <li class="nav-item">
+                        <a href="{% url 'balance-summary' %}" class="nav-link {% if 'balance-summary' in request.resolver_match.url_name %}active{% endif %}">
+                            Balances
+                        </a>
+                    </li>
                     <!-- Settings Link (Removed, moving to dropdown) -->
 
                     <!-- Vertical Divider (Desktop) -->

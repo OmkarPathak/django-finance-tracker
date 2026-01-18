@@ -263,7 +263,14 @@
                                 </div>
                             </td>
                             <td class="text-nowrap">{{ expense.date|date:"d M Y" }}</td>
-                            <td>{{ expense.description }}</td>
+                            <td>
+                                {{ expense.description }}
+                                {% if expense.shared_details %}
+                                    <span class="badge bg-info text-white ms-2" title="Shared Expense">
+                                        <i class="bi bi-people-fill"></i> Shared
+                                    </span>
+                                {% endif %}
+                            </td>
                             <td>
                                 <span class="badge bg-secondary opacity-75">{{ expense.category }}</span>
                             </td>

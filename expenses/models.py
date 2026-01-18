@@ -265,3 +265,90 @@ class SubscriptionPlan(models.Model):
 
     def __str__(self):
         return f"{self.name} - ₹{self.price}"
+
+
+class SharedExpense(models.Model):
+    """
+    Represents a shared expense that links to a base Expense and tracks
+    which participant paid for it.
+    """
+    expense = models.OneToOneField(
+        Expense, 
+        on_delete=models.CASCADE, 
+        related_name='shared_details'
+    )
+    payer = models.ForeignKey(
+        'Participant', 
+        on_delete=models.PROTECT, 
+        related_name='paid_expenses'
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Shared: {self.expense.description} - Paid by {self.payer.name}"
+
+
+class Participant(models.Model):
+    """
+    Represents a person involved in a shared expense.
+    """
+    shared_expense = models.ForeignKey(
+        SharedExpense, 
+        on_delete=models.CASCADE, 
+        related_name='participants'
+    )
+    name = models.CharField(max_length=255)
+    is_user = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def save(self, *args, **kwargs):
+        # Trim whitespace from participant names
+        if self.name:
+            self.name = self.name.strip()
+        super().save(*args, **kwargs)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['shared_expense', 'name'],
+                name='unique_participant_per_expense'
+            )
+        ]
+
+    def __str__(self):
+        user_indicator = " (User)" if self.is_user else ""
+        return f"{self.name}{user_indicator}"
+
+
+class Share(models.Model):
+    """
+    Tracks each participant's share of a shared expense.
+    """
+    shared_expense = models.ForeignKey(
+        SharedExpense, 
+        on_delete=models.CASCADE, 
+        related_name='shares'
+    )
+    participant = models.ForeignKey(
+        Participant, 
+        on_delete=models.CASCADE, 
+        related_name='shares'
+    )
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['shared_expense', 'participant'],
+                name='unique_share_per_participant'
+            ),
+            models.CheckConstraint(
+                check=models.Q(amount__gt=0),
+                name='positive_share_amount'
+            )
+        ]
+
+    def __str__(self):
+        return f"{self.participant.name}: ₹{self.amount}"
