@@ -268,7 +268,24 @@
                                 <span class="badge bg-secondary opacity-75">{{ expense.category }}</span>
                             </td>
                             <td>{{ expense.payment_method }}</td>
-                            <td class="fw-bold">{{ expense.amount }}</td>
+                            <td class="fw-bold">
+                                {% if expense.has_cashback %}
+                                    <div>
+                                        <span class="text-decoration-line-through text-muted small">{{ expense.amount|floatformat:2 }}</span>
+                                        <span class="text-success ms-1">{{ expense.effective_amount|floatformat:2 }}</span>
+                                    </div>
+                                    <small class="text-muted">
+                                        <i class="bi bi-cash-coin"></i>
+                                        {% if expense.cashback_type == 'PERCENTAGE' %}
+                                            {{ expense.cashback_value|floatformat:2 }}% cashback
+                                        {% else %}
+                                            ₹{{ expense.cashback_value|floatformat:2 }} cashback
+                                        {% endif %}
+                                    </small>
+                                {% else %}
+                                    {{ expense.amount|floatformat:2 }}
+                                {% endif %}
+                            </td>
                             <td class="text-end pe-4 text-nowrap">
                                 <div class="hstack gap-3 justify-content-end">
                                     <a href="{% url 'expense-edit' expense.pk %}?next={{ request.get_full_path|urlencode }}" class="btn btn-sm btn-link text-decoration-none p-0 d-inline-flex align-items-center" title="Edit" onclick="setButtonLoading(this, '')">

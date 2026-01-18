@@ -9,18 +9,26 @@ from datetime import date
 class ExpenseForm(forms.ModelForm):
     class Meta:
         model = Expense
-        fields = ['date', 'amount', 'description', 'category', 'payment_method']
+        fields = ['date', 'amount', 'description', 'category', 'payment_method', 'has_cashback', 'cashback_type', 'cashback_value']
         widgets = {
             'date': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
             'amount': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
             'description': forms.TextInput(attrs={'class': 'form-control'}),
             'payment_method': forms.Select(attrs={'class': 'form-select'}),
+            'has_cashback': forms.CheckboxInput(attrs={'class': 'form-check-input', 'role': 'switch'}),
+            'cashback_type': forms.Select(attrs={'class': 'form-select'}),
+            'cashback_value': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01', 'min': '0'}),
         }
 
     def __init__(self, *args, **kwargs):
         user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
         self.fields['date'].initial = date.today
+        
+        # Make cashback fields optional
+        self.fields['has_cashback'].required = False
+        self.fields['cashback_type'].required = False
+        self.fields['cashback_value'].required = False
         
         # If user is provided, populate category choices
         if user:
@@ -36,6 +44,21 @@ class ExpenseForm(forms.ModelForm):
         if category:
             return category.strip()
         return category
+    
+    def clean(self):
+        cleaned_data = super().clean()
+        has_cashback = cleaned_data.get('has_cashback')
+        cashback_type = cleaned_data.get('cashback_type')
+        cashback_value = cleaned_data.get('cashback_value')
+        
+        # If cashback is enabled, validate type and value
+        if has_cashback:
+            if not cashback_type:
+                self.add_error('cashback_type', 'Please select a cashback type.')
+            if not cashback_value or cashback_value <= 0:
+                self.add_error('cashback_value', 'Please enter a valid cashback value.')
+        
+        return cleaned_data
 
 class IncomeForm(forms.ModelForm):
     class Meta:

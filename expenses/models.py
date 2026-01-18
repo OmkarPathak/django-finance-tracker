@@ -18,12 +18,44 @@ class Expense(models.Model):
     ]
     payment_method = models.CharField(max_length=50, choices=PAYMENT_OPTIONS, default='Cash')
     
+    # Cashback fields
+    has_cashback = models.BooleanField(default=False)
+    CASHBACK_TYPE_CHOICES = [
+        ('PERCENTAGE', 'Percentage (%)'),
+        ('FIXED', 'Fixed Amount (₹)'),
+    ]
+    cashback_type = models.CharField(max_length=10, choices=CASHBACK_TYPE_CHOICES, blank=True, null=True)
+    cashback_value = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    @property
+    def cashback_amount(self):
+        """Calculate the actual cashback amount based on type and value."""
+        if not self.has_cashback or not self.cashback_value:
+            return 0
+        
+        if self.cashback_type == 'PERCENTAGE':
+            return (self.amount * self.cashback_value) / 100
+        elif self.cashback_type == 'FIXED':
+            return self.cashback_value
+        return 0
+    
+    @property
+    def effective_amount(self):
+        """Calculate the effective expense amount after applying cashback."""
+        return self.amount - self.cashback_amount
 
     def save(self, *args, **kwargs):
         if self.category:
             self.category = self.category.strip()
+        
+        # Reset cashback fields if cashback is disabled
+        if not self.has_cashback:
+            self.cashback_type = None
+            self.cashback_value = None
+        
         super().save(*args, **kwargs)
 
     class Meta:

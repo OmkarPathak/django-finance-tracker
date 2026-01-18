@@ -32,6 +32,7 @@
                                         <th style="min-width: 200px;">Description</th>
                                         <th style="min-width: 200px;">Category</th>
                                         <th style="min-width: 150px;">Payment Method</th>
+                                        <th style="min-width: 100px;">Cashback</th>
                                         <th style="width: 50px;"></th>
                                     </tr>
                                 </thead>
@@ -72,6 +73,33 @@
                                             </td>
                                             {% endif %}
                                         {% endfor %}
+                                        <td class="p-1">
+                                            <button type="button" class="btn btn-sm btn-outline-secondary cashback-toggle-btn" 
+                                                    title="Add cashback" 
+                                                    data-row-index="{{ forloop.counter0 }}">
+                                                <i class="bi bi-cash-coin"></i>
+                                            </button>
+                                            <div class="cashback-fields d-none mt-2" id="cashback-{{ forloop.counter0 }}">
+                                                {% for field in form %}
+                                                    {% if field.name == 'has_cashback' %}
+                                                        <input type="hidden" name="{{ field.html_name }}" value="false" class="cashback-enabled">
+                                                    {% elif field.name == 'cashback_type' %}
+                                                        <select name="{{ field.html_name }}" class="form-select form-select-sm mb-1">
+                                                            <option value="">Type</option>
+                                                            <option value="PERCENTAGE">%</option>
+                                                            <option value="FIXED">₹</option>
+                                                        </select>
+                                                    {% elif field.name == 'cashback_value' %}
+                                                        <input type="number" 
+                                                               name="{{ field.html_name }}" 
+                                                               class="form-control form-control-sm" 
+                                                               placeholder="Value"
+                                                               step="0.01"
+                                                               min="0">
+                                                    {% endif %}
+                                                {% endfor %}
+                                            </div>
+                                        </td>
                                         <td class="text-center">
                                             {% if form.instance.pk %}
                                                 <div class="d-none">{{ form.DELETE }}</div> <!-- Hidden actual checkbox -->
@@ -98,6 +126,7 @@
                     {% else %}
                     
                         {% for field in form %}
+                        {% if field.name != 'cashback_type' and field.name != 'cashback_value' and field.name != 'has_cashback' %}
                         <div class="mb-3">
                             <label class="form-label text-muted">{{ field.label }}</label>
                             {% if field.field.widget.input_type == "checkbox" %}
@@ -131,7 +160,57 @@
                             <div class="text-danger small mt-1">{{ field.errors.0 }}</div>
                             {% endif %}
                         </div>
+                        {% endif %}
                         {% endfor %}
+
+                        <!-- Cashback Toggle -->
+                        <div class="mb-3">
+                            <div class="form-check form-switch">
+                                {{ form.has_cashback }}
+                                <label class="form-check-label" for="{{ form.has_cashback.id_for_label }}">
+                                    <i class="bi bi-cash-coin me-1"></i>Apply Cashback
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Cashback Section -->
+                        <div id="cashback-section" class="{% if not form.has_cashback.value %}d-none{% endif %}">
+                            <div class="card bg-light border-0 mb-3">
+                                <div class="card-body">
+                                    <h6 class="card-subtitle mb-3 text-muted">
+                                        <i class="bi bi-cash-coin me-2"></i>Cashback Details
+                                    </h6>
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label text-muted">{{ form.cashback_type.label }}</label>
+                                            {{ form.cashback_type }}
+                                            {% if form.cashback_type.errors %}
+                                            <div class="text-danger small mt-1">{{ form.cashback_type.errors.0 }}</div>
+                                            {% endif %}
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label text-muted">{{ form.cashback_value.label }}</label>
+                                            <input type="number" 
+                                                name="{{ form.cashback_value.name }}" 
+                                                class="form-control"
+                                                {% if form.cashback_value.value %}value="{{ form.cashback_value.value }}"{% endif %} 
+                                                step="0.01"
+                                                min="0"
+                                                placeholder="Enter value">
+                                            {% if form.cashback_value.errors %}
+                                            <div class="text-danger small mt-1">{{ form.cashback_value.errors.0 }}</div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div id="cashback-preview" class="alert alert-info mb-0" style="display: none;">
+                                        <small>
+                                            <strong>Cashback:</strong> <span id="cashback-amount">₹0</span><br>
+                                            <strong>Effective Amount:</strong> <span id="effective-amount">₹0</span>
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
 
                     {% endif %}
 
@@ -177,9 +256,92 @@
 {% block scripts %}
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        // --- Cashback Toggle Logic ---
+        const hasCashbackCheckbox = document.getElementById('id_has_cashback');
+        const cashbackSection = document.getElementById('cashback-section');
+        const amountInput = document.querySelector('input[name="amount"]');
+        const cashbackTypeSelect = document.querySelector('select[name="cashback_type"]');
+        const cashbackValueInput = document.querySelector('input[name="cashback_value"]');
+        const cashbackPreview = document.getElementById('cashback-preview');
+        const cashbackAmountSpan = document.getElementById('cashback-amount');
+        const effectiveAmountSpan = document.getElementById('effective-amount');
+
+        if (hasCashbackCheckbox && cashbackSection) {
+            hasCashbackCheckbox.addEventListener('change', function() {
+                if (this.checked) {
+                    cashbackSection.classList.remove('d-none');
+                } else {
+                    cashbackSection.classList.add('d-none');
+                    if (cashbackPreview) cashbackPreview.style.display = 'none';
+                }
+            });
+
+            // Calculate and show cashback preview
+            function updateCashbackPreview() {
+                const amount = parseFloat(amountInput?.value) || 0;
+                const cashbackType = cashbackTypeSelect?.value;
+                const cashbackValue = parseFloat(cashbackValueInput?.value) || 0;
+
+                if (hasCashbackCheckbox?.checked && amount > 0 && cashbackValue > 0 && cashbackType) {
+                    let cashbackAmount = 0;
+                    
+                    if (cashbackType === 'PERCENTAGE') {
+                        cashbackAmount = (amount * cashbackValue) / 100;
+                    } else if (cashbackType === 'FIXED') {
+                        cashbackAmount = cashbackValue;
+                    }
+
+                    const effectiveAmount = amount - cashbackAmount;
+
+                    if (cashbackAmountSpan) cashbackAmountSpan.textContent = '₹' + cashbackAmount.toFixed(2);
+                    if (effectiveAmountSpan) effectiveAmountSpan.textContent = '₹' + effectiveAmount.toFixed(2);
+                    if (cashbackPreview) cashbackPreview.style.display = 'block';
+                } else {
+                    if (cashbackPreview) cashbackPreview.style.display = 'none';
+                }
+            }
+
+            // Attach event listeners for real-time preview
+            if (amountInput) amountInput.addEventListener('input', updateCashbackPreview);
+            if (cashbackTypeSelect) cashbackTypeSelect.addEventListener('change', updateCashbackPreview);
+            if (cashbackValueInput) cashbackValueInput.addEventListener('input', updateCashbackPreview);
+
+            // Initial preview on page load
+            updateCashbackPreview();
+        }
+
+        // --- Formset Logic ---
         const addBtn = document.getElementById('add-form');
         const container = document.getElementById('formset-container');
         const totalForms = document.getElementById('id_form-TOTAL_FORMS');
+
+        // Cashback toggle for formset rows
+        document.body.addEventListener('click', function(e) {
+            if (e.target.closest('.cashback-toggle-btn')) {
+                const btn = e.target.closest('.cashback-toggle-btn');
+                const rowIndex = btn.getAttribute('data-row-index');
+                const cashbackDiv = document.getElementById('cashback-' + rowIndex);
+                const cashbackEnabledInput = cashbackDiv.querySelector('.cashback-enabled');
+                
+                if (cashbackDiv.classList.contains('d-none')) {
+                    cashbackDiv.classList.remove('d-none');
+                    btn.classList.remove('btn-outline-secondary');
+                    btn.classList.add('btn-success');
+                    if (cashbackEnabledInput) cashbackEnabledInput.value = 'true';
+                } else {
+                    cashbackDiv.classList.add('d-none');
+                    btn.classList.remove('btn-success');
+                    btn.classList.add('btn-outline-secondary');
+                    if (cashbackEnabledInput) cashbackEnabledInput.value = 'false';
+                    // Clear cashback fields
+                    cashbackDiv.querySelectorAll('input, select').forEach(input => {
+                        if (!input.classList.contains('cashback-enabled')) {
+                            input.value = '';
+                        }
+                    });
+                }
+            }
+        });
 
         // Add Row
         if (addBtn) {
@@ -187,26 +349,32 @@
                 const currentFormCount = parseInt(totalForms.value);
                 const forms = container.getElementsByClassName('form-row');
                 
-                // Clone the first row as a template if no rows exist (edge case), 
-                // but typically we clone the last one. If we deleted all, implementation gets tricky, 
-                // so we won't allow deleting the last new row if it's the only one, or we keep a hidden template.
-                // For simplicity, we assume there's always at least one row or we use the last visible one.
-                
                 let templateRow = forms[forms.length - 1];
                 let newForm = templateRow.cloneNode(true);
                 
-                // Regex to replace numbers in name/id
-                // We need to handle cases where the last row might have index 5 (if we deleted 2,3,4) 
-                // OR we strictly re-index on delete. Strat: strictly re-index on delete makes this simpler?
-                // Actually, just append with new index is safer if we don't hold state.
-                
                 const regex = new RegExp(`form-(\\d+)-`, 'g');
                 newForm.innerHTML = newForm.innerHTML.replace(regex, `form-${currentFormCount}-`);
+                
+                // Update cashback button data-row-index and cashback div id
+                const cashbackBtn = newForm.querySelector('.cashback-toggle-btn');
+                if (cashbackBtn) {
+                    cashbackBtn.setAttribute('data-row-index', currentFormCount);
+                    cashbackBtn.classList.remove('btn-success');
+                    cashbackBtn.classList.add('btn-outline-secondary');
+                }
+                
+                const cashbackDiv = newForm.querySelector('[id^="cashback-"]');
+                if (cashbackDiv) {
+                    cashbackDiv.id = 'cashback-' + currentFormCount;
+                    cashbackDiv.classList.add('d-none');
+                }
                 
                 const inputs = newForm.querySelectorAll('input, select');
                 inputs.forEach(input => {
                     if (input.name.includes('date')) {
                         input.value = new Date().toISOString().split('T')[0];
+                    } else if (input.classList.contains('cashback-enabled')) {
+                        input.value = 'false';
                     } else {
                         input.value = '';
                     }
@@ -216,10 +384,6 @@
                 
                 // Reset text content of non-inputs if any
                 newForm.querySelectorAll('.text-danger').forEach(el => el.remove());
-
-                // IMPORTANT: The cloned row might be an "existing" row (with delete checkbox).
-                // We need to convert it to a "new" row UI (remove hidden DELETE, change button).
-                // But simplified: Just resetting content is usually enough if we verify the "Delete" button.
                 
                 // Change delete button to remove button
                 const actionCell = newForm.querySelector('td.text-center');
