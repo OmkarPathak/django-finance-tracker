@@ -105,16 +105,16 @@
                     <span class="fw-bold text-success fs-4">{{ currency_symbol }}{{ total_owed_to_user|floatformat:2 }}</span>
                 </div>
             </div>
-            <div class="col-12 col-md-4">
+            <div class="col-6 col-md-4">
                 <div class="p-3 border rounded bg-body-tertiary shadow-sm">
                     <small class="text-muted d-block text-uppercase" style="font-size: 0.7rem; letter-spacing: 0.5px;">You Owe People</small>
                     <span class="fw-bold text-danger fs-4">{{ currency_symbol }}{{ total_user_owes|floatformat:2 }}</span>
                 </div>
             </div>
-            <div class="col-12 col-md-4">
+            <div class="col-6 col-md-4">
                 <div class="p-3 border rounded bg-body-tertiary shadow-sm">
                     <small class="text-muted d-block text-uppercase" style="font-size: 0.7rem; letter-spacing: 0.5px;">Overall Net</small>
-                    <span class="fw-bold {% if overall_net > 0 %}text-success{% elif overall_net < 0 %}text-danger{% else %}text-muted{% endif %} fs-4">
+                    <span class="fw-bold {% if overall_net >= 0 %}text-success{% else %}text-danger{% endif %} fs-4">
                         {{ currency_symbol }}{{ overall_net|floatformat:2 }}
                     </span>
                 </div>
@@ -134,12 +134,19 @@
                 </h5>
                 <div class="list-group">
                     {% for balance in people_owe_user %}
-                    <div class="list-group-item">
+                    <div class="list-group-item" data-friend-id="{{ balance.id }}">
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
                                 <h6 class="mb-1 fw-bold">{{ balance.name }}</h6>
+                                {% if balance.email or balance.phone %}
+                                <small class="text-muted d-block mb-1">
+                                    {% if balance.email %}<i class="bi bi-envelope me-1"></i>{{ balance.email }}{% endif %}
+                                    {% if balance.email and balance.phone %} | {% endif %}
+                                    {% if balance.phone %}<i class="bi bi-telephone me-1"></i>{{ balance.phone }}{% endif %}
+                                </small>
+                                {% endif %}
                                 <small class="text-muted">
-                                    Lent: {{ currency_symbol }}{{ balance.lent|floatformat:2 }} | 
+                                    Lent: {{ currency_symbol }}{{ balance.lent|floatformat:2 }} |
                                     Borrowed: {{ currency_symbol }}{{ balance.borrowed|floatformat:2 }}
                                 </small>
                             </div>
@@ -164,12 +171,19 @@
                 </h5>
                 <div class="list-group">
                     {% for balance in user_owes_people %}
-                    <div class="list-group-item">
+                    <div class="list-group-item" data-friend-id="{{ balance.id }}">
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
                                 <h6 class="mb-1 fw-bold">{{ balance.name }}</h6>
+                                {% if balance.email or balance.phone %}
+                                <small class="text-muted d-block mb-1">
+                                    {% if balance.email %}<i class="bi bi-envelope me-1"></i>{{ balance.email }}{% endif %}
+                                    {% if balance.email and balance.phone %} | {% endif %}
+                                    {% if balance.phone %}<i class="bi bi-telephone me-1"></i>{{ balance.phone }}{% endif %}
+                                </small>
+                                {% endif %}
                                 <small class="text-muted">
-                                    Lent: {{ currency_symbol }}{{ balance.lent|floatformat:2 }} | 
+                                    Lent: {{ currency_symbol }}{{ balance.lent|floatformat:2 }} |
                                     Borrowed: {{ currency_symbol }}{{ balance.borrowed|floatformat:2 }}
                                 </small>
                             </div>
@@ -189,15 +203,22 @@
             <!-- Settled People -->
             {% if settled_people %}
             <div class="mb-4">
-                <h5 class="fw-bold text-muted mb-3">
-                    <i class="bi bi-check-circle-fill me-2"></i>Settled Up
+                <h5 class="fw-bold text-secondary mb-3">
+                    <i class="bi bi-check-circle-fill me-2"></i>Settled
                 </h5>
                 <div class="list-group">
                     {% for balance in settled_people %}
-                    <div class="list-group-item">
+                    <div class="list-group-item" data-friend-id="{{ balance.id }}">
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
                                 <h6 class="mb-1 fw-bold">{{ balance.name }}</h6>
+                                {% if balance.email or balance.phone %}
+                                <small class="text-muted d-block mb-1">
+                                    {% if balance.email %}<i class="bi bi-envelope me-1"></i>{{ balance.email }}{% endif %}
+                                    {% if balance.email and balance.phone %} | {% endif %}
+                                    {% if balance.phone %}<i class="bi bi-telephone me-1"></i>{{ balance.phone }}{% endif %}
+                                </small>
+                                {% endif %}
                                 <small class="text-muted">
                                     Lent: {{ currency_symbol }}{{ balance.lent|floatformat:2 }} | 
                                     Borrowed: {{ currency_symbol }}{{ balance.borrowed|floatformat:2 }}
@@ -218,7 +239,6 @@
         {% else %}
             <!-- Empty State -->
             <div class="text-center py-5">
-                <i class="bi bi-people text-muted display-1 mb-3 d-block"></i>
                 <h4 class="fw-bold text-muted">No Shared Expenses Yet</h4>
                 <p class="text-muted mb-4">
                     Start creating shared expenses to track balances with friends and family.

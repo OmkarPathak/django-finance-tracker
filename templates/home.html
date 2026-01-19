@@ -557,7 +557,23 @@
                         
                         <!-- Right: Amount -->
                         <div class="text-end flex-shrink-0">
-                            {% if expense.has_cashback %}
+                            {% if expense.shared_details %}
+                                {# Shared Expense - show user's share #}
+                                {% if expense.has_cashback %}
+                                    <span class="d-block fw-bold fs-6 text-success">{{ currency_symbol }}{{ expense.user_effective_amount|floatformat:2 }}</span>
+                                    <small class="text-muted">
+                                        <i class="bi bi-cash-coin"></i>
+                                        {% if expense.cashback_type == 'PERCENTAGE' %}
+                                            {{ expense.cashback_value|floatformat:2 }}%
+                                        {% else %}
+                                            {{ currency_symbol }}{{ expense.cashback_value|floatformat:2 }}
+                                        {% endif %}
+                                    </small>
+                                {% else %}
+                                    <span class="d-block fw-bold fs-6">{{ currency_symbol }}{{ expense.user_share_amount|floatformat:2 }}</span>
+                                {% endif %}
+                                <small class="text-muted d-block"><i class="bi bi-people-fill"></i></small>
+                            {% elif expense.has_cashback %}
                                 <span class="d-block fw-bold fs-6 text-success">{{ currency_symbol }}{{ expense.effective_amount|floatformat:2 }}</span>
                                 <small class="text-muted">
                                     <i class="bi bi-cash-coin"></i>

@@ -4,7 +4,7 @@ Service classes for shared expense calculations.
 from decimal import Decimal
 from collections import defaultdict
 from django.db.models import Q
-from .models import SharedExpense, Participant, Share
+from .models import SharedExpense, Share, Friend
 
 
 class BalanceCalculationService:
@@ -21,7 +21,7 @@ class BalanceCalculationService:
     def calculate_balances(user, start_date=None, end_date=None):
         """
         Calculate lent, borrowed, and net balances per participant for a user.
-        
+
         Args:
             user: The Django User object to calculate balances for
             start_date: Optional start date for filtering expenses (inclusive)
@@ -30,9 +30,11 @@ class BalanceCalculationService:
         Returns:
             dict: Dictionary mapping participant names to their balance details:
                 {
-                    'participant_name': {
-                        'lent': Decimal,      # Amount user lent to this participant
-                        'borrowed': Decimal,  # Amount user borrowed from this participant
+                    friend_id: {
+                        'friend': Friend object,
+                        'name': str,
+                        'lent': Decimal,      # Amount user lent to this friend
+                        'borrowed': Decimal,  # Amount user borrowed from this friend
                         'net': Decimal        # Net balance (lent - borrowed)
                     }
                 }
@@ -43,8 +45,10 @@ class BalanceCalculationService:
             - 6.3: Exclude user's own share from lent calculations
             - 6.5: Calculate net balances (lent - borrowed)
         """
-        # Initialize balance tracking dictionary
+        # Initialize balance tracking dictionary by friend ID
         balances = defaultdict(lambda: {
+            'friend': None,
+            'name': '',
             'lent': Decimal('0.00'),
             'borrowed': Decimal('0.00'),
             'net': Decimal('0.00')
@@ -61,9 +65,15 @@ class BalanceCalculationService:
         
         # Get all shared expenses for the user within the date range
         shared_expenses = SharedExpense.objects.filter(query).select_related(
-            'expense', 'payer'
-        ).prefetch_related('participants', 'shares')
-        
+            'expense'
+        ).prefetch_related(
+            'participants',
+            'participants__friend',
+            'shares',
+            'shares__participant',
+            'shares__participant__friend'
+        )
+
         # Process each shared expense
         for shared_expense in shared_expenses:
             # Get the user's participant record for this expense
@@ -73,9 +83,9 @@ class BalanceCalculationService:
                 # Skip if user is not a participant (shouldn't happen, but defensive)
                 continue
             
-            # Check if user is the payer
-            is_user_payer = (shared_expense.payer.id == user_participant.id)
-            
+            # Check if user is the payer (using is_payer field directly)
+            is_user_payer = user_participant.is_payer
+
             if is_user_payer:
                 # Requirement 6.1: Calculate lent amounts when user is payer
                 # Requirement 6.3: Exclude user's own share from lent calculations
@@ -88,28 +98,84 @@ class BalanceCalculationService:
                     if participant.id == user_participant.id:
                         continue
                     
-                    # Add to lent amount for this participant
-                    balances[participant.name]['lent'] += share.amount
+                    # Get the friend for this participant
+                    friend = participant.friend
+                    if friend:
+                        friend_id = friend.id
+                        balances[friend_id]['friend'] = friend
+                        balances[friend_id]['name'] = friend.name
+                        balances[friend_id]['lent'] += share.amount
             else:
                 # Requirement 6.2: Calculate borrowed amounts when user is not payer
-                
+
                 # Find the user's share in this expense
                 user_share = shared_expense.shares.filter(
                     participant=user_participant
                 ).first()
                 
                 if user_share:
-                    # The payer's name is who the user borrowed from
-                    payer_name = shared_expense.payer.name
-                    
-                    # Add to borrowed amount from the payer
-                    balances[payer_name]['borrowed'] += user_share.amount
-        
+                    # The payer is who the user borrowed from
+                    payer = shared_expense.payer
+                    if payer and payer.friend:
+                        friend = payer.friend
+                        friend_id = friend.id
+                        balances[friend_id]['friend'] = friend
+                        balances[friend_id]['name'] = friend.name
+                        balances[friend_id]['borrowed'] += user_share.amount
+
         # Requirement 6.5: Calculate net balances (lent - borrowed)
-        for participant_name in balances:
-            lent = balances[participant_name]['lent']
-            borrowed = balances[participant_name]['borrowed']
-            balances[participant_name]['net'] = lent - borrowed
-        
+        for friend_id in balances:
+            lent = balances[friend_id]['lent']
+            borrowed = balances[friend_id]['borrowed']
+            balances[friend_id]['net'] = lent - borrowed
+
         # Convert defaultdict to regular dict for cleaner return
         return dict(balances)
+
+    @staticmethod
+    def get_friends_summary(user):
+        """
+        Get all friends with their current balances.
+
+        Args:
+            user: The Django User object
+
+        Returns:
+            list: List of dicts with friend info and balances, sorted by net balance
+        """
+        # Get all friends who have participated in user's shared expenses
+        friends_in_expenses = Friend.objects.filter(
+            expense_participations__shared_expense__expense__user=user
+        ).distinct()
+
+        # Calculate balances for all time
+        balances = BalanceCalculationService.calculate_balances(user)
+
+        # Build summary list
+        friends_summary = []
+        for friend in friends_in_expenses:
+            balance_data = balances.get(friend.id, {
+                'lent': Decimal('0.00'),
+                'borrowed': Decimal('0.00'),
+                'net': Decimal('0.00')
+            })
+
+            friends_summary.append({
+                'friend': friend,
+                'id': friend.id,
+                'name': friend.name,
+                'email': friend.email,
+                'phone': friend.phone,
+                'lent': balance_data['lent'],
+                'borrowed': balance_data['borrowed'],
+                'net': balance_data['net'],
+                'net_abs': abs(balance_data['net']),
+                'transactions_count': friend.expense_participations.filter(
+                    shared_expense__expense__user=user
+                ).count()
+            })
+
+        # Sort by absolute net balance (highest first)
+        friends_summary.sort(key=lambda x: abs(x['net']), reverse=True)
+
+        return friends_summary

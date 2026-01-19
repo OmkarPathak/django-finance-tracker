@@ -2,13 +2,14 @@ from django.db import models
 from django.contrib.auth.models import User
 from datetime import timedelta
 
+
 class Expense(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     date = models.DateField()
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     description = models.TextField()
     category = models.CharField(max_length=255)
-    
+
     PAYMENT_OPTIONS = [
         ('Cash', 'Cash'),
         ('Credit Card', 'Credit Card'),
@@ -17,7 +18,7 @@ class Expense(models.Model):
         ('NetBanking', 'NetBanking'),
     ]
     payment_method = models.CharField(max_length=50, choices=PAYMENT_OPTIONS, default='Cash')
-    
+
     # Cashback fields
     has_cashback = models.BooleanField(default=False)
     CASHBACK_TYPE_CHOICES = [
@@ -26,7 +27,7 @@ class Expense(models.Model):
     ]
     cashback_type = models.CharField(max_length=10, choices=CASHBACK_TYPE_CHOICES, blank=True, null=True)
     cashback_value = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
-    
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -35,27 +36,64 @@ class Expense(models.Model):
         """Calculate the actual cashback amount based on type and value."""
         if not self.has_cashback or not self.cashback_value:
             return 0
-        
+
         if self.cashback_type == 'PERCENTAGE':
             return (self.amount * self.cashback_value) / 100
         elif self.cashback_type == 'FIXED':
             return self.cashback_value
         return 0
-    
+
     @property
     def effective_amount(self):
         """Calculate the effective expense amount after applying cashback."""
         return self.amount - self.cashback_amount
 
+    @property
+    def user_share_amount(self):
+        """
+        Get the user's share for shared expenses.
+        For regular expenses, returns the full amount.
+        For shared expenses, returns only the user's share.
+        """
+        try:
+            shared_details = self.shared_details
+            # Find the user's share (participant with is_user=True)
+            user_share = shared_details.shares.filter(participant__is_user=True).first()
+            if user_share:
+                return user_share.amount
+            # If no user share found, return full amount
+            return self.amount
+        except SharedExpense.DoesNotExist:
+            # Not a shared expense, return full amount
+            return self.amount
+
+    @property
+    def user_effective_amount(self):
+        """
+        Get the user's effective share after applying cashback.
+        For shared expenses, applies cashback proportionally to user's share.
+        """
+        user_share = self.user_share_amount
+        if not self.has_cashback or not self.cashback_value or user_share == self.amount:
+            # No cashback or full expense - use existing logic
+            if user_share == self.amount:
+                return self.effective_amount
+            return user_share
+
+        # Calculate proportional cashback for shared expense
+        share_ratio = user_share / self.amount if self.amount else 0
+        proportional_cashback = self.cashback_amount * share_ratio
+        return user_share - proportional_cashback
+
     def save(self, *args, **kwargs):
         if self.category:
             self.category = self.category.strip()
-        
+
         # Reset cashback fields if cashback is disabled
         if not self.has_cashback:
             self.cashback_type = None
             self.cashback_value = None
-        
+
         super().save(*args, **kwargs)
 
     class Meta:
@@ -68,6 +106,7 @@ class Expense(models.Model):
 
     def __str__(self):
         return f"{self.date} - {self.description} - {self.amount}"
+
 
 class Category(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -91,12 +130,13 @@ class Category(models.Model):
     def __str__(self):
         return self.name
 
+
 class Income(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     date = models.DateField()
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     description = models.TextField(blank=True, null=True)
-    source = models.CharField(max_length=255) # e.g. Salary, Freelance, Dividend
+    source = models.CharField(max_length=255)  # e.g. Salary, Freelance, Dividend
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -116,6 +156,7 @@ class Income(models.Model):
     def __str__(self):
         return f"{self.date} - {self.source} - {self.amount}"
 
+
 class RecurringTransaction(models.Model):
     FREQUENCY_CHOICES = [
         ('DAILY', 'Daily'),
@@ -132,16 +173,16 @@ class RecurringTransaction(models.Model):
     transaction_type = models.CharField(max_length=10, choices=TRANSACTION_TYPE_CHOICES)
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     description = models.TextField()
-    category = models.CharField(max_length=255, blank=True, null=True) # For Expense
-    source = models.CharField(max_length=255, blank=True, null=True)   # For Income
-    
+    category = models.CharField(max_length=255, blank=True, null=True)  # For Expense
+    source = models.CharField(max_length=255, blank=True, null=True)  # For Income
+
     # We can reuse the PAYMENT_OPTIONS from Expense, or duplicate them.
     # Reusing is cleaner but requires referencing Expense.PAYMENT_OPTIONS or moving it to a constant.
     # Given the context, I'll access it via Expense.PAYMENT_OPTIONS if possible, or just duplicate for safety/decoupling if cleaner.
     # Let's duplicate to avoid circular dependency issues if models are rearranged, but actually they are in the same file.
     # Accessing Expense.PAYMENT_OPTIONS is fine.
     payment_method = models.CharField(max_length=50, choices=Expense.PAYMENT_OPTIONS, default='Cash')
-    
+
     frequency = models.CharField(max_length=10, choices=FREQUENCY_CHOICES)
     start_date = models.DateField()
     last_processed_date = models.DateField(null=True, blank=True)
@@ -179,7 +220,8 @@ class RecurringTransaction(models.Model):
 
     def __str__(self):
         return f"{self.transaction_type} - {self.description} ({self.frequency})"
-        
+
+
 class UserProfile(models.Model):
     CURRENCY_CHOICES = [
         ('₹', 'Indian Rupee (₹)'),
@@ -221,7 +263,7 @@ class UserProfile(models.Model):
         #     if self.subscription_end_date and self.subscription_end_date > timezone.now():
         #         return True
         # return False
-    
+
     @property
     def is_plus(self):
         """Check if user has active Plus access (or higher)."""
@@ -238,17 +280,19 @@ class UserProfile(models.Model):
     def __str__(self):
         return f"{self.user.username}'s Profile ({self.tier})"
 
+
 class PaymentHistory(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     order_id = models.CharField(max_length=100)
     payment_id = models.CharField(max_length=100, blank=True, null=True)
     amount = models.DecimalField(max_digits=10, decimal_places=2)
-    tier = models.CharField(max_length=10) # PLUS, PRO
-    status = models.CharField(max_length=20, default='PENDING') # PENDING, SUCCESS, FAILED
+    tier = models.CharField(max_length=10)  # PLUS, PRO
+    status = models.CharField(max_length=20, default='PENDING')  # PENDING, SUCCESS, FAILED
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return f"{self.user.username} - {self.tier} - {self.status}"
+
 
 class SubscriptionPlan(models.Model):
     TIER_CHOICES = [
@@ -267,58 +311,137 @@ class SubscriptionPlan(models.Model):
         return f"{self.name} - ₹{self.price}"
 
 
+class Friend(models.Model):
+    """
+    Master table for friends/contacts that can be involved in shared expenses.
+    Global list, reusable across all expenses.
+    """
+    name = models.CharField(max_length=255, unique=True)
+    email = models.EmailField(blank=True, null=True)
+    phone = models.CharField(max_length=20, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def save(self, *args, **kwargs):
+        if self.name:
+            self.name = self.name.strip()
+        super().save(*args, **kwargs)
+
+    @property
+    def balance(self):
+        """
+        Calculate net balance with this friend.
+        Positive = friend owes you, Negative = you owe friend.
+        """
+        from django.db.models import Sum
+
+        # Amount friend owes you (you paid, friend participated)
+        friend_owes = Share.objects.filter(
+            participant__friend=self,
+            participant__is_payer=False,
+            shared_expense__participants__is_user=True,
+            shared_expense__participants__is_payer=True
+        ).aggregate(total=Sum('amount'))['total'] or 0
+
+        # Amount you owe friend (friend paid, you participated)
+        you_owe = Share.objects.filter(
+            participant__is_user=True,
+            participant__is_payer=False,
+            shared_expense__participants__friend=self,
+            shared_expense__participants__is_payer=True
+        ).aggregate(total=Sum('amount'))['total'] or 0
+
+        return friend_owes - you_owe
+
+    def get_transactions(self):
+        """Get all shared expenses involving this friend."""
+        return SharedExpense.objects.filter(
+            participants__friend=self
+        ).distinct()
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        ordering = ['name']
+
+
 class SharedExpense(models.Model):
     """
     Represents a shared expense that links to a base Expense and tracks
     which participant paid for it.
     """
     expense = models.OneToOneField(
-        Expense, 
-        on_delete=models.CASCADE, 
+        Expense,
+        on_delete=models.CASCADE,
         related_name='shared_details'
-    )
-    payer = models.ForeignKey(
-        'Participant', 
-        on_delete=models.PROTECT, 
-        related_name='paid_expenses'
     )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    @property
+    def payer(self):
+        """Get the participant who paid for this expense."""
+        return self.participants.filter(is_payer=True).first()
+
+    def get_friends_involved(self):
+        """Get all friends involved in this expense."""
+        return Friend.objects.filter(
+            expense_participations__shared_expense=self
+        )
+
     def __str__(self):
-        return f"Shared: {self.expense.description} - Paid by {self.payer.name}"
+        payer = self.payer
+        payer_name = payer.name if payer else "Unknown"
+        return f"Shared: {self.expense.description} - Paid by {payer_name}"
 
 
-class Participant(models.Model):
+class SharedExpenseParticipant(models.Model):
     """
-    Represents a person involved in a shared expense.
+    Links friends to shared expenses as participants.
+    Populated from the Friend master table when creating transactions.
     """
     shared_expense = models.ForeignKey(
-        SharedExpense, 
-        on_delete=models.CASCADE, 
+        SharedExpense,
+        on_delete=models.CASCADE,
         related_name='participants'
     )
-    name = models.CharField(max_length=255)
-    is_user = models.BooleanField(default=False)
+    friend = models.ForeignKey(
+        Friend,
+        on_delete=models.PROTECT,  # Prevent deletion if friend is used in transactions
+        related_name='expense_participations',
+        null=True,
+        blank=True
+    )
+    is_user = models.BooleanField(default=False)  # True = logged-in user (You)
+    is_payer = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
 
-    def save(self, *args, **kwargs):
-        # Trim whitespace from participant names
-        if self.name:
-            self.name = self.name.strip()
-        super().save(*args, **kwargs)
+    @property
+    def name(self):
+        """Get participant name - 'You' for user, friend name otherwise."""
+        if self.is_user:
+            return "You"
+        return self.friend.name if self.friend else "Unknown"
 
     class Meta:
         constraints = [
             models.UniqueConstraint(
-                fields=['shared_expense', 'name'],
-                name='unique_participant_per_expense'
+                fields=['shared_expense', 'friend'],
+                name='unique_friend_per_shared_expense',
+                condition=models.Q(friend__isnull=False)
+            ),
+            models.UniqueConstraint(
+                fields=['shared_expense', 'is_user'],
+                name='unique_user_per_shared_expense',
+                condition=models.Q(is_user=True)
             )
         ]
 
     def __str__(self):
-        user_indicator = " (User)" if self.is_user else ""
-        return f"{self.name}{user_indicator}"
+        user_indicator = " (You)" if self.is_user else ""
+        payer_indicator = " [Payer]" if self.is_payer else ""
+        return f"{self.name}{user_indicator}{payer_indicator}"
 
 
 class Share(models.Model):
@@ -326,13 +449,13 @@ class Share(models.Model):
     Tracks each participant's share of a shared expense.
     """
     shared_expense = models.ForeignKey(
-        SharedExpense, 
-        on_delete=models.CASCADE, 
+        SharedExpense,
+        on_delete=models.CASCADE,
         related_name='shares'
     )
     participant = models.ForeignKey(
-        Participant, 
-        on_delete=models.CASCADE, 
+        SharedExpenseParticipant,
+        on_delete=models.CASCADE,
         related_name='shares'
     )
     amount = models.DecimalField(max_digits=10, decimal_places=2)

@@ -433,7 +433,8 @@ def home_view(request):
 
 
     # 4. Summary Stats
-    total_expenses = expenses.aggregate(Sum('amount'))['amount__sum'] or 0
+    # Calculate total using user's share for shared expenses
+    total_expenses = sum(expense.user_share_amount for expense in expenses)
     transaction_count = expenses.count()
     top_category = category_data[0] if category_data else None
     
@@ -946,7 +947,10 @@ class ExpenseListView(LoginRequiredMixin, RecurringTransactionMixin, ListView):
         # Calculate stats for the filtered queryset
         filtered_queryset = self.object_list
         context['filtered_count'] = filtered_queryset.count()
-        context['filtered_amount'] = filtered_queryset.aggregate(Sum('amount'))['amount__sum'] or 0
+
+        # Calculate filtered_amount using user's share for shared expenses
+        filtered_amount = sum(expense.user_share_amount for expense in filtered_queryset)
+        context['filtered_amount'] = filtered_amount
 
         # Get unique years and categories for validation
         user_expenses = Expense.objects.filter(user=self.request.user)
@@ -1025,7 +1029,7 @@ class ExpenseCreateView(LoginRequiredMixin, generic.TemplateView):
 
     def post(self, request, *args, **kwargs):
         from django.db import transaction
-        from .models import SharedExpense, Participant, Share
+        from .models import SharedExpense, SharedExpenseParticipant, Share, Friend
         from decimal import Decimal
         
         # Check if this is a bulk submission (formset) or single form
@@ -1063,66 +1067,33 @@ class ExpenseCreateView(LoginRequiredMixin, generic.TemplateView):
                                     participants_data = json.loads(participants_json)
                                     
                                     # Find payer data
-                                    payer_data = None
                                     payer_name = payer_id.strip()
-                                    
-                                    for participant_data in participants_data:
-                                        if participant_data.get('name', '').strip() == payer_name:
-                                            payer_data = participant_data
-                                            break
-                                    
-                                    if not payer_data:
-                                        raise ValueError(f"Payer '{payer_id}' not found in participants")
-                                    
-                                    # Workaround for circular dependency:
-                                    # Use raw SQL to insert both records with proper IDs
-                                    from django.db import connection
-                                    
-                                    with connection.cursor() as cursor:
-                                        # Get next IDs for both tables
-                                        cursor.execute("SELECT nextval('expenses_sharedexpense_id_seq')")
-                                        shared_expense_id = cursor.fetchone()[0]
-                                        
-                                        cursor.execute("SELECT nextval('expenses_participant_id_seq')")
-                                        payer_participant_id = cursor.fetchone()[0]
-                                        
-                                        # Insert SharedExpense with payer_id
-                                        cursor.execute(
-                                            """
-                                            INSERT INTO expenses_sharedexpense (id, expense_id, payer_id, created_at, updated_at)
-                                            VALUES (%s, %s, %s, NOW(), NOW())
-                                            """,
-                                            [shared_expense_id, instance.id, payer_participant_id]
-                                        )
-                                        
-                                        # Insert payer Participant
-                                        cursor.execute(
-                                            """
-                                            INSERT INTO expenses_participant (id, shared_expense_id, name, is_user, created_at)
-                                            VALUES (%s, %s, %s, %s, NOW())
-                                            """,
-                                            [payer_participant_id, shared_expense_id, payer_name, payer_data.get('is_user', False)]
-                                        )
-                                    
-                                    # Get the SharedExpense object
-                                    shared_expense = SharedExpense.objects.get(id=shared_expense_id)
-                                    payer_participant = Participant.objects.get(id=payer_participant_id)
-                                    
-                                    # Create remaining Participant records
-                                    participant_map = {payer_name: payer_participant}
-                                    
+
+                                    # Create SharedExpense first (no payer FK anymore)
+                                    shared_expense = SharedExpense.objects.create(
+                                        expense=instance
+                                    )
+
+                                    # Create all SharedExpenseParticipant records
+                                    participant_map = {}
+
                                     for participant_data in participants_data:
                                         participant_name = participant_data.get('name', '').strip()
                                         is_user = participant_data.get('is_user', False)
-                                        
-                                        # Skip payer as we already created it
-                                        if participant_name == payer_name:
-                                            continue
-                                        
-                                        participant = Participant.objects.create(
+                                        is_payer = participant_name == payer_name
+
+                                        # Get or create Friend from master table (not for user)
+                                        friend = None
+                                        if not is_user:
+                                            friend, _ = Friend.objects.get_or_create(
+                                                name=participant_name
+                                            )
+
+                                        participant = SharedExpenseParticipant.objects.create(
                                             shared_expense=shared_expense,
-                                            name=participant_name,
-                                            is_user=is_user
+                                            friend=friend,
+                                            is_user=is_user,
+                                            is_payer=is_payer
                                         )
                                         
                                         participant_map[participant_name] = participant
@@ -1131,10 +1102,10 @@ class ExpenseCreateView(LoginRequiredMixin, generic.TemplateView):
                                     for participant_data in participants_data:
                                         participant_name = participant_data.get('name', '').strip()
                                         share_amount = participant_data.get('share_amount')
-                                        
+
                                         if share_amount is not None and share_amount != '':
                                             participant = participant_map[participant_name]
-                                            
+
                                             Share.objects.create(
                                                 shared_expense=shared_expense,
                                                 participant=participant,
@@ -1178,67 +1149,34 @@ class ExpenseCreateView(LoginRequiredMixin, generic.TemplateView):
                                 # Parse participants data
                                 participants_data = json.loads(participants_json)
                                 
-                                # Find payer data
-                                payer_data = None
+                                # Find payer name
                                 payer_name = payer_id.strip()
                                 
-                                for participant_data in participants_data:
-                                    if participant_data.get('name', '').strip() == payer_name:
-                                        payer_data = participant_data
-                                        break
-                                
-                                if not payer_data:
-                                    raise ValueError(f"Payer '{payer_id}' not found in participants")
-                                
-                                # Workaround for circular dependency:
-                                # Use raw SQL to insert both records with proper IDs
-                                from django.db import connection
-                                
-                                with connection.cursor() as cursor:
-                                    # Get next IDs for both tables
-                                    cursor.execute("SELECT nextval('expenses_sharedexpense_id_seq')")
-                                    shared_expense_id = cursor.fetchone()[0]
-                                    
-                                    cursor.execute("SELECT nextval('expenses_participant_id_seq')")
-                                    payer_participant_id = cursor.fetchone()[0]
-                                    
-                                    # Insert SharedExpense with payer_id
-                                    cursor.execute(
-                                        """
-                                        INSERT INTO expenses_sharedexpense (id, expense_id, payer_id, created_at, updated_at)
-                                        VALUES (%s, %s, %s, NOW(), NOW())
-                                        """,
-                                        [shared_expense_id, expense.id, payer_participant_id]
-                                    )
-                                    
-                                    # Insert payer Participant
-                                    cursor.execute(
-                                        """
-                                        INSERT INTO expenses_participant (id, shared_expense_id, name, is_user, created_at)
-                                        VALUES (%s, %s, %s, %s, NOW())
-                                        """,
-                                        [payer_participant_id, shared_expense_id, payer_name, payer_data.get('is_user', False)]
-                                    )
-                                
-                                # Get the SharedExpense object
-                                shared_expense = SharedExpense.objects.get(id=shared_expense_id)
-                                payer_participant = Participant.objects.get(id=payer_participant_id)
-                                
-                                # Create remaining Participant records
-                                participant_map = {payer_name: payer_participant}
-                                
+                                # Create SharedExpense first (no payer FK anymore)
+                                shared_expense = SharedExpense.objects.create(
+                                    expense=expense
+                                )
+
+                                # Create all SharedExpenseParticipant records
+                                participant_map = {}
+
                                 for participant_data in participants_data:
                                     participant_name = participant_data.get('name', '').strip()
                                     is_user = participant_data.get('is_user', False)
-                                    
-                                    # Skip payer as we already created it
-                                    if participant_name == payer_name:
-                                        continue
-                                    
-                                    participant = Participant.objects.create(
+                                    is_payer = participant_name == payer_name
+
+                                    # Get or create Friend from master table (not for user)
+                                    friend = None
+                                    if not is_user:
+                                        friend, _ = Friend.objects.get_or_create(
+                                            name=participant_name
+                                        )
+
+                                    participant = SharedExpenseParticipant.objects.create(
                                         shared_expense=shared_expense,
-                                        name=participant_name,
-                                        is_user=is_user
+                                        friend=friend,
+                                        is_user=is_user,
+                                        is_payer=is_payer
                                     )
                                     
                                     participant_map[participant_name] = participant
@@ -1296,10 +1234,92 @@ class ExpenseUpdateView(LoginRequiredMixin, generic.UpdateView):
         return context
 
     def form_valid(self, form):
+        from django.db import transaction
+        from .models import SharedExpense, SharedExpenseParticipant, Share, Friend
+        from decimal import Decimal
+
         try:
-            return super().form_valid(form)
+            with transaction.atomic():
+                # Save the base expense
+                expense = form.save()
+
+                # Check if this is being converted to a shared expense
+                expense_type = self.request.POST.get('expense_type', 'personal')
+
+                if expense_type == 'shared':
+                    participants_json = form.cleaned_data.get('participants_json')
+                    payer_id = form.cleaned_data.get('payer_id')
+
+                    if participants_json and payer_id:
+                        # Parse participants data
+                        participants_data = json.loads(participants_json)
+                        payer_name = payer_id.strip()
+
+                        # Check if shared expense already exists for this expense
+                        try:
+                            existing_shared = expense.shared_details
+                            # Delete old shared expense data to recreate
+                            existing_shared.delete()
+                        except SharedExpense.DoesNotExist:
+                            pass
+
+                        # Create SharedExpense
+                        shared_expense = SharedExpense.objects.create(expense=expense)
+
+                        # Create all SharedExpenseParticipant records
+                        participant_map = {}
+
+                        for participant_data in participants_data:
+                            participant_name = participant_data.get('name', '').strip()
+                            is_user = participant_data.get('is_user', False)
+                            is_payer = participant_name == payer_name
+
+                            # Get or create Friend from master table (not for user)
+                            friend = None
+                            if not is_user:
+                                friend, _ = Friend.objects.get_or_create(
+                                    name=participant_name
+                                )
+
+                            participant = SharedExpenseParticipant.objects.create(
+                                shared_expense=shared_expense,
+                                friend=friend,
+                                is_user=is_user,
+                                is_payer=is_payer
+                            )
+
+                            participant_map[participant_name] = participant
+
+                        # Create Share records
+                        for participant_data in participants_data:
+                            participant_name = participant_data.get('name', '').strip()
+                            share_amount = participant_data.get('share_amount')
+
+                            if share_amount is not None and share_amount != '':
+                                participant = participant_map[participant_name]
+
+                                Share.objects.create(
+                                    shared_expense=shared_expense,
+                                    participant=participant,
+                                    amount=Decimal(str(share_amount))
+                                )
+
+                elif expense_type == 'personal':
+                    # If converting from shared to personal, delete shared expense data
+                    try:
+                        existing_shared = expense.shared_details
+                        existing_shared.delete()
+                    except SharedExpense.DoesNotExist:
+                        pass
+
+                messages.success(self.request, 'Expense updated successfully!')
+                return redirect(self.get_success_url())
+
         except IntegrityError:
             messages.error(self.request, "This expense entry already exists.")
+            return self.form_invalid(form)
+        except (ValueError, KeyError, json.JSONDecodeError) as e:
+            messages.error(self.request, f"Error updating shared expense: {str(e)}")
             return self.form_invalid(form)
 
     def get_queryset(self):
@@ -2174,13 +2194,13 @@ def ping(request):
 
 class BalanceSummaryView(LoginRequiredMixin, TemplateView):
     """
-    View to display balance summary showing who owes whom.
-    
+    View to display balance summary showing who owes whom based on Friend master table.
+
     Requirements:
-        - 7.1: Aggregate lent and borrowed amounts per participant per month
-        - 7.2: Display total lent amount for each participant
-        - 7.3: Display total borrowed amount for each participant
-        - 7.4: Display net balance for each participant
+        - 7.1: Aggregate lent and borrowed amounts per friend per month
+        - 7.2: Display total lent amount for each friend
+        - 7.3: Display total borrowed amount for each friend
+        - 7.4: Display net balance for each friend
         - 7.6: Allow filtering balance reports by specific months and years
         - 8.4: Calculate settlements across all time periods by default
         - 8.5: Allow filtering settlements by date range
@@ -2189,6 +2209,7 @@ class BalanceSummaryView(LoginRequiredMixin, TemplateView):
     
     def get_context_data(self, **kwargs):
         from .services import BalanceCalculationService
+        from .models import SharedExpense, Friend
         from datetime import date
         import calendar
         
@@ -2238,7 +2259,7 @@ class BalanceSummaryView(LoginRequiredMixin, TemplateView):
             except (ValueError, TypeError):
                 pass
         
-        # Calculate balances using the service
+        # Calculate balances using the service (now returns Friend-based data)
         balances = BalanceCalculationService.calculate_balances(
             user=user,
             start_date=start_date,
@@ -2251,11 +2272,16 @@ class BalanceSummaryView(LoginRequiredMixin, TemplateView):
         user_owes_people = []
         settled_people = []
         
-        for participant_name, balance_data in balances.items():
+        for friend_id, balance_data in balances.items():
             net_balance = balance_data['net']
-            
+            friend = balance_data.get('friend')
+
             balance_info = {
-                'name': participant_name,
+                'id': friend_id,
+                'friend': friend,
+                'name': balance_data['name'],
+                'email': friend.email if friend else None,
+                'phone': friend.phone if friend else None,
                 'lent': balance_data['lent'],
                 'borrowed': balance_data['borrowed'],
                 'net': net_balance,
@@ -2263,10 +2289,10 @@ class BalanceSummaryView(LoginRequiredMixin, TemplateView):
             }
             
             if net_balance > 0:
-                # User lent more than borrowed - participant owes user
+                # User lent more than borrowed - friend owes user
                 people_owe_user.append(balance_info)
             elif net_balance < 0:
-                # User borrowed more than lent - user owes participant
+                # User borrowed more than lent - user owes friend
                 user_owes_people.append(balance_info)
             else:
                 # Net balance is zero - settled up
@@ -2292,12 +2318,17 @@ class BalanceSummaryView(LoginRequiredMixin, TemplateView):
         context['total_user_owes'] = total_user_owes
         context['overall_net'] = overall_net
         
+        # Get all friends for the user (for potential friend management)
+        context['all_friends'] = Friend.objects.filter(
+            expense_participations__shared_expense__expense__user=user
+        ).distinct().order_by('name')
+        context['friends_count'] = context['all_friends'].count()
+
         # Provide month and year options for filter dropdowns
         today = date.today()
         context['months_list'] = [(i, calendar.month_name[i]) for i in range(1, 13)]
         
         # Get years from shared expenses
-        from .models import SharedExpense
         shared_expenses = SharedExpense.objects.filter(
             expense__user=user
         ).select_related('expense')

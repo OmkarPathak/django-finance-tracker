@@ -276,7 +276,28 @@
                             </td>
                             <td>{{ expense.payment_method }}</td>
                             <td class="fw-bold">
-                                {% if expense.has_cashback %}
+                                {% if expense.shared_details %}
+                                    {# Shared Expense - show user's share #}
+                                    {% if expense.has_cashback %}
+                                        <div>
+                                            <span class="text-decoration-line-through text-muted small">{{ expense.user_share_amount|floatformat:2 }}</span>
+                                            <span class="text-success ms-1">{{ expense.user_effective_amount|floatformat:2 }}</span>
+                                        </div>
+                                        <small class="text-muted">
+                                            <i class="bi bi-cash-coin"></i>
+                                            {% if expense.cashback_type == 'PERCENTAGE' %}
+                                                {{ expense.cashback_value|floatformat:2 }}% cashback
+                                            {% else %}
+                                                ₹{{ expense.cashback_value|floatformat:2 }} cashback
+                                            {% endif %}
+                                        </small>
+                                    {% else %}
+                                        {{ expense.user_share_amount|floatformat:2 }}
+                                    {% endif %}
+                                    <small class="text-muted d-block">
+                                        <i class="bi bi-people-fill"></i> of ₹{{ expense.amount|floatformat:2 }} total
+                                    </small>
+                                {% elif expense.has_cashback %}
                                     <div>
                                         <span class="text-decoration-line-through text-muted small">{{ expense.amount|floatformat:2 }}</span>
                                         <span class="text-success ms-1">{{ expense.effective_amount|floatformat:2 }}</span>
