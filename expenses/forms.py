@@ -161,3 +161,26 @@ class CustomSignupForm(UserCreationForm):
         if User.objects.filter(email=email).exists():
             raise forms.ValidationError("A user with this email already exists.")
         return email
+
+class ContactForm(forms.Form):
+    name = forms.CharField(max_length=100, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Your Name'}))
+    email = forms.EmailField(widget=forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'name@example.com'}))
+    # Honeypot implementation in form
+    website = forms.CharField(required=False, widget=forms.TextInput(attrs={
+        'style': 'position: absolute; left: -9999px; opacity: 0;',
+        'tabindex': '-1',
+        'autocomplete': 'off'
+    }))
+    subject = forms.CharField(max_length=200, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'What is this about?'}))
+    message = forms.CharField(widget=forms.Textarea(attrs={'class': 'form-control', 'rows': 5, 'placeholder': 'How can we help you?'}))
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        from django.conf import settings
+        
+        # Add reCAPTCHA field if keys are configured
+        if getattr(settings, 'RECAPTCHA_PUBLIC_KEY', None) and getattr(settings, 'RECAPTCHA_PRIVATE_KEY', None):
+            from django_recaptcha.fields import ReCaptchaField
+            from django_recaptcha.widgets import ReCaptchaV3
+            self.fields['captcha'] = ReCaptchaField(widget=ReCaptchaV3)
+

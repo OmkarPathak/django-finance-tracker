@@ -72,6 +72,7 @@ INSTALLED_APPS = [
     'crispy_forms',
     'crispy_bootstrap5',
     'anymail',
+    'django_recaptcha',
 ]
 
 CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
@@ -265,3 +266,8 @@ if not DEBUG:
 
     # Ensure Allauth builds HTTPS links
     ACCOUNT_DEFAULT_HTTP_PROTOCOL = 'https'
+
+# Google reCAPTCHA v3 Settings
+RECAPTCHA_PUBLIC_KEY = os.environ.get('RECAPTCHA_PUBLIC_KEY', '')
+RECAPTCHA_PRIVATE_KEY = os.environ.get('RECAPTCHA_PRIVATE_KEY', os.environ.get('RECAPTCHA_SECRET_KEY', ''))
+RECAPTCHA_REQUIRED_SCORE = 0.5  # Score threshold (0.0 = likely bot, 1.0 = likely human)
