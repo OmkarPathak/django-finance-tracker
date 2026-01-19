@@ -20,13 +20,19 @@ from datetime import datetime, date, timedelta
 import calendar
 
 from .models import Expense, Category, Income, RecurringTransaction, UserProfile, SubscriptionPlan
-from .forms import ExpenseForm, IncomeForm, RecurringTransactionForm, ProfileUpdateForm, CustomSignupForm
+from .forms import ExpenseForm, IncomeForm, RecurringTransactionForm, ProfileUpdateForm, CustomSignupForm, ContactForm
 from allauth.socialaccount.models import SocialAccount
 import openpyxl
-import calendar
+import requests
+import traceback
+from django.core.management import call_command
+from allauth.account.models import EmailAddress
+from django.core.mail import send_mail
+from django.conf import settings
+from django.core.cache import cache
+from django.db.models.functions import TruncMonth, TruncDay
+from django.utils.html import mark_safe, escape, format_html, format_html_join
 
-
-# ... existing imports ...
 
 def create_category_ajax(request):
     if request.method == 'POST':
@@ -57,10 +63,7 @@ def create_category_ajax(request):
             return JsonResponse({'success': False, 'error': str(e)}, status=500)
             
     return JsonResponse({'success': False, 'error': 'Invalid request method.'}, status=405)
-# Duplicate imports removed
-from django.core.management import call_command
-from allauth.account.models import EmailAddress
-import json
+
 
 def resend_verification_email(request):
     """
@@ -97,7 +100,7 @@ def resend_verification_email(request):
 
             except Exception as e:
                 # Log the actual error for debugging
-                import traceback
+                
                 print(traceback.format_exc())
                 return JsonResponse({'success': False, 'error': f'Send failed: {str(e)}'}, status=500)
                 
@@ -335,7 +338,6 @@ def home_view(request):
     category_amounts = [item['total'] for item in category_data]
     
     # 2. Time Trend (Stacked) Data
-    from django.db.models.functions import TruncMonth, TruncDay
     
     # Determine Labels (X-Axis)
     # Determine Labels (X-Axis)
@@ -530,7 +532,6 @@ def home_view(request):
             pass
     
     # --- Emotional Feedback / Insights Logic (Enhanced) ---
-    from django.utils.html import mark_safe, escape, format_html, format_html_join
     
     insights = []
     
@@ -772,8 +773,6 @@ def upload_view(request):
     """
     Upload view with year selection enforcement.
     """
-    import openpyxl
-    from datetime import date, datetime
     
     if request.method == 'POST' and request.FILES.get('file'):
         excel_file = request.FILES['file']
@@ -868,7 +867,6 @@ def upload_view(request):
             return redirect('home')
         except Exception as e:
             print(f"Error processing file: {e}")
-            import traceback
             traceback.print_exc()
             pass
 
@@ -1249,8 +1247,6 @@ def export_expenses(request):
 # --------------------
 # Income Views
 # --------------------
-
-from django.utils import timezone
 
 class IncomeListView(LoginRequiredMixin, RecurringTransactionMixin, ListView):
     model = Income
@@ -1931,7 +1927,6 @@ class PricingView(TemplateView):
     template_name = 'expenses/pricing.html'
 
     def get_context_data(self, **kwargs):
-        from django.conf import settings
         context = super().get_context_data(**kwargs)
         context['RAZORPAY_KEY_ID'] = settings.RAZORPAY_KEY_ID
         plans = SubscriptionPlan.objects.filter(is_active=True)
@@ -1941,31 +1936,144 @@ class PricingView(TemplateView):
 def ping(request):
     return HttpResponse("Pong", status=200)
 
-from django.core.mail import send_mail
-from django.conf import settings
-
 class ContactView(View):
     template_name = 'contact.html'
+    
+    # Spam protection settings
+    RATE_LIMIT_HOURLY = 3
+    RATE_LIMIT_DAILY = 10
+    MIN_MESSAGE_LENGTH = 10
+    
+    # Common spam patterns
+    SPAM_KEYWORDS = [
+        'precio', 'price check', 'buy now', 'click here', 'earn money',
+        'viagra', 'casino', 'lottery', 'prize', 'congratulations',
+        'limited offer', 'act now', 'online pharmacy', 'weight loss',
+        'make money fast', 'work from home', 'investment opportunity',
+        'hola, quería saber', 'please kindly', 'dear friend'
+    ]
+    
+    # Disposable email domains
+    DISPOSABLE_DOMAINS = [
+        'tempmail.com', 'guerrillamail.com', '10minutemail.com',
+        'throwaway.email', 'maildrop.cc', 'mailinator.com',
+        'trashmail.com', 'yopmail.com', 'getnada.com'
+    ]
 
     def get(self, request):
-        return render(request, self.template_name)
+        form = ContactForm()
+        return render(request, self.template_name, {'form': form})
+    
+    def _get_client_ip(self, request):
+        """Get client IP address from request"""
+        x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+        if x_forwarded_for:
+            ip = x_forwarded_for.split(',')[0]
+        else:
+            ip = request.META.get('REMOTE_ADDR')
+        return ip
+    
+    def _check_rate_limit(self, ip):
+        """Check if IP has exceeded rate limits"""
+        
+        hourly_key = f'contact_hourly_{ip}'
+        daily_key = f'contact_daily_{ip}'
+        
+        hourly_count = cache.get(hourly_key, 0)
+        daily_count = cache.get(daily_key, 0)
+        
+        if hourly_count >= self.RATE_LIMIT_HOURLY:
+            return False, "Too many submissions. Please try again in an hour."
+        
+        if daily_count >= self.RATE_LIMIT_DAILY:
+            return False, "Daily submission limit reached. Please try again tomorrow."
+        
+        # Increment counters
+        cache.set(hourly_key, hourly_count + 1, 3600)  # 1 hour
+        cache.set(daily_key, daily_count + 1, 86400)   # 24 hours
+        
+        return True, None
+    
+    def _is_spam_content(self, text):
+        """Check if text contains spam patterns"""
+        text_lower = text.lower()
+        
+        # Check for URLs (most spam contains links)
+        if 'http://' in text_lower or 'https://' in text_lower or 'www.' in text_lower:
+            return True, "Messages with URLs are not allowed."
+        
+        # Check for spam keywords
+        for keyword in self.SPAM_KEYWORDS:
+            if keyword in text_lower:
+                return True, "Your message was flagged as potential spam."
+        
+        # Check for excessive caps (> 50% uppercase)
+        if len(text) > 20:
+            caps_count = sum(1 for c in text if c.isupper())
+            if caps_count / len(text) > 0.5:
+                return True, "Please don't use excessive capitalization."
+        
+        # Check message length
+        if len(text.strip()) < self.MIN_MESSAGE_LENGTH:
+            return True, "Please provide a more detailed message."
+        
+        return False, None
+    
+    def _is_disposable_email(self, email):
+        """Check if email is from a disposable domain"""
+        domain = email.split('@')[-1].lower()
+        return domain in self.DISPOSABLE_DOMAINS
 
     def post(self, request):
-        name = request.POST.get('name')
-        email = request.POST.get('email')
-        subject = request.POST.get('subject')
-        message = request.POST.get('message')
+        form = ContactForm(request.POST)
+        
+        # This handles validations for all fields including reCAPTCHA (if configured)
+        if not form.is_valid():
+            messages.error(request, "Please correct the errors below.")
+            return render(request, self.template_name, {'form': form})
 
-        if not all([name, email, subject, message]):
-            messages.error(request, "All fields are required.")
-            return render(request, self.template_name)
-
+        # Get cleaned data
+        data = form.cleaned_data
+        name = data.get('name')
+        email = data.get('email')
+        subject = data.get('subject')
+        message = data.get('message')
+        honeypot = data.get('website')
+        
+        # Layer 1: Honeypot check
+        if honeypot:
+            # Silently reject spam bots - don't reveal honeypot was triggered
+            messages.success(request, "Your message has been sent! We'll get back to you shortly.")
+            return redirect('contact')
+        
+        # Layer 2: Rate limiting
+        client_ip = self._get_client_ip(request)
+        rate_ok, rate_msg = self._check_rate_limit(client_ip)
+        if not rate_ok:
+            messages.error(request, rate_msg)
+            return render(request, self.template_name, {'form': form})
+        
+        # Layer 3: Content filtering
+        is_spam, spam_msg = self._is_spam_content(subject + ' ' + message)
+        if is_spam:
+            messages.error(request, spam_msg)
+            return render(request, self.template_name, {'form': form})
+        
+        # Layer 4: Email validation
+        if self._is_disposable_email(email):
+            messages.error(request, "Please use a permanent email address.")
+            return render(request, self.template_name, {'form': form})
+        
+        # Layer 5: reCAPTCHA verification is handled by form.is_valid()
+        
+        # All checks passed - send email
         full_message = f"""
         New Contact Form Submission:
         
         Name: {name}
         Email: {email}
         Subject: {subject}
+        IP: {client_ip}
         
         Message:
         {message}
@@ -1984,4 +2092,4 @@ class ContactView(View):
         except Exception as e:
             # Log error if possible
             messages.error(request, "Something went wrong. Please try again later.")
-            return render(request, self.template_name)
+            return render(request, self.template_name, {'form': form})
