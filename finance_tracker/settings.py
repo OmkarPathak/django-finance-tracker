@@ -47,7 +47,7 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DEBUG', 'True') == 'True'
 
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '*').split(',')  # Update this to specific domain in production
+ALLOWED_HOSTS = ['*']  # Update this to specific domain in production
 
 CSRF_TRUSTED_ORIGINS = ['https://trackmyrupee.com', 'https://www.trackmyrupee.com', 'https://django-finance-tracker-fr1u.onrender.com']
 
