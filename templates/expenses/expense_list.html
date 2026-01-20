@@ -10,6 +10,39 @@
         .filter-w-month { width: 140px; }
         .filter-w-category { width: 160px; }
     }
+    
+    /* Clickable Row Styles */
+    .expense-row {
+        transition: background-color 0.2s ease;
+    }
+    
+    .expense-row:hover {
+        background-color: rgba(0, 123, 255, 0.05) !important;
+    }
+    
+    .expense-row.table-active {
+        background-color: rgba(0, 123, 255, 0.1) !important;
+    }
+    
+    .expense-details-row {
+        animation: slideDown 0.3s ease-out;
+    }
+    
+    @keyframes slideDown {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .expand-icon {
+        font-size: 0.8rem;
+        vertical-align: middle;
+    }
 </style>
 <div class="fade-in">
     <!-- Mobile Header -->
@@ -216,9 +249,36 @@
                 });
             });
             
-            // Handle Delete Button Click (Modal triggering is handled by bootstrap data-bs-target)
-            // But we might want to ensure the modal knows which form to submit? 
-            // The modal submit button does `document.getElementById('bulkDeleteForm').submit()`, which works globally.
+            // Handle Row Click to Expand/Collapse Details
+            const expenseRows = document.querySelectorAll('.expense-row');
+            expenseRows.forEach(row => {
+                row.addEventListener('click', function(e) {
+                    // Don't expand if clicking on checkbox or action buttons
+                    if (e.target.closest('.form-check') || e.target.closest('.hstack')) {
+                        return;
+                    }
+                    
+                    const expenseId = this.dataset.expenseId;
+                    const detailsRow = document.getElementById('details-' + expenseId);
+                    const expandIcon = this.querySelector('.expand-icon');
+                    
+                    if (detailsRow) {
+                        if (detailsRow.style.display === 'none') {
+                            detailsRow.style.display = 'table-row';
+                            if (expandIcon) {
+                                expandIcon.style.transform = 'rotate(180deg)';
+                            }
+                            this.classList.add('table-active');
+                        } else {
+                            detailsRow.style.display = 'none';
+                            if (expandIcon) {
+                                expandIcon.style.transform = 'rotate(0deg)';
+                            }
+                            this.classList.remove('table-active');
+                        }
+                    }
+                });
+            });
         });
     </script>
     
@@ -256,8 +316,8 @@
                     </thead>
                     <tbody>
                         {% for expense in expenses %}
-                        <tr>
-                            <td class="ps-4">
+                        <tr class="expense-row" data-expense-id="{{ expense.pk }}" style="cursor: pointer;">
+                            <td class="ps-4" onclick="event.stopPropagation()">
                                 <div class="form-check">
                                     <input class="form-check-input expense-checkbox" type="checkbox" name="expense_ids" value="{{ expense.pk }}">
                                 </div>
@@ -269,6 +329,9 @@
                                     <span class="badge bg-info text-white ms-2" title="Shared Expense">
                                         <i class="bi bi-people-fill"></i> Shared
                                     </span>
+                                {% endif %}
+                                {% if expense.shared_details or expense.has_cashback %}
+                                    <i class="bi bi-chevron-down ms-2 text-muted expand-icon" style="transition: transform 0.2s;"></i>
                                 {% endif %}
                             </td>
                             <td>
@@ -314,7 +377,7 @@
                                     {{ expense.amount|floatformat:2 }}
                                 {% endif %}
                             </td>
-                            <td class="text-end pe-4 text-nowrap">
+                            <td class="text-end pe-4 text-nowrap" onclick="event.stopPropagation()">
                                 <div class="hstack gap-3 justify-content-end">
                                     <a href="{% url 'expense-edit' expense.pk %}?next={{ request.get_full_path|urlencode }}" class="btn btn-sm btn-link text-decoration-none p-0 d-inline-flex align-items-center" title="Edit" onclick="setButtonLoading(this, '')">
                                         <i class="bi bi-pencil-square text-primary"></i>
@@ -328,6 +391,117 @@
                                 </div>
                             </td>
                         </tr>
+                        <!-- Details Row (Hidden by default) -->
+                        {% if expense.shared_details or expense.has_cashback %}
+                        <tr class="expense-details-row" id="details-{{ expense.pk }}" style="display: none;">
+                            <td colspan="7" class="bg-light">
+                                <div class="p-3">
+                                    {% if expense.shared_details %}
+                                        <h6 class="fw-bold mb-3">
+                                            <i class="bi bi-people-fill text-info me-2"></i>Shared Expense Details
+                                        </h6>
+                                        <div class="row g-3">
+                                            <div class="col-md-6">
+                                                <div class="card border-0 shadow-sm">
+                                                    <div class="card-body">
+                                                        <h6 class="card-subtitle mb-3 text-muted">
+                                                            <i class="bi bi-cash-stack me-2"></i>Split Breakdown
+                                                        </h6>
+                                                        <table class="table table-sm table-borderless mb-0">
+                                                            <thead>
+                                                                <tr>
+                                                                    <th>Participant</th>
+                                                                    <th class="text-end">Share</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                {% for participant in expense.shared_details.participants.all %}
+                                                                    {% with share=expense.shared_details.shares.all|first %}
+                                                                        {% for s in expense.shared_details.shares.all %}
+                                                                            {% if s.participant.id == participant.id %}
+                                                                                <tr>
+                                                                                    <td>
+                                                                                        {{ participant.name }}
+                                                                                        {% if participant.is_payer %}
+                                                                                            <span class="badge bg-success ms-1">Paid</span>
+                                                                                        {% endif %}
+                                                                                    </td>
+                                                                                    <td class="text-end fw-bold">₹{{ s.amount|floatformat:2 }}</td>
+                                                                                </tr>
+                                                                            {% endif %}
+                                                                        {% endfor %}
+                                                                    {% endwith %}
+                                                                {% endfor %}
+                                                                <tr class="border-top">
+                                                                    <td class="fw-bold">Total</td>
+                                                                    <td class="text-end fw-bold">₹{{ expense.amount|floatformat:2 }}</td>
+                                                                </tr>
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="card border-0 shadow-sm">
+                                                    <div class="card-body">
+                                                        <h6 class="card-subtitle mb-3 text-muted">
+                                                            <i class="bi bi-info-circle me-2"></i>Summary
+                                                        </h6>
+                                                        <dl class="row mb-0">
+                                                            <dt class="col-sm-5">Who Paid:</dt>
+                                                            <dd class="col-sm-7">
+                                                                {% for participant in expense.shared_details.participants.all %}
+                                                                    {% if participant.is_payer %}
+                                                                        {{ participant.name }}
+                                                                    {% endif %}
+                                                                {% endfor %}
+                                                            </dd>
+                                                            <dt class="col-sm-5">Your Share:</dt>
+                                                            <dd class="col-sm-7 fw-bold text-primary">₹{{ expense.user_share_amount|floatformat:2 }}</dd>
+                                                            <dt class="col-sm-5">Total Amount:</dt>
+                                                            <dd class="col-sm-7">₹{{ expense.amount|floatformat:2 }}</dd>
+                                                            <dt class="col-sm-5">Participants:</dt>
+                                                            <dd class="col-sm-7">{{ expense.shared_details.participants.count }}</dd>
+                                                        </dl>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {% endif %}
+                                    
+                                    {% if expense.has_cashback %}
+                                        <div class="mt-3">
+                                            <h6 class="fw-bold mb-2">
+                                                <i class="bi bi-cash-coin text-success me-2"></i>Cashback Details
+                                            </h6>
+                                            <div class="alert alert-success mb-0">
+                                                <div class="row">
+                                                    <div class="col-md-4">
+                                                        <small class="text-muted d-block">Cashback Type</small>
+                                                        <strong>
+                                                            {% if expense.cashback_type == 'PERCENTAGE' %}
+                                                                Percentage ({{ expense.cashback_value|floatformat:2 }}%)
+                                                            {% else %}
+                                                                Fixed Amount
+                                                            {% endif %}
+                                                        </strong>
+                                                    </div>
+                                                    <div class="col-md-4">
+                                                        <small class="text-muted d-block">Cashback Amount</small>
+                                                        <strong>₹{{ expense.cashback_amount|floatformat:2 }}</strong>
+                                                    </div>
+                                                    <div class="col-md-4">
+                                                        <small class="text-muted d-block">Effective Amount</small>
+                                                        <strong class="text-success">₹{{ expense.effective_amount|floatformat:2 }}</strong>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% endif %}
                         {% empty %}
                         <tr>
                             <td colspan="7" class="text-center py-5">

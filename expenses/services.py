@@ -179,3 +179,99 @@ class BalanceCalculationService:
         friends_summary.sort(key=lambda x: abs(x['net']), reverse=True)
 
         return friends_summary
+
+    @staticmethod
+    def get_transactions_by_friend(user, start_date=None, end_date=None):
+        """
+        Get detailed transaction history for each friend.
+
+        Args:
+            user: The Django User object
+            start_date: Optional start date for filtering
+            end_date: Optional end date for filtering
+
+        Returns:
+            dict: Dictionary mapping friend_id to list of transaction details:
+                {
+                    friend_id: [
+                        {
+                            'date': date,
+                            'description': str,
+                            'total_amount': Decimal,
+                            'your_share': Decimal,
+                            'friend_share': Decimal,
+                            'you_paid': bool,
+                            'expense_id': int
+                        },
+                        ...
+                    ]
+                }
+        """
+        from collections import defaultdict
+        
+        transactions_by_friend = defaultdict(list)
+        
+        # Build query for shared expenses
+        query = Q(expense__user=user)
+        if start_date:
+            query &= Q(expense__date__gte=start_date)
+        if end_date:
+            query &= Q(expense__date__lte=end_date)
+        
+        # Get all shared expenses
+        shared_expenses = SharedExpense.objects.filter(query).select_related(
+            'expense'
+        ).prefetch_related(
+            'participants',
+            'participants__friend',
+            'shares',
+            'shares__participant',
+            'shares__participant__friend'
+        ).order_by('-expense__date')
+        
+        # Process each shared expense
+        for shared_expense in shared_expenses:
+            expense = shared_expense.expense
+            
+            # Get user participant
+            user_participant = shared_expense.participants.filter(is_user=True).first()
+            if not user_participant:
+                continue
+            
+            # Get user's share
+            user_share_obj = shared_expense.shares.filter(participant=user_participant).first()
+            user_share_amount = user_share_obj.amount if user_share_obj else Decimal('0.00')
+            
+            # Check if user paid
+            you_paid = user_participant.is_payer
+            
+            # Get all other participants (friends)
+            for participant in shared_expense.participants.all():
+                if participant.is_user:
+                    continue
+                
+                friend = participant.friend
+                if not friend:
+                    continue
+                
+                # Get friend's share
+                friend_share_obj = shared_expense.shares.filter(participant=participant).first()
+                friend_share_amount = friend_share_obj.amount if friend_share_obj else Decimal('0.00')
+                
+                # Create transaction record
+                transaction = {
+                    'date': expense.date,
+                    'description': expense.description,
+                    'total_amount': expense.amount,
+                    'your_share': user_share_amount,
+                    'friend_share': friend_share_amount,
+                    'you_paid': you_paid,
+                    'friend_paid': participant.is_payer,
+                    'expense_id': expense.id,
+                    'category': expense.category,
+                    'payment_method': expense.payment_method
+                }
+                
+                transactions_by_friend[friend.id].append(transaction)
+        
+        return dict(transactions_by_friend)

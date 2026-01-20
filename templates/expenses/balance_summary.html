@@ -32,6 +32,19 @@
     <div class="collapse d-md-block" id="balanceFilters" style="z-index: 1040; position: relative;">
         <form method="get" class="mb-4 bg-body-tertiary p-3 rounded shadow-sm" id="filter-form">
             <div class="row g-2 align-items-end flex-lg-nowrap">
+                <!-- Person/Friend -->
+                <div class="col-12 col-md-auto" style="min-width: 180px;">
+                    <label for="friend-select" class="form-label small text-muted">Person</label>
+                    <select name="friend" id="friend-select" class="form-control form-control-sm">
+                        <option value="">All People</option>
+                        {% for friend in all_friends %}
+                            <option value="{{ friend.id }}" {% if friend.id == selected_friend_id %}selected{% endif %}>
+                                {{ friend.name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
                 <!-- Year -->
                 <div class="col-6 col-md-auto filter-w-year">
                     <label for="year-select" class="form-label small text-muted">Year</label>
@@ -80,7 +93,18 @@
         <div class="alert alert-info py-2 mb-0">
             <i class="bi bi-info-circle me-1"></i>
             Showing balances for 
-            {% if selected_month and selected_year %}
+            {% if selected_friend_id %}
+                {% for friend in all_friends %}
+                    {% if friend.id == selected_friend_id %}
+                        <strong>{{ friend.name }}</strong>
+                        {% if selected_month and selected_year %}
+                            in <strong>{{ month_name }} {{ selected_year }}</strong>
+                        {% elif selected_year %}
+                            in <strong>{{ selected_year }}</strong>
+                        {% endif %}
+                    {% endif %}
+                {% endfor %}
+            {% elif selected_month and selected_year %}
                 <strong>{{ month_name }} {{ selected_year }}</strong>
             {% elif selected_year %}
                 <strong>{{ selected_year }}</strong>
@@ -136,7 +160,7 @@
                     {% for balance in people_owe_user %}
                     <div class="list-group-item" data-friend-id="{{ balance.id }}">
                         <div class="d-flex justify-content-between align-items-center">
-                            <div>
+                            <div class="flex-grow-1">
                                 <h6 class="mb-1 fw-bold">{{ balance.name }}</h6>
                                 {% if balance.email or balance.phone %}
                                 <small class="text-muted d-block mb-1">
@@ -155,8 +179,59 @@
                                     {{ currency_symbol }}{{ balance.net_abs|floatformat:2 }}
                                 </span>
                                 <div class="small text-muted mt-1">owes you</div>
+                                {% if balance.transactions %}
+                                <button class="btn btn-sm btn-outline-secondary mt-2" type="button" 
+                                        data-bs-toggle="collapse" 
+                                        data-bs-target="#transactions-{{ balance.id }}" 
+                                        aria-expanded="false">
+                                    <i class="bi bi-list-ul me-1"></i>View Transactions
+                                </button>
+                                {% endif %}
                             </div>
                         </div>
+                        
+                        {% if balance.transactions %}
+                        <div class="collapse mt-3" id="transactions-{{ balance.id }}">
+                            <div class="card card-body bg-light">
+                                <h6 class="fw-bold mb-3">Transaction History</h6>
+                                <div class="table-responsive">
+                                    <table class="table table-sm table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Date</th>
+                                                <th>Description</th>
+                                                <th>Total</th>
+                                                <th>Your Share</th>
+                                                <th>{{ balance.name }}'s Share</th>
+                                                <th>Who Paid</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for txn in balance.transactions %}
+                                            <tr>
+                                                <td class="text-nowrap">{{ txn.date|date:"M d, Y" }}</td>
+                                                <td>
+                                                    <div>{{ txn.description }}</div>
+                                                    <small class="text-muted">{{ txn.category }}</small>
+                                                </td>
+                                                <td class="text-nowrap">{{ currency_symbol }}{{ txn.total_amount|floatformat:2 }}</td>
+                                                <td class="text-nowrap">{{ currency_symbol }}{{ txn.your_share|floatformat:2 }}</td>
+                                                <td class="text-nowrap">{{ currency_symbol }}{{ txn.friend_share|floatformat:2 }}</td>
+                                                <td>
+                                                    {% if txn.you_paid %}
+                                                        <span class="badge bg-success">You</span>
+                                                    {% elif txn.friend_paid %}
+                                                        <span class="badge bg-info">{{ balance.name }}</span>
+                                                    {% endif %}
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
                     </div>
                     {% endfor %}
                 </div>
@@ -173,7 +248,7 @@
                     {% for balance in user_owes_people %}
                     <div class="list-group-item" data-friend-id="{{ balance.id }}">
                         <div class="d-flex justify-content-between align-items-center">
-                            <div>
+                            <div class="flex-grow-1">
                                 <h6 class="mb-1 fw-bold">{{ balance.name }}</h6>
                                 {% if balance.email or balance.phone %}
                                 <small class="text-muted d-block mb-1">
@@ -192,8 +267,59 @@
                                     {{ currency_symbol }}{{ balance.net_abs|floatformat:2 }}
                                 </span>
                                 <div class="small text-muted mt-1">you owe</div>
+                                {% if balance.transactions %}
+                                <button class="btn btn-sm btn-outline-secondary mt-2" type="button" 
+                                        data-bs-toggle="collapse" 
+                                        data-bs-target="#transactions-{{ balance.id }}" 
+                                        aria-expanded="false">
+                                    <i class="bi bi-list-ul me-1"></i>View Transactions
+                                </button>
+                                {% endif %}
                             </div>
                         </div>
+                        
+                        {% if balance.transactions %}
+                        <div class="collapse mt-3" id="transactions-{{ balance.id }}">
+                            <div class="card card-body bg-light">
+                                <h6 class="fw-bold mb-3">Transaction History</h6>
+                                <div class="table-responsive">
+                                    <table class="table table-sm table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Date</th>
+                                                <th>Description</th>
+                                                <th>Total</th>
+                                                <th>Your Share</th>
+                                                <th>{{ balance.name }}'s Share</th>
+                                                <th>Who Paid</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for txn in balance.transactions %}
+                                            <tr>
+                                                <td class="text-nowrap">{{ txn.date|date:"M d, Y" }}</td>
+                                                <td>
+                                                    <div>{{ txn.description }}</div>
+                                                    <small class="text-muted">{{ txn.category }}</small>
+                                                </td>
+                                                <td class="text-nowrap">{{ currency_symbol }}{{ txn.total_amount|floatformat:2 }}</td>
+                                                <td class="text-nowrap">{{ currency_symbol }}{{ txn.your_share|floatformat:2 }}</td>
+                                                <td class="text-nowrap">{{ currency_symbol }}{{ txn.friend_share|floatformat:2 }}</td>
+                                                <td>
+                                                    {% if txn.you_paid %}
+                                                        <span class="badge bg-success">You</span>
+                                                    {% elif txn.friend_paid %}
+                                                        <span class="badge bg-info">{{ balance.name }}</span>
+                                                    {% endif %}
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
                     </div>
                     {% endfor %}
                 </div>
@@ -210,7 +336,7 @@
                     {% for balance in settled_people %}
                     <div class="list-group-item" data-friend-id="{{ balance.id }}">
                         <div class="d-flex justify-content-between align-items-center">
-                            <div>
+                            <div class="flex-grow-1">
                                 <h6 class="mb-1 fw-bold">{{ balance.name }}</h6>
                                 {% if balance.email or balance.phone %}
                                 <small class="text-muted d-block mb-1">
@@ -228,8 +354,59 @@
                                 <span class="badge bg-secondary fs-6 px-3 py-2">
                                     Settled
                                 </span>
+                                {% if balance.transactions %}
+                                <button class="btn btn-sm btn-outline-secondary mt-2" type="button" 
+                                        data-bs-toggle="collapse" 
+                                        data-bs-target="#transactions-{{ balance.id }}" 
+                                        aria-expanded="false">
+                                    <i class="bi bi-list-ul me-1"></i>View Transactions
+                                </button>
+                                {% endif %}
                             </div>
                         </div>
+                        
+                        {% if balance.transactions %}
+                        <div class="collapse mt-3" id="transactions-{{ balance.id }}">
+                            <div class="card card-body bg-light">
+                                <h6 class="fw-bold mb-3">Transaction History</h6>
+                                <div class="table-responsive">
+                                    <table class="table table-sm table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Date</th>
+                                                <th>Description</th>
+                                                <th>Total</th>
+                                                <th>Your Share</th>
+                                                <th>{{ balance.name }}'s Share</th>
+                                                <th>Who Paid</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for txn in balance.transactions %}
+                                            <tr>
+                                                <td class="text-nowrap">{{ txn.date|date:"M d, Y" }}</td>
+                                                <td>
+                                                    <div>{{ txn.description }}</div>
+                                                    <small class="text-muted">{{ txn.category }}</small>
+                                                </td>
+                                                <td class="text-nowrap">{{ currency_symbol }}{{ txn.total_amount|floatformat:2 }}</td>
+                                                <td class="text-nowrap">{{ currency_symbol }}{{ txn.your_share|floatformat:2 }}</td>
+                                                <td class="text-nowrap">{{ currency_symbol }}{{ txn.friend_share|floatformat:2 }}</td>
+                                                <td>
+                                                    {% if txn.you_paid %}
+                                                        <span class="badge bg-success">You</span>
+                                                    {% elif txn.friend_paid %}
+                                                        <span class="badge bg-info">{{ balance.name }}</span>
+                                                    {% endif %}
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
                     </div>
                     {% endfor %}
                 </div>

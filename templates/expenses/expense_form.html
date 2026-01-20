@@ -315,24 +315,6 @@
         const expenseTypeRadios = document.querySelectorAll('input[name="expense_type"]');
         const sharedExpenseSection = document.getElementById('shared-expense-section');
         
-        function toggleExpenseType() {
-            const selectedType = document.querySelector('input[name="expense_type"]:checked')?.value;
-            
-            if (selectedType === 'shared') {
-                sharedExpenseSection.classList.remove('d-none');
-                initializeParticipants();
-            } else {
-                sharedExpenseSection.classList.add('d-none');
-            }
-        }
-        
-        expenseTypeRadios.forEach(radio => {
-            radio.addEventListener('change', toggleExpenseType);
-        });
-        
-        // Initialize on page load
-        toggleExpenseType();
-
         // --- Participant Management Logic ---
         let participants = [];
         const participantsContainer = document.getElementById('participants-container');
@@ -361,107 +343,107 @@
                 renderParticipants();
             }
         
-        // Render all participants
-        function renderParticipants() {
-            participantsContainer.innerHTML = '';
-            
-            participants.forEach((participant, index) => {
-                const participantDiv = document.createElement('div');
-                participantDiv.className = 'participant-row mb-2 p-2 border rounded bg-white';
-                participantDiv.innerHTML = `
-                    <div class="row g-2 align-items-center">
-                        <div class="col-md-5">
-                            <input type="text" 
-                                   class="form-control form-control-sm participant-name" 
-                                   placeholder="Participant name"
-                                   value="${participant.name || ''}"
-                                   data-index="${index}"
-                                   ${participant.is_user ? 'readonly' : ''}>
-                        </div>
-                        <div class="col-md-5">
-                            <div class="input-group input-group-sm">
-                                <span class="input-group-text">₹</span>
-                                <input type="number" 
-                                       class="form-control participant-share" 
-                                       placeholder="Share amount"
-                                       value="${participant.share_amount || ''}"
+            // Render all participants
+            function renderParticipants() {
+                participantsContainer.innerHTML = '';
+                
+                participants.forEach((participant, index) => {
+                    const participantDiv = document.createElement('div');
+                    participantDiv.className = 'participant-row mb-2 p-2 border rounded bg-white';
+                    participantDiv.innerHTML = `
+                        <div class="row g-2 align-items-center">
+                            <div class="col-md-5">
+                                <input type="text" 
+                                       class="form-control form-control-sm participant-name" 
+                                       placeholder="Participant name"
+                                       value="${participant.name || ''}"
                                        data-index="${index}"
-                                       step="0.01"
-                                       min="0">
+                                       ${participant.is_user ? 'readonly' : ''}>
+                            </div>
+                            <div class="col-md-5">
+                                <div class="input-group input-group-sm">
+                                    <span class="input-group-text">₹</span>
+                                    <input type="number" 
+                                           class="form-control participant-share" 
+                                           placeholder="Share amount"
+                                           value="${participant.share_amount || ''}"
+                                           data-index="${index}"
+                                           step="0.01"
+                                           min="0">
+                                </div>
+                            </div>
+                            <div class="col-md-2 text-end">
+                                ${!participant.is_user ? `
+                                    <button type="button" 
+                                            class="btn btn-sm btn-outline-danger remove-participant-btn" 
+                                            data-index="${index}"
+                                            title="Remove participant">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                ` : `
+                                    <span class="badge bg-primary">You</span>
+                                `}
                             </div>
                         </div>
-                        <div class="col-md-2 text-end">
-                            ${!participant.is_user ? `
-                                <button type="button" 
-                                        class="btn btn-sm btn-outline-danger remove-participant-btn" 
-                                        data-index="${index}"
-                                        title="Remove participant">
-                                    <i class="bi bi-trash"></i>
-                                </button>
-                            ` : `
-                                <span class="badge bg-primary">You</span>
-                            `}
-                        </div>
-                    </div>
-                `;
+                    `;
+                    
+                    participantsContainer.appendChild(participantDiv);
+                });
                 
-                participantsContainer.appendChild(participantDiv);
+                // Attach event listeners
+                attachParticipantEventListeners();
+                updateParticipantsJson();
+                updatePayerDropdown();
+                calculateShares();
+            }
+            
+            // Attach event listeners to participant inputs
+            function attachParticipantEventListeners() {
+                // Name inputs
+                document.querySelectorAll('.participant-name').forEach(input => {
+                    input.addEventListener('input', function() {
+                        const index = parseInt(this.dataset.index);
+                        participants[index].name = this.value.trim();
+                        updateParticipantsJson();
+                        updatePayerDropdown();
+                    });
+                });
+                
+                // Share amount inputs
+                document.querySelectorAll('.participant-share').forEach(input => {
+                    input.addEventListener('input', function() {
+                        const index = parseInt(this.dataset.index);
+                        participants[index].share_amount = this.value;
+                        updateParticipantsJson();
+                        calculateShares();
+                    });
+                });
+                
+                // Remove buttons
+                document.querySelectorAll('.remove-participant-btn').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const index = parseInt(this.dataset.index);
+                        participants.splice(index, 1);
+                        renderParticipants();
+                    });
+                });
+            }
+            
+            // Add new participant
+            addParticipantBtn.addEventListener('click', function() {
+                participants.push({
+                    name: '',
+                    share_amount: '',
+                    is_user: false
+                });
+                renderParticipants();
             });
             
-            // Attach event listeners
-            attachParticipantEventListeners();
-            updateParticipantsJson();
-            updatePayerDropdown();
-            calculateShares();
-        }
-        
-        // Attach event listeners to participant inputs
-        function attachParticipantEventListeners() {
-            // Name inputs
-            document.querySelectorAll('.participant-name').forEach(input => {
-                input.addEventListener('input', function() {
-                    const index = parseInt(this.dataset.index);
-                    participants[index].name = this.value.trim();
-                    updateParticipantsJson();
-                    updatePayerDropdown();
-                });
-            });
+            // Update hidden JSON field
+            function updateParticipantsJson() {
+                participantsJsonInput.value = JSON.stringify(participants);
+            }
             
-            // Share amount inputs
-            document.querySelectorAll('.participant-share').forEach(input => {
-                input.addEventListener('input', function() {
-                    const index = parseInt(this.dataset.index);
-                    participants[index].share_amount = this.value;
-                    updateParticipantsJson();
-                    calculateShares();
-                });
-            });
-            
-            // Remove buttons
-            document.querySelectorAll('.remove-participant-btn').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const index = parseInt(this.dataset.index);
-                    participants.splice(index, 1);
-                    renderParticipants();
-                });
-            });
-        }
-        
-        // Add new participant
-        addParticipantBtn.addEventListener('click', function() {
-            participants.push({
-                name: '',
-                share_amount: '',
-                is_user: false
-            });
-            renderParticipants();
-        });
-        
-        // Update hidden JSON field
-        function updateParticipantsJson() {
-            participantsJsonInput.value = JSON.stringify(participants);
-        }
-        
             // --- Payer Selection Logic ---
             const payerSelect = document.getElementById('payer-select');
             const payerIdInput = document.querySelector('input[name="payer_id"]');
@@ -508,101 +490,121 @@
             const remainingAmountSpan = document.getElementById('remaining-amount');
             
             // Calculate equal split when participants are added or amount changes
-        function calculateEqualSplit() {
-            const totalAmount = parseFloat(amountInput?.value) || 0;
-            const participantCount = participants.length;
-            
-            if (totalAmount > 0 && participantCount > 0) {
-                const equalShare = (totalAmount / participantCount).toFixed(2);
+            function calculateEqualSplit() {
+                const totalAmount = parseFloat(amountInput?.value) || 0;
+                const participantCount = participants.length;
                 
-                // Only update shares that are empty
+                if (totalAmount > 0 && participantCount > 0) {
+                    const equalShare = (totalAmount / participantCount).toFixed(2);
+                    
+                    // Only update shares that are empty
+                    participants.forEach(participant => {
+                        if (!participant.share_amount || participant.share_amount === '') {
+                            participant.share_amount = equalShare;
+                        }
+                    });
+                    
+                    renderParticipants();
+                }
+            }
+            
+            // Calculate and display remaining amount
+            function calculateShares() {
+                const totalAmount = parseFloat(amountInput?.value) || 0;
+                
+                if (totalAmount <= 0) {
+                    shareValidationMessage.classList.add('d-none');
+                    return;
+                }
+                
+                let totalShares = 0;
                 participants.forEach(participant => {
-                    if (!participant.share_amount || participant.share_amount === '') {
-                        participant.share_amount = equalShare;
-                    }
+                    const shareAmount = parseFloat(participant.share_amount) || 0;
+                    totalShares += shareAmount;
                 });
                 
-                renderParticipants();
-            }
-        }
-        
-        // Calculate and display remaining amount
-        function calculateShares() {
-            const totalAmount = parseFloat(amountInput?.value) || 0;
-            
-            if (totalAmount <= 0) {
-                shareValidationMessage.classList.add('d-none');
-                return;
-            }
-            
-            let totalShares = 0;
-            participants.forEach(participant => {
-                const shareAmount = parseFloat(participant.share_amount) || 0;
-                totalShares += shareAmount;
-            });
-            
-            const remaining = totalAmount - totalShares;
-            
-            if (Math.abs(remaining) > 0.01) {
-                shareValidationMessage.classList.remove('d-none');
-                remainingAmountSpan.textContent = '₹' + remaining.toFixed(2);
+                const remaining = totalAmount - totalShares;
                 
-                // Change alert class based on whether we're over or under
-                if (remaining < 0) {
-                    shareValidationMessage.classList.remove('alert-warning');
-                    shareValidationMessage.classList.add('alert-danger');
-                    remainingAmountSpan.parentElement.innerHTML = '<strong>Over-allocated by:</strong> <span id="remaining-amount">₹' + Math.abs(remaining).toFixed(2) + '</span>';
+                if (Math.abs(remaining) > 0.01) {
+                    shareValidationMessage.classList.remove('d-none');
+                    remainingAmountSpan.textContent = '₹' + remaining.toFixed(2);
+                    
+                    // Change alert class based on whether we're over or under
+                    if (remaining < 0) {
+                        shareValidationMessage.classList.remove('alert-warning');
+                        shareValidationMessage.classList.add('alert-danger');
+                        remainingAmountSpan.parentElement.innerHTML = '<strong>Over-allocated by:</strong> <span id="remaining-amount">₹' + Math.abs(remaining).toFixed(2) + '</span>';
+                    } else {
+                        shareValidationMessage.classList.remove('alert-danger');
+                        shareValidationMessage.classList.add('alert-warning');
+                        remainingAmountSpan.parentElement.innerHTML = '<strong>Remaining to allocate:</strong> <span id="remaining-amount">₹' + remaining.toFixed(2) + '</span>';
+                    }
                 } else {
-                    shareValidationMessage.classList.remove('alert-danger');
-                    shareValidationMessage.classList.add('alert-warning');
-                    remainingAmountSpan.parentElement.innerHTML = '<strong>Remaining to allocate:</strong> <span id="remaining-amount">₹' + remaining.toFixed(2) + '</span>';
+                    shareValidationMessage.classList.add('d-none');
                 }
-            } else {
-                shareValidationMessage.classList.add('d-none');
             }
-        }
-        
-        // Listen to amount changes
-        if (amountInput) {
-            amountInput.addEventListener('input', function() {
-                calculateEqualSplit();
-                calculateShares();
-            });
-        }
-        
-        // Add button to auto-split equally
-        addParticipantBtn.insertAdjacentHTML('afterend', `
-            <button type="button" class="btn btn-sm btn-outline-secondary mt-2 ms-2" id="auto-split-btn">
-                <i class="bi bi-calculator me-1"></i> Split Equally
-            </button>
-        `);
-        
-        document.getElementById('auto-split-btn').addEventListener('click', function() {
-            const totalAmount = parseFloat(amountInput?.value) || 0;
-            const participantCount = participants.length;
             
-            if (totalAmount > 0 && participantCount > 0) {
-                const equalShare = (totalAmount / participantCount).toFixed(2);
-                
-                // Update all shares
-                participants.forEach(participant => {
-                    participant.share_amount = equalShare;
+            // Listen to amount changes
+            if (amountInput) {
+                amountInput.addEventListener('input', function() {
+                    calculateEqualSplit();
+                    calculateShares();
                 });
-                
-                // Adjust last participant's share to account for rounding
-                if (participants.length > 0) {
-                    let totalShares = 0;
-                    for (let i = 0; i < participants.length - 1; i++) {
-                        totalShares += parseFloat(participants[i].share_amount);
-                    }
-                    participants[participants.length - 1].share_amount = (totalAmount - totalShares).toFixed(2);
-                }
-                
-                renderParticipants();
             }
-        });
+            
+            // Add button to auto-split equally
+            addParticipantBtn.insertAdjacentHTML('afterend', `
+                <button type="button" class="btn btn-sm btn-outline-secondary mt-2 ms-2" id="auto-split-btn">
+                    <i class="bi bi-calculator me-1"></i> Split Equally
+                </button>
+            `);
+            
+            document.getElementById('auto-split-btn').addEventListener('click', function() {
+                const totalAmount = parseFloat(amountInput?.value) || 0;
+                const participantCount = participants.length;
+                
+                if (totalAmount > 0 && participantCount > 0) {
+                    const equalShare = (totalAmount / participantCount).toFixed(2);
+                    
+                    // Update all shares
+                    participants.forEach(participant => {
+                        participant.share_amount = equalShare;
+                    });
+                    
+                    // Adjust last participant's share to account for rounding
+                    if (participants.length > 0) {
+                        let totalShares = 0;
+                        for (let i = 0; i < participants.length - 1; i++) {
+                            totalShares += parseFloat(participants[i].share_amount);
+                        }
+                        participants[participants.length - 1].share_amount = (totalAmount - totalShares).toFixed(2);
+                    }
+                    
+                    renderParticipants();
+                }
+            });
 
         } // End of participant management if block
+        
+        function toggleExpenseType() {
+            const selectedType = document.querySelector('input[name="expense_type"]:checked')?.value;
+            
+            if (selectedType === 'shared') {
+                sharedExpenseSection.classList.remove('d-none');
+                if (participantsContainer) {
+                    initializeParticipants();
+                }
+            } else {
+                sharedExpenseSection.classList.add('d-none');
+            }
+        }
+        
+        expenseTypeRadios.forEach(radio => {
+            radio.addEventListener('change', toggleExpenseType);
+        });
+        
+        // Initialize on page load
+        toggleExpenseType();
 
         // --- Cashback Toggle Logic ---
         const hasCashbackCheckbox = document.getElementById('id_has_cashback');

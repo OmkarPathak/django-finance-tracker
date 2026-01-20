@@ -1232,6 +1232,49 @@ class ExpenseUpdateView(LoginRequiredMixin, generic.UpdateView):
         context = super().get_context_data(**kwargs)
         context['next_url'] = self.request.POST.get('next') or self.request.GET.get('next') or ''
         return context
+    
+    def get_initial(self):
+        """Populate form with existing shared expense data if it exists."""
+        initial = super().get_initial()
+        expense = self.object
+        
+        try:
+            # Check if this expense has shared details
+            shared_expense = expense.shared_details
+            
+            # Set expense type to shared
+            initial['expense_type'] = 'shared'
+            
+            # Build participants list from existing data
+            participants = []
+            payer_name = None
+            
+            for participant in shared_expense.participants.all():
+                # Get the participant's share
+                share = shared_expense.shares.filter(participant=participant).first()
+                share_amount = str(share.amount) if share else ''
+                
+                participant_data = {
+                    'name': participant.name,
+                    'is_user': participant.is_user,
+                    'share_amount': share_amount
+                }
+                participants.append(participant_data)
+                
+                # Track who paid
+                if participant.is_payer:
+                    payer_name = participant.name
+            
+            # Set the initial values for hidden fields
+            initial['participants_json'] = json.dumps(participants)
+            initial['payer_id'] = payer_name
+
+            
+        except Exception as e:
+            # Not a shared expense or error loading data - use defaults
+            pass
+        
+        return initial
 
     def form_valid(self, form):
         from django.db import transaction
@@ -2219,11 +2262,13 @@ class BalanceSummaryView(LoginRequiredMixin, TemplateView):
         # Get filter parameters
         month_param = self.request.GET.get('month')
         year_param = self.request.GET.get('year')
+        friend_param = self.request.GET.get('friend')
         
         # Initialize date range variables
         start_date = None
         end_date = None
         filter_applied = False
+        selected_friend_id = None
         
         # Process date filters if provided
         if month_param and year_param:
@@ -2259,12 +2304,33 @@ class BalanceSummaryView(LoginRequiredMixin, TemplateView):
             except (ValueError, TypeError):
                 pass
         
+        # Process friend filter
+        if friend_param:
+            try:
+                selected_friend_id = int(friend_param)
+                filter_applied = True
+                context['selected_friend_id'] = selected_friend_id
+            except (ValueError, TypeError):
+                pass
+        
         # Calculate balances using the service (now returns Friend-based data)
         balances = BalanceCalculationService.calculate_balances(
             user=user,
             start_date=start_date,
             end_date=end_date
         )
+        
+        # Get transaction details for each friend
+        transactions_by_friend = BalanceCalculationService.get_transactions_by_friend(
+            user=user,
+            start_date=start_date,
+            end_date=end_date
+        )
+        
+        # Filter by friend if specified
+        if selected_friend_id:
+            balances = {k: v for k, v in balances.items() if k == selected_friend_id}
+            transactions_by_friend = {k: v for k, v in transactions_by_friend.items() if k == selected_friend_id}
         
         # Prepare balance data for template
         # Separate into people who owe user (positive net) and people user owes (negative net)
@@ -2285,7 +2351,8 @@ class BalanceSummaryView(LoginRequiredMixin, TemplateView):
                 'lent': balance_data['lent'],
                 'borrowed': balance_data['borrowed'],
                 'net': net_balance,
-                'net_abs': abs(net_balance)
+                'net_abs': abs(net_balance),
+                'transactions': transactions_by_friend.get(friend_id, [])
             }
             
             if net_balance > 0:

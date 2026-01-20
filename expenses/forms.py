@@ -59,13 +59,16 @@ class ExpenseForm(forms.ModelForm):
             choices = [(cat.name, cat.name) for cat in categories]
             self.fields['category'].widget = forms.Select(choices=choices, attrs={'class': 'form-select'})
             
-            # Pre-populate user as first participant in participants_json
-            default_participant = {
-                'name': user.username,
-                'is_user': True,
-                'share_amount': ''
-            }
-            self.fields['participants_json'].initial = json.dumps([default_participant])
+            # Only set default participant if this is a new expense (not editing)
+            # Check if participants_json already has initial data from the view
+            if not self.initial.get('participants_json'):
+                # Pre-populate user as first participant in participants_json
+                default_participant = {
+                    'name': user.username,
+                    'is_user': True,
+                    'share_amount': ''
+                }
+                self.fields['participants_json'].initial = json.dumps([default_participant])
         else:
             self.fields['category'].widget = forms.TextInput(attrs={'class': 'form-control'})
 
