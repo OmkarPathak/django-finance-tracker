@@ -20,7 +20,7 @@
                 <a href="{% url 'expense-create' %}" class="btn btn-primary btn-sm d-flex align-items-center gap-1">
                     <i class="bi bi-plus-lg"></i> <span>Add<span class="d-none d-sm-inline"> Expense</span></span>
                 </a>
-                <a href="{% url 'export-expenses' %}?{{ request.GET.urlencode }}" class="btn btn-sm btn-link text-success text-decoration-none p-0 border-0" title="Export">
+                <a href="{% url 'export-expenses' %}?{{ request.GET.urlencode }}" class="btn btn-sm btn-link text-success text-decoration-none p-0 border-0 no-loader" title="Export">
                     <i class="bi bi-download fs-5"></i>
                 </a>
                 <button class="btn btn-sm btn-link text-decoration-none text-muted p-0 border-0 fs-6" type="button" data-bs-toggle="collapse" data-bs-target="#expenseFilters" aria-expanded="false" aria-controls="expenseFilters">
@@ -39,7 +39,7 @@
                 <a href="{% url 'expense-create' %}" class="btn btn-primary btn-sm d-inline-flex align-items-center text-nowrap">
                     <i class="bi bi-plus-lg me-1"></i> Add Expense
                 </a>
-                <a href="{% url 'export-expenses' %}?{{ request.GET.urlencode }}" class="btn btn-outline-success btn-sm d-inline-flex align-items-center">
+                <a href="{% url 'export-expenses' %}?{{ request.GET.urlencode }}" class="btn btn-outline-success btn-sm d-inline-flex align-items-center no-loader">
                     <i class="bi bi-download me-1"></i> Export
                 </a>
             </div>

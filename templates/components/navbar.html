@@ -137,10 +137,10 @@
                     {% endif %}
                     
                     <li class="nav-item">
-                        <a href="{% url 'demo_login' %}" class="nav-link {% if is_landing %}fw-bold text-muted{% endif %}">Live Demo</a>
+                        <a href="{% url 'demo_login' %}" class="nav-link px-2 {% if is_landing %}fw-bold text-muted{% endif %}">Live Demo</a>
                     </li>
                     <li class="nav-item">
-                        <a href="{% url 'blog_list' %}" class="nav-link {% if is_landing %}fw-bold text-muted{% endif %}">Blog</a>
+                        <a href="{% url 'blog_list' %}" class="nav-link px-2 {% if is_landing %}fw-bold text-muted{% endif %}">Blog</a>
                     </li>
                     
                     <div class="vr d-none d-lg-block text-body opacity-25 mx-2"></div>
@@ -148,11 +148,11 @@
                     <li class="nav-item d-none d-lg-block">
                         <a href="{% url 'account_login' %}" class="nav-link">Login</a>
                     </li>
-                    <li class="nav-item">
+                    <li class="nav-item mt-3 mt-lg-0">
                         {% if is_landing %}
-                            <a href="{% url 'signup' %}" class="cta-button btn-sm py-2 px-4 shadow-sm text-decoration-none" style="font-size: 0.9rem;">Join Now</a>
+                            <a href="{% url 'signup' %}" class="cta-button btn-sm py-2 px-4 shadow-sm text-decoration-none d-block w-100 d-lg-inline-block w-lg-auto text-center" style="font-size: 0.9rem;">Join Now</a>
                         {% else %}
-                            <a href="{% url 'signup' %}" class="btn btn-primary"><i class="bi bi-person-plus me-1"></i> Sign Up</a>
+                            <a href="{% url 'signup' %}" class="btn btn-primary d-block w-100 d-lg-inline-block w-lg-auto"><i class="bi bi-person-plus me-1"></i> Sign Up</a>
                         {% endif %}
                     </li>
                     <!-- Theme Toggle for Guests -->
