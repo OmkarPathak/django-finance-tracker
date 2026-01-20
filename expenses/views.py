@@ -441,6 +441,34 @@ def home_view(request):
     
     savings = total_income - total_expenses
 
+    # --- NEW: Savings Projection (Linear Extrapolation) ---
+    current_date = date.today()
+    current_year = current_date.year
+    current_month = current_date.month 
+
+    # 1. Calculate YTD Savings (Strictly for current year, regardless of filters)
+    ytd_income = Income.objects.filter(user=request.user, date__year=current_year, date__month__lte=current_month).aggregate(Sum('amount'))['amount__sum'] or 0
+    ytd_expenses = Expense.objects.filter(user=request.user, date__year=current_year, date__month__lte=current_month).aggregate(Sum('amount'))['amount__sum'] or 0
+    ytd_savings = ytd_income - ytd_expenses
+    
+    projected_savings = 0
+    
+    # Only project if we have data and positive savings
+    if ytd_savings > 0:
+        # Avoid division by zero if it's January (month 1)
+        # Actually, even in Jan, months_passed is 1. So we are good.
+        months_passed = current_month
+        avg_monthly_savings = ytd_savings / months_passed
+        
+        months_remaining = 12 - months_passed
+        projected_additional = avg_monthly_savings * months_remaining
+        
+        projected_savings = ytd_savings + projected_additional
+    else:
+        # If savings are negative or zero, projection is effectively "0" or "current state"
+        # We might handle this in template
+        projected_savings = 0
+
     # Calculate MoM Changes ONLY if exactly one year and one month are selected
     prev_month_data = None
     if len(selected_years) == 1 and len(selected_months) == 1:
@@ -749,6 +777,7 @@ def home_view(request):
         'total_expenses': total_expenses,
         'transaction_count': transaction_count,
         'top_category': top_category,
+        'projected_savings': projected_savings, # NEW
         'start_date': start_date,
         'end_date': end_date,
         'prev_month_data': prev_month_data,
