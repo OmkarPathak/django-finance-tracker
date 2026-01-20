@@ -9,24 +9,62 @@
 
             <div class="mb-5">
                 <h3 class="h4 fw-bold mb-4 text-center">Send us a message</h3>
+                {{ form.media }}
                 <form method="post" action="{% url 'contact' %}">
                     {% csrf_token %}
+                    
+                    <!-- Honeypot -->
+                    {{ form.website }}
+
+                    <!-- Validation Errors -->
+                    {% if form.non_field_errors %}
+                    <div class="alert alert-danger">
+                        {% for error in form.non_field_errors %}
+                            {{ error }}
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+
                     <div class="mb-3">
-                        <label for="name" class="form-label">Name</label>
-                        <input type="text" class="form-control" id="name" name="name" required placeholder="Your Name">
+                        <label for="{{ form.name.id_for_label }}" class="form-label">Name</label>
+                        {{ form.name }}
+                        {% if form.name.errors %}
+                            <div class="text-danger small">{{ form.name.errors|join:", " }}</div>
+                        {% endif %}
                     </div>
                     <div class="mb-3">
-                        <label for="email" class="form-label">Email</label>
-                        <input type="email" class="form-control" id="email" name="email" required placeholder="name@example.com" value="{{ request.user.email }}">
+                        <label for="{{ form.email.id_for_label }}" class="form-label">Email</label>
+                        {{ form.email }}
+                        {% if form.email.errors %}
+                            <div class="text-danger small">{{ form.email.errors|join:", " }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.subject.id_for_label }}" class="form-label">Subject</label>
+                        {{ form.subject }}
+                        {% if form.subject.errors %}
+                            <div class="text-danger small">{{ form.subject.errors|join:", " }}</div>
+                        {% endif %}
                     </div>
                     <div class="mb-3">
-                        <label for="subject" class="form-label">Subject</label>
-                        <input type="text" class="form-control" id="subject" name="subject" required placeholder="What is this about?">
+                        <label for="{{ form.message.id_for_label }}" class="form-label">Message</label>
+                        {{ form.message }}
+                        {% if form.message.errors %}
+                            <div class="text-danger small">{{ form.message.errors|join:", " }}</div>
+                        {% endif %}
                     </div>
+                    
+                    <!-- Google reCAPTCHA v3 (Invisible) -->
+                    {% if form.captcha %}
                     <div class="mb-3">
-                        <label for="message" class="form-label">Message</label>
-                        <textarea class="form-control" id="message" name="message" rows="5" required placeholder="How can we help you?"></textarea>
+                        {{ form.captcha }}
+                        {% if form.captcha.errors %}
+                            <div class="text-danger small">{{ form.captcha.errors|join:", " }}</div>
+                        {% endif %}
                     </div>
+                    {% endif %}
+
                     <div class="d-grid">
                         <button type="submit" class="btn btn-primary btn-lg">
                             <i class="bi bi-send me-2"></i> Send Message

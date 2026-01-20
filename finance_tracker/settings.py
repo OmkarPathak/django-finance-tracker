@@ -72,6 +72,7 @@ INSTALLED_APPS = [
     'crispy_forms',
     'crispy_bootstrap5',
     'anymail',
+    'django_recaptcha',
 ]
 
 CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
@@ -232,7 +233,11 @@ RAZORPAY_KEY_SECRET = os.environ.get('RAZORPAY_KEY_SECRET')
 
 # Email Backend Configuration (SMTP)
 # EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_BACKEND = "anymail.backends.brevo.EmailBackend"
+# Email Backend Configuration
+if DEBUG:
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+else:
+    EMAIL_BACKEND = "anymail.backends.brevo.EmailBackend"
 
 # Helper to load key from environment
 ANYMAIL = {
@@ -261,3 +266,8 @@ if not DEBUG:
 
     # Ensure Allauth builds HTTPS links
     ACCOUNT_DEFAULT_HTTP_PROTOCOL = 'https'
+
+# Google reCAPTCHA v3 Settings
+RECAPTCHA_PUBLIC_KEY = os.environ.get('RECAPTCHA_PUBLIC_KEY', '')
+RECAPTCHA_PRIVATE_KEY = os.environ.get('RECAPTCHA_PRIVATE_KEY', os.environ.get('RECAPTCHA_SECRET_KEY', ''))
+RECAPTCHA_REQUIRED_SCORE = 0.5  # Score threshold (0.0 = likely bot, 1.0 = likely human)

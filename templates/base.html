@@ -38,6 +38,7 @@
         document.cookie = "django_timezone=" + tz + "; path=/; SameSite=Lax";
     </script>
     <title>{% block title %}TrackMyRupee - Know Exactly Where Every Rupee Goes{% endblock %}</title>
+    <link rel="canonical" href="{{ request.scheme }}://{{ request.get_host }}{{ request.path }}">
     
     {% block meta_tags %}
     <meta name="description" content="Turn financial chaos into clarity. TrackMyRupee gives you a precision dashboard to visualize your spending, spot trends, and master your monthly budget—all in one place.">

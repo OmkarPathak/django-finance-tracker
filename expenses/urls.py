@@ -49,8 +49,6 @@ urlpatterns = [
     path('terms-of-service/', TemplateView.as_view(template_name='terms_of_service.html'), name='terms-of-service'),
     path('about/', TemplateView.as_view(template_name='about.html'), name='about'),
     path('contact/', views.ContactView.as_view(), name='contact'),
-    path('sitemap.xml', TemplateView.as_view(template_name='sitemap.xml', content_type='text/xml')),
-    path('robots.txt', TemplateView.as_view(template_name='robots.txt', content_type='text/plain')),
 
     # to keep alive on render
     path('ping/', views.ping, name='ping'),
