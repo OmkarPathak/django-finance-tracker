@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load currency_filters %}
 
 {% block content %}
 <style>
@@ -288,7 +289,7 @@
                 <div class="card-body">
                     <h5 class="card-title opacity-75 text-body"><i class="bi bi-cash-coin me-2"></i>Total Income</h5>
                     <div class="d-flex flex-wrap align-items-center mb-0 gap-2">
-                        <h2 class="display-6 fw-bold mb-0 text-body">{{ currency_symbol }}{{ total_income|floatformat:0 }}</h2>
+                        <h2 class="display-6 fw-bold mb-0 text-body">{{ currency_symbol }}{{ total_income|humanize_currency:currency_symbol }}</h2>
                         {% if prev_month_data.income_pct is not None %}
                             <span class="badge rounded-pill {% if prev_month_data.income_pct >= 0 %}bg-success{% else %}bg-danger{% endif %}" style="font-size: 0.75rem;" title="vs last month">
                                 <i class="bi bi-arrow-{% if prev_month_data.income_pct >= 0 %}up{% else %}down{% endif %}"></i>
@@ -321,7 +322,7 @@
                 <div class="card-body">
                     <h5 class="card-title opacity-75 text-body"><i class="bi bi-wallet2 me-2"></i>Total Expenses</h5>
                     <div class="d-flex flex-wrap align-items-center mb-0 gap-2">
-                        <h2 class="display-6 fw-bold mb-0 text-body">{{ currency_symbol }}{{ total_expenses|floatformat:0 }}</h2>
+                        <h2 class="display-6 fw-bold mb-0 text-body">{{ currency_symbol }}{{ total_expenses|humanize_currency:currency_symbol }}</h2>
                         {% if prev_month_data.expense_pct is not None %}
                             <span class="badge rounded-pill {% if prev_month_data.expense_pct > 0 %}bg-danger{% else %}bg-success{% endif %}" style="font-size: 0.75rem;" title="vs last month">
                                 <i class="bi bi-arrow-{% if prev_month_data.expense_pct > 0 %}up{% else %}down{% endif %}"></i>
@@ -351,7 +352,7 @@
             <div class="card-body">
                 <h5 class="card-title opacity-75"><i class="bi bi-piggy-bank me-2"></i>Balance</h5>
                 <div class="d-flex flex-wrap align-items-center mb-0 gap-2">
-                    <h2 class="display-6 fw-bold mb-0">{{ currency_symbol }}{{ savings|floatformat:0 }}</h2>
+                    <h2 class="display-6 fw-bold mb-0">{{ currency_symbol }}{{ savings|humanize_currency:currency_symbol }}</h2>
                     {% if prev_month_data.savings_pct is not None %}
                         <span class="badge rounded-pill {% if prev_month_data.savings_pct >= 0 %}bg-success{% else %}bg-danger{% endif %}" style="font-size: 0.75rem;" title="vs last month">
                             <i class="bi bi-arrow-{% if prev_month_data.savings_pct >= 0 %}up{% else %}down{% endif %}"></i>
@@ -374,18 +375,25 @@
         </div>
     </div>
 
-    <!-- Top Category (Restored) -->
+    <!-- Projected Savings (Replaces Top Category) -->
     <div class="col-6 col-md-3">
         <div class="card shadow-lg border-0 h-100 hover-lift fade-in" style="animation-delay: 0.3s">
             <div class="card-body">
-                <h5 class="card-title opacity-75"><i class="bi bi-tags-fill me-2"></i>Top Category</h5>
-                {% if top_category %}
-                    <h2 class="display-6 fw-bold mb-0">{{ top_category.category }}</h2>
-                    <small class="text-muted">{{ currency_symbol }}{{ top_category.total|floatformat:2 }}</small>
-                {% else %}
-                    <h2 class="display-6 fw-bold mb-0">-</h2>
-                    <small class="text-muted">No data</small>
-                {% endif %}
+                <h5 class="card-title opacity-75"><i class="bi bi-graph-up-arrow me-2"></i>Projected Savings</h5>
+                <div class="d-flex flex-wrap align-items-center mb-0 gap-2">
+                    {% if projected_savings > 0 %}
+                        <h2 class="display-6 fw-bold mb-0">{{ currency_symbol }}{{ projected_savings|humanize_currency:currency_symbol }}</h2>
+                        <span class="badge rounded-pill bg-success bg-opacity-10 text-success" style="font-size: 0.75rem;" title="Estimated by year end based on current avg">
+                            Year End
+                        </span>
+                    {% else %}
+                        <h2 class="display-6 fw-bold mb-0 text-muted">-</h2>
+                        <small class="text-muted">Keep saving to see this!</small>
+                    {% endif %}
+                </div>
+                <small class="text-muted">
+                    Based on your YTD average
+                </small>
             </div>
         </div>
     </div>
