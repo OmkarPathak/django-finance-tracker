@@ -87,7 +87,7 @@
                                                         <select name="{{ field.html_name }}" class="form-select form-select-sm mb-1">
                                                             <option value="">Type</option>
                                                             <option value="PERCENTAGE">%</option>
-                                                            <option value="FIXED">₹</option>
+                                                            <option value="FIXED">{{ currency_symbol }}</option>
                                                         </select>
                                                     {% elif field.name == 'cashback_value' %}
                                                         <input type="number" 
@@ -208,7 +208,7 @@
 
                                     <!-- Validation Messages -->
                                     <div id="share-validation-message" class="alert alert-warning d-none">
-                                        <small><strong>Remaining to allocate:</strong> <span id="remaining-amount">₹0</span></small>
+                                        <small><strong>Remaining to allocate:</strong> <span id="remaining-amount">{{ currency_symbol }}0</span></small>
                                     </div>
                                 </div>
                             </div>
@@ -259,8 +259,8 @@
                                     </div>
                                     <div id="cashback-preview" class="alert alert-info mb-0" style="display: none;">
                                         <small>
-                                            <strong>Cashback:</strong> <span id="cashback-amount">₹0</span><br>
-                                            <strong>Effective Amount:</strong> <span id="effective-amount">₹0</span>
+                                            <strong>Cashback:</strong> <span id="cashback-amount">{{ currency_symbol }}0</span><br>
+                                            <strong>Effective Amount:</strong> <span id="effective-amount">{{ currency_symbol }}0</span>
                                         </small>
                                     </div>
                                 </div>
@@ -310,6 +310,7 @@
 
 {% block scripts %}
 <script>
+    const currencySymbol = '{{ currency_symbol }}';
     document.addEventListener('DOMContentLoaded', function() {
         // --- Expense Type Toggle Logic ---
         const expenseTypeRadios = document.querySelectorAll('input[name="expense_type"]');
@@ -362,8 +363,8 @@
                             </div>
                             <div class="col-md-5">
                                 <div class="input-group input-group-sm">
-                                    <span class="input-group-text">₹</span>
-                                    <input type="number" 
+                                    <span class="input-group-text">${currencySymbol}</span>
+                                    <input type="number"
                                            class="form-control participant-share" 
                                            placeholder="Share amount"
                                            value="${participant.share_amount || ''}"
@@ -527,17 +528,17 @@
                 
                 if (Math.abs(remaining) > 0.01) {
                     shareValidationMessage.classList.remove('d-none');
-                    remainingAmountSpan.textContent = '₹' + remaining.toFixed(2);
-                    
+                    remainingAmountSpan.textContent = currencySymbol + remaining.toFixed(2);
+
                     // Change alert class based on whether we're over or under
                     if (remaining < 0) {
                         shareValidationMessage.classList.remove('alert-warning');
                         shareValidationMessage.classList.add('alert-danger');
-                        remainingAmountSpan.parentElement.innerHTML = '<strong>Over-allocated by:</strong> <span id="remaining-amount">₹' + Math.abs(remaining).toFixed(2) + '</span>';
+                        remainingAmountSpan.parentElement.innerHTML = '<strong>Over-allocated by:</strong> <span id="remaining-amount">' + currencySymbol + Math.abs(remaining).toFixed(2) + '</span>';
                     } else {
                         shareValidationMessage.classList.remove('alert-danger');
                         shareValidationMessage.classList.add('alert-warning');
-                        remainingAmountSpan.parentElement.innerHTML = '<strong>Remaining to allocate:</strong> <span id="remaining-amount">₹' + remaining.toFixed(2) + '</span>';
+                        remainingAmountSpan.parentElement.innerHTML = '<strong>Remaining to allocate:</strong> <span id="remaining-amount">' + currencySymbol + remaining.toFixed(2) + '</span>';
                     }
                 } else {
                     shareValidationMessage.classList.add('d-none');
@@ -643,8 +644,8 @@
 
                     const effectiveAmount = amount - cashbackAmount;
 
-                    if (cashbackAmountSpan) cashbackAmountSpan.textContent = '₹' + cashbackAmount.toFixed(2);
-                    if (effectiveAmountSpan) effectiveAmountSpan.textContent = '₹' + effectiveAmount.toFixed(2);
+                    if (cashbackAmountSpan) cashbackAmountSpan.textContent = currencySymbol + cashbackAmount.toFixed(2);
+                    if (effectiveAmountSpan) effectiveAmountSpan.textContent = currencySymbol + effectiveAmount.toFixed(2);
                     if (cashbackPreview) cashbackPreview.style.display = 'block';
                 } else {
                     if (cashbackPreview) cashbackPreview.style.display = 'none';

@@ -488,7 +488,7 @@
                                                     </div>
                                                     <div class="col-md-4">
                                                         <small class="text-muted d-block">Cashback Amount</small>
-                                                        <strong>₹{{ expense.cashback_amount|floatformat:2 }}</strong>
+                                                        <strong>{{ currency_symbol }}{{ expense.cashback_amount|floatformat:2 }}</strong>
                                                     </div>
                                                     <div class="col-md-4">
                                                         <small class="text-muted d-block">Effective Amount</small>
