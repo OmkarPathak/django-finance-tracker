@@ -117,6 +117,11 @@ class Migration(migrations.Migration):
         ),
         # Step 4: Run data migration
         migrations.RunPython(migrate_participants_to_friends, reverse_migration),
+        # Step 4.5: Remove constraint on old participant field
+        migrations.RemoveConstraint(
+            model_name='share',
+            name='unique_share_per_participant',
+        ),
         # Step 5: Remove old participant field from Share
         migrations.RemoveField(
             model_name='share',
@@ -152,5 +157,10 @@ class Migration(migrations.Migration):
         migrations.AddConstraint(
             model_name='sharedexpenseparticipant',
             constraint=models.UniqueConstraint(condition=models.Q(('is_user', True)), fields=('shared_expense', 'is_user'), name='unique_user_per_shared_expense'),
+        ),
+        # Step 11: Re-add constraint on Share (new participant)
+        migrations.AddConstraint(
+            model_name='share',
+            constraint=models.UniqueConstraint(fields=('shared_expense', 'participant'), name='unique_share_per_participant'),
         ),
     ]
