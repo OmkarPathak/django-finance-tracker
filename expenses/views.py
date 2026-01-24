@@ -1011,6 +1011,14 @@ class ExpenseListView(LoginRequiredMixin, RecurringTransactionMixin, ListView):
         if search_query:
             queryset = queryset.filter(description__icontains=search_query)
             
+        # Sorting
+        sort_by = self.request.GET.get('sort')
+        if sort_by == 'amount_asc':
+            queryset = queryset.order_by('amount')
+        elif sort_by == 'amount_desc':
+            queryset = queryset.order_by('-amount')
+        # Default is already '-date' from line 961, so valid fallback.
+            
         return queryset
 
     def get_context_data(self, **kwargs):

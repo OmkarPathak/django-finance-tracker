@@ -250,7 +250,21 @@
                             <th>Description</th>
                             <th>Category</th>
                             <th>Payment Method</th>
-                            <th>Amount</th>
+                            {% load expense_extras %}
+                            {% if request.GET.sort == 'amount_asc' %}
+                                <th style="cursor: pointer;" onclick="window.location.href='?{% url_replace sort='amount_desc' %}'">
+                            {% else %}
+                                <th style="cursor: pointer;" onclick="window.location.href='?{% url_replace sort='amount_asc' %}'">
+                            {% endif %}
+                                Amount
+                                {% if request.GET.sort == 'amount_asc' %}
+                                    <i class="bi bi-arrow-up-short"></i>
+                                {% elif request.GET.sort == 'amount_desc' %}
+                                    <i class="bi bi-arrow-down-short"></i>
+                                {% else %}
+                                    <i class="bi bi-arrow-down-up text-muted opacity-25" style="font-size: 0.8em;"></i>
+                                {% endif %}
+                            </th>
                             <th class="text-end pe-4">Actions</th>
                         </tr>
                     </thead>
