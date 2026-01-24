@@ -42,8 +42,39 @@ class IncomeListViewTests(TestCase):
         response = self.client.get(reverse('income-list'), {'source': 'Freelance'})
         self.assertEqual(len(response.context['incomes']), 1)
 
-    def test_income_list_combined_filter(self):
-        # Salary in Jan
-        response = self.client.get(reverse('income-list'), {'source': 'Salary', 'date_to': '2023-01-31'})
         self.assertEqual(len(response.context['incomes']), 1)
         self.assertEqual(response.context['incomes'][0].source, 'Salary Jan')
+
+from .models import Expense
+class ExpenseListViewTests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(username='expenseuser', password='password')
+        self.client = Client()
+        self.client.login(username='expenseuser', password='password')
+        
+        # Create sample expenses
+        Expense.objects.create(user=self.user, date=date(2023, 1, 1), amount=100, description='Low', category='Food', payment_method='Cash')
+        Expense.objects.create(user=self.user, date=date(2023, 1, 2), amount=500, description='High', category='Food', payment_method='Cash')
+        Expense.objects.create(user=self.user, date=date(2023, 1, 3), amount=300, description='Mid', category='Food', payment_method='Cash')
+
+    def test_sort_amount_asc(self):
+        response = self.client.get(reverse('expense-list'), {'sort': 'amount_asc', 'year': '2023'})
+        expenses = response.context['expenses']
+        self.assertEqual(expenses[0].amount, 100)
+        self.assertEqual(expenses[1].amount, 300)
+        self.assertEqual(expenses[2].amount, 500)
+
+    def test_sort_amount_desc(self):
+        response = self.client.get(reverse('expense-list'), {'sort': 'amount_desc', 'year': '2023'})
+        expenses = response.context['expenses']
+        self.assertEqual(expenses[0].amount, 500)
+        self.assertEqual(expenses[1].amount, 300)
+        self.assertEqual(expenses[2].amount, 100)
+
+    def test_sort_default(self):
+        # Default is -date (newest first)
+        response = self.client.get(reverse('expense-list'), {'year': '2023'})
+        expenses = response.context['expenses']
+        self.assertEqual(expenses[0].date, date(2023, 1, 3))
+        self.assertEqual(expenses[1].date, date(2023, 1, 2))
+        self.assertEqual(expenses[2].date, date(2023, 1, 1))
