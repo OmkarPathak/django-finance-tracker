@@ -390,4 +390,131 @@
         }
     });
 </script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        
+        const container = document.getElementById('formset-container') || document.body;
+        let debounceTimer;
+        container.addEventListener('input', function(e) {
+            // Use endsWith matching to support both formsets (form-0-description) and single forms (description)
+            if (e.target.matches('input') && e.target.name && e.target.name.endsWith('description')) {
+                const descriptionInput = e.target;
+                const description = descriptionInput.value.trim();
+                
+                // Clear any existing timer
+                clearTimeout(debounceTimer);
+                
+                // Set new timer
+                debounceTimer = setTimeout(() => {
+                    // Find corresponding category select
+                    // Usually roughly in same row
+                    const row = descriptionInput.closest('.form-row') || descriptionInput.closest('.mb-3').parentNode; 
+                    // Note: The non-formset view structure is slightly different (<div class="mb-3">...)
+                    
+                    let categorySelect = null;
+                    if (row && row.classList.contains('form-row')) {
+                         categorySelect = row.querySelector('select[name$="-category"]');
+                    } else if (descriptionInput.closest('form')) {
+                         // For non-formset (UpdateView usually), searching globally or sibling
+                         // structure: div.mb-3 > input ... then sibling div.mb-3 > select
+                         const form = descriptionInput.closest('form');
+                         categorySelect = form.querySelector('select[name="category"]');
+                    }
+                    
+                    if (categorySelect) {
+                         // Only predict if no category selected OR current selection is 'Uncategorized'/'Others' (optional refinement)
+                         // But user might want overwrite? Let's stick to "if empty or not set" for now 
+                         // OR just visuals if we don't want to be annoying.
+                         // User requirement: "auto populate".
+                         
+                         // If user manually selected something, maybe we shouldn't change it? 
+                         // Current logic: (!categorySelect.value || categorySelect.value === '') covering empty.
+                         // But <select> often defaults to first option (e.g. 'Food').
+                         // If default is selected, we might want to override.
+                         // Let's assume prediction is helpful.
+                         
+                         if (description.length > 2) {
+                            fetch(`{% url 'predict-category' %}?description=${encodeURIComponent(description)}`)
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.category) {
+                                    // Select the option if it exists
+                                    let found = false;
+                                    for (let i = 0; i < categorySelect.options.length; i++) {
+                                        // Compare text or value
+                                        const opt = categorySelect.options[i];
+                                        if (opt.text.toLowerCase() === data.category.toLowerCase() || 
+                                            opt.value.toLowerCase() === data.category.toLowerCase()) {
+                                            categorySelect.selectedIndex = i;
+                                            found = true;
+                                            
+                                            // Visual feedback - Flash glow
+                                            categorySelect.style.transition = "box-shadow 0.3s ease, border-color 0.3s ease";
+                                            categorySelect.classList.add('is-valid'); 
+                                            categorySelect.style.borderColor = "#198754";
+                                            categorySelect.style.boxShadow = "0 0 0 0.25rem rgba(25, 135, 84, 0.25)";
+                                            
+                                            setTimeout(() => {
+                                                categorySelect.classList.remove('is-valid');
+                                                categorySelect.style.borderColor = "";
+                                                categorySelect.style.boxShadow = "";
+                                            }, 2000);
+                                            break;
+                                        }
+                                    }
+                                }
+                            })
+                            .catch(err => console.log('Prediction failed', err));
+                         }
+                    }
+                }, 800); // 800ms debounce
+            }
+        });
+        
+        
+        // Prevent form submission on Enter key in input AND select fields
+        container.addEventListener('keydown', function(e) {
+            // Check if key is Enter
+            if (e.key === 'Enter') {
+                const target = e.target;
+                
+                // Block on Inputs (except hidden/submit/reset/button)
+                const isInput = target.matches('input') && !['submit', 'reset', 'button', 'hidden'].includes(target.type);
+                // Block on Selects
+                const isSelect = target.matches('select');
+                // Block on Textareas (optional, usually Enter in textarea means new line, so maybe NOT block?)
+                // Usually we don't want to submit on Enter in textarea unless it's a chat app.
+                // But for Description/Notes, new line is valid. So let's NOT block textareas.
+                
+                if (isInput || isSelect) {
+                    e.preventDefault();
+                    console.log('Blocked Enter key submission');
+                    
+                    // UX Improvement: Move focus to next field instead?
+                    // For now, just blocking is the priority.
+                    return false;
+                }
+            }
+        });
+
+        // Debugging: Log form submissions to console (invisible to user but verifies logic if we could see logs)
+        const form = document.querySelector('form');
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                // If the submitter is NOT the save button, prevent it?
+                // `e.submitter` is the element that triggered the submit (button or form itself if Enter)
+                // If triggered by Enter, `submitter` might be null or the first button.
+                
+                // Chrome/Firefox: if Enter pressed, submitter is usually the first submit button in the form.
+                // In this form, it's the "Save Changes" button.
+                
+                // But we BLOCKED Enter on inputs.
+                // So if we are here, it should only be from a CLICK on the button.
+                
+                console.log('Form submitting...', e.submitter);
+            });
+        }
+    });
+</script>
+
 {% endblock %}

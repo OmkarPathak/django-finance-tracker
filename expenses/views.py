@@ -20,6 +20,7 @@ from datetime import datetime, date, timedelta
 import calendar
 
 from .models import Expense, Category, Income, RecurringTransaction, UserProfile, SubscriptionPlan
+from finance_tracker.ai_utils import predict_category_ai
 from .forms import ExpenseForm, IncomeForm, RecurringTransactionForm, ProfileUpdateForm, CustomSignupForm, ContactForm
 from allauth.socialaccount.models import SocialAccount
 import openpyxl
@@ -587,7 +588,52 @@ def home_view(request):
             return format_html('{}, etc.', links_html)
         return links_html
 
+    # 0. Anomaly Detection (Spending Spike)
+    # Only if viewing current month (or default view)
+    is_current_month_view = False
+    now = datetime.now()
+    if not request.GET or (len(selected_months) == 1 and str(now.month) in selected_months and str(now.year) in selected_years):
+         is_current_month_view = True
+    
+    if is_current_month_view and total_expenses > 0:
+        # Calculate last 3 months average
+        last_3_months_total = 0
+        months_counted = 0
+        for i in range(1, 4):
+            # Calculate past month/year
+            y = now.year
+            m = now.month - i
+            while m < 1:
+                m += 12
+                y -= 1
+            
+            m_total = Expense.objects.filter(user=request.user, date__year=y, date__month=m).aggregate(Sum('amount'))['amount__sum'] or 0
+            if m_total > 0:
+                last_3_months_total += m_total
+                months_counted += 1
+        
+        if months_counted > 0:
+            avg_past_spend = last_3_months_total / months_counted
+            
+            # Project current month
+            days_in_month = calendar.monthrange(now.year, now.month)[1]
+            days_passed = now.day
+            if days_passed > 0:
+                projected_spend = (float(total_expenses) / days_passed) * days_in_month
+                avg_past_spend_float = float(avg_past_spend)
+                
+                if projected_spend > avg_past_spend_float * 1.25 and float(total_expenses) > 1000: # 25% Higher + Min Threshold
+                    pct_higher = int(((projected_spend - avg_past_spend_float) / avg_past_spend_float) * 100)
+                    insights.append({
+                        'type': 'warning',
+                        'icon': 'graph-up-arrow',
+                        'title': 'Traffic Alert 🚦',
+                        'message': f"You're pacing {pct_higher}% higher than usual. Slow down to stay on track!",
+                        'allow_share': False
+                    })
+
     # 1. Budget Warnings (High Priority)
+
     over_budget_cats = [c['name'] for c in category_limits if c['used_percent'] is not None and c['used_percent'] > 100]
     near_budget_cats = [c['name'] for c in category_limits if c['used_percent'] is not None and 90 <= c['used_percent'] <= 100]
     
@@ -1065,8 +1111,11 @@ class ExpenseCreateView(LoginRequiredMixin, generic.TemplateView):
                 if next_url:
                     return redirect(next_url)
                 return redirect('expense-list')
-            except IntegrityError:
-                messages.error(request, "This expense entry already exists.")
+            except IntegrityError as e:
+                print(f"DEBUG: IntegrityError: {e}")
+                print(f"DEBUG: Formset Errors: {formset.errors}")
+                print(f"DEBUG: Formset Cleaned Data: {formset.cleaned_data}")
+                messages.error(request, f"Database Error: {e}. duplicate found! You already have this expense recorded for this date.")
                 return render(request, self.template_name, {'formset': formset})
         return render(request, self.template_name, {'formset': formset})
 
@@ -2122,3 +2171,18 @@ class ContactView(View):
             # Log error if possible
             messages.error(request, "Something went wrong. Please try again later.")
             return render(request, self.template_name, {'form': form})
+
+@login_required
+def predict_category_view(request):
+    """
+    AJAX view to predict category based on description.
+    """
+    if request.method == 'GET':
+        description = request.GET.get('description', '').strip()
+        if not description:
+             return JsonResponse({'category': None})
+        
+        category = predict_category_ai(description, request.user)
+        return JsonResponse({'category': category})
+    return JsonResponse({'error': 'Invalid request'}, status=400)
+

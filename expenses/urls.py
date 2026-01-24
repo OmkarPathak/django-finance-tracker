@@ -59,6 +59,7 @@ urlpatterns = [
     path('api/create-order/', views_payment.create_order, name='create-order'),
     path('api/verify-payment/', views_payment.verify_payment, name='verify-payment'),
     path('api/resend-verification/', views.resend_verification_email, name='resend-verification'),
+    path('api/predict-category/', views.predict_category_view, name='predict-category'),
     
     # Sentry Debug
     path('sentry-debug/', lambda request: 1 / 0),
