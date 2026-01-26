@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 from datetime import timedelta
+from django.utils import timezone
 
 class Expense(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -180,28 +181,22 @@ class UserProfile(models.Model):
     @property
     def is_pro(self):
         """Check if user has active Pro access (either lifetime or valid subscription)."""
-        # TEMPORARY: Unlock all features for free
-        return True
-        # from django.utils import timezone
-        # if self.tier == 'PRO':
-        #     if self.is_lifetime:
-        #         return True
-        #     if self.subscription_end_date and self.subscription_end_date > timezone.now():
-        #         return True
-        # return False
+        if self.tier == 'PRO':
+            if self.is_lifetime:
+                return True
+            if self.subscription_end_date and self.subscription_end_date > timezone.now():
+                return True
+        return False
     
     @property
     def is_plus(self):
         """Check if user has active Plus access (or higher)."""
-        # TEMPORARY: Unlock all features for free
-        return True
-        # from django.utils import timezone
-        # if self.tier in ['PLUS', 'PRO']:
-        #     if self.is_lifetime:
-        #         return True
-        #     if self.subscription_end_date and self.subscription_end_date > timezone.now():
-        #         return True
-        # return False
+        if self.tier in ['PLUS', 'PRO']:
+            if self.is_lifetime:
+                return True
+            if self.subscription_end_date and self.subscription_end_date > timezone.now():
+                return True
+        return False
 
     def __str__(self):
         return f"{self.user.username}'s Profile ({self.tier})"
