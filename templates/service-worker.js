@@ -42,7 +42,9 @@ self.addEventListener('activate', (event) => {
 // Fetch Event
 self.addEventListener('fetch', (event) => {
   // Fix: Ignore non-GET requests (like Razorpay POST) to prevent Cache API errors
-  if (event.request.method !== 'GET') return;
+  if (event.request.method !== 'GET' || event.request.url.includes('razorpay')) {
+    return; 
+  }
 
   // Fix: Don't cache pricing page to ensure fresh API keys (prevents 400 Bad Request)
   if (event.request.url.includes('/pricing/')) return;
