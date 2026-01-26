@@ -33,6 +33,8 @@
 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/svg+xml" href="{% static 'icon.svg' %}">
+    <link rel="icon" type="image/png" href="{% static 'img/pwa-icon-512.png' %}">
     <script>
         const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
         document.cookie = "django_timezone=" + tz + "; path=/; SameSite=Lax";
@@ -273,7 +275,6 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="TrackMyRupee">
-    <link rel="icon" type="image/svg+xml" href="{% static 'img/logo.svg' %}">
     <link rel="apple-touch-icon" sizes="180x180" href="{% static 'img/pwa-icon-512.png' %}">
     <link rel="apple-touch-startup-image" href="{% static 'img/pwa-icon-512.png' %}">
     
@@ -424,6 +425,7 @@
                             <ul class="list-unstyled mb-0 d-flex flex-column gap-2">
                                 <li><a href="{% url 'privacy-policy' %}" class="text-decoration-none text-muted small hover-primary">Privacy Policy</a></li>
                                 <li><a href="{% url 'terms-of-service' %}" class="text-decoration-none text-muted small hover-primary">Terms of Service</a></li>
+                                <li><a href="{% url 'refund-policy' %}" class="text-decoration-none text-muted small hover-primary">Refund & Cancellation</a></li>
                             </ul>
                         </div>
                     </div>

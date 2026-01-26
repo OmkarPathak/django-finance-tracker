@@ -47,6 +47,7 @@ urlpatterns = [
     # Static Pages
     path('privacy-policy/', TemplateView.as_view(template_name='privacy_policy.html'), name='privacy-policy'),
     path('terms-of-service/', TemplateView.as_view(template_name='terms_of_service.html'), name='terms-of-service'),
+    path('refund-policy/', TemplateView.as_view(template_name='refund_policy.html'), name='refund-policy'),
     path('about/', TemplateView.as_view(template_name='about.html'), name='about'),
     path('contact/', views.ContactView.as_view(), name='contact'),
 
@@ -58,6 +59,7 @@ urlpatterns = [
     path('api/create-order/', views_payment.create_order, name='create-order'),
     path('api/verify-payment/', views_payment.verify_payment, name='verify-payment'),
     path('api/resend-verification/', views.resend_verification_email, name='resend-verification'),
+    path('api/predict-category/', views.predict_category_view, name='predict-category'),
     
     # Shared Expenses
     path('balance-summary/', views.BalanceSummaryView.as_view(), name='balance-summary'),

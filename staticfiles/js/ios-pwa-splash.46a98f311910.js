@@ -4,9 +4,8 @@
  * avoiding the need for 20+ static image files.
  */
 (function() {
-    // Only run on iOS (including iPadOS which masquerades as Mac)
-    const isIos = /iphone|ipad|ipod/.test(window.navigator.userAgent.toLowerCase()) || 
-                  (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    // Only run on iOS
+    const isIos = /iphone|ipad|ipod/.test( window.navigator.userAgent.toLowerCase() );
     if (!isIos) {
         return;
     }
@@ -31,12 +30,8 @@
 
         // Load Icon
         const img = new Image();
-        // img.crossOrigin = 'Anonymous'; // Removed: Causes issues with local static files if headers are missing
+        img.crossOrigin = 'Anonymous';
         img.src = iconUrl;
-        
-        img.onerror = function() {
-            console.error('Failed to load PWA icon for splash screen generation.');
-        };
         
         img.onload = function() {
             // Draw Icon Centered
