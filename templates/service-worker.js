@@ -1,4 +1,4 @@
-const CACHE_NAME = 'finance-tracker-v5';
+const CACHE_NAME = 'finance-tracker-v6';
 const OFFLINE_URL = '/offline/';
 
 const ASSETS_TO_CACHE = [
@@ -41,6 +41,14 @@ self.addEventListener('activate', (event) => {
 
 // Fetch Event
 self.addEventListener('fetch', (event) => {
+  // Fix: Ignore non-GET requests (like Razorpay POST) to prevent Cache API errors
+  if (event.request.method !== 'GET' || event.request.url.includes('razorpay')) {
+    return; 
+  }
+
+  // Fix: Don't cache pricing page to ensure fresh API keys (prevents 400 Bad Request)
+  if (event.request.url.includes('/pricing/')) return;
+
   // Navigation requests (HTML pages)
   if (event.request.mode === 'navigate') {
   if (event.request.mode === 'navigate') {
