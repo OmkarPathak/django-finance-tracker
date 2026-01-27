@@ -20,6 +20,7 @@
     {% endif %}
 
     {% for field in form %}
+    {% if field.name != 'remember' %}
     <div class="mb-3">
         <label class="form-label text-muted small fw-bold">{{ field.label }}</label>
         <input type="{{ field.field.widget.input_type }}" 
@@ -33,7 +34,13 @@
         </div>
         {% endif %}
     </div>
+    {% endif %}
     {% endfor %}
+
+    <div class="mb-3 d-flex align-items-center">
+        <input type="checkbox" name="remember" id="id_remember" class="form-check-input me-2" checked>
+        <label for="id_remember" class="form-check-label text-muted small">Remember Me</label>
+    </div>
 
     {% if redirect_field_value %}
     <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />
