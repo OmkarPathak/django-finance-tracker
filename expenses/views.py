@@ -12,6 +12,7 @@ from django.contrib import messages
 from django.urls import reverse_lazy, reverse
 from django.views import generic
 from django.views.generic import TemplateView, ListView, CreateView, UpdateView, DeleteView, View
+from django.views.decorators.csrf import csrf_exempt
 from django.db.models import Sum, Q
 from django.http import JsonResponse, HttpResponse
 import json
@@ -2218,6 +2219,31 @@ def mark_notifications_read(request):
 
 @login_required
 def mark_single_notification_read(request, pk):
+    try:
+        notification = Notification.objects.get(pk=pk, user=request.user)
+        notification.is_read = True
+        notification.save()
+        return JsonResponse({'success': True})
+    except Notification.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Notification not found'}, status=404)
+
+@csrf_exempt
+def trigger_notifications(request):
+    """
+    HTTP endpoint to trigger notifications via external cron service (e.g. cron-job.org).
+    Secured by a secret key in the URL params: ?secret=YOUR_SECRET_KEY
+    """
+    secret = request.GET.get('secret')
+    
+    # You should add CRON_SECRET to your .env file
+    if not secret or secret != settings.SECRET_KEY: # Using SECRET_KEY as fallback/simple check
+        return JsonResponse({'error': 'Unauthorized'}, status=403)
+        
+    try:
+        call_command('send_notifications')
+        return JsonResponse({'success': True, 'message': 'Notifications triggered successfully'})
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
     if request.method == 'POST':
         notification = get_object_or_404(Notification, pk=pk, user=request.user)
         notification.is_read = True

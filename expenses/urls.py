@@ -65,6 +65,7 @@ urlpatterns = [
     path('notifications/', views.NotificationListView.as_view(), name='notification-list'),
     path('notifications/mark-all-read/', views.mark_notifications_read, name='mark-all-read'),
     path('notifications/<int:pk>/read/', views.mark_single_notification_read, name='mark-single-notification-read'),
+    path('api/cron/send-notifications/', views.trigger_notifications, name='cron-send-notifications'),
 
     # Sentry Debug
     path('sentry-debug/', lambda request: 1 / 0),

@@ -129,7 +129,17 @@ Manually trigger the notification system to check for upcoming recurring payment
 ```bash
 python manage.py send_notifications
 ```
+```
 *Note: This command is typically scheduled to run daily via a cron job.*
+
+#### Free Scheduling (Alternative to Paid Cron)
+If you are hosting on a platform like Render where cron jobs are paid, you can use a **Free External Cron Service** (like [cron-job.org](https://cron-job.org/)).
+
+1.  Deploy your application.
+2.  Set up a free account on [cron-job.org](https://cron-job.org/).
+3.  Create a cron job that hits this URL daily:
+    `https://your-domain.com/api/cron/send-notifications/?secret=YOUR_DJANGO_SECRET_KEY`
+    *(Replace `YOUR_DJANGO_SECRET_KEY` with the value of `SECRET_KEY` from your `.env` file)*
 
 ### Getting Started
 
