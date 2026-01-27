@@ -77,6 +77,100 @@
     <meta property="og:title" content="TrackMyRupee - Know Exactly Where Every Rupee Goes">
     <meta property="og:description" content="Stop Guessing. Start Growing. Track your expenses and master your budget with TrackMyRupee.">
     {% endblock %}
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const enablePushBtn = document.getElementById('enable-push-btn');
+            
+            if (enablePushBtn) {
+                // Check if already subscribed
+                if (Notification.permission === 'granted') {
+                    enablePushBtn.innerHTML = '<i class="bi bi-check-circle-fill me-1 text-success"></i> On';
+                    enablePushBtn.classList.remove('btn-outline-primary');
+                    enablePushBtn.classList.add('btn-light', 'text-success');
+                    enablePushBtn.disabled = true;
+                }
+
+                enablePushBtn.addEventListener('click', function() {
+                    const btn = this;
+                    btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>';
+                    
+                    // Simple wrapper to engage user interaction for permission
+                    Notification.requestPermission().then(permission => {
+                        if (permission === 'granted') {
+                            // The actual subscription logic is complex to do manually without the django-webpush template tag helpers 
+                            // because it involves VAPID key conversion and fetch calls.
+                            // However, since we loaded 'webpush_notifications', we can trigger the native behavior or 
+                            // redirect the user to a page, OR we can implement the subscription manual logic here.
+                            
+                            // Let's use the provided 'webpush_button' logic but invoke it via JS if possible,
+                            // OR simply reload the page effectively if the template had the button.
+                            // But better: manual subscription logic below.
+                             subscribeUser();
+                        } else {
+                            btn.innerHTML = 'Denied';
+                        }
+                    });
+                });
+            }
+            
+            function subscribeUser() {
+                 navigator.serviceWorker.ready.then(function(registration) {
+                    const vapidPublicKey = "{{ vapid_public_key }}";
+                    if (!vapidPublicKey) {
+                        console.error("No VAPID Key found");
+                        return;
+                    }
+                    const convertedVapidKey = urlBase64ToUint8Array(vapidPublicKey);
+                    
+                    registration.pushManager.subscribe({
+                        userVisibleOnly: true,
+                        applicationServerKey: convertedVapidKey
+                    }).then(function(subscription) {
+                        // Send subscription to backend
+                        fetch("{% url 'save_webpush_info' %}", {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRFToken': '{{ csrf_token }}',
+                            },
+                            body: JSON.stringify({
+                                status_type: 'subscribe',
+                                subscription: subscription.toJSON(),
+                                browser: navigator.userAgent
+                            }),
+                        }).then(response => {
+                             if (response.ok) {
+                                 const btn = document.getElementById('enable-push-btn');
+                                 if(btn) {
+                                    btn.innerHTML = '<i class="bi bi-check-circle-fill me-1 text-success"></i> Enabled';
+                                    btn.classList.remove('btn-outline-primary');
+                                    btn.classList.add('btn-light', 'text-success');
+                                 }
+                             }
+                        });
+                    }).catch(function(e) {
+                         console.error('Subscription failed', e);
+                    });
+                });
+            }
+            
+            function urlBase64ToUint8Array(base64String) {
+                const padding = '='.repeat((4 - base64String.length % 4) % 4);
+                const base64 = (base64String + padding)
+                    .replace(/\-/g, '+')
+                    .replace(/_/g, '/');
+            
+                const rawData = window.atob(base64);
+                const outputArray = new Uint8Array(rawData.length);
+            
+                for (let i = 0; i < rawData.length; ++i) {
+                    outputArray[i] = rawData.charCodeAt(i);
+                }
+                return outputArray;
+            }
+        });
+    </script>
 
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image">
@@ -338,7 +432,7 @@
                 </div>
             </div>
             <button id="installAppBtn" class="btn btn-primary btn-sm rounded-pill px-3">Install</button>
-            <button type="button" class="btn-close ms-2" onclick="document.getElementById('installAppContainer').style.display='none'"></button>
+            <button type="button" class="btn-close ms-2" onclick="dismissPWAInstall()"></button>
         </div>
     </div>
 
@@ -351,7 +445,7 @@
         const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
 
         // Only show if not already installed and elements exist
-        if (!isStandalone && installContainer && installBtn) {
+        if (!isStandalone && installContainer && installBtn && !localStorage.getItem('pwaInstallDismissed')) {
             // Android/Chrome
             window.addEventListener('beforeinstallprompt', (e) => {
                 e.preventDefault();
@@ -363,6 +457,11 @@
             if (isIos) {
                 installContainer.style.display = 'block';
             }
+        }
+        
+        function dismissPWAInstall() {
+             if(installContainer) installContainer.style.display = 'none';
+             localStorage.setItem('pwaInstallDismissed', 'true');
         }
 
         if (installBtn) {
@@ -463,7 +562,7 @@
 
     <!-- Delete Confirmation Modal -->
     <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
+        <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="deleteModalLabel">Confirm Delete</h5>

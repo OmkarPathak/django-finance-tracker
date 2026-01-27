@@ -1,0 +1,29 @@
+{% extends "account/email/base_email.html" %}
+
+{% block title %}Welcome to TrackMyRupee!{% endblock %}
+
+{% block content %}
+    <h2>Welcome to the Family! 🎉</h2>
+    
+    <p>Hi <strong>{{ user.username }}</strong>,</p>
+    
+    <p>We're thrilled to have you on board. TrackMyRupee is designed to make managing your finances simple, smart, and stress-free.</p>
+    
+    <p>Here are a few things you can do to get started:</p>
+    
+    <div style="text-align: left; margin: 25px 0; background: #f8f9fa; border-radius: 12px; padding: 20px;">
+        <p style="margin-bottom: 10px;">📊 <strong>Track Expenses:</strong> Log your daily spends in seconds.</p>
+        <p style="margin-bottom: 10px;">🔄 <strong>Manage Subscriptions:</strong> Never miss a renewal date.</p>
+        <p style="margin-bottom: 0;">💡 <strong>Gain Insights:</strong> See where your money goes with visual charts.</p>
+    </div>
+    
+    <div style="margin: 35px 0;">
+        <a href="https://trackmyrupee.com/dashboard" class="btn btn-primary">
+            Go to Dashboard
+        </a>
+    </div>
+    
+    <p>If you have any questions, feel free to reply to this email. We're here to help!</p>
+    
+    <p>Happy Tracking,<br>The TrackMyRupee Team</p>
+{% endblock %}

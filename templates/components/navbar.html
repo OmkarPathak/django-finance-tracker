@@ -11,6 +11,53 @@
             <a href="{% url 'account_login' %}" class="btn btn-primary btn-sm d-lg-none ms-auto me-2">Login</a>
         {% endif %}
 
+        {% if user.is_authenticated %}
+            <!-- Mobile Notification Bell -->
+            <div class="d-lg-none ms-auto me-3 dropdown">
+                <a class="nav-link dropdown-toggle no-arrow p-0 d-flex align-items-center justify-content-center position-relative" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false" style="width: 38px; height: 38px;">
+                    <i class="bi bi-bell fs-4"></i>
+                    <span class="position-absolute translate-middle badge rounded-pill bg-danger border border-light {% if not has_unread_notifications %}visually-hidden{% endif %}" 
+                          id="notification-badge-mobile"
+                          style="top: 5px; right: -5px; font-size: 0.65rem; padding: 0.25em 0.4em;">
+                        {{ unread_notifications_count }}
+                        <span class="visually-hidden">New alerts</span>
+                    </span>
+                </a>
+                <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2 p-0" style="width: 300px; max-height: 80vh; overflow-y: auto;">
+                    <li>
+                        <div class="px-3 py-2 border-bottom d-flex justify-content-between align-items-center">
+                            <h6 class="mb-0 fw-bold">Notifications</h6>
+                            <button id="enable-push-btn" class="btn btn-xs btn-outline-primary rounded-pill py-0 px-2" style="font-size: 0.75rem;">
+                                <i class="bi bi-bell-fill me-1"></i> Enable Push
+                            </button>
+                        </div>
+                    </li>
+                    <div id="notification-list-mobile">
+                        {% if notifications %}
+                            {% for notification in notifications %}
+                            <li>
+                                <a class="dropdown-item py-2 border-bottom" href="#">
+                                    <div class="d-flex align-items-start gap-2">
+                                        <i class="bi bi-info-circle-fill text-primary mt-1"></i>
+                                        <div>
+                                            <p class="mb-0 small fw-bold text-wrap" style="line-height: 1.2;">{{ notification.title }}</p>
+                                            <small class="text-muted d-block text-wrap" style="font-size: 0.7rem;">{{ notification.message|truncatechars:60 }}</small>
+                                            <small class="text-body-tertiary" style="font-size: 0.65rem;">{{ notification.created_at|timesince }} ago</small>
+                                        </div>
+                                    </div>
+                                </a>
+                            </li>
+                            {% endfor %}
+                        {% else %}
+                            <li><a class="dropdown-item py-3 text-center text-muted small" href="#">No new notifications</a></li>
+                        {% endif %}
+                    </div>
+                    <li><hr class="dropdown-divider my-0"></li>
+                    <li><a class="dropdown-item py-2 text-center small text-primary fw-bold" href="{% url 'notification-list' %}">View All</a></li>
+                </ul>
+            </div>
+        {% endif %}
+
         <button class="navbar-toggler border-0 shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent" aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
@@ -56,6 +103,51 @@
                             <li><a class="dropdown-item py-2" href="{% url 'expense-create' %}?next={{ request.path }}"><i class="bi bi-dash-circle text-danger me-2"></i> Add Expense</a></li>
                             <li><a class="dropdown-item py-2" href="{% url 'recurring-create' %}?next={{ request.path }}"><i class="bi bi-arrow-repeat text-primary me-2"></i> Add Subscription</a></li>
                             <li><a class="dropdown-item py-2" href="{% url 'income-create' %}?next={{ request.path }}"><i class="bi bi-plus-circle text-success me-2"></i> Add Income</a></li>
+                        </ul>
+                    </li>
+
+                    <!-- Notification Bell -->
+                    <li class="nav-item dropdown d-none d-lg-block ms-2">
+                        <a class="nav-link dropdown-toggle no-arrow p-0 d-flex align-items-center justify-content-center position-relative" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false" style="width: 38px; height: 38px;">
+                            <i class="bi bi-bell fs-6"></i>
+                            <span class="position-absolute translate-middle badge rounded-pill bg-danger border border-light {% if not has_unread_notifications %}visually-hidden{% endif %}" 
+                                  id="notification-badge"
+                                  style="top: 5px; right: -5px; font-size: 0.65rem; padding: 0.25em 0.4em;">
+                                {{ unread_notifications_count }}
+                                <span class="visually-hidden">New alerts</span>
+                            </span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2 p-0" style="width: 320px; max-height: 480px; overflow-y: auto;">
+                            <li>
+                                <div class="px-3 py-2 border-bottom d-flex justify-content-between align-items-center">
+                                    <h6 class="mb-0 fw-bold">Notifications</h6>
+                                    <button id="enable-push-btn" class="btn btn-xs btn-outline-primary rounded-pill py-0 px-2" style="font-size: 0.75rem;">
+                                        <i class="bi bi-bell-fill me-1"></i> Enable Push
+                                    </button>
+                                </div>
+                            </li>
+                            <div id="notification-list">
+                                {% if notifications %}
+                                    {% for notification in notifications %}
+                                    <li>
+                                        <a class="dropdown-item py-2 border-bottom" href="#">
+                                            <div class="d-flex align-items-start gap-2">
+                                                <i class="bi bi-info-circle-fill text-primary mt-1"></i>
+                                                <div>
+                                                    <p class="mb-0 small fw-bold text-wrap" style="line-height: 1.2;">{{ notification.title }}</p>
+                                                    <small class="text-muted d-block text-wrap" style="font-size: 0.7rem;">{{ notification.message|truncatechars:60 }}</small>
+                                                    <small class="text-body-tertiary" style="font-size: 0.65rem;">{{ notification.created_at|timesince }} ago</small>
+                                                </div>
+                                            </div>
+                                        </a>
+                                    </li>
+                                    {% endfor %}
+                                {% else %}
+                                    <li><a class="dropdown-item py-3 text-center text-muted small" href="#">No new notifications</a></li>
+                                {% endif %}
+                            </div>
+                            <li><hr class="dropdown-divider my-0"></li>
+                            <li><a class="dropdown-item py-2 text-center small text-primary fw-bold" href="{% url 'notification-list' %}">View All</a></li>
                         </ul>
                     </li>
 

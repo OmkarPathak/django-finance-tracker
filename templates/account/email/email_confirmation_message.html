@@ -4,11 +4,12 @@
 {% block title %}{% trans "Confirm E-mail Address" %}{% endblock %}
 
 {% block content %}
-    <h2>{% trans "Welcome aboard!" %}</h2>
+    <h2>{% trans "Confirm E-mail Address" %}</h2>
     
-    <p>{% blocktrans with user.username as username %}Hi <strong>{{ username }}</strong>,<br>Thank you for joining. We're excited to help you take control of your finances!{% endblocktrans %}</p>
+    <p>{% blocktrans with user.username as username %}Hello <strong>{{ username }}</strong>,{% endblocktrans %}</p>
     
-    <p>{% trans "To get started, please confirm your email address:" %}</p>
+    <p>{% trans "You or someone else has requested that this email address be added to your account on TrackMyRupee." %}</p>
+    <p>{% trans "To confirm this is correct, please click the button below:" %}</p>
     
     <div style="margin: 35px 0;">
         <a href="{{ activate_url }}" class="btn btn-primary">
@@ -17,6 +18,7 @@
     </div>
     
     <p style="font-size: 13px; color: #718096; margin-bottom: 0;">
+        {% trans "If you did not make this request, you can safely ignore this email." %}<br>
         {% trans "Button not working? Copy this link:" %}<br>
         <a href="{{ activate_url }}" style="color: #219EBC; word-break: break-all;">{{ activate_url }}</a>
     </p>

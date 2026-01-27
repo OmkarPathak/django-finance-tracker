@@ -42,7 +42,11 @@ self.addEventListener('activate', (event) => {
 // Fetch Event
 self.addEventListener('fetch', (event) => {
   // Fix: Ignore non-GET requests (like Razorpay POST) to prevent Cache API errors
-  if (event.request.method !== 'GET' || event.request.url.includes('razorpay')) {
+  // Also ignore manifest.json to prevent load failures during install, and admin pages
+  if (event.request.method !== 'GET' || 
+      event.request.url.includes('razorpay') || 
+      event.request.url.includes('manifest.json') ||
+      event.request.url.includes('/admin/')) {
     return; 
   }
 
@@ -89,4 +93,55 @@ self.addEventListener('fetch', (event) => {
       return response || fetch(event.request);
     })
   );
+});
+
+// Push Notification Event
+self.addEventListener('push', function (event) {
+    if (event.data) {
+        let payload;
+        try {
+            payload = event.data.json();
+        } catch (e) {
+            payload = { head: 'TrackMyRupee', body: event.data.text() };
+        }
+        
+        const title = payload.head || 'TrackMyRupee Notification';
+        const options = {
+            body: payload.body,
+            icon: payload.icon || '/static/img/pwa-icon-512.png',
+            badge: '/static/img/pwa-icon-512.png',
+            vibrate: [100, 50, 100],
+            data: { 
+                url: payload.url || '/',
+                dateOfArrival: Date.now(),
+                primaryKey: 1 
+            }
+        };
+        
+        event.waitUntil(
+            self.registration.showNotification(title, options)
+        );
+    }
+});
+
+// Notification Click Event
+self.addEventListener('notificationclick', function(event) {
+    event.notification.close();
+    event.waitUntil(
+        clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function(clientList) {
+            const url = event.notification.data.url;
+            
+            // If the window is already open, focus it
+            for (let i = 0; i < clientList.length; i++) {
+                const client = clientList[i];
+                if (client.url.includes(url) && 'focus' in client) {
+                    return client.focus();
+                }
+            }
+            // Otherwise open a new window
+            if (clients.openWindow) {
+                return clients.openWindow(url);
+            }
+        })
+    );
 });

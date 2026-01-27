@@ -1,5 +1,12 @@
 from django.contrib import admin
-from .models import Expense, Category, Income, RecurringTransaction
+from .models import Expense, Category, Income, RecurringTransaction, Notification
+
+@admin.register(Notification)
+class NotificationAdmin(admin.ModelAdmin):
+    list_display = ('title', 'user', 'is_read', 'created_at', 'related_transaction')
+    list_filter = ('is_read', 'created_at', 'user')
+    search_fields = ('title', 'message', 'user__username')
+    ordering = ('-created_at',)
 
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):

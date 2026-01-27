@@ -103,9 +103,16 @@
                         <td class="fw-bold text-success">{{ income.amount|floatformat:2 }}</td>
                         <td class="text-end pe-4 text-nowrap">
                             <div class="hstack gap-3 justify-content-end">
-                                <a href="{% url 'income-edit' income.pk %}?next={{ request.path }}" class="btn btn-sm btn-link text-decoration-none p-0 d-inline-flex align-items-center" title="Edit" onclick="setButtonLoading(this, '')">
-                                    <i class="bi bi-pencil-square text-primary fs-6"></i>
-                                </a>
+                                    <button type="button" class="btn btn-sm btn-link text-decoration-none p-0 d-inline-flex align-items-center" 
+                                            data-bs-toggle="modal" data-bs-target="#editIncomeModal"
+                                            data-url="{% url 'income-edit' income.pk %}"
+                                            data-date="{{ income.date|date:'Y-m-d' }}"
+                                            data-source="{{ income.source }}"
+                                            data-description="{{ income.description|default_if_none:'' }}"
+                                            data-amount="{{ income.amount }}"
+                                            title="Edit">
+                                        <i class="bi bi-pencil-square text-primary fs-6"></i>
+                                    </button>
                                 <button type="button" class="btn btn-sm btn-link text-decoration-none p-0 delete-btn d-inline-flex align-items-center" 
                                         data-bs-toggle="modal" data-bs-target="#deleteModal" 
                                         data-url="{% url 'income-delete' income.pk %}"
@@ -180,4 +187,94 @@
         </nav>
     </div>
     {% endif %}
+{% endblock %}
+
+{% block modals %}
+    <!-- Edit Income Modal -->
+    <div class="modal fade" id="editIncomeModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title fw-bold">Edit Income</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="editIncomeForm" method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="next" value="{{ request.path }}">
+                        
+                        <div class="mb-3">
+                            <label for="edit_date" class="form-label text-muted small text-uppercase">Date</label>
+                            <input type="date" class="form-control" id="edit_date" name="date" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="edit_source" class="form-label text-muted small text-uppercase">Source</label>
+                            <input type="text" class="form-control" id="edit_source" name="source" required>
+                        </div>
+                        
+                         <div class="mb-3">
+                            <label for="edit_description" class="form-label text-muted small text-uppercase">Description</label>
+                            <textarea class="form-control" id="edit_description" name="description" rows="2"></textarea>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="edit_amount" class="form-label text-muted small text-uppercase">Amount</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-transparent border-end-0 text-muted">{{ currency_symbol }}</span>
+                                <input type="number" class="form-control border-start-0 ps-0" id="edit_amount" name="amount" step="0.01" required>
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary">Save Changes</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var editModal = document.getElementById('editIncomeModal');
+            if (editModal) {
+                editModal.addEventListener('show.bs.modal', function(event) {
+                    var button = event.relatedTarget;
+                    var url = button.getAttribute('data-url');
+                    var date = button.getAttribute('data-date');
+                    var source = button.getAttribute('data-source');
+                    var description = button.getAttribute('data-description');
+                    var amount = button.getAttribute('data-amount');
+                    
+                    var form = editModal.querySelector('#editIncomeForm');
+                    var dateInput = editModal.querySelector('#edit_date');
+                    var sourceInput = editModal.querySelector('#edit_source');
+                    var descInput = editModal.querySelector('#edit_description');
+                    var amountInput = editModal.querySelector('#edit_amount');
+                    
+                    form.action = url;
+                    
+                    // Format date to YYYY-MM-DD for input type=date
+                     if (date) {
+                        var dateObj = new Date(date);
+                        // Adjust for timezone offset to prevent date shifting
+                         var userTimezoneOffset = dateObj.getTimezoneOffset() * 60000;
+                        var adjustedDate = new Date(dateObj.getTime() - userTimezoneOffset);
+                        dateInput.value = adjustedDate.toISOString().split('T')[0];
+                    } else {
+                         dateInput.value = '';
+                    }
+
+                    // Or simpler: just expect YYYY-MM-DD from the data attribute
+                    // Django's |date:"Y-m-d" filter is perfect for this.
+                    dateInput.value = date;
+
+                    sourceInput.value = source;
+                    descInput.value = description !== 'None' ? description : '';
+                    amountInput.value = amount;
+                });
+            }
+        });
+    </script>
 {% endblock %}

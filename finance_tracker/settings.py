@@ -44,6 +44,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv('SECRET_KEY')
 
+# Secret for triggered cron jobs (URL-safe)
+CRON_SECRET = os.getenv('CRON_SECRET', 'change_me_in_prod')
+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DEBUG', 'True') == 'True'
 
@@ -73,7 +76,15 @@ INSTALLED_APPS = [
     'crispy_bootstrap5',
     'anymail',
     'django_recaptcha',
+    'webpush',
 ]
+
+# Web Push Configuration
+WEBPUSH_SETTINGS = {
+    "VAPID_PUBLIC_KEY": os.environ.get("VAPID_PUBLIC_KEY"),
+    "VAPID_PRIVATE_KEY": os.environ.get("VAPID_PRIVATE_KEY"),
+    "VAPID_ADMIN_EMAIL": os.environ.get("VAPID_ADMIN_EMAIL", "admin@trackmyrupee.com"),
+}
 
 CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
 CRISPY_TEMPLATE_PACK = "bootstrap5"
@@ -106,6 +117,8 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'expenses.context_processors.currency_symbol',
+                'expenses.context_processors.notifications',
+                'expenses.context_processors.webpush_vapid_key',
                 'finance_tracker.context_processors.google_analytics',
             ],
         },

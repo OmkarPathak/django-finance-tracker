@@ -36,6 +36,13 @@ Typing descriptions manually? Let the app do the work.
 - **Rule-Based Instant Match**: Instantly detects common terms like "Uber", "Netflix", "Zomato", etc.
 - **Generative AI (Optional)**: Connect Google Gemini AI for advanced context-aware categorization.
 
+### 8. Smart Notifications & Email Reminders 🔔
+Stay on top of your bills with a multi-channel notification system:
+- **In-App Notifications**: Get alerts for upcoming payments directly in the dashboard.
+- **Web Push Notifications**: Receive timely reminders on your device (supports both Desktop and Mobile).
+- **Consolidated Email Summaries**: Get a single daily email listing all recurring payments due in 3 days (Exclusive to **Plus** and **Pro** users).
+- **Auto-Cleanup**: Old notifications are automatically removed after 90 days to keep your list clean.
+
 
 ## Prerequisites
 
@@ -113,6 +120,17 @@ python manage.py runserver
 ```
 
 Open your browser and navigate to `http://127.0.0.1:8000/`.
+
+### Management Commands
+
+#### Send Notifications
+Manually trigger the notification system to check for upcoming recurring payments and send alerts (UI, Push, and Email).
+
+```bash
+python manage.py send_notifications
+```
+```
+*Note: This command is typically scheduled to run daily via a cron job.*
 
 ### Getting Started
 
