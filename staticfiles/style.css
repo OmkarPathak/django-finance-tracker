@@ -6,6 +6,13 @@ body {
     /* Main body font - Outfit */
     font-family: 'Outfit', 'Inter', system-ui, -apple-system, sans-serif;
     transition: background-color 0.3s ease, color 0.3s ease;
+    background-color: #F3F4F6; /* Fresh Gray Background */
+}
+
+/* Global Card Refinements */
+.card {
+    box-shadow: none !important;
+    border: 1px solid rgba(0, 0, 0, 0.08);
 }
 
 /* Animations */
