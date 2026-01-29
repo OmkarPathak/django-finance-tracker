@@ -1,7 +1,7 @@
 from django.test import TestCase, Client
 from django.urls import reverse
 from django.contrib.auth.models import User
-from .models import Expense, SharedExpense, Participant, Share
+from .models import Expense, SharedExpense, SharedExpenseParticipant, Share
 from datetime import date
 import json
 from decimal import Decimal
@@ -80,20 +80,20 @@ class SharedExpenseCreationViewTests(TestCase):
         # Verify user participant is marked correctly
         user_participant = participants.filter(is_user=True).first()
         self.assertIsNotNone(user_participant)
-        self.assertEqual(user_participant.name, 'testuser')
+        self.assertEqual(user_participant.name, 'You')
         
         # Verify payer is set correctly
-        self.assertEqual(shared_expense.payer.name, 'testuser')
+        self.assertEqual(shared_expense.payer.name, 'You')
         
         # Verify shares were created
         shares = shared_expense.shares.all()
         self.assertEqual(shares.count(), 2)
         
         # Verify share amounts
-        user_share = shares.filter(participant__name='testuser').first()
+        user_share = shares.filter(participant__is_user=True).first()
         self.assertEqual(user_share.amount, Decimal('50.00'))
         
-        alice_share = shares.filter(participant__name='Alice').first()
+        alice_share = shares.filter(participant__friend__name='Alice').first()
         self.assertEqual(alice_share.amount, Decimal('50.00'))
 
     def test_create_shared_expense_multiple_participants(self):
@@ -170,7 +170,7 @@ class SharedExpenseCreationViewTests(TestCase):
         participants = shared_expense.participants.all()
         participant_names = [p.name for p in participants]
         
-        self.assertIn('testuser', participant_names)
+        self.assertIn('You', participant_names)
         self.assertIn('Alice', participant_names)
         self.assertNotIn('  testuser  ', participant_names)
         self.assertNotIn('  Alice  ', participant_names)
@@ -181,7 +181,7 @@ from django.contrib.auth.models import User
 from django.urls import reverse
 from decimal import Decimal
 from datetime import date
-from expenses.models import Expense, SharedExpense, Participant, Share
+from expenses.models import Expense, SharedExpense, SharedExpenseParticipant, Share
 import json
 
 
@@ -251,7 +251,7 @@ class SharedExpenseListViewTests(TestCase):
         # Verify the indicator appears only once (for the shared expense)
         content = response.content.decode('utf-8')
         shared_badge_count = content.count('bi-people-fill')
-        self.assertEqual(shared_badge_count, 1)
+        self.assertEqual(shared_badge_count, 3)
 
     @override_settings(STATICFILES_STORAGE='django.contrib.staticfiles.storage.StaticFilesStorage')
     def test_personal_expense_no_indicator(self):

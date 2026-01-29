@@ -5,7 +5,7 @@ from django.test import TestCase
 from django.contrib.auth.models import User
 from decimal import Decimal
 from datetime import date
-from .models import Expense, SharedExpense, Participant, Share
+from .models import Expense, SharedExpense, SharedExpenseParticipant, Share, Friend
 from .services import BalanceCalculationService
 
 
@@ -28,29 +28,27 @@ class BalanceCalculationServiceTests(TestCase):
         Returns:
             tuple: (shared_expense, dict of participants by name)
         """
-        from django.db import connection
-        
-        # Temporarily defer constraints to handle circular dependency
-        with connection.cursor() as cursor:
-            cursor.execute('SET CONSTRAINTS ALL DEFERRED')
-        
-        # Create SharedExpense with a placeholder payer_id
-        shared_expense = SharedExpense(expense=expense, payer_id=999999)
-        shared_expense.save()
+        # Create SharedExpense
+        shared_expense = SharedExpense.objects.create(expense=expense)
         
         # Create all participants
         participants = {}
         for data in participant_data:
-            participant = Participant.objects.create(
+            name = data['name']
+            is_user = data.get('is_user', False)
+            is_payer = (name == payer_name)
+            
+            friend = None
+            if not is_user:
+                 friend, _ = Friend.objects.get_or_create(name=name)
+            
+            participant = SharedExpenseParticipant.objects.create(
                 shared_expense=shared_expense,
-                name=data['name'],
-                is_user=data.get('is_user', False)
+                friend=friend,
+                is_user=is_user,
+                is_payer=is_payer
             )
-            participants[data['name']] = participant
-        
-        # Set the actual payer
-        shared_expense.payer = participants[payer_name]
-        shared_expense.save()
+            participants[name] = participant
         
         return shared_expense, participants
         
@@ -100,14 +98,17 @@ class BalanceCalculationServiceTests(TestCase):
         # Calculate balances
         balances = BalanceCalculationService.calculate_balances(self.user)
         
-        # User lent 100 to Alice and 100 to Bob (excluding own share)
-        self.assertEqual(balances['Alice']['lent'], Decimal('100.00'))
-        self.assertEqual(balances['Alice']['borrowed'], Decimal('0.00'))
-        self.assertEqual(balances['Alice']['net'], Decimal('100.00'))
+        alice_id = participants['Alice'].friend.id
+        bob_id = participants['Bob'].friend.id
         
-        self.assertEqual(balances['Bob']['lent'], Decimal('100.00'))
-        self.assertEqual(balances['Bob']['borrowed'], Decimal('0.00'))
-        self.assertEqual(balances['Bob']['net'], Decimal('100.00'))
+        # User lent 100 to Alice and 100 to Bob (excluding own share)
+        self.assertEqual(balances[alice_id]['lent'], Decimal('100.00'))
+        self.assertEqual(balances[alice_id]['borrowed'], Decimal('0.00'))
+        self.assertEqual(balances[alice_id]['net'], Decimal('100.00'))
+        
+        self.assertEqual(balances[bob_id]['lent'], Decimal('100.00'))
+        self.assertEqual(balances[bob_id]['borrowed'], Decimal('0.00'))
+        self.assertEqual(balances[bob_id]['net'], Decimal('100.00'))
     
     def test_calculate_balances_user_is_not_payer(self):
         """
@@ -148,10 +149,12 @@ class BalanceCalculationServiceTests(TestCase):
         # Calculate balances
         balances = BalanceCalculationService.calculate_balances(self.user)
         
+        alice_id = participants['Alice'].friend.id
+        
         # User borrowed 100 from Alice
-        self.assertEqual(balances['Alice']['lent'], Decimal('0.00'))
-        self.assertEqual(balances['Alice']['borrowed'], Decimal('100.00'))
-        self.assertEqual(balances['Alice']['net'], Decimal('-100.00'))
+        self.assertEqual(balances[alice_id]['lent'], Decimal('0.00'))
+        self.assertEqual(balances[alice_id]['borrowed'], Decimal('100.00'))
+        self.assertEqual(balances[alice_id]['net'], Decimal('-100.00'))
     
     def test_calculate_balances_net_calculation(self):
         """
@@ -217,11 +220,13 @@ class BalanceCalculationServiceTests(TestCase):
         # Calculate balances
         balances = BalanceCalculationService.calculate_balances(self.user)
         
+        alice_id = participants1['Alice'].friend.id
+        
         # User lent 200 to Alice, borrowed 75 from Alice
         # Net: 200 - 75 = 125
-        self.assertEqual(balances['Alice']['lent'], Decimal('200.00'))
-        self.assertEqual(balances['Alice']['borrowed'], Decimal('75.00'))
-        self.assertEqual(balances['Alice']['net'], Decimal('125.00'))
+        self.assertEqual(balances[alice_id]['lent'], Decimal('200.00'))
+        self.assertEqual(balances[alice_id]['borrowed'], Decimal('75.00'))
+        self.assertEqual(balances[alice_id]['net'], Decimal('125.00'))
     
     def test_calculate_balances_with_date_range(self):
         """
@@ -288,11 +293,13 @@ class BalanceCalculationServiceTests(TestCase):
             end_date=date(2024, 1, 31)
         )
         
+        alice_id = participants1['Alice'].friend.id
+        
         # Should only include January expense
-        self.assertEqual(balances_jan['Alice']['lent'], Decimal('50.00'))
+        self.assertEqual(balances_jan[alice_id]['lent'], Decimal('50.00'))
         
         # Calculate balances for all time
         balances_all = BalanceCalculationService.calculate_balances(self.user)
         
         # Should include both expenses
-        self.assertEqual(balances_all['Alice']['lent'], Decimal('150.00'))
+        self.assertEqual(balances_all[alice_id]['lent'], Decimal('150.00'))
