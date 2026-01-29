@@ -636,6 +636,7 @@ def home_view(request):
                 if val is not None:
                     prev_month_data[f"{key}_abs"] = abs(val)
         except (ValueError, IndexError):
+            # Invalid month/year values - skip MoM calculation
             pass
 
     # Prepare display labels for the template
@@ -650,6 +651,7 @@ def home_view(request):
             m_idx = int(selected_months[0])
             display_month = calendar.month_name[m_idx]
         except (ValueError, IndexError):
+            # Invalid month index - skip display month
             pass
 
     # NEW: Calculate Previous/Next Month URLs
@@ -689,6 +691,7 @@ def home_view(request):
             next_month_url = f"{reverse('home')}?{'&'.join(qs_next)}"
 
         except ValueError:
+            # Invalid year/month values - skip prev/next month URL generation
             pass
 
     # --- Emotional Feedback / Insights Logic (Enhanced) ---
@@ -1190,6 +1193,7 @@ def upload_view(request):
         except Exception as e:
             print(f"Error processing file: {e}")
             traceback.print_exc()
+                # Continue to render the upload page with error logged
             pass
 
     # Context for year dropdown
@@ -1703,6 +1707,7 @@ class ExpenseUpdateView(LoginRequiredMixin, generic.UpdateView):
 
         except Exception as e:
             # Not a shared expense or error loading data - use defaults
+            # This is expected for personal expenses
             pass
 
         return initial
@@ -1735,6 +1740,7 @@ class ExpenseUpdateView(LoginRequiredMixin, generic.UpdateView):
                             # Delete old shared expense data to recreate
                             existing_shared.delete()
                         except SharedExpense.DoesNotExist:
+                            # No existing shared expense to delete - this is fine
                             pass
 
                         # Create SharedExpense
@@ -1784,6 +1790,7 @@ class ExpenseUpdateView(LoginRequiredMixin, generic.UpdateView):
                         existing_shared = expense.shared_details
                         existing_shared.delete()
                     except SharedExpense.DoesNotExist:
+                        # No existing shared expense to delete - this is fine for new shared expenses
                         pass
 
                 messages.success(self.request, "Expense updated successfully!")
@@ -2041,7 +2048,7 @@ def export_expenses(request):
             split_details = f"Total: {currency_symbol}{expense.amount}, Your Share: {currency_symbol}{your_share}"
 
         except Exception:
-            # Not a shared expense
+            # Not a shared expense - this is expected for personal expenses
             pass
 
         writer.writerow(
@@ -2924,7 +2931,7 @@ class BalanceSummaryView(LoginRequiredMixin, TemplateView):
                     context["selected_year"] = year
                     context["month_name"] = calendar.month_name[month]
             except (ValueError, TypeError):
-                # Invalid month/year, ignore filters
+                # Invalid month/year format - ignore and skip filter
                 pass
         elif year_param:
             # Year only filter
@@ -2936,6 +2943,7 @@ class BalanceSummaryView(LoginRequiredMixin, TemplateView):
                     filter_applied = True
                     context["selected_year"] = year
             except (ValueError, TypeError):
+                # Invalid year format - ignore and skip filter
                 pass
 
         # Process friend filter
@@ -2945,6 +2953,7 @@ class BalanceSummaryView(LoginRequiredMixin, TemplateView):
                 filter_applied = True
                 context["selected_friend_id"] = selected_friend_id
             except (ValueError, TypeError):
+                # Invalid friend ID format - ignore and skip filter
                 pass
 
         # Calculate balances using the service (now returns Friend-based data)
