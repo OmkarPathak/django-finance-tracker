@@ -1921,10 +1921,9 @@ class RecurringTransactionDeleteView(LoginRequiredMixin, DeleteView):
     def get_queryset(self):
         return RecurringTransaction.objects.filter(user=self.request.user)
 
-    def delete(self, request, *args, **kwargs):
-        obj = self.get_object()
-        
+    def form_valid(self, form):
         # Calculate savings
+        obj = self.object
         amount = obj.amount
         if obj.frequency == 'DAILY':
             yearly_saving = amount * 365
@@ -1940,7 +1939,7 @@ class RecurringTransactionDeleteView(LoginRequiredMixin, DeleteView):
             currency = self.request.user.userprofile.currency
             
         messages.success(self.request, f"You just saved {currency}{yearly_saving:,.0f}/year 🎉")
-        return super().delete(request, *args, **kwargs)
+        return super().form_valid(form)
 
 class AccountDeleteView(LoginRequiredMixin, DeleteView):
     model = User
@@ -1950,11 +1949,11 @@ class AccountDeleteView(LoginRequiredMixin, DeleteView):
     def get_object(self, queryset=None):
         return self.request.user
 
-    def delete(self, request, *args, **kwargs):
+    def form_valid(self, form):
         user = self.get_object()
-        logout(request) # Log out before deleting
+        logout(self.request) # Log out before deleting
         user.delete()
-        messages.success(request, "Your account has been deleted successfully.")
+        messages.success(self.request, "Your account has been deleted successfully.")
         return redirect(self.success_url)
 
 class CurrencyUpdateView(LoginRequiredMixin, UpdateView):
