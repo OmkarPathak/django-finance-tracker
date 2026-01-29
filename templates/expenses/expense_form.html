@@ -144,7 +144,7 @@
 
                         <!-- Regular Expense Fields -->
                         {% for field in form %}
-                        {% if field.name != 'cashback_type' and field.name != 'cashback_value' and field.name != 'has_cashback' and field.name != 'expense_type' and field.name != 'participants_json' and field.name != 'payer_id' %}
+                        {% if field.name != 'cashback_type' and field.name != 'cashback_value' and field.name != 'has_cashback' and field.name != 'expense_type' and field.name != 'participants_json' and field.name != 'payer_id' and field.name != 'participants' %}
                         <div class="mb-3">
                             <label class="form-label text-muted">{{ field.label }}</label>
                             {% if field.field.widget.input_type == "checkbox" %}
@@ -189,13 +189,24 @@
                                         <i class="bi bi-people me-2"></i>Shared Expense Details
                                     </h6>
                                     
-                                    <!-- Participants Section -->
+                                    <!-- Participants Dropdown -->
                                     <div class="mb-3">
-                                        <label class="form-label text-success">Participants</label>
+                                        <label class="form-label text-success">Select Participants</label>
+                                        {{ form.participants }}
+                                        {% if form.participants.errors %}
+                                        <div class="text-danger small mt-1">{{ form.participants.errors.0 }}</div>
+                                        {% endif %}
+                                        <small class="form-text text-muted d-block">Hold Ctrl (Cmd on Mac) to select multiple friends</small>
+                                        <small class="form-text text-info d-block mt-1">
+                                            <i class="bi bi-info-circle me-1"></i>
+                                            Tip: If you're paying for friends only (not splitting with yourself), remove "You" from the participants below
+                                        </small>
+                                    </div>
+                                    
+                                    <!-- Participants with Share Amounts -->
+                                    <div class="mb-3">
+                                        <label class="form-label text-success">Share Amounts</label>
                                         <div id="participants-container"></div>
-                                        <button type="button" class="btn btn-sm btn-outline-primary mt-2" id="add-participant-btn">
-                                            <i class="bi bi-plus-lg me-1"></i> Add Participant
-                                        </button>
                                     </div>
 
                                     <!-- Payer Selection -->
@@ -319,13 +330,13 @@
         // --- Participant Management Logic ---
         let participants = [];
         const participantsContainer = document.getElementById('participants-container');
-        const addParticipantBtn = document.getElementById('add-participant-btn');
+        const participantsDropdown = document.querySelector('select[name="participants"]');
         const participantsJsonInput = document.querySelector('input[name="participants_json"]');
         
         // Only proceed if we're in single form mode (not formset)
-        if (participantsContainer && addParticipantBtn && participantsJsonInput) {
+        if (participantsContainer && participantsDropdown && participantsJsonInput) {
             
-            // Initialize participants from hidden field (includes pre-populated user)
+            // Initialize participants from hidden field or from dropdown selection
             function initializeParticipants() {
                 try {
                     const jsonValue = participantsJsonInput.value;
@@ -333,20 +344,82 @@
                     if (jsonValue) {
                         participants = JSON.parse(jsonValue);
                     } else {
-                        participants = [];
+                        // Start with current user
+                        participants = [{
+                            name: 'You',
+                            is_user: true,
+                            share_amount: ''
+                        }];
                     }
                 } catch (e) {
                     console.error('Error parsing participants JSON:', e);
-                    participants = [];
+                    participants = [{
+                        name: 'You',
+                        is_user: true,
+                        share_amount: ''
+                    }];
                 }
                 
                 console.log('Participants loaded:', participants);
                 renderParticipants();
             }
+            
+            // Listen to dropdown changes
+            participantsDropdown.addEventListener('change', function() {
+                // Get selected friends
+                const selectedOptions = Array.from(this.selectedOptions);
+                
+                // Check if user is already in participants
+                const userParticipant = participants.find(p => p.is_user);
+                const newParticipants = [];
+                
+                // Keep user if they exist
+                if (userParticipant) {
+                    newParticipants.push(userParticipant);
+                }
+                
+                // Add selected friends
+                selectedOptions.forEach(option => {
+                    const friendName = option.text;
+                    // Check if this friend already exists in participants to preserve share amount
+                    const existingParticipant = participants.find(p => p.name === friendName && !p.is_user);
+                    newParticipants.push({
+                        name: friendName,
+                        is_user: false,
+                        share_amount: existingParticipant?.share_amount || ''
+                    });
+                });
+                
+                participants = newParticipants;
+                renderParticipants();
+            });
+            
+            // Add "Include Me" button
+            const includeMeBtn = document.createElement('button');
+            includeMeBtn.type = 'button';
+            includeMeBtn.className = 'btn btn-sm btn-outline-primary mt-2';
+            includeMeBtn.id = 'include-me-btn';
+            includeMeBtn.innerHTML = '<i class="bi bi-person-plus me-1"></i> Include Me';
+            includeMeBtn.style.display = 'none'; // Hidden by default
+            participantsDropdown.parentElement.appendChild(includeMeBtn);
+            
+            includeMeBtn.addEventListener('click', function() {
+                // Add user back to participants
+                participants.unshift({
+                    name: 'You',
+                    is_user: true,
+                    share_amount: ''
+                });
+                renderParticipants();
+            });
         
-            // Render all participants
+            // Render all participants with share amount inputs
             function renderParticipants() {
                 participantsContainer.innerHTML = '';
+                
+                // Check if user is in participants
+                const hasUser = participants.some(p => p.is_user);
+                includeMeBtn.style.display = hasUser ? 'none' : 'inline-block';
                 
                 participants.forEach((participant, index) => {
                     const participantDiv = document.createElement('div');
@@ -354,12 +427,8 @@
                     participantDiv.innerHTML = `
                         <div class="row g-2 align-items-center">
                             <div class="col-md-5">
-                                <input type="text" 
-                                       class="form-control form-control-sm participant-name" 
-                                       placeholder="Participant name"
-                                       value="${participant.name || ''}"
-                                       data-index="${index}"
-                                       ${participant.is_user ? 'readonly' : ''}>
+                                <strong>${participant.name}</strong>
+                                ${participant.is_user ? '<span class="badge bg-primary ms-2">You</span>' : ''}
                             </div>
                             <div class="col-md-5">
                                 <div class="input-group input-group-sm">
@@ -374,16 +443,12 @@
                                 </div>
                             </div>
                             <div class="col-md-2 text-end">
-                                ${!participant.is_user ? `
-                                    <button type="button" 
-                                            class="btn btn-sm btn-outline-danger remove-participant-btn" 
-                                            data-index="${index}"
-                                            title="Remove participant">
-                                        <i class="bi bi-trash"></i>
-                                    </button>
-                                ` : `
-                                    <span class="badge bg-primary">You</span>
-                                `}
+                                <button type="button" 
+                                        class="btn btn-sm btn-outline-danger remove-participant-btn" 
+                                        data-index="${index}"
+                                        title="Remove ${participant.name}">
+                                    <i class="bi bi-trash"></i>
+                                </button>
                             </div>
                         </div>
                     `;
@@ -400,16 +465,6 @@
             
             // Attach event listeners to participant inputs
             function attachParticipantEventListeners() {
-                // Name inputs
-                document.querySelectorAll('.participant-name').forEach(input => {
-                    input.addEventListener('input', function() {
-                        const index = parseInt(this.dataset.index);
-                        participants[index].name = this.value.trim();
-                        updateParticipantsJson();
-                        updatePayerDropdown();
-                    });
-                });
-                
                 // Share amount inputs
                 document.querySelectorAll('.participant-share').forEach(input => {
                     input.addEventListener('input', function() {
@@ -424,21 +479,22 @@
                 document.querySelectorAll('.remove-participant-btn').forEach(btn => {
                     btn.addEventListener('click', function() {
                         const index = parseInt(this.dataset.index);
+                        const participant = participants[index];
+                        
+                        // If removing a friend, also deselect from dropdown
+                        if (!participant.is_user) {
+                            const options = Array.from(participantsDropdown.options);
+                            const option = options.find(opt => opt.text === participant.name);
+                            if (option) {
+                                option.selected = false;
+                            }
+                        }
+                        
                         participants.splice(index, 1);
                         renderParticipants();
                     });
                 });
             }
-            
-            // Add new participant
-            addParticipantBtn.addEventListener('click', function() {
-                participants.push({
-                    name: '',
-                    share_amount: '',
-                    is_user: false
-                });
-                renderParticipants();
-            });
             
             // Update hidden JSON field
             function updateParticipantsJson() {
@@ -456,8 +512,22 @@
                 const currentPayer = payerIdInput.value;
                 payerSelect.innerHTML = '<option value="">Select payer...</option>';
                 
+                // Always add "You" as the first option (even if not in participants)
+                const hasUserInParticipants = participants.some(p => p.is_user);
+                const youOption = document.createElement('option');
+                youOption.value = 'You';
+                youOption.textContent = 'You';
+                
+                if (currentPayer === 'You' || (!currentPayer && !hasUserInParticipants)) {
+                    youOption.selected = true;
+                    payerIdInput.value = 'You';
+                }
+                
+                payerSelect.appendChild(youOption);
+                
+                // Add all other participants (excluding user if already added)
                 participants.forEach(participant => {
-                    if (participant.name && participant.name.trim()) {
+                    if (participant.name && participant.name.trim() && !participant.is_user) {
                         const option = document.createElement('option');
                         option.value = participant.name.trim();
                         option.textContent = participant.name.trim();
@@ -467,15 +537,18 @@
                             option.selected = true;
                         }
                         
-                        // Set user as default payer if no payer selected yet
-                        if (!currentPayer && participant.is_user) {
-                            option.selected = true;
-                            payerIdInput.value = participant.name.trim();
-                        }
-                        
                         payerSelect.appendChild(option);
                     }
                 });
+                
+                // If user is in participants, update their option to show they're selected
+                if (hasUserInParticipants) {
+                    const userParticipant = participants.find(p => p.is_user);
+                    if (userParticipant && currentPayer === userParticipant.name.trim()) {
+                        youOption.selected = true;
+                        payerIdInput.value = 'You';
+                    }
+                }
             }
             
             // Handle payer selection change
@@ -554,13 +627,14 @@
             }
             
             // Add button to auto-split equally
-            addParticipantBtn.insertAdjacentHTML('afterend', `
-                <button type="button" class="btn btn-sm btn-outline-secondary mt-2 ms-2" id="auto-split-btn">
-                    <i class="bi bi-calculator me-1"></i> Split Equally
-                </button>
-            `);
+            const autoSplitBtn = document.createElement('button');
+            autoSplitBtn.type = 'button';
+            autoSplitBtn.className = 'btn btn-sm btn-outline-secondary mt-2';
+            autoSplitBtn.id = 'auto-split-btn';
+            autoSplitBtn.innerHTML = '<i class="bi bi-calculator me-1"></i> Split Equally';
+            participantsContainer.insertAdjacentElement('afterend', autoSplitBtn);
             
-            document.getElementById('auto-split-btn').addEventListener('click', function() {
+            autoSplitBtn.addEventListener('click', function() {
                 const totalAmount = parseFloat(amountInput?.value) || 0;
                 const participantCount = participants.length;
                 
