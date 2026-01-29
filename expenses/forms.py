@@ -2,7 +2,7 @@ from django import forms
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
 from allauth.socialaccount.models import SocialAccount
-from .models import Expense, Category, Income, RecurringTransaction
+from .models import Expense, Category, Income, RecurringTransaction, Friend
 import json
 from decimal import Decimal
 
@@ -15,6 +15,18 @@ class ExpenseForm(forms.ModelForm):
         widget=forms.RadioSelect(attrs={'class': 'form-check-input'}),
         initial='personal',
         required=True
+    )
+    
+    # Dropdown for selecting participants from friends
+    participants = forms.ModelMultipleChoiceField(
+        queryset=Friend.objects.all().order_by('name'),
+        widget=forms.SelectMultiple(attrs={
+            'class': 'form-select',
+            'size': '5',
+            'data-placeholder': 'Select participants'
+        }),
+        required=False,
+        label='Participants'
     )
     
     # Hidden fields for shared expense data
@@ -64,7 +76,7 @@ class ExpenseForm(forms.ModelForm):
             if not self.initial.get('participants_json'):
                 # Pre-populate user as first participant in participants_json
                 default_participant = {
-                    'name': user.username,
+                    'name': 'You',
                     'is_user': True,
                     'share_amount': ''
                 }
@@ -98,8 +110,8 @@ class ExpenseForm(forms.ModelForm):
         if not isinstance(participants, list):
             raise forms.ValidationError('Participants data must be a list.')
         
-        if len(participants) < 2:
-            raise forms.ValidationError('Shared expenses require at least 2 participants.')
+        if len(participants) < 1:
+            raise forms.ValidationError('Shared expenses require at least 1 participant.')
         
         # Validate each participant
         participant_names = []
@@ -168,16 +180,11 @@ class ExpenseForm(forms.ModelForm):
                     
                     # Validate share sum equals total amount
                     total_shares = Decimal('0')
-                    payer_found = False
                     
                     for participant in participants:
                         share_amount = participant.get('share_amount')
                         if share_amount is not None and share_amount != '':
                             total_shares += Decimal(str(share_amount))
-                        
-                        # Check if payer is in participants list
-                        if payer_id and participant.get('name') == payer_id:
-                            payer_found = True
                     
                     # Validate share sum equals total
                     if total_shares > 0 and total_shares != amount:
@@ -187,9 +194,8 @@ class ExpenseForm(forms.ModelForm):
                             f'Share amounts must sum to total expense amount. Difference: ₹{difference}'
                         )
                     
-                    # Validate payer is a participant
-                    if payer_id and not payer_found:
-                        self.add_error('payer_id', 'Payer must be one of the participants.')
+                    # Note: Payer doesn't need to be in participants list
+                    # This allows scenarios where user pays for friends but doesn't split with themselves
                 
                 except (json.JSONDecodeError, ValueError, TypeError) as e:
                     self.add_error(None, f'Error validating shared expense data: {str(e)}')

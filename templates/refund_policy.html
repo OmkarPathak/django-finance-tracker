@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10 col-xl-8">
+            <h1 class="display-4 fw-bold mb-4 text-center">Refund and Cancellation Policy</h1>
+            <p class="text-muted text-center mb-5">Last updated: January 24, 2026</p>
+
+            <p class="lead mb-4">
+                At TrackMyRupee, we strive to ensure your satisfaction with our services. This policy outlines the terms for cancellations and refunds.
+            </p>
+
+            <div class="bg-body-tertiary p-4 rounded mb-5">
+                <h5 class="fw-bold mb-3">Table of Contents</h5>
+                <ul class="list-unstyled mb-0">
+                    <li><a href="#cancellation" class="text-decoration-none">1. Cancellation Policy</a></li>
+                    <li><a href="#refunds" class="text-decoration-none">2. Refund Policy</a></li>
+                    <li><a href="#processing" class="text-decoration-none">3. Refund Processing</a></li>
+                    <li><a href="#contact" class="text-decoration-none">4. Contact Us</a></li>
+                </ul>
+            </div>
+
+            <div id="cancellation" class="mb-5">
+                <h3 class="h4 fw-bold mb-3">1. Cancellation Policy</h3>
+                <p class="text-muted">You are free to cancel your subscription at any time.</p>
+                <ul class="text-muted">
+                    <li class="mb-2"><strong>How to Cancel:</strong> You can cancel your subscription directly from your account settings page or by contacting our support team.</li>
+                    <li class="mb-2"><strong>Effect of Cancellation:</strong> Upon cancellation, your subscription will remain active until the end of the current billing cycle. You will not be charged for the next cycle.</li>
+                    <li class="mb-2"><strong>Data Retention:</strong> After cancellation, your account will revert to the Free plan (if applicable) or remain accessible as per our data retention policy. You may request full account deletion at any time.</li>
+                </ul>
+            </div>
+
+            <div id="refunds" class="mb-5">
+                <h3 class="h4 fw-bold mb-3">2. Refund Policy</h3>
+                <p class="text-muted">We offer a transparent refund policy to ensure you feel confident in trying our premium features.</p>
+                <ul class="text-muted">
+                    <li class="mb-2"><strong>14-Day Money-Back Guarantee:</strong> If you are not satisfied with your premium subscription (Plus or Pro), you may request a full refund within 14 days of your initial purchase.</li>
+                    <li class="mb-2"><strong>Eligibility:</strong> To be eligible for a refund, you must submit your request within the 14-day window. Refunds are generally not provided for partial months after the initial 14-day period.</li>
+                    <li class="mb-2"><strong>Exceptions:</strong> We reserve the right to deny refunds in cases of suspected abuse of the policy or violation of our Terms of Service.</li>
+                </ul>
+            </div>
+
+            <div id="processing" class="mb-5">
+                <h3 class="h4 fw-bold mb-3">3. Refund Processing</h3>
+                <p class="text-muted">Once a refund is approved:</p>
+                <ul class="text-muted">
+                    <li class="mb-2">The refund amount will be credited back to your original payment method.</li>
+                    <li class="mb-2">Processing times typically range from 5 to 10 business days, depending on your bank or payment provider.</li>
+                </ul>
+            </div>
+
+            <div id="contact" class="mb-0">
+                <h3 class="h4 fw-bold mb-3">4. Contact Us</h3>
+                <p class="text-muted mb-0">
+                    If you wish to request a refund or have any questions about this policy, please contact our support team at: <br>
+                    <a href="mailto:support@trackmyrupee.com" class="fw-bold text-decoration-none">support@trackmyrupee.com</a>
+                </p>
+            </div>
+            
+            <div class="text-center mt-5">
+                <a href="{% url 'home' %}" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left me-1"></i> Back to Home
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

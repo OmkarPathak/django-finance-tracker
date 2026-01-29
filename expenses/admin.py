@@ -1,5 +1,11 @@
 from django.contrib import admin
-from .models import Expense, Category, Income, RecurringTransaction
+from .models import Expense, Category, Income, RecurringTransaction, Friend
+
+@admin.register(Friend)
+class FriendAdmin(admin.ModelAdmin):
+    list_display = ('name', 'email', 'phone', 'created_at')
+    search_fields = ('name', 'email', 'phone')
+    ordering = ('name',)
 
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):

@@ -53,7 +53,7 @@ class Expense(models.Model):
         """
         Get the user's share for shared expenses.
         For regular expenses, returns the full amount.
-        For shared expenses, returns only the user's share.
+        For shared expenses, returns only the user's share (0 if user is not a participant).
         """
         try:
             shared_details = self.shared_details
@@ -61,8 +61,8 @@ class Expense(models.Model):
             user_share = shared_details.shares.filter(participant__is_user=True).first()
             if user_share:
                 return user_share.amount
-            # If no user share found, return full amount
-            return self.amount
+            # If no user share found in a shared expense, user is not a participant (paid for friends only)
+            return 0
         except SharedExpense.DoesNotExist:
             # Not a shared expense, return full amount
             return self.amount
