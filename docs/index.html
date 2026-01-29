@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TrackMyRupee - Privacy-First Finance Tracker</title>
+    <meta name="description" content="A self-hosted, privacy-first personal finance tracker. No SMS reading, no bank syncing—just you and your data.">
+    <link rel="icon" type="image/svg+xml" href="assets/icon.svg">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --background: #0f172a;
+            --surface: #1e293b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+        }
+        
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--background);
+            color: var(--text-main);
+        }
+        
+        h1, h2, h3, h4, .brand-font {
+            font-family: 'Outfit', sans-serif;
+        }
+        
+        .navbar {
+            backdrop-filter: blur(12px);
+            background-color: rgba(15, 23, 42, 0.8);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .hero-section {
+            padding: 8rem 0 4rem;
+            background: radial-gradient(circle at top center, rgba(99, 102, 241, 0.15) 0%, transparent 70%);
+        }
+        
+        .feature-card {
+            background: var(--surface);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 1rem;
+            padding: 2rem;
+            height: 100%;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+            border-color: rgba(99, 102, 241, 0.3);
+        }
+        
+        .icon-square {
+            width: 3rem;
+            height: 3rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 0.75rem;
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            background: rgba(99, 102, 241, 0.1);
+            color: var(--primary);
+        }
+        
+        .screenshot-container {
+            border-radius: 1rem;
+            overflow: hidden;
+            box-shadow: 0 20px 50px -10px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .screenshot-img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary);
+            border-color: var(--primary);
+            padding: 0.75rem 1.5rem;
+            font-weight: 600;
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--primary-dark);
+            border-color: var(--primary-dark);
+        }
+        
+        .code-block {
+            background: #000;
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            font-family: 'Fira Code', monospace;
+            color: #d4d4d4;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .text-gradient {
+            background: linear-gradient(135deg, #fff 0%, #94a3b8 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg fixed-top navbar-dark">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center gap-2" href="#">
+                <img src="assets/icon.svg" alt="TMR" width="32" height="32">
+                <span class="fw-bold brand-font">TrackMyRupee</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto gap-3">
+                    <li class="nav-item"><a class="nav-link" href="#features">Features</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#screenshots">Screenshots</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#setup">Self-Host</a></li>
+                    <li class="nav-item">
+                        <a class="btn btn-outline-light btn-sm px-3" href="https://trackmyrupee.com" target="_blank">
+                            <i class="bi bi-rocket-takeoff me-2"></i>Live Demo
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero -->
+    <section class="hero-section text-center">
+        <div class="container">
+            <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 rounded-pill px-3 py-2 mb-4">
+                v1.0 Now Available 🚀
+            </span>
+            <h1 class="display-3 fw-bold mb-4 text-white">
+                Taking Back Control of<br>
+                <span class="text-primary">Your Finances</span>
+            </h1>
+            <p class="lead text-muted mb-5 mx-auto" style="max-width: 600px;">
+                A self-hosted, simplified expense tracker built for privacy. 
+                <br>No bank syncing. No SMS reading. Just you and your data.
+            </p>
+            <div class="d-flex justify-content-center gap-3 mb-5">
+                <a href="#setup" class="btn btn-primary rounded-pill px-4">
+                    <i class="bi bi-box-seam me-2"></i>Self-Host with Docker
+                </a>
+                <a href="https://github.com/OmkarPathak/django-finance-tracker" class="btn btn-outline-secondary rounded-pill px-4 text-white">
+                    <i class="bi bi-github me-2"></i>Star on GitHub
+                </a>
+            </div>
+            
+            <div class="container px-0" style="max-width: 1000px;">
+                <div class="screenshot-container">
+                    <img src="misc/dashboard2.png" alt="Dashboard Preview" class="screenshot-img">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features -->
+    <section id="features" class="py-5">
+        <div class="container py-5">
+            <div class="text-center mb-5">
+                <h2 class="fw-bold mb-3">Why TrackMyRupee?</h2>
+                <p class="text-muted">Built for those who value privacy over convenience.</p>
+            </div>
+            
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="feature-card">
+                        <div class="icon-square">
+                            <i class="bi bi-shield-lock"></i>
+                        </div>
+                        <h4 class="fw-bold mb-3">Privacy First</h4>
+                        <p class="text-muted mb-0">No bank connections. No SMS reading permissions. Your data stays on your server (or device). You own it completely.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="feature-card">
+                        <div class="icon-square">
+                            <i class="bi bi-file-earmark-spreadsheet"></i>
+                        </div>
+                        <h4 class="fw-bold mb-3">Smart Import</h4>
+                        <p class="text-muted mb-0">Bulk upload your expenses via Excel. The system intelligently handles dates and auto-categorizes common transactions.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="feature-card">
+                        <div class="icon-square">
+                            <i class="bi bi-graph-up-arrow"></i>
+                        </div>
+                        <h4 class="fw-bold mb-3">Deep Analytics</h4>
+                        <p class="text-muted mb-0">Visualize spending trends, track your net worth, and monitor budget limits with beautiful Chart.js visualizations.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="feature-card">
+                        <div class="icon-square">
+                            <i class="bi bi-bell"></i>
+                        </div>
+                        <h4 class="fw-bold mb-3">Smart Notifications</h4>
+                        <p class="text-muted mb-0">Never miss a bill. Get reminders via Web Push, Email, or In-App alerts for your recurring subscriptions.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="feature-card">
+                        <div class="icon-square">
+                            <i class="bi bi-currency-exchange"></i>
+                        </div>
+                        <h4 class="fw-bold mb-3">Multi-Currency</h4>
+                        <p class="text-muted mb-0">Whether you deal in INR, USD, or EUR, TrackMyRupee adapts to your preferred currency symbol seamlessly.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="feature-card">
+                        <div class="icon-square">
+                            <i class="bi bi-phone"></i>
+                        </div>
+                        <h4 class="fw-bold mb-3">PWA Ready</h4>
+                        <p class="text-muted mb-0">Install it as a native app on your phone. Works offline and provides a smooth, app-like experience.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Screenshots -->
+    <section id="screenshots" class="py-5 bg-dark bg-opacity-10">
+        <div class="container py-5">
+            <h2 class="fw-bold text-center mb-5">See it in Action</h2>
+            <div class="row g-4">
+                <div class="col-md-6">
+                    <div class="screenshot-container">
+                        <img src="misc/upload.png" alt="Bulk Upload" class="screenshot-img">
+                    </div>
+                    <p class="text-center mt-3 text-muted">Smart Excel Import</p>
+                </div>
+                <div class="col-md-6">
+                    <div class="screenshot-container">
+                        <img src="misc/subscriptions.png" alt="Subscriptions" class="screenshot-img">
+                    </div>
+                    <p class="text-center mt-3 text-muted">Recurring Payments Manager</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Setup -->
+    <section id="setup" class="py-5">
+        <div class="container py-5">
+            <div class="row align-items-center">
+                <div class="col-lg-6 mb-4 mb-lg-0">
+                    <h2 class="fw-bold mb-4">Get Started in <span class="text-primary">Minutes</span></h2>
+                    <p class="lead text-muted mb-4">
+                        The easiest way to run TrackMyRupee is using Docker. You'll have your own personal finance instance running in 3 commands.
+                    </p>
+                    <div class="d-flex flex-column gap-3">
+                        <div class="d-flex align-items-center gap-3">
+                            <i class="bi bi-check-circle-fill text-primary"></i>
+                            <span>Self-hosted & Open Source</span>
+                        </div>
+                        <div class="d-flex align-items-center gap-3">
+                            <i class="bi bi-check-circle-fill text-primary"></i>
+                            <span>Zero external dependencies</span>
+                        </div>
+                        <div class="d-flex align-items-center gap-3">
+                            <i class="bi bi-check-circle-fill text-primary"></i>
+                            <span>Full data export/import control</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="code-block position-relative">
+                        <button class="btn btn-sm btn-outline-secondary position-absolute top-0 end-0 m-2" onclick="navigator.clipboard.writeText(this.nextElementSibling.innerText)">
+                            <i class="bi bi-clipboard"></i>
+                        </button>
+                        <pre class="mb-0"><code># 1. Clone the repo
+git clone https://github.com/OmkarPathak/django-finance-tracker.git
+cd django-finance-tracker
+
+# 2. Run with Docker
+docker-compose up -d
+
+# 3. Open in Browser
+# http://localhost:8000</code></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="py-5 text-center text-muted border-top border-secondary border-opacity-10">
+        <div class="container">
+            <div class="mb-3">
+                <a href="https://github.com/OmkarPathak/django-finance-tracker" class="text-decoration-none text-muted me-3">
+                    <i class="bi bi-github"></i> GitHub
+                </a>
+                <a href="https://twitter.com/omkarpathak27" class="text-decoration-none text-muted">
+                    <i class="bi bi-twitter-x"></i> Twitter
+                </a>
+            </div>
+            <p class="mb-0">&copy; 2024-2026 TrackMyRupee. Open Source under MIT License.</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
