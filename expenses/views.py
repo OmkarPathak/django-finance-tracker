@@ -1911,11 +1911,15 @@ class CategoryDeleteView(LoginRequiredMixin, generic.DeleteView):
 def export_expenses(request):
     """
     Export expenses to CSV based on current filters.
+    Includes cashback and shared expense (splitwise) information.
     """
     # Check Limits
     if not request.user.profile.is_plus:
         messages.error(request, "Export is available on Plus and Pro plans.")
         return redirect("pricing")
+
+    # Get user's currency symbol
+    currency_symbol = request.user.profile.currency
 
     expenses = Expense.objects.filter(user=request.user).order_by("-date")
 
@@ -1962,12 +1966,86 @@ def export_expenses(request):
     response["Content-Disposition"] = 'attachment; filename="expenses.csv"'
 
     writer = csv.writer(response)
-    writer.writerow(["Date", "Category", "Description", "Amount"])
+    
+    # Updated header with cashback and shared expense columns
+    writer.writerow([
+        "Date", 
+        "Category", 
+        "Description", 
+        f"Amount ({currency_symbol})",
+        "Payment Method",
+        "Has Cashback",
+        "Cashback Type",
+        "Cashback Value",
+        f"Cashback Amount ({currency_symbol})",
+        f"Effective Amount ({currency_symbol})",
+        "Is Shared",
+        f"Your Share ({currency_symbol})",
+        "Participants",
+        "Who Paid",
+        "Split Details"
+    ])
 
     for expense in expenses:
-        writer.writerow(
-            [expense.date, expense.category, expense.description, expense.amount]
-        )
+        # Cashback information
+        has_cashback = "Yes" if expense.has_cashback else "No"
+        cashback_type = expense.cashback_type if expense.has_cashback else ""
+        cashback_value = expense.cashback_value if expense.has_cashback else ""
+        cashback_amount = expense.cashback_amount if expense.has_cashback else 0
+        effective_amount = expense.effective_amount
+        
+        # Shared expense information
+        is_shared = "No"
+        your_share = expense.amount
+        participants = ""
+        who_paid = ""
+        split_details = ""
+        
+        try:
+            shared_details = expense.shared_details
+            is_shared = "Yes"
+            your_share = expense.user_share_amount
+            
+            # Get all participants
+            participant_list = []
+            payer_name = ""
+            
+            for participant in shared_details.participants.all():
+                # Get share amount for this participant
+                share = shared_details.shares.filter(participant=participant).first()
+                share_amount = share.amount if share else 0
+                
+                participant_name = participant.name
+                participant_list.append(f"{participant_name} ({currency_symbol}{share_amount})")
+                
+                if participant.is_payer:
+                    payer_name = participant_name
+            
+            participants = ", ".join(participant_list)
+            who_paid = payer_name
+            split_details = f"Total: {currency_symbol}{expense.amount}, Your Share: {currency_symbol}{your_share}"
+            
+        except Exception:
+            # Not a shared expense
+            pass
+        
+        writer.writerow([
+            expense.date,
+            expense.category,
+            expense.description,
+            expense.amount,
+            expense.payment_method,
+            has_cashback,
+            cashback_type,
+            cashback_value,
+            cashback_amount,
+            effective_amount,
+            is_shared,
+            your_share,
+            participants,
+            who_paid,
+            split_details
+        ])
 
     return response
 
