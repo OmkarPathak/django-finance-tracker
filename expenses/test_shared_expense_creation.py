@@ -1,10 +1,4 @@
-from django.test import TestCase, Client
-from django.urls import reverse
-from django.contrib.auth.models import User
-from .models import Expense, SharedExpense, SharedExpenseParticipant, Share
-from datetime import date
-import json
-from decimal import Decimal
+from django.test import TestCase
 
 
 class SharedExpenseCreationViewTests(TestCase):
@@ -200,8 +194,7 @@ from django.test import TestCase, Client, override_settings
 from django.contrib.auth.models import User
 from django.urls import reverse
 from decimal import Decimal
-from datetime import date
-from expenses.models import Expense, SharedExpense, SharedExpenseParticipant, Share
+from expenses.models import Expense
 import json
 
 
@@ -294,7 +287,7 @@ class SharedExpenseListViewTests(TestCase):
         today = date_module.today()
 
         # Create only a personal expense
-        personal_expense = Expense.objects.create(
+        Expense.objects.create(
             user=self.user,
             date=today,
             amount=Decimal("50.00"),
