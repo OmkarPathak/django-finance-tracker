@@ -1,15 +1,30 @@
-from django.shortcuts import render, redirect, get_object_or_404
-from django.http import HttpResponse
-from django.db import IntegrityError
+import calendar
 import csv
-from django.forms import modelformset_factory
-from django.contrib.auth.models import User
-from django.contrib.auth.forms import UserCreationForm
+import json
+import traceback
+from datetime import datetime, date, timedelta
+
+import openpyxl
+from allauth.account.models import EmailAddress
+from allauth.socialaccount.models import SocialAccount
+from django.conf import settings
+from django.contrib import messages
+from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.contrib.auth import login, logout
-from django.contrib import messages
+from django.contrib.auth.models import User
+from django.core.cache import cache
+from django.core.mail import send_mail
+from django.core.management import call_command
+from django.db import IntegrityError
+from django.db.models import Sum, Q
+from django.db.models.functions import TruncMonth, TruncDay
+from django.forms import modelformset_factory
+from django.http import JsonResponse, HttpResponse
+from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse_lazy, reverse
+from django.utils import timezone
+from django.utils.html import mark_safe, format_html, format_html_join
 from django.views import generic
 from django.views.generic import (
     TemplateView,
@@ -19,22 +34,7 @@ from django.views.generic import (
     DeleteView,
     View,
 )
-from django.db.models import Sum, Q
-from django.http import JsonResponse, HttpResponse
-import json
-from django.utils import timezone
-from datetime import datetime, date, timedelta
-import calendar
 
-from .models import (
-    Expense,
-    Category,
-    Income,
-    RecurringTransaction,
-    UserProfile,
-    SubscriptionPlan,
-    Friend,
-)
 from finance_tracker.ai_utils import predict_category_ai
 from .forms import (
     ExpenseForm,
@@ -44,17 +44,15 @@ from .forms import (
     CustomSignupForm,
     ContactForm,
 )
-from allauth.socialaccount.models import SocialAccount
-import openpyxl
-import requests
-import traceback
-from django.core.management import call_command
-from allauth.account.models import EmailAddress
-from django.core.mail import send_mail
-from django.conf import settings
-from django.core.cache import cache
-from django.db.models.functions import TruncMonth, TruncDay
-from django.utils.html import mark_safe, escape, format_html, format_html_join
+from .models import (
+    Expense,
+    Category,
+    Income,
+    RecurringTransaction,
+    UserProfile,
+    SubscriptionPlan,
+    Friend,
+)
 
 
 def create_category_ajax(request):
@@ -1429,12 +1427,15 @@ class ExpenseCreateView(LoginRequiredMixin, generic.TemplateView):
 
                                     # Find payer data
                                     payer_name = payer_id.strip()
-                                    
+
                                     # Check if payer is "You" (the logged-in user)
                                     payer_is_user = payer_name == "You"
-                                    
+
                                     # Check if user is in participants
-                                    user_in_participants = any(p.get('is_user', False) for p in participants_data)
+                                    user_in_participants = any(
+                                        p.get("is_user", False)
+                                        for p in participants_data
+                                    )
 
                                     # Create SharedExpense first (no payer FK anymore)
                                     shared_expense = SharedExpense.objects.create(
@@ -1449,7 +1450,9 @@ class ExpenseCreateView(LoginRequiredMixin, generic.TemplateView):
                                             "name", ""
                                         ).strip()
                                         is_user = participant_data.get("is_user", False)
-                                        is_payer = (is_user and payer_is_user) or (participant_name == payer_name)
+                                        is_payer = (is_user and payer_is_user) or (
+                                            participant_name == payer_name
+                                        )
 
                                         # Get or create Friend from master table (not for user)
                                         friend = None
@@ -1468,14 +1471,16 @@ class ExpenseCreateView(LoginRequiredMixin, generic.TemplateView):
                                         )
 
                                         participant_map[participant_name] = participant
-                                    
+
                                     # If payer is user but not in participants, create a participant record for them as payer only
                                     if payer_is_user and not user_in_participants:
-                                        payer_participant = SharedExpenseParticipant.objects.create(
-                                            shared_expense=shared_expense,
-                                            friend=None,
-                                            is_user=True,
-                                            is_payer=True,
+                                        payer_participant = (
+                                            SharedExpenseParticipant.objects.create(
+                                                shared_expense=shared_expense,
+                                                friend=None,
+                                                is_user=True,
+                                                is_payer=True,
+                                            )
                                         )
                                         participant_map["You"] = payer_participant
 
@@ -1545,12 +1550,14 @@ class ExpenseCreateView(LoginRequiredMixin, generic.TemplateView):
 
                                 # Find payer name
                                 payer_name = payer_id.strip()
-                                
+
                                 # Check if payer is "You" (the logged-in user)
                                 payer_is_user = payer_name == "You"
-                                
+
                                 # Check if user is in participants
-                                user_in_participants = any(p.get('is_user', False) for p in participants_data)
+                                user_in_participants = any(
+                                    p.get("is_user", False) for p in participants_data
+                                )
 
                                 # Create SharedExpense first (no payer FK anymore)
                                 shared_expense = SharedExpense.objects.create(
@@ -1565,7 +1572,9 @@ class ExpenseCreateView(LoginRequiredMixin, generic.TemplateView):
                                         "name", ""
                                     ).strip()
                                     is_user = participant_data.get("is_user", False)
-                                    is_payer = (is_user and payer_is_user) or (participant_name == payer_name)
+                                    is_payer = (is_user and payer_is_user) or (
+                                        participant_name == payer_name
+                                    )
 
                                     # Get or create Friend from master table (not for user)
                                     friend = None
@@ -1584,14 +1593,16 @@ class ExpenseCreateView(LoginRequiredMixin, generic.TemplateView):
                                     )
 
                                     participant_map[participant_name] = participant
-                                
+
                                 # If payer is user but not in participants, create a participant record for them as payer only
                                 if payer_is_user and not user_in_participants:
-                                    payer_participant = SharedExpenseParticipant.objects.create(
-                                        shared_expense=shared_expense,
-                                        friend=None,
-                                        is_user=True,
-                                        is_payer=True,
+                                    payer_participant = (
+                                        SharedExpenseParticipant.objects.create(
+                                            shared_expense=shared_expense,
+                                            friend=None,
+                                            is_user=True,
+                                            is_payer=True,
+                                        )
                                     )
                                     participant_map["You"] = payer_participant
 
@@ -1966,25 +1977,27 @@ def export_expenses(request):
     response["Content-Disposition"] = 'attachment; filename="expenses.csv"'
 
     writer = csv.writer(response)
-    
+
     # Updated header with cashback and shared expense columns
-    writer.writerow([
-        "Date", 
-        "Category", 
-        "Description", 
-        f"Amount ({currency_symbol})",
-        "Payment Method",
-        "Has Cashback",
-        "Cashback Type",
-        "Cashback Value",
-        f"Cashback Amount ({currency_symbol})",
-        f"Effective Amount ({currency_symbol})",
-        "Is Shared",
-        f"Your Share ({currency_symbol})",
-        "Participants",
-        "Who Paid",
-        "Split Details"
-    ])
+    writer.writerow(
+        [
+            "Date",
+            "Category",
+            "Description",
+            f"Amount ({currency_symbol})",
+            "Payment Method",
+            "Has Cashback",
+            "Cashback Type",
+            "Cashback Value",
+            f"Cashback Amount ({currency_symbol})",
+            f"Effective Amount ({currency_symbol})",
+            "Is Shared",
+            f"Your Share ({currency_symbol})",
+            "Participants",
+            "Who Paid",
+            "Split Details",
+        ]
+    )
 
     for expense in expenses:
         # Cashback information
@@ -1993,59 +2006,63 @@ def export_expenses(request):
         cashback_value = expense.cashback_value if expense.has_cashback else ""
         cashback_amount = expense.cashback_amount if expense.has_cashback else 0
         effective_amount = expense.effective_amount
-        
+
         # Shared expense information
         is_shared = "No"
         your_share = expense.amount
         participants = ""
         who_paid = ""
         split_details = ""
-        
+
         try:
             shared_details = expense.shared_details
             is_shared = "Yes"
             your_share = expense.user_share_amount
-            
+
             # Get all participants
             participant_list = []
             payer_name = ""
-            
+
             for participant in shared_details.participants.all():
                 # Get share amount for this participant
                 share = shared_details.shares.filter(participant=participant).first()
                 share_amount = share.amount if share else 0
-                
+
                 participant_name = participant.name
-                participant_list.append(f"{participant_name} ({currency_symbol}{share_amount})")
-                
+                participant_list.append(
+                    f"{participant_name} ({currency_symbol}{share_amount})"
+                )
+
                 if participant.is_payer:
                     payer_name = participant_name
-            
+
             participants = ", ".join(participant_list)
             who_paid = payer_name
             split_details = f"Total: {currency_symbol}{expense.amount}, Your Share: {currency_symbol}{your_share}"
-            
+
         except Exception:
             # Not a shared expense
             pass
-        
-        writer.writerow([
-            expense.date,
-            expense.category,
-            expense.description,
-            expense.amount,
-            expense.payment_method,
-            has_cashback,
-            cashback_type,
-            cashback_value,
-            cashback_amount,
-            effective_amount,
-            is_shared,
-            your_share,
-            participants,
-            who_paid,
-            split_details
-        ])
+
+        writer.writerow(
+            [
+                expense.date,
+                expense.category,
+                expense.description,
+                expense.amount,
+                expense.payment_method,
+                has_cashback,
+                cashback_type,
+                cashback_value,
+                cashback_amount,
+                effective_amount,
+                is_shared,
+                your_share,
+                participants,
+                who_paid,
+                split_details,
+            ]
+        )
 
     return response
 
@@ -2872,8 +2889,6 @@ class BalanceSummaryView(LoginRequiredMixin, TemplateView):
     def get_context_data(self, **kwargs):
         from .services import BalanceCalculationService
         from .models import SharedExpense, Friend
-        from datetime import date
-        import calendar
 
         context = super().get_context_data(**kwargs)
         user = self.request.user
@@ -3231,104 +3246,119 @@ def predict_category_view(request):
 @login_required
 def create_friend_ajax(request):
     """AJAX endpoint to create a new friend."""
-    if request.method == 'POST':
+    if request.method == "POST":
         try:
             data = json.loads(request.body)
-            name = data.get('name', '').strip()
-            email = data.get('email', '').strip()
-            phone = data.get('phone', '').strip()
-            
+            name = data.get("name", "").strip()
+            email = data.get("email", "").strip()
+            phone = data.get("phone", "").strip()
+
             if not name:
-                return JsonResponse({'success': False, 'error': 'Name is required'})
-            
+                return JsonResponse({"success": False, "error": "Name is required"})
+
             # Check if friend already exists
             if Friend.objects.filter(name=name).exists():
-                return JsonResponse({'success': False, 'error': 'A friend with this name already exists'})
-            
+                return JsonResponse(
+                    {
+                        "success": False,
+                        "error": "A friend with this name already exists",
+                    }
+                )
+
             # Create friend
             friend = Friend.objects.create(
                 name=name,
                 email=email if email else None,
-                phone=phone if phone else None
+                phone=phone if phone else None,
             )
-            
-            return JsonResponse({
-                'success': True,
-                'friend': {
-                    'id': friend.id,
-                    'name': friend.name,
-                    'email': friend.email or '',
-                    'phone': friend.phone or ''
+
+            return JsonResponse(
+                {
+                    "success": True,
+                    "friend": {
+                        "id": friend.id,
+                        "name": friend.name,
+                        "email": friend.email or "",
+                        "phone": friend.phone or "",
+                    },
                 }
-            })
+            )
         except Exception as e:
-            return JsonResponse({'success': False, 'error': str(e)})
-    
-    return JsonResponse({'success': False, 'error': 'Invalid request method'})
+            return JsonResponse({"success": False, "error": str(e)})
+
+    return JsonResponse({"success": False, "error": "Invalid request method"})
 
 
 @login_required
 def update_friend_ajax(request, pk):
     """AJAX endpoint to update an existing friend."""
-    if request.method == 'POST':
+    if request.method == "POST":
         try:
             friend = get_object_or_404(Friend, pk=pk)
             data = json.loads(request.body)
-            
-            name = data.get('name', '').strip()
-            email = data.get('email', '').strip()
-            phone = data.get('phone', '').strip()
-            
+
+            name = data.get("name", "").strip()
+            email = data.get("email", "").strip()
+            phone = data.get("phone", "").strip()
+
             if not name:
-                return JsonResponse({'success': False, 'error': 'Name is required'})
-            
+                return JsonResponse({"success": False, "error": "Name is required"})
+
             # Check if another friend has this name
             if Friend.objects.filter(name=name).exclude(pk=pk).exists():
-                return JsonResponse({'success': False, 'error': 'A friend with this name already exists'})
-            
+                return JsonResponse(
+                    {
+                        "success": False,
+                        "error": "A friend with this name already exists",
+                    }
+                )
+
             # Update friend
             friend.name = name
             friend.email = email if email else None
             friend.phone = phone if phone else None
             friend.save()
-            
-            return JsonResponse({
-                'success': True,
-                'friend': {
-                    'id': friend.id,
-                    'name': friend.name,
-                    'email': friend.email or '',
-                    'phone': friend.phone or ''
+
+            return JsonResponse(
+                {
+                    "success": True,
+                    "friend": {
+                        "id": friend.id,
+                        "name": friend.name,
+                        "email": friend.email or "",
+                        "phone": friend.phone or "",
+                    },
                 }
-            })
+            )
         except Exception as e:
-            return JsonResponse({'success': False, 'error': str(e)})
-    
-    return JsonResponse({'success': False, 'error': 'Invalid request method'})
+            return JsonResponse({"success": False, "error": str(e)})
+
+    return JsonResponse({"success": False, "error": "Invalid request method"})
 
 
 @login_required
 def delete_friend_ajax(request, pk):
     """AJAX endpoint to delete a friend."""
-    if request.method == 'POST':
+    if request.method == "POST":
         try:
             friend = get_object_or_404(Friend, pk=pk)
             friend_name = friend.name
-            
+
             # Check if friend is used in any shared expenses
             if friend.expense_participations.exists():
-                return JsonResponse({
-                    'success': False,
-                    'error': f'{friend_name} cannot be deleted because they are involved in shared expenses'
-                })
-            
+                return JsonResponse(
+                    {
+                        "success": False,
+                        "error": f"{friend_name} cannot be deleted because they are involved in shared expenses",
+                    }
+                )
+
             friend.delete()
-            
-            return JsonResponse({
-                'success': True,
-                'message': f'{friend_name} deleted successfully'
-            })
+
+            return JsonResponse(
+                {"success": True, "message": f"{friend_name} deleted successfully"}
+            )
         except Exception as e:
-            return JsonResponse({'success': False, 'error': str(e)})
-    
-    return JsonResponse({'success': False, 'error': 'Invalid request method'})
+            return JsonResponse({"success": False, "error": str(e)})
+
+    return JsonResponse({"success": False, "error": "Invalid request method"})

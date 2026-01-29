@@ -1,4 +1,11 @@
-from django.test import TestCase
+import json
+from decimal import Decimal
+
+from django.contrib.auth.models import User
+from django.test import TestCase, Client, override_settings
+from django.urls import reverse
+
+from expenses.models import Expense
 
 
 class SharedExpenseCreationViewTests(TestCase):
@@ -190,14 +197,6 @@ class SharedExpenseCreationViewTests(TestCase):
         self.assertNotIn("  Alice  ", participant_names)
 
 
-from django.test import TestCase, Client, override_settings
-from django.contrib.auth.models import User
-from django.urls import reverse
-from decimal import Decimal
-from expenses.models import Expense
-import json
-
-
 class SharedExpenseListViewTests(TestCase):
     def setUp(self):
         self.user = User.objects.create_user(username="testuser", password="password")
@@ -228,8 +227,6 @@ class SharedExpenseListViewTests(TestCase):
             {"name": "testuser", "is_user": True, "share_amount": "50.00"},
             {"name": "Alice", "is_user": False, "share_amount": "50.00"},
         ]
-
-        import json
 
         response = self.client.post(
             reverse("expense-create"),
