@@ -323,6 +323,9 @@
 <script>
     const currencySymbol = '{{ currency_symbol }}';
     document.addEventListener('DOMContentLoaded', function() {
+        // --- Common Variables ---
+        const amountInput = document.querySelector('input[name="amount"]');
+        
         // --- Expense Type Toggle Logic ---
         const expenseTypeRadios = document.querySelectorAll('input[name="expense_type"]');
         const sharedExpenseSection = document.getElementById('shared-expense-section');
@@ -559,7 +562,6 @@
             }
             
             // --- Share Amount Calculation and Validation ---
-            const amountInput = document.querySelector('input[name="amount"]');
             const shareValidationMessage = document.getElementById('share-validation-message');
             const remainingAmountSpan = document.getElementById('remaining-amount');
             
@@ -684,7 +686,6 @@
         // --- Cashback Toggle Logic ---
         const hasCashbackCheckbox = document.getElementById('id_has_cashback');
         const cashbackSection = document.getElementById('cashback-section');
-        const amountInput = document.querySelector('input[name="amount"]');
         const cashbackTypeSelect = document.querySelector('select[name="cashback_type"]');
         const cashbackValueInput = document.querySelector('input[name="cashback_value"]');
         const cashbackPreview = document.getElementById('cashback-preview');
