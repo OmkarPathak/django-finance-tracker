@@ -1,16 +1,19 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en" data-bs-theme="light">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/svg+xml" href="{% static 'icon.svg' %}">
     <link rel="icon" type="image/png" href="{% static 'img/pwa-icon-512.png' %}">
     <title>TrackMyRupee - Know Exactly Where Every Rupee Goes</title>
-    
+
     <!-- SEO Meta Tags -->
-    <meta name="description" content="Looking for the best finance tracker? TrackMyRupee helps you track expenses, manage budgets, and visualize your spending. The ultimate personal finance app for India.">
-    <meta name="keywords" content="best finance tracker, expense tracker india, budget app, personal finance manager, rupee tracker, money management software, spending tracker, track my rupee">
+    <meta name="description"
+        content="Looking for the best finance tracker? TrackMyRupee helps you track expenses, manage budgets, and visualize your spending. The ultimate personal finance app for India.">
+    <meta name="keywords"
+        content="best finance tracker, expense tracker india, budget app, personal finance manager, rupee tracker, money management software, spending tracker, track my rupee">
     <meta name="author" content="Omkar Pathak">
     <meta name="robots" content="index, follow">
 
@@ -18,14 +21,16 @@
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://trackmyrupee.com/">
     <meta property="og:title" content="Best Finance Tracker | TrackMyRupee">
-    <meta property="og:description" content="Stop guessing where your money goes. Use TrackMyRupee, the best finance tracker to monitor expenses and grow savings.">
+    <meta property="og:description"
+        content="Stop guessing where your money goes. Use TrackMyRupee, the best finance tracker to monitor expenses and grow savings.">
     <meta property="og:image" content="https://trackmyrupee.com/static/img/og-preview.png">
 
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:url" content="https://trackmyrupee.com/">
     <meta name="twitter:title" content="Best Finance Tracker | TrackMyRupee">
-    <meta name="twitter:description" content="Stop guessing where your money goes. Use TrackMyRupee, the best finance tracker to monitor expenses and grow savings.">
+    <meta name="twitter:description"
+        content="Stop guessing where your money goes. Use TrackMyRupee, the best finance tracker to monitor expenses and grow savings.">
     <meta name="twitter:image" content="https://trackmyrupee.com/static/img/og-preview.png">
 
     <!-- Schema.org JSON-LD -->
@@ -97,16 +102,18 @@
       }]
     }
     </script>
-    
+
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Clash+Display:wght@400;500;600;700&family=Outfit:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Clash+Display:wght@400;500;600;700&family=Outfit:wght@300;400;500;700&display=swap"
+        rel="stylesheet">
     <!-- AOS Animation Library -->
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
-    
+
     <style>
         :root {
             /* Light Mode (Default) */
@@ -133,7 +140,8 @@
             --input-bg: rgba(255, 255, 255, 0.05);
         }
 
-        html, body {
+        html,
+        body {
             font-family: 'Outfit', sans-serif;
             background-color: var(--bg-color);
             color: var(--text-main);
@@ -143,13 +151,22 @@
             width: 100%;
         }
 
-        h1, h2, h3, h4, .brand-font {
+        h1,
+        h2,
+        h3,
+        h4,
+        .brand-font {
             font-family: 'Clash Display', sans-serif;
             letter-spacing: -0.02em;
         }
 
-        [data-bs-theme="dark"] .img-light { display: none !important; }
-        [data-bs-theme="light"] .img-dark { display: none !important; }
+        [data-bs-theme="dark"] .img-light {
+            display: none !important;
+        }
+
+        [data-bs-theme="light"] .img-dark {
+            display: none !important;
+        }
 
         .navbar {
             backdrop-filter: blur(20px);
@@ -160,7 +177,7 @@
 
         .hero-section {
             padding: 160px 0 100px 0;
-            background: radial-gradient(circle at 50% -20%, var(--accent-glow) 0%, rgba(0,0,0,0) 50%);
+            background: radial-gradient(circle at 50% -20%, var(--accent-glow) 0%, rgba(0, 0, 0, 0) 50%);
             min-height: 90vh;
             display: flex;
             align-items: center;
@@ -236,14 +253,14 @@
         }
 
         .stats-badge {
-            background: rgba(255,255,255,0.03);
+            background: rgba(255, 255, 255, 0.03);
             border-radius: 50px;
             padding: 6px 16px;
             display: inline-flex;
             align-items: center;
             gap: 8px;
             margin-bottom: 2rem;
-            border: 1px solid rgba(255,255,255,0.1);
+            border: 1px solid rgba(255, 255, 255, 0.1);
             font-size: 0.9rem;
             font-weight: 500;
         }
@@ -253,16 +270,24 @@
         }
 
         @keyframes float {
-            0% { transform: translateY(0px) rotate(0deg); }
-            50% { transform: translateY(-20px) rotate(1deg); }
-            100% { transform: translateY(0px) rotate(0deg); }
+            0% {
+                transform: translateY(0px) rotate(0deg);
+            }
+
+            50% {
+                transform: translateY(-20px) rotate(1deg);
+            }
+
+            100% {
+                transform: translateY(0px) rotate(0deg);
+            }
         }
 
         .step-card {
             background: var(--surface-color);
             padding: 2.5rem;
             border-radius: 24px;
-            border: 1px solid rgba(255,255,255,0.05);
+            border: 1px solid rgba(255, 255, 255, 0.05);
             height: 100%;
             transition: all 0.3s ease;
         }
@@ -277,7 +302,7 @@
         }
 
         .process-section {
-            background: rgba(255,255,255,0.02);
+            background: rgba(255, 255, 255, 0.02);
             padding: 120px 0;
             position: relative;
         }
@@ -285,8 +310,11 @@
         .process-section::before {
             content: '';
             position: absolute;
-            top: 0; left: 0; width: 100%; height: 1px;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
         }
 
         .final-cta {
@@ -304,12 +332,26 @@
         }
 
         @keyframes bounce {
-            0%, 20%, 50%, 80%, 100% {transform: translate(-50%, 0);}
-            40% {transform: translate(-50%, -10px);}
-            60% {transform: translate(-50%, -5px);}
+
+            0%,
+            20%,
+            50%,
+            80%,
+            100% {
+                transform: translate(-50%, 0);
+            }
+
+            40% {
+                transform: translate(-50%, -10px);
+            }
+
+            60% {
+                transform: translate(-50%, -5px);
+            }
         }
     </style>
 </head>
+
 <body>
 
     <!-- Navbar -->
@@ -331,21 +373,26 @@
                         <span class="text-gradient">Rupee Goes.</span>
                     </h1>
                     <p class="lead text-muted mb-5 pe-lg-5">
-                        Turn financial chaos into clarity. TrackMyRupee gives you a precision dashboard to visualize your spending, spot trends, and master your monthly budget—all in one place.
+                        Turn financial chaos into clarity. TrackMyRupee gives you a precision dashboard to visualize
+                        your spending, spot trends, and master your monthly budget—all in one place.
                     </p>
                     <div class="d-flex flex-column flex-sm-row gap-3 justify-content-center justify-content-lg-start">
-                        <a href="{% url 'signup' %}" class="cta-button">Start Your Journey — It's Free</a>
-                        <a href="{% url 'demo_login' %}" class="btn btn-theme-adaptive rounded-pill px-4 py-3 fw-bold d-inline-flex align-items-center justify-content-center">
+                        <a href="{% url 'signup' %}" class="cta-button text-decoration-none">Start Your Journey</a>
+                        <a href="{% url 'demo_login' %}"
+                            class="btn btn-theme-adaptive rounded-pill px-4 py-3 fw-bold d-inline-flex align-items-center justify-content-center">
                             <i class="bi bi-rocket-takeoff me-2"></i> Try Demo
                         </a>
-                        <a href="#features" class="btn btn-theme-adaptive rounded-pill px-4 py-3 fw-bold d-inline-flex align-items-center justify-content-center">Explore Features</a>
+                        <a href="#features"
+                            class="btn btn-theme-adaptive rounded-pill px-4 py-3 fw-bold d-inline-flex align-items-center justify-content-center">Explore
+                            Features</a>
 
                     </div>
                 </div>
                 <div class="col-lg-6 mt-5 mt-lg-0" data-aos="zoom-in" data-aos-duration="1200">
                     <div class="floating-ui mockup-container">
                         <img src="{% static 'img/hero_dashboard.svg' %}" alt="Analytics Dashboard" class="img-dark">
-                        <img src="{% static 'img/hero_dashboard_light.svg' %}" alt="Analytics Dashboard" class="img-light">
+                        <img src="{% static 'img/hero_dashboard_light.svg' %}" alt="Analytics Dashboard"
+                            class="img-light">
                     </div>
                 </div>
             </div>
@@ -362,20 +409,26 @@
                         <div class="feature-icon-box">
                             <i class="bi bi-pie-chart-fill"></i>
                         </div>
-                        <h2 class="display-5 fw-bold mb-4">Deep Insights into <span class="text-gradient">Every Expense</span></h2>
+                        <h2 class="display-5 fw-bold mb-4">Deep Insights into <span class="text-gradient">Every
+                                Expense</span></h2>
                         <p class="text-muted fs-5 mb-4">
-                            Stop wondering where your money went. Our granular category breakdown and trend analysis tell you the complete story of your financial month.
+                            Stop wondering where your money went. Our granular category breakdown and trend analysis
+                            tell you the complete story of your financial month.
                         </p>
                         <ul class="list-unstyled d-grid gap-3 mb-0 text-muted">
-                            <li><i class="bi bi-check-circle-fill text-success me-2"></i> Automatic budget variance calculation</li>
-                            <li><i class="bi bi-check-circle-fill text-success me-2"></i> Spending distribution heatmaps</li>
-                            <li><i class="bi bi-check-circle-fill text-success me-2"></i> Month-over-month growth metrics</li>
+                            <li><i class="bi bi-check-circle-fill text-success me-2"></i> Automatic budget variance
+                                calculation</li>
+                            <li><i class="bi bi-check-circle-fill text-success me-2"></i> Spending distribution heatmaps
+                            </li>
+                            <li><i class="bi bi-check-circle-fill text-success me-2"></i> Month-over-month growth
+                                metrics</li>
                         </ul>
                     </div>
                     <div class="col-lg-7" data-aos="fade-left">
                         <div class="mockup-container">
                             <img src="{% static 'img/analytics_modern.svg' %}" alt="Analytics View" class="img-dark">
-                            <img src="{% static 'img/analytics_modern_light.svg' %}" alt="Analytics View" class="img-light">
+                            <img src="{% static 'img/analytics_modern_light.svg' %}" alt="Analytics View"
+                                class="img-light">
                         </div>
                     </div>
                 </div>
@@ -389,16 +442,19 @@
                     <div class="col-lg-7" data-aos="fade-right">
                         <div class="mockup-container">
                             <img src="{% static 'img/calendar_modern.svg' %}" alt="Calendar View" class="img-dark">
-                            <img src="{% static 'img/calendar_modern_light.svg' %}" alt="Calendar View" class="img-light">
+                            <img src="{% static 'img/calendar_modern_light.svg' %}" alt="Calendar View"
+                                class="img-light">
                         </div>
                     </div>
                     <div class="col-lg-5 mb-5 mb-lg-0 text-lg-start ps-lg-5" data-aos="fade-up">
                         <div class="feature-icon-box">
                             <i class="bi bi-calendar-heart-fill"></i>
                         </div>
-                        <h2 class="display-5 fw-bold mb-4">Your Financial <span class="text-gradient">Flow in Time</span></h2>
+                        <h2 class="display-5 fw-bold mb-4">Your Financial <span class="text-gradient">Flow in
+                                Time</span></h2>
                         <p class="text-muted fs-5 mb-4">
-                            See your income and expenses mapped across time. Our signature calendar interface helps you anticipate bills and celebrate deposit days.
+                            See your income and expenses mapped across time. Our signature calendar interface helps you
+                            anticipate bills and celebrate deposit days.
                         </p>
                         <div class="row g-4 mb-4">
                             <div class="col-6">
@@ -420,12 +476,16 @@
             <div class="container">
                 <div class="row align-items-center">
                     <div class="col-lg-5 mb-5 mb-lg-0" data-aos="fade-up">
-                        <div class="feature-icon-box" style="background: linear-gradient(135deg, #ff4d6d 0%, #ff8c42 100%); box-shadow: 0 10px 20px rgba(255, 77, 109, 0.2);">
+                        <div class="feature-icon-box"
+                            style="background: linear-gradient(135deg, #ff4d6d 0%, #ff8c42 100%); box-shadow: 0 10px 20px rgba(255, 77, 109, 0.2);">
                             <i class="bi bi-credit-card-2-front-fill"></i>
                         </div>
-                        <h2 class="display-5 fw-bold mb-4">Never Miss a <span class="text-gradient" style="background: linear-gradient(135deg, #ff4d6d 0%, #ff8c42 100%); -webkit-background-clip: text;">Bill Again</span></h2>
+                        <h2 class="display-5 fw-bold mb-4">Never Miss a <span class="text-gradient"
+                                style="background: linear-gradient(135deg, #ff4d6d 0%, #ff8c42 100%); -webkit-background-clip: text;">Bill
+                                Again</span></h2>
                         <p class="text-muted fs-5 mb-4">
-                            Consolidate all your subscriptions in one dashboard. Get timely renewal alerts, spot rising costs, and identify unused services instantly.
+                            Consolidate all your subscriptions in one dashboard. Get timely renewal alerts, spot rising
+                            costs, and identify unused services instantly.
                         </p>
                         <div class="d-flex gap-3 text-muted mb-4">
                             <div class="d-flex align-items-center">
@@ -436,13 +496,16 @@
                             </div>
                         </div>
                         <div class="p-3 bg-body-tertiary rounded-4 border border-danger border-opacity-10 mb-4">
-                            <p class="small text-muted mb-0">"Saved me ₹4,500/year just by cancelling forgotten subscriptions!"</p>
+                            <p class="small text-muted mb-0">"Saved me ₹4,500/year just by cancelling forgotten
+                                subscriptions!"</p>
                         </div>
                     </div>
                     <div class="col-lg-7" data-aos="fade-left">
                         <div class="mockup-container">
-                            <img src="{% static 'img/subscriptions_modern.svg' %}" alt="Subscriptions Dashboard" class="img-dark">
-                            <img src="{% static 'img/subscriptions_modern_light.svg' %}" alt="Subscriptions Dashboard" class="img-light">
+                            <img src="{% static 'img/subscriptions_modern.svg' %}" alt="Subscriptions Dashboard"
+                                class="img-dark">
+                            <img src="{% static 'img/subscriptions_modern_light.svg' %}" alt="Subscriptions Dashboard"
+                                class="img-light">
                         </div>
                     </div>
                 </div>
@@ -457,18 +520,22 @@
                         <div class="feature-icon-box">
                             <i class="bi bi-list-task"></i>
                         </div>
-                        <h2 class="display-5 fw-bold mb-4">Power Tools for <span class="text-gradient">Organization</span></h2>
+                        <h2 class="display-5 fw-bold mb-4">Power Tools for <span
+                                class="text-gradient">Organization</span></h2>
                         <p class="text-muted fs-5 mb-4">
-                            Manage thousands of records with ease. Advanced filtering, fast search, and powerful bulk export capabilities put you in the driver's seat.
+                            Manage thousands of records with ease. Advanced filtering, fast search, and powerful bulk
+                            export capabilities put you in the driver's seat.
                         </p>
                         <div class="p-3 bg-body-tertiary rounded-4 border border-secondary border-opacity-10 mb-4">
-                            <p class="small text-muted mb-0">"The fastest way to clean up your finances. Export to Excel in one click."</p>
+                            <p class="small text-muted mb-0">"The fastest way to clean up your finances. Export to Excel
+                                in one click."</p>
                         </div>
                     </div>
                     <div class="col-lg-7" data-aos="fade-left">
                         <div class="mockup-container">
                             <img src="{% static 'img/expenses_modern.svg' %}" alt="Expenses View" class="img-dark">
-                            <img src="{% static 'img/expenses_modern_light.svg' %}" alt="Expenses View" class="img-light">
+                            <img src="{% static 'img/expenses_modern_light.svg' %}" alt="Expenses View"
+                                class="img-light">
                         </div>
                     </div>
                 </div>
@@ -488,7 +555,8 @@
                         <span class="step-number">01</span>
                         <i class="bi bi-plus-square fs-1 text-primary mb-4 d-block"></i>
                         <h3 class="fw-bold mb-3">Track</h3>
-                        <p class="text-muted">Log your income and expenses in seconds with our optimized entry forms. Manual or bulk upload — your choice.</p>
+                        <p class="text-muted">Log your income and expenses in seconds with our optimized entry forms.
+                            Manual or bulk upload — your choice.</p>
                     </div>
                 </div>
                 <div class="col-lg-4" data-aos="fade-up" data-aos-delay="200">
@@ -496,7 +564,8 @@
                         <span class="step-number">02</span>
                         <i class="bi bi-search fs-1 text-success mb-4 d-block"></i>
                         <h3 class="fw-bold mb-3">Analyze</h3>
-                        <p class="text-muted">Our engine automatically classifies and visualizes your data into stunning charts and trends.</p>
+                        <p class="text-muted">Our engine automatically classifies and visualizes your data into stunning
+                            charts and trends.</p>
                     </div>
                 </div>
                 <div class="col-lg-4" data-aos="fade-up" data-aos-delay="300">
@@ -504,7 +573,8 @@
                         <span class="step-number">03</span>
                         <i class="bi bi-shield-lock-fill fs-1 text-info mb-4 d-block"></i>
                         <h3 class="fw-bold mb-3">Master</h3>
-                        <p class="text-muted">Set budgets, monitor limits, and watch your financial health improve month after month.</p>
+                        <p class="text-muted">Set budgets, monitor limits, and watch your financial health improve month
+                            after month.</p>
                     </div>
                 </div>
             </div>
@@ -512,16 +582,20 @@
     </section>
 
     <!-- The Maker's Method (New Section) -->
-    <section class="py-5 overflow-hidden" style="background: linear-gradient(180deg, var(--bg-color) 0%, rgba(5, 117, 230, 0.03) 100%);">
+    <section class="py-5 overflow-hidden"
+        style="background: linear-gradient(180deg, var(--bg-color) 0%, rgba(5, 117, 230, 0.03) 100%);">
         <div class="container py-4">
             <div class="row align-items-center">
                 <div class="col-lg-5 mb-5 mb-lg-0" data-aos="fade-right">
-                    <span class="badge rounded-pill bg-primary bg-opacity-10 text-primary px-3 py-2 mb-3 fw-bold border border-primary border-opacity-10">
+                    <span
+                        class="badge rounded-pill bg-primary bg-opacity-10 text-primary px-3 py-2 mb-3 fw-bold border border-primary border-opacity-10">
                         <i class="bi bi-lightbulb-fill me-1"></i> Use Case Spotlight
                     </span>
-                    <h2 class="display-4 fw-bold mb-4">The "Pay Yourself First" <span class="text-gradient">Method</span></h2>
+                    <h2 class="display-4 fw-bold mb-4">The "Pay Yourself First" <span
+                            class="text-gradient">Method</span></h2>
                     <p class="lead text-muted mb-4">
-                        Many users, including the creator of TrackMyRupee, follow a simple rule: <strong>Treat Savings as an Expense.</strong>
+                        Many users, including the creator of TrackMyRupee, follow a simple rule: <strong>Treat Savings
+                            as an Expense.</strong>
                     </p>
                     <div class="d-flex flex-column gap-3">
                         <div class="d-flex gap-3">
@@ -543,7 +617,9 @@
                             </div>
                             <div>
                                 <h5 class="fw-bold mb-1">Savings are Deducted</h5>
-                                <p class="text-muted small mb-0">SIPs, RDs, and Investments are recorded as an <strong>Expense Category</strong> named "Savings".</p>
+                                <p class="text-muted small mb-0">SIPs, RDs, and Investments are recorded as an
+                                    <strong>Expense Category</strong> named "Savings".
+                                </p>
                             </div>
                         </div>
                         <div class="d-flex gap-3">
@@ -554,17 +630,22 @@
                             </div>
                             <div>
                                 <h5 class="fw-bold mb-1">True Balance</h5>
-                                <p class="text-muted small mb-0">Income - Expenses (incl. Savings) = Your <strong>Guilt-Free Spending Money</strong>.</p>
+                                <p class="text-muted small mb-0">Income - Expenses (incl. Savings) = Your
+                                    <strong>Guilt-Free Spending Money</strong>.
+                                </p>
                             </div>
                         </div>
                     </div>
                 </div>
                 <div class="col-lg-7" data-aos="fade-left">
                     <div class="mockup-container" style="max-width: 100%;">
-                        <img src="{% static 'img/savings_method_dark.svg' %}" alt="Savings as Expense Method" class="w-100 hover-scale transition-transform img-dark">
-                        <img src="{% static 'img/savings_method.svg' %}" alt="Savings as Expense Method" class="w-100 hover-scale transition-transform img-light">
+                        <img src="{% static 'img/savings_method_dark.svg' %}" alt="Savings as Expense Method"
+                            class="w-100 hover-scale transition-transform img-dark">
+                        <img src="{% static 'img/savings_method.svg' %}" alt="Savings as Expense Method"
+                            class="w-100 hover-scale transition-transform img-light">
                         <div class="text-center mt-3">
-                            <small class="text-muted fst-italic">"This simple shift in perspective ensures I never miss my investment goals." — Omkar</small>
+                            <small class="text-muted fst-italic">"This simple shift in perspective ensures I never miss
+                                my investment goals." — Omkar</small>
                         </div>
                     </div>
                 </div>
@@ -580,7 +661,8 @@
                     <span class="stats-badge mb-3 text-primary border-primary">
                         <i class="bi bi-stars"></i> Simple, Transparent Pricing
                     </span>
-                    <h2 class="display-4 fw-bold mb-3">Choose the plan that fits <span class="text-gradient">your goals</span></h2>
+                    <h2 class="display-4 fw-bold mb-3">Choose the plan that fits <span class="text-gradient">your
+                            goals</span></h2>
                     <p class="lead text-muted">Start for free, upgrade when you need more power. No hidden fees.</p>
                 </div>
             </div>
@@ -588,70 +670,102 @@
             <div class="row row-cols-1 row-cols-md-3 g-4 mb-3 text-center">
                 <!-- Free Plan -->
                 <div class="col" data-aos="fade-up" data-aos-delay="100">
-                    <div class="card mb-4 rounded-4 shadow-sm border-0 h-100 position-relative" style="background: var(--surface-color);">
+                    <div class="card mb-4 rounded-4 shadow-sm border-0 h-100 position-relative"
+                        style="background: var(--surface-color);">
                         <div class="card-header py-3 bg-transparent border-0">
                             <h4 class="my-0 fw-normal">Free</h4>
                         </div>
                         <div class="card-body d-flex flex-column">
-                            <h1 class="card-title pricing-card-title display-5 fw-bold">₹0<small class="text-muted fw-light fs-4">/yr</small></h1>
+                            <h1 class="card-title pricing-card-title display-5 fw-bold">₹0<small
+                                    class="text-muted fw-light fs-4">/yr</small></h1>
                             <ul class="list-unstyled mt-3 mb-4 text-start small mx-auto text-muted">
-                                <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Unlimited Expenses</li>
-                                <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Unlimited Income Entries</li>
-                                <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>5 Budget Categories</li>
-                                <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Basic Reports</li>
-                                <li class="mb-2 text-muted"><i class="bi bi-dash-circle me-2"></i>Recurring Transactions</li>
+                                <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Unlimited
+                                    Expenses</li>
+                                <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Unlimited
+                                    Income Entries</li>
+                                <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>5 Budget
+                                    Categories</li>
+                                <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Basic Reports
+                                </li>
+                                <li class="mb-2 text-muted"><i class="bi bi-dash-circle me-2"></i>Recurring Transactions
+                                </li>
                                 <li class="mb-2 text-muted"><i class="bi bi-dash-circle me-2"></i>Email Reminders</li>
                             </ul>
-                            <a href="{% url 'signup' %}" class="w-100 btn btn-lg btn-theme-adaptive mt-auto rounded-pill fw-bold">Sign up for free</a>
+                            <a href="{% url 'signup' %}"
+                                class="w-100 btn btn-lg btn-theme-adaptive mt-auto rounded-pill fw-bold">Sign up for
+                                free</a>
                         </div>
                     </div>
                 </div>
 
                 <!-- Premium Plan -->
                 <div class="col" data-aos="fade-up" data-aos-delay="200">
-                    <div class="card mb-4 rounded-4 shadow border-primary h-100 position-relative" style="background: var(--surface-color); border: 2px solid #0575e6;">
+                    <div class="card mb-4 rounded-4 shadow border-primary h-100 position-relative"
+                        style="background: var(--surface-color); border: 2px solid #0575e6;">
                         <div class="position-absolute top-0 start-50 translate-middle">
                             <span class="badge rounded-pill text-bg-primary px-3 py-2 shadow-sm">MOST POPULAR</span>
                         </div>
                         <div class="card-header py-3 bg-primary bg-opacity-10 border-0">
-                            <h4 class="my-0 fw-bold text-primary">Plus <span class="badge bg-danger ms-2 rounded-pill" style="font-size: 0.6em;">LIMITED OFFER</span></h4>
+                            <h4 class="my-0 fw-bold text-primary">Plus <span class="badge bg-danger ms-2 rounded-pill"
+                                    style="font-size: 0.6em;">LIMITED OFFER</span></h4>
                         </div>
                         <div class="card-body d-flex flex-column">
-                            <h1 class="card-title pricing-card-title display-5 fw-bold">₹{{ plans.PLUS.price|floatformat:0 }}<small class="text-muted fw-light fs-4">/yr</small></h1>
+                            <h1 class="card-title pricing-card-title display-5 fw-bold">₹{{
+                                plans.PLUS.price|floatformat:0 }}<small class="text-muted fw-light fs-4">/yr</small>
+                            </h1>
                             <ul class="list-unstyled mt-3 mb-4 text-start small mx-auto text-muted">
-                                <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i><strong>Everything in Free</strong></li>
-                                <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>10 Budget Categories</li>
-                                <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>3 Recurring Transactions</li>
-                                <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Email Reminders</li>
-                                <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Export to CSV/Excel</li>
+                                <li class="mb-2"><i
+                                        class="bi bi-check-circle-fill text-success me-2"></i><strong>Everything in
+                                        Free</strong></li>
+                                <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>10 Budget
+                                    Categories</li>
+                                <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>3 Recurring
+                                    Transactions</li>
+                                <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Email
+                                    Reminders</li>
+                                <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Export to
+                                    CSV/Excel</li>
                             </ul>
-                            <a href="{% url 'signup' %}" class="w-100 btn btn-lg btn-primary mt-auto rounded-pill fw-bold shadow-lg" style="background: var(--primary-gradient); border: none;">Get Plus</a>
+                            <a href="{% url 'signup' %}"
+                                class="w-100 btn btn-lg btn-primary mt-auto rounded-pill fw-bold shadow-lg"
+                                style="background: var(--primary-gradient); border: none;">Get Plus</a>
                         </div>
                     </div>
                 </div>
 
                 <!-- Pro Plan -->
                 <div class="col" data-aos="fade-up" data-aos-delay="300">
-                    <div class="card mb-4 rounded-4 shadow-sm border-0 h-100 position-relative" style="background: var(--surface-color);">
+                    <div class="card mb-4 rounded-4 shadow-sm border-0 h-100 position-relative"
+                        style="background: var(--surface-color);">
                         <div class="card-header py-3 bg-transparent border-0">
-                            <h4 class="my-0 fw-normal">Pro <span class="badge bg-danger ms-2 rounded-pill" style="font-size: 0.6em;">LIMITED OFFER</span></h4>
+                            <h4 class="my-0 fw-normal">Pro <span class="badge bg-danger ms-2 rounded-pill"
+                                    style="font-size: 0.6em;">LIMITED OFFER</span></h4>
                         </div>
                         <div class="card-body d-flex flex-column">
-                            <h1 class="card-title pricing-card-title display-5 fw-bold">₹{{ plans.PRO.price|floatformat:0 }}<small class="text-muted fw-light fs-4">/yr</small></h1>
+                            <h1 class="card-title pricing-card-title display-5 fw-bold">₹{{
+                                plans.PRO.price|floatformat:0 }}<small class="text-muted fw-light fs-4">/yr</small></h1>
                             <ul class="list-unstyled mt-3 mb-4 text-start small mx-auto text-muted">
-                                <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i><strong>Everything in Plus</strong></li>
-                                <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Unlimited Categories</li>
-                                <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Unlimited Recurring Txs</li>
-                                <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Email Reminders</li>
-                                <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Priority Support</li>
-                                <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>AI Insights (Coming Soon)</li>
+                                <li class="mb-2"><i
+                                        class="bi bi-check-circle-fill text-success me-2"></i><strong>Everything in
+                                        Plus</strong></li>
+                                <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Unlimited
+                                    Categories</li>
+                                <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Unlimited
+                                    Recurring Txs</li>
+                                <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Email
+                                    Reminders</li>
+                                <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Priority
+                                    Support</li>
+                                <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>AI Insights
+                                    (Coming Soon)</li>
                             </ul>
-                            <a href="{% url 'signup' %}" class="w-100 btn btn-lg btn-theme-adaptive mt-auto rounded-pill fw-bold">Get Pro</a>
+                            <a href="{% url 'signup' %}"
+                                class="w-100 btn btn-lg btn-theme-adaptive mt-auto rounded-pill fw-bold">Get Pro</a>
                         </div>
                     </div>
                 </div>
             </div>
-            
+
             <!-- FAQ Partial -->
             <div class="row justify-content-center mt-5" data-aos="fade-up">
                 <div class="col-lg-8">
@@ -659,32 +773,39 @@
                     <div class="accordion accordion-flush" id="pricingFAQ">
                         <div class="accordion-item bg-transparent border-bottom border-primary border-opacity-25 mb-3">
                             <h2 class="accordion-header">
-                                <button class="accordion-button collapsed bg-transparent shadow-none fw-bold fs-5" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">
+                                <button class="accordion-button collapsed bg-transparent shadow-none fw-bold fs-5"
+                                    type="button" data-bs-toggle="collapse" data-bs-target="#faq1">
                                     Can I switch plans later?
                                 </button>
                             </h2>
                             <div id="faq1" class="accordion-collapse collapse" data-bs-parent="#pricingFAQ">
-                                <div class="accordion-body text-muted pb-4">A: Absolutely! You can upgrade or downgrade your plan at any time from your account settings. Prorated charges will apply.</div>
+                                <div class="accordion-body text-muted pb-4">A: Absolutely! You can upgrade or downgrade
+                                    your plan at any time from your account settings. Prorated charges will apply.</div>
                             </div>
                         </div>
                         <div class="accordion-item bg-transparent border-bottom border-primary border-opacity-25 mb-3">
                             <h2 class="accordion-header">
-                                <button class="accordion-button collapsed bg-transparent shadow-none fw-bold fs-5" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">
+                                <button class="accordion-button collapsed bg-transparent shadow-none fw-bold fs-5"
+                                    type="button" data-bs-toggle="collapse" data-bs-target="#faq2">
                                     Is my data safe?
                                 </button>
                             </h2>
                             <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#pricingFAQ">
-                                <div class="accordion-body text-muted pb-4">A: Yes, we use industry-standard encryption to protect your data. We never sell your personal information to third parties.</div>
+                                <div class="accordion-body text-muted pb-4">A: Yes, we use industry-standard encryption
+                                    to protect your data. We never sell your personal information to third parties.
+                                </div>
                             </div>
                         </div>
                         <div class="accordion-item bg-transparent border-bottom border-primary border-opacity-25 mb-3">
                             <h2 class="accordion-header">
-                                <button class="accordion-button collapsed bg-transparent shadow-none fw-bold fs-5" type="button" data-bs-toggle="collapse" data-bs-target="#faq3">
+                                <button class="accordion-button collapsed bg-transparent shadow-none fw-bold fs-5"
+                                    type="button" data-bs-toggle="collapse" data-bs-target="#faq3">
                                     Do you offer refunds?
                                 </button>
                             </h2>
                             <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#pricingFAQ">
-                                <div class="accordion-body text-muted pb-4">A: If you're not satisfied with TrackMyRupee Pro within the first 14 days, contact us for a full refund.</div>
+                                <div class="accordion-body text-muted pb-4">A: If you're not satisfied with TrackMyRupee
+                                    Pro within the first 14 days, contact us for a full refund.</div>
                             </div>
                         </div>
                     </div>
@@ -699,17 +820,22 @@
             <div class="row justify-content-center align-items-center">
                 <div class="col-lg-8 text-center" data-aos="fade-up">
                     <div class="mb-4">
-                        <img src="https://github.com/OmkarPathak.png" alt="Omkar Pathak" class="rounded-circle shadow-lg border border-4 border-white" style="width: 120px; height: 120px;">
+                        <img src="https://github.com/OmkarPathak.png" alt="Omkar Pathak"
+                            class="rounded-circle shadow-lg border border-4 border-white"
+                            style="width: 120px; height: 120px;">
                     </div>
                     <span class="badge rounded-pill bg-success bg-opacity-10 text-success px-3 py-2 mb-3 fw-bold">
                         <i class="bi bi-code-slash me-1"></i> Built by an Indie Developer
                     </span>
-                    <h2 class="fw-bold mb-4">No investors. No data selling. <span class="text-gradient">Just code.</span></h2>
+                    <h2 class="fw-bold mb-4">No investors. No data selling. <span class="text-gradient">Just
+                            code.</span></h2>
                     <p class="lead text-muted mb-4">
-                        Hi, I'm Omkar. I built TrackMyRupee because I was tired of finance apps that felt cluttered or treated my data like a product.
+                        Hi, I'm Omkar. I built TrackMyRupee because I was tired of finance apps that felt cluttered or
+                        treated my data like a product.
                     </p>
                     <p class="text-muted mb-0">
-                        This is a self-funded project driven by passion, not profit margins. When you email support, you're talking to the person who wrote the code.
+                        This is a self-funded project driven by passion, not profit margins. When you email support,
+                        you're talking to the person who wrote the code.
                         My promise is simple: <strong>Your financial data belongs to you.</strong>
                     </p>
                 </div>
@@ -726,7 +852,8 @@
             </p>
             <div class="d-flex flex-column flex-sm-row gap-3 justify-content-center">
                 <a href="{% url 'signup' %}" class="cta-button py-3 px-5 fs-5">Create Your Free Account</a>
-                <a href="{% url 'demo_login' %}" class="btn btn-outline-secondary rounded-pill py-3 px-5 fs-5 fw-bold d-flex align-items-center justify-content-center">
+                <a href="{% url 'demo_login' %}"
+                    class="btn btn-outline-secondary rounded-pill py-3 px-5 fs-5 fw-bold d-flex align-items-center justify-content-center">
                     <i class="bi bi-rocket-takeoff me-2"></i> Try Demo
                 </a>
             </div>
@@ -751,52 +878,74 @@
                     <div class="accordion accordion-flush" id="faqAccordion">
                         <div class="accordion-item bg-transparent border-bottom border-primary border-opacity-25 mb-3">
                             <h5 class="accordion-header" id="faq-heading-1">
-                                <button class="accordion-button collapsed bg-transparent shadow-none fw-bold fs-5" type="button" data-bs-toggle="collapse" data-bs-target="#faq-collapse-1" aria-expanded="false" aria-controls="faq-collapse-1">
+                                <button class="accordion-button collapsed bg-transparent shadow-none fw-bold fs-5"
+                                    type="button" data-bs-toggle="collapse" data-bs-target="#faq-collapse-1"
+                                    aria-expanded="false" aria-controls="faq-collapse-1">
                                     What is the best free finance tracker for India?
                                 </button>
                             </h5>
-                            <div id="faq-collapse-1" class="accordion-collapse collapse" aria-labelledby="faq-heading-1" data-bs-parent="#faqAccordion">
+                            <div id="faq-collapse-1" class="accordion-collapse collapse" aria-labelledby="faq-heading-1"
+                                data-bs-parent="#faqAccordion">
                                 <div class="accordion-body text-muted pb-4">
-                                    <strong>TrackMyRupee</strong> is widely considered the best free finance tracker for the Indian market. Unlike generic global apps, it is built with the Rupee (₹) in mind, offering features like recurring payment reminders, budget tracking, and spending analysis tailored for Indian users.
+                                    <strong>TrackMyRupee</strong> is widely considered the best free finance tracker for
+                                    the Indian market. Unlike generic global apps, it is built with the Rupee (₹) in
+                                    mind, offering features like recurring payment reminders, budget tracking, and
+                                    spending analysis tailored for Indian users.
                                 </div>
                             </div>
                         </div>
 
                         <div class="accordion-item bg-transparent border-bottom border-primary border-opacity-25 mb-3">
                             <h5 class="accordion-header" id="faq-heading-2">
-                                <button class="accordion-button collapsed bg-transparent shadow-none fw-bold fs-5" type="button" data-bs-toggle="collapse" data-bs-target="#faq-collapse-2" aria-expanded="false" aria-controls="faq-collapse-2">
+                                <button class="accordion-button collapsed bg-transparent shadow-none fw-bold fs-5"
+                                    type="button" data-bs-toggle="collapse" data-bs-target="#faq-collapse-2"
+                                    aria-expanded="false" aria-controls="faq-collapse-2">
                                     Does TrackMyRupee support recurring payments?
                                 </button>
                             </h5>
-                            <div id="faq-collapse-2" class="accordion-collapse collapse" aria-labelledby="faq-heading-2" data-bs-parent="#faqAccordion">
+                            <div id="faq-collapse-2" class="accordion-collapse collapse" aria-labelledby="faq-heading-2"
+                                data-bs-parent="#faqAccordion">
                                 <div class="accordion-body text-muted pb-4">
-                                    Yes! We have a robust <strong>Smart Notification System</strong>. You can set up recurring income or expenses (like rent, Netflix, SIPs) and get notified via Email, Web Push (Mobile & Desktop), and In-App alerts 3 days before the due date.
+                                    Yes! We have a robust <strong>Smart Notification System</strong>. You can set up
+                                    recurring income or expenses (like rent, Netflix, SIPs) and get notified via Email,
+                                    Web Push (Mobile & Desktop), and In-App alerts 3 days before the due date.
                                 </div>
                             </div>
                         </div>
 
                         <div class="accordion-item bg-transparent border-bottom border-primary border-opacity-25 mb-3">
                             <h5 class="accordion-header" id="faq-heading-3">
-                                <button class="accordion-button collapsed bg-transparent shadow-none fw-bold fs-5" type="button" data-bs-toggle="collapse" data-bs-target="#faq-collapse-3" aria-expanded="false" aria-controls="faq-collapse-3">
+                                <button class="accordion-button collapsed bg-transparent shadow-none fw-bold fs-5"
+                                    type="button" data-bs-toggle="collapse" data-bs-target="#faq-collapse-3"
+                                    aria-expanded="false" aria-controls="faq-collapse-3">
                                     Is TrackMyRupee safe? Do you sell proper data?
                                 </button>
                             </h5>
-                            <div id="faq-collapse-3" class="accordion-collapse collapse" aria-labelledby="faq-heading-3" data-bs-parent="#faqAccordion">
+                            <div id="faq-collapse-3" class="accordion-collapse collapse" aria-labelledby="faq-heading-3"
+                                data-bs-parent="#faqAccordion">
                                 <div class="accordion-body text-muted pb-4">
-                                    Your privacy is our #1 priority. We do <strong>NOT</strong> sell your data to third parties. We use industry-standard encryption for your passwords and data. TrackMyRupee is designed to help <em>you</em> manage your money, not to help advertisers target you.
+                                    Your privacy is our #1 priority. We do <strong>NOT</strong> sell your data to third
+                                    parties. We use industry-standard encryption for your passwords and data.
+                                    TrackMyRupee is designed to help <em>you</em> manage your money, not to help
+                                    advertisers target you.
                                 </div>
                             </div>
                         </div>
-                        
-                         <div class="accordion-item bg-transparent border-bottom border-primary border-opacity-25 mb-3">
+
+                        <div class="accordion-item bg-transparent border-bottom border-primary border-opacity-25 mb-3">
                             <h5 class="accordion-header" id="faq-heading-4">
-                                <button class="accordion-button collapsed bg-transparent shadow-none fw-bold fs-5" type="button" data-bs-toggle="collapse" data-bs-target="#faq-collapse-4" aria-expanded="false" aria-controls="faq-collapse-4">
+                                <button class="accordion-button collapsed bg-transparent shadow-none fw-bold fs-5"
+                                    type="button" data-bs-toggle="collapse" data-bs-target="#faq-collapse-4"
+                                    aria-expanded="false" aria-controls="faq-collapse-4">
                                     Is there a mobile app?
                                 </button>
                             </h5>
-                            <div id="faq-collapse-4" class="accordion-collapse collapse" aria-labelledby="faq-heading-4" data-bs-parent="#faqAccordion">
+                            <div id="faq-collapse-4" class="accordion-collapse collapse" aria-labelledby="faq-heading-4"
+                                data-bs-parent="#faqAccordion">
                                 <div class="accordion-body text-muted pb-4">
-                                    Yes, TrackMyRupee is a <strong>Progressive Web App (PWA)</strong>. You can install it directly from your browser on Android (Chrome) or iOS (Safari) without visiting the Play Store or App Store. It works offline and feels just like a native app!
+                                    Yes, TrackMyRupee is a <strong>Progressive Web App (PWA)</strong>. You can install
+                                    it directly from your browser on Android (Chrome) or iOS (Safari) without visiting
+                                    the Play Store or App Store. It works offline and feels just like a native app!
                                 </div>
                             </div>
                         </div>
@@ -812,13 +961,16 @@
                 <!-- Brand & Description -->
                 <div class="col-lg-4 mb-4 mb-lg-0">
                     <a href="/" class="d-flex align-items-center gap-2 mb-3 text-decoration-none">
-                        <img src="{% static 'img/logo.svg' %}" alt="TMR" width="32" height="32" class="d-inline-block align-text-top rounded-3">
+                        <img src="{% static 'img/logo.svg' %}" alt="TMR" width="32" height="32"
+                            class="d-inline-block align-text-top rounded-3">
                         <span class="fs-4 fw-bold text-body">TrackMyRupee</span>
                     </a>
                     <p class="text-muted small mb-4">
-                        Turn financial chaos into clarity. TrackMyRupee gives you a precision dashboard to visualize your spending, spot trends, and master your monthly budget.
+                        Turn financial chaos into clarity. TrackMyRupee gives you a precision dashboard to visualize
+                        your spending, spot trends, and master your monthly budget.
                     </p>
-                    <a href="https://rzp.io/rzp/AP7kBG2" target="_blank" class="btn btn-primary btn-sm rounded-pill px-3 shadow-sm">
+                    <a href="https://rzp.io/rzp/AP7kBG2" target="_blank"
+                        class="btn btn-primary btn-sm rounded-pill px-3 shadow-sm">
                         <i class="bi bi-heart-fill me-1 text-white"></i> Support Us
                     </a>
                 </div>
@@ -826,15 +978,19 @@
                 <!-- Links Columns -->
                 <div class="col-lg-8">
                     <div class="row g-4 justify-content-lg-end">
-                        
+
                         <!-- Product Column -->
                         <div class="col-6 col-sm-4">
                             <h5 class="fw-bold mb-3 small text-uppercase tracking-wider">Product</h5>
                             <ul class="list-unstyled mb-0 d-flex flex-column gap-2">
-                                <li><a href="#features" class="text-decoration-none text-muted small hover-primary">Features</a></li>
-                                <li><a href="#pricing" class="text-decoration-none text-muted small hover-primary">Pricing</a></li>
-                                <li><a href="{% url 'blog_list' %}" class="text-decoration-none text-muted small hover-primary">Blog</a></li>
-                                <li><a href="{% url 'demo_login' %}" class="text-decoration-none text-muted small hover-primary">Live Demo</a></li>
+                                <li><a href="#features"
+                                        class="text-decoration-none text-muted small hover-primary">Features</a></li>
+                                <li><a href="#pricing"
+                                        class="text-decoration-none text-muted small hover-primary">Pricing</a></li>
+                                <li><a href="{% url 'blog_list' %}"
+                                        class="text-decoration-none text-muted small hover-primary">Blog</a></li>
+                                <li><a href="{% url 'demo_login' %}"
+                                        class="text-decoration-none text-muted small hover-primary">Live Demo</a></li>
                             </ul>
                         </div>
 
@@ -842,8 +998,10 @@
                         <div class="col-6 col-sm-4">
                             <h5 class="fw-bold mb-3 small text-uppercase tracking-wider">Company</h5>
                             <ul class="list-unstyled mb-0 d-flex flex-column gap-2">
-                                <li><a href="{% url 'about' %}" class="text-decoration-none text-muted small hover-primary">About</a></li>
-                                <li><a href="{% url 'contact' %}" class="text-decoration-none text-muted small hover-primary">Contact</a></li>
+                                <li><a href="{% url 'about' %}"
+                                        class="text-decoration-none text-muted small hover-primary">About</a></li>
+                                <li><a href="{% url 'contact' %}"
+                                        class="text-decoration-none text-muted small hover-primary">Contact</a></li>
                             </ul>
                         </div>
 
@@ -851,9 +1009,15 @@
                         <div class="col-6 col-sm-4">
                             <h5 class="fw-bold mb-3 small text-uppercase tracking-wider">Legal</h5>
                             <ul class="list-unstyled mb-0 d-flex flex-column gap-2">
-                                <li><a href="{% url 'privacy-policy' %}" class="text-decoration-none text-muted small hover-primary">Privacy Policy</a></li>
-                                <li><a href="{% url 'terms-of-service' %}" class="text-decoration-none text-muted small hover-primary">Terms of Service</a></li>
-                                <li><a href="{% url 'refund-policy' %}" class="text-decoration-none text-muted small hover-primary">Refund & Cancellation</a></li>
+                                <li><a href="{% url 'privacy-policy' %}"
+                                        class="text-decoration-none text-muted small hover-primary">Privacy Policy</a>
+                                </li>
+                                <li><a href="{% url 'terms-of-service' %}"
+                                        class="text-decoration-none text-muted small hover-primary">Terms of Service</a>
+                                </li>
+                                <li><a href="{% url 'refund-policy' %}"
+                                        class="text-decoration-none text-muted small hover-primary">Refund &
+                                        Cancellation</a></li>
                             </ul>
                         </div>
                     </div>
@@ -883,7 +1047,7 @@
         // Theme Toggle Logic
         document.addEventListener('DOMContentLoaded', () => {
             const html = document.documentElement;
-            
+
             // Check saved theme or default to light
             const savedTheme = localStorage.getItem('theme') || 'light';
             setTheme(savedTheme);
@@ -901,7 +1065,7 @@
             function setTheme(theme) {
                 html.setAttribute('data-bs-theme', theme);
                 localStorage.setItem('theme', theme);
-                
+
                 // Update ALL Icons
                 const icons = document.querySelectorAll('.theme-icon-active');
                 icons.forEach(icon => {
@@ -919,4 +1083,5 @@
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
+
 </html>
