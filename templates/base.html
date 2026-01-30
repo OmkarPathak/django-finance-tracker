@@ -7,8 +7,8 @@
     <!-- 1. Google Consent Mode v2 (Must be first) -->
     <script>
         window.dataLayer = window.dataLayer || [];
-        function gtag(){dataLayer.push(arguments);}
-        
+        function gtag() { dataLayer.push(arguments); }
+
         // Define default consent (denied by default)
         const grantState = localStorage.getItem('cookieConsent') === 'accepted' ? 'granted' : 'denied';
         gtag('consent', 'default', {
@@ -25,7 +25,7 @@
     <!-- 3. Google Analytics Config -->
     <script>
         window.dataLayer = window.dataLayer || [];
-        function gtag(){dataLayer.push(arguments);}
+        function gtag() { dataLayer.push(arguments); }
         gtag('js', new Date());
         gtag('config', '{{ GOOGLE_ANALYTICS_ID }}');
     </script>
@@ -41,16 +41,20 @@
     </script>
     <title>{% block title %}TrackMyRupee - Know Exactly Where Every Rupee Goes{% endblock %}</title>
     <link rel="canonical" href="{{ request.scheme }}://{{ request.get_host }}{{ request.path }}">
-    
+
     {% block meta_tags %}
-    <meta name="description" content="Turn financial chaos into clarity. TrackMyRupee gives you a precision dashboard to visualize your spending, spot trends, and master your monthly budget—all in one place.">
-    <meta name="keywords" content="TrackMyRupee, finance, expense tracker, budget, personal finance, money management, django, rupee tracker">
+    <meta name="description"
+        content="Turn financial chaos into clarity. TrackMyRupee gives you a precision dashboard to visualize your spending, spot trends, and master your monthly budget—all in one place.">
+    <meta name="keywords"
+        content="TrackMyRupee, finance, expense tracker, budget, personal finance, money management, django, rupee tracker">
     <meta name="author" content="Omkar Pathak">
 
     <!-- Google Fonts (Unifying with Landing Page) -->
-    <link href="https://fonts.googleapis.com/css2?family=Clash+Display:wght@400;500;600;700&family=Outfit:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Clash+Display:wght@400;500;600;700&family=Outfit:wght@300;400;500;700&display=swap"
+        rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    
+
     <!-- PWA -->
     <link rel="manifest" href="{% url 'manifest' %}">
     <meta name="theme-color" content="#023047">
@@ -75,13 +79,14 @@
     </script>
     <meta property="og:url" content="{{ request.build_absolute_uri }}">
     <meta property="og:title" content="TrackMyRupee - Know Exactly Where Every Rupee Goes">
-    <meta property="og:description" content="Stop Guessing. Start Growing. Track your expenses and master your budget with TrackMyRupee.">
+    <meta property="og:description"
+        content="Stop Guessing. Start Growing. Track your expenses and master your budget with TrackMyRupee.">
     {% endblock %}
-    
+
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             const enablePushBtn = document.getElementById('enable-push-btn');
-            
+
             if (enablePushBtn) {
                 // Check if already subscribed
                 if (Notification.permission === 'granted') {
@@ -91,10 +96,10 @@
                     enablePushBtn.disabled = true;
                 }
 
-                enablePushBtn.addEventListener('click', function() {
+                enablePushBtn.addEventListener('click', function () {
                     const btn = this;
                     btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>';
-                    
+
                     // Simple wrapper to engage user interaction for permission
                     Notification.requestPermission().then(permission => {
                         if (permission === 'granted') {
@@ -102,31 +107,31 @@
                             // because it involves VAPID key conversion and fetch calls.
                             // However, since we loaded 'webpush_notifications', we can trigger the native behavior or 
                             // redirect the user to a page, OR we can implement the subscription manual logic here.
-                            
+
                             // Let's use the provided 'webpush_button' logic but invoke it via JS if possible,
                             // OR simply reload the page effectively if the template had the button.
                             // But better: manual subscription logic below.
-                             subscribeUser();
+                            subscribeUser();
                         } else {
                             btn.innerHTML = 'Denied';
                         }
                     });
                 });
             }
-            
+
             function subscribeUser() {
-                 navigator.serviceWorker.ready.then(function(registration) {
+                navigator.serviceWorker.ready.then(function (registration) {
                     const vapidPublicKey = "{{ vapid_public_key }}";
                     if (!vapidPublicKey) {
                         console.error("No VAPID Key found");
                         return;
                     }
                     const convertedVapidKey = urlBase64ToUint8Array(vapidPublicKey);
-                    
+
                     registration.pushManager.subscribe({
                         userVisibleOnly: true,
                         applicationServerKey: convertedVapidKey
-                    }).then(function(subscription) {
+                    }).then(function (subscription) {
                         // Send subscription to backend
                         fetch("{% url 'save_webpush_info' %}", {
                             method: 'POST',
@@ -140,30 +145,30 @@
                                 browser: navigator.userAgent
                             }),
                         }).then(response => {
-                             if (response.ok) {
-                                 const btn = document.getElementById('enable-push-btn');
-                                 if(btn) {
+                            if (response.ok) {
+                                const btn = document.getElementById('enable-push-btn');
+                                if (btn) {
                                     btn.innerHTML = '<i class="bi bi-check-circle-fill me-1 text-success"></i> Enabled';
                                     btn.classList.remove('btn-outline-primary');
                                     btn.classList.add('btn-light', 'text-success');
-                                 }
-                             }
+                                }
+                            }
                         });
-                    }).catch(function(e) {
-                         console.error('Subscription failed', e);
+                    }).catch(function (e) {
+                        console.error('Subscription failed', e);
                     });
                 });
             }
-            
+
             function urlBase64ToUint8Array(base64String) {
                 const padding = '='.repeat((4 - base64String.length % 4) % 4);
                 const base64 = (base64String + padding)
                     .replace(/\-/g, '+')
                     .replace(/_/g, '/');
-            
+
                 const rawData = window.atob(base64);
                 const outputArray = new Uint8Array(rawData.length);
-            
+
                 for (let i = 0; i < rawData.length; ++i) {
                     outputArray[i] = rawData.charCodeAt(i);
                 }
@@ -176,7 +181,8 @@
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:url" content="{{ request.build_absolute_uri }}">
     <meta name="twitter:title" content="TrackMyRupee- Know Exactly Where Every Rupee Goes">
-    <meta name="twitter:description" content="Stop Guessing. Start Growing. Track your expenses and master your budget with TrackMyRupee.">
+    <meta name="twitter:description"
+        content="Stop Guessing. Start Growing. Track your expenses and master your budget with TrackMyRupee.">
     <meta name="twitter:image" content="https://trackmyrupee.com/static/img/og-preview.png">
 
     <!-- Bootstrap 5 CSS -->
@@ -187,10 +193,11 @@
 
     {% load static %}
     <link rel="stylesheet" href="{% static 'style.css' %}?v=1.8">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-multiselect/1.1.2/css/bootstrap-multiselect.min.css">
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-multiselect/1.1.2/css/bootstrap-multiselect.min.css">
     <style>
         /* Bootstrap Multiselect Premium Customization */
-        
+
         /* The main button that looks like a select input */
         .multiselect.dropdown-toggle {
             display: flex;
@@ -207,11 +214,12 @@
             text-align: left;
             overflow: hidden;
             transition: border-color 0.2s ease, box-shadow 0.2s ease;
-            font-size: 0.875rem; /* Match btn-sm */
+            font-size: 0.875rem;
+            /* Match btn-sm */
         }
 
-        .multiselect.dropdown-toggle:focus, 
-        .multiselect.dropdown-toggle:active, 
+        .multiselect.dropdown-toggle:focus,
+        .multiselect.dropdown-toggle:active,
         .btn-group.show .multiselect.dropdown-toggle {
             border-color: #00f2fe !important;
             box-shadow: 0 0 0 0.25rem rgba(0, 242, 254, 0.15) !important;
@@ -232,10 +240,12 @@
             background-color: var(--bs-body-bg) !important;
             border: 1px solid var(--bs-border-color) !important;
             padding: 0.5rem 0;
-            padding-left: 0 !important; /* Reset default UL padding */
+            padding-left: 0 !important;
+            /* Reset default UL padding */
             min-width: 100%;
             z-index: 1050;
-            max-height: 350px; /* Approx 10 items */
+            max-height: 350px;
+            /* Approx 10 items */
             overflow-y: auto;
             -webkit-overflow-scrolling: touch;
         }
@@ -243,17 +253,25 @@
         /* Universal Fade In Animation */
         .fade-in {
             animation: fadeIn 0.8s ease-out forwards;
-            opacity: 0; 
+            opacity: 0;
         }
+
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
 
 
         /* Dropdown Items */
-        .multiselect-container > li > a {
+        .multiselect-container>li>a {
             padding: 8px 16px;
             color: var(--bs-body-color);
             text-decoration: none;
@@ -262,18 +280,18 @@
             transition: background-color 0.2s;
         }
 
-        .multiselect-container > li > a:hover {
+        .multiselect-container>li>a:hover {
             background-color: rgba(0, 242, 254, 0.05);
             color: var(--bs-body-color);
         }
 
-        .multiselect-container > li.active > a {
+        .multiselect-container>li.active>a {
             background-color: rgba(0, 242, 254, 0.1);
             color: var(--bs-body-color);
         }
 
         /* Custom Checkboxes inside the dropdown */
-        
+
         /* Search Box Alignment Fix */
         .multiselect-container .multiselect-filter {
             display: flex !important;
@@ -304,12 +322,16 @@
             width: 100% !important;
             flex: 1 1 auto !important;
             margin: 0 !important;
-            height: 30px !important; /* Compact height */
-            padding: 0 12px !important; /* Text padding only */
+            height: 30px !important;
+            /* Compact height */
+            padding: 0 12px !important;
+            /* Text padding only */
             border-radius: 0 !important;
             font-size: 0.875rem !important;
-            border: none !important; /* NO BORDER */
-            background: transparent !important; /* NO BACKGROUND */
+            border: none !important;
+            /* NO BORDER */
+            background: transparent !important;
+            /* NO BACKGROUND */
             color: var(--bs-body-color) !important;
             box-sizing: border-box !important;
             box-shadow: none !important;
@@ -317,7 +339,8 @@
 
         .multiselect-container .multiselect-filter input:focus {
             outline: 0 !important;
-            box-shadow: none !important; /* No glow, clean look */
+            box-shadow: none !important;
+            /* No glow, clean look */
         }
 
         /* Checkbox styling continued */
@@ -362,7 +385,6 @@
             margin: 0;
             cursor: pointer;
         }
-        
     </style>
 
     <meta name="theme-color" content="#023047">
@@ -371,7 +393,7 @@
     <meta name="apple-mobile-web-app-title" content="TrackMyRupee">
     <link rel="apple-touch-icon" sizes="180x180" href="{% static 'img/pwa-icon-512.png' %}">
     <link rel="apple-touch-startup-image" href="{% static 'img/pwa-icon-512.png' %}">
-    
+
     <script src="{% static 'js/ios-pwa-splash.js' %}"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
@@ -379,14 +401,16 @@
 
 <body class="d-flex flex-column min-vh-100">
     {% if request.user.username == 'demo' %}
-    <div class="alert alert-warning text-center fw-bold m-0 rounded-0 py-2 small shadow-sm position-relative z-3 d-flex justify-content-center align-items-center gap-2" role="alert">
+    <div class="alert alert-warning text-center fw-bold m-0 rounded-0 py-2 small shadow-sm position-relative z-3 d-flex justify-content-center align-items-center gap-2"
+        role="alert">
         <span><i class="bi bi-exclamation-triangle-fill me-1"></i> DEMO MODE: Read-only access.</span>
         <span class="opacity-50">|</span>
         <a href="{% url 'demo_signup' %}" class="text-reset text-decoration-underline">Create Account</a>
         <span class="opacity-50">|</span>
         <form action="{% url 'account_logout' %}" method="post" class="d-inline">
             {% csrf_token %}
-            <button type="submit" class="btn btn-link p-0 align-baseline text-reset text-decoration-underline fw-bold" style="font-size: inherit;">
+            <button type="submit" class="btn btn-link p-0 align-baseline text-reset text-decoration-underline fw-bold"
+                style="font-size: inherit;">
                 Exit Demo
             </button>
         </form>
@@ -407,12 +431,14 @@
                     </div>
                     <h5 class="fw-bold mb-3">Install TrackMyRupee</h5>
                     <p class="text-muted mb-4">Install this app on your iPhone for the best experience.</p>
-                    
-                    <div class="d-flex align-items-center justify-content-center gap-2 mb-3 text-start bg-body-tertiary p-3 rounded">
+
+                    <div
+                        class="d-flex align-items-center justify-content-center gap-2 mb-3 text-start bg-body-tertiary p-3 rounded">
                         <i class="bi bi-share fs-4 text-primary"></i>
                         <span>1. Tap the <strong>Share</strong> button</span>
                     </div>
-                    <div class="d-flex align-items-center justify-content-center gap-2 text-start bg-body-tertiary p-3 rounded">
+                    <div
+                        class="d-flex align-items-center justify-content-center gap-2 text-start bg-body-tertiary p-3 rounded">
                         <i class="bi bi-plus-square fs-4 text-primary"></i>
                         <span>2. Scroll down and tap <strong>Add to Home Screen</strong></span>
                     </div>
@@ -422,17 +448,20 @@
     </div>
 
     <!-- PWA Install Prompt Banner -->
-    <div id="installAppContainer" class="position-fixed bottom-0 start-50 translate-middle-x mb-4 p-3 bg-white rounded shadow-lg border" style="display: none; z-index: 10000; width: 90%; max-width: 400px;">
-        <div class="d-flex align-items-center justify-content-between">
-            <div class="d-flex align-items-center">
-                <img src="{% static 'img/pwa-icon-512.png' %}" alt="App Icon" class="rounded me-3" width="40" height="40">
+    <div id="installAppContainer"
+        class="position-fixed bottom-0 start-50 translate-middle-x mb-4 p-3 bg-body rounded shadow-lg border"
+        style="display: none; z-index: 10000; width: 90%; max-width: 400px;">
+        <div class="d-flex align-items-center gap-3">
+            <div class="d-flex align-items-center flex-grow-1">
+                <img src="{% static 'img/pwa-icon-512.png' %}" alt="App Icon" class="rounded me-3" width="40"
+                    height="40">
                 <div>
-                    <h6 class="mb-0 fw-bold text-dark">Install App</h6>
+                    <h6 class="mb-0 fw-bold">Install App</h6>
                     <small class="text-muted">Add to Home Screen</small>
                 </div>
             </div>
             <button id="installAppBtn" class="btn btn-primary btn-sm rounded-pill px-3">Install</button>
-            <button type="button" class="btn-close ms-2" onclick="dismissPWAInstall()"></button>
+            <button type="button" class="btn-close" onclick="dismissPWAInstall()"></button>
         </div>
     </div>
 
@@ -458,10 +487,10 @@
                 installContainer.style.display = 'block';
             }
         }
-        
+
         function dismissPWAInstall() {
-             if(installContainer) installContainer.style.display = 'none';
-             localStorage.setItem('pwaInstallDismissed', 'true');
+            if (installContainer) installContainer.style.display = 'none';
+            localStorage.setItem('pwaInstallDismissed', 'true');
         }
 
         if (installBtn) {
@@ -482,9 +511,9 @@
         }
 
         window.addEventListener('appinstalled', () => {
-             if (installContainer) installContainer.style.display = 'none';
-             deferredPrompt = null;
-             console.log('PWA was installed');
+            if (installContainer) installContainer.style.display = 'none';
+            deferredPrompt = null;
+            console.log('PWA was installed');
         });
     </script>
 
@@ -498,13 +527,16 @@
                 <!-- Brand & Description -->
                 <div class="col-lg-4 mb-4 mb-lg-0">
                     <a href="/" class="d-flex align-items-center gap-2 mb-3 text-decoration-none">
-                        <img src="{% static 'img/logo.svg' %}" alt="TMR" width="32" height="32" class="d-inline-block align-text-top rounded-3">
+                        <img src="{% static 'img/logo.svg' %}" alt="TMR" width="32" height="32"
+                            class="d-inline-block align-text-top rounded-3">
                         <span class="fs-4 fw-bold text-body">TrackMyRupee</span>
                     </a>
                     <p class="text-muted small mb-4">
-                        Turn financial chaos into clarity. TrackMyRupee gives you a precision dashboard to visualize your spending, spot trends, and master your monthly budget.
+                        Turn financial chaos into clarity. TrackMyRupee gives you a precision dashboard to visualize
+                        your spending, spot trends, and master your monthly budget.
                     </p>
-                    <a href="https://rzp.io/rzp/AP7kBG2" target="_blank" class="btn btn-primary btn-sm rounded-pill px-3 shadow-sm">
+                    <a href="https://rzp.io/rzp/AP7kBG2" target="_blank"
+                        class="btn btn-primary btn-sm rounded-pill px-3 shadow-sm">
                         <i class="bi bi-heart-fill me-1 text-white"></i> Support Us
                     </a>
                 </div>
@@ -512,15 +544,19 @@
                 <!-- Links Columns -->
                 <div class="col-lg-8">
                     <div class="row g-4 justify-content-lg-end">
-                        
+
                         <!-- Product Column -->
                         <div class="col-6 col-sm-4">
                             <h5 class="fw-bold mb-3 small text-uppercase tracking-wider">Product</h5>
                             <ul class="list-unstyled mb-0 d-flex flex-column gap-2">
-                                <li><a href="{% if not user.is_authenticated %}{% url 'landing' %}#features{% else %}{% url 'home' %}{% endif %}" class="text-decoration-none text-muted small hover-primary">Features</a></li>
-                                <li><a href="{% if not user.is_authenticated %}{% url 'landing' %}#pricing{% else %}{% url 'pricing' %}{% endif %}" class="text-decoration-none text-muted small hover-primary">Pricing</a></li>
-                                <li><a href="{% url 'blog_list' %}" class="text-decoration-none text-muted small hover-primary">Blog</a></li>
-                                <li><a href="{% url 'demo_login' %}" class="text-decoration-none text-muted small hover-primary">Live Demo</a></li>
+                                <li><a href="{% if not user.is_authenticated %}{% url 'landing' %}#features{% else %}{% url 'home' %}{% endif %}"
+                                        class="text-decoration-none text-muted small hover-primary">Features</a></li>
+                                <li><a href="{% if not user.is_authenticated %}{% url 'landing' %}#pricing{% else %}{% url 'pricing' %}{% endif %}"
+                                        class="text-decoration-none text-muted small hover-primary">Pricing</a></li>
+                                <li><a href="{% url 'blog_list' %}"
+                                        class="text-decoration-none text-muted small hover-primary">Blog</a></li>
+                                <li><a href="{% url 'demo_login' %}"
+                                        class="text-decoration-none text-muted small hover-primary">Live Demo</a></li>
                             </ul>
                         </div>
 
@@ -528,8 +564,10 @@
                         <div class="col-6 col-sm-4">
                             <h5 class="fw-bold mb-3 small text-uppercase tracking-wider">Company</h5>
                             <ul class="list-unstyled mb-0 d-flex flex-column gap-2">
-                                <li><a href="{% url 'about' %}" class="text-decoration-none text-muted small hover-primary">About</a></li>
-                                <li><a href="{% url 'contact' %}" class="text-decoration-none text-muted small hover-primary">Contact</a></li>
+                                <li><a href="{% url 'about' %}"
+                                        class="text-decoration-none text-muted small hover-primary">About</a></li>
+                                <li><a href="{% url 'contact' %}"
+                                        class="text-decoration-none text-muted small hover-primary">Contact</a></li>
                                 <!-- <li><a href="#" class="text-decoration-none text-muted small hover-primary">FAQs</a></li> -->
                             </ul>
                         </div>
@@ -538,9 +576,15 @@
                         <div class="col-6 col-sm-4">
                             <h5 class="fw-bold mb-3 small text-uppercase tracking-wider">Legal</h5>
                             <ul class="list-unstyled mb-0 d-flex flex-column gap-2">
-                                <li><a href="{% url 'privacy-policy' %}" class="text-decoration-none text-muted small hover-primary">Privacy Policy</a></li>
-                                <li><a href="{% url 'terms-of-service' %}" class="text-decoration-none text-muted small hover-primary">Terms of Service</a></li>
-                                <li><a href="{% url 'refund-policy' %}" class="text-decoration-none text-muted small hover-primary">Refund & Cancellation</a></li>
+                                <li><a href="{% url 'privacy-policy' %}"
+                                        class="text-decoration-none text-muted small hover-primary">Privacy Policy</a>
+                                </li>
+                                <li><a href="{% url 'terms-of-service' %}"
+                                        class="text-decoration-none text-muted small hover-primary">Terms of Service</a>
+                                </li>
+                                <li><a href="{% url 'refund-policy' %}"
+                                        class="text-decoration-none text-muted small hover-primary">Refund &
+                                        Cancellation</a></li>
                             </ul>
                         </div>
                     </div>
@@ -554,7 +598,7 @@
                     <p class="text-muted small mb-0">&copy; {% now "Y" %} TrackMyRupee. All rights reserved.</p>
                 </div>
                 <div class="col-md-6 text-center text-md-end">
-                   <!-- Social links could go here -->
+                    <!-- Social links could go here -->
                 </div>
             </div>
         </div>
@@ -581,22 +625,22 @@
             </div>
         </div>
     </div>
-    
+
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             var deleteModal = document.getElementById('deleteModal');
             if (deleteModal) {
-                deleteModal.addEventListener('show.bs.modal', function(event) {
+                deleteModal.addEventListener('show.bs.modal', function (event) {
                     // Button that triggered the modal
                     var button = event.relatedTarget;
                     // Extract info from data-attributes
                     var url = button.getAttribute('data-url');
                     var message = button.getAttribute('data-message');
-                    
+
                     // Update the modal's content.
                     var form = deleteModal.querySelector('#deleteForm');
                     form.action = url;
-                    
+
                     var modalBody = deleteModal.querySelector('#deleteModalBody');
                     if (message) {
                         modalBody.textContent = message;
@@ -611,7 +655,7 @@
     <!-- Button Loader Utility -->
     <script>
         // Set button to loading state
-        window.setButtonLoading = function(button, text = 'Processing...') {
+        window.setButtonLoading = function (button, text = 'Processing...') {
             if (!button) return;
             // Save original content
             if (!button.getAttribute('data-original-content')) {
@@ -619,17 +663,17 @@
             }
             // Create spinner
             const spinner = '<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>';
-            
+
             // If it's an icon-only button (empty or just whitespace text), don't add text
             const hasText = button.textContent.trim().length > 0;
-            
+
             // Set width to prevent jumping (optional, but good)
             button.style.width = getComputedStyle(button).width;
-            
+
             button.classList.add('disabled'); // Bootstrap disabled style
             // For links, we can't use .disabled property effectively for click prevention in all cases, but CSS pointer-events helps
-            button.style.pointerEvents = 'none'; 
-            
+            button.style.pointerEvents = 'none';
+
             if (hasText) {
                 button.innerHTML = spinner + text;
             } else {
@@ -638,16 +682,16 @@
         };
 
         // Global Form Submit Handler (covers Save & Delete buttons in forms)
-        document.addEventListener('submit', function(e) {
+        document.addEventListener('submit', function (e) {
             const form = e.target;
             // Find valid submit button (exclude disabled ones to avoid double triggering if logic exists)
-            const submitBtn = form.querySelector('button[type="submit"]:not(.no-loader)'); 
+            const submitBtn = form.querySelector('button[type="submit"]:not(.no-loader)');
             if (submitBtn && !e.defaultPrevented) {
                 // If it's a delete button, use "Deleting..."
                 const isDelete = submitBtn.classList.contains('btn-danger') || submitBtn.textContent.toLowerCase().includes('delete');
                 const isLogin = submitBtn.textContent.toLowerCase().includes('sign in') || submitBtn.textContent.toLowerCase().includes('login');
                 const isLogout = submitBtn.textContent.toLowerCase().includes('logout');
-                
+
                 let loadingText = 'Saving';
                 if (isDelete) {
                     loadingText = 'Deleting';
@@ -658,16 +702,16 @@
                 } else if (submitBtn.textContent.toLowerCase().includes('continue')) {
                     loadingText = 'Signing in';
                 }
-                
+
                 setButtonLoading(submitBtn, loadingText);
             }
         });
     </script>
     <script>
         // Reset buttons on page show (bfcache restoration)
-        window.addEventListener('pageshow', function(event) {
+        window.addEventListener('pageshow', function (event) {
             // Restore all buttons that were put into loading state
-            document.querySelectorAll('button[data-original-content]').forEach(function(btn) {
+            document.querySelectorAll('button[data-original-content]').forEach(function (btn) {
                 btn.innerHTML = btn.getAttribute('data-original-content');
                 btn.classList.remove('disabled');
                 btn.style.pointerEvents = '';
@@ -679,8 +723,9 @@
     {% block modals %}{% endblock %}
 
     <!-- Global Loader Overlay -->
-    <div id="page-loader" class="position-fixed top-0 start-0 w-100 h-100 d-none justify-content-center align-items-center" 
-         style="background: rgba(var(--bs-body-bg-rgb), 0.8); z-index: 20000; backdrop-filter: blur(2px);">
+    <div id="page-loader"
+        class="position-fixed top-0 start-0 w-100 h-100 d-none justify-content-center align-items-center"
+        style="background: rgba(var(--bs-body-bg-rgb), 0.8); z-index: 20000; backdrop-filter: blur(2px);">
         <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
             <span class="visually-hidden">Loading...</span>
         </div>
@@ -690,20 +735,20 @@
     <script>
         const loader = document.getElementById('page-loader');
 
-        window.showLoader = function() {
+        window.showLoader = function () {
             if (loader) loader.classList.remove('d-none');
             if (loader) loader.classList.add('d-flex');
         };
 
-        window.hideLoader = function() {
+        window.hideLoader = function () {
             if (loader) loader.classList.remove('d-flex');
             if (loader) loader.classList.add('d-none');
         };
 
         // 1. Handle Programmatic Form Submits
-        (function() {
+        (function () {
             const originalSubmit = HTMLFormElement.prototype.submit;
-            HTMLFormElement.prototype.submit = function() {
+            HTMLFormElement.prototype.submit = function () {
                 if (!this.classList.contains('no-loader') && this.target !== '_blank') {
                     showLoader();
                 }
@@ -712,7 +757,7 @@
         })();
 
         // 2. Handle Standard Form Submits
-        document.addEventListener('submit', function(e) {
+        document.addEventListener('submit', function (e) {
             if (!e.defaultPrevented) {
                 const form = e.target;
                 if (!form.classList.contains('no-loader') && form.target !== '_blank') {
@@ -722,17 +767,17 @@
         });
 
         // 3. Handle Link Clicks
-        document.addEventListener('click', function(e) {
+        document.addEventListener('click', function (e) {
             const link = e.target.closest('a');
-            
+
             if (!link || !link.href) return;
-            
+
             // Ignore modifiers and new tabs
             if (e.ctrlKey || e.metaKey || e.shiftKey || e.altKey || link.target === '_blank') return;
-            
+
             // Ignore download links
             if (link.hasAttribute('download')) return;
-            
+
             // Ignore explicit no-loader
             if (link.classList.contains('no-loader')) return;
 
@@ -740,14 +785,14 @@
             if (link.hasAttribute('data-bs-toggle') || link.hasAttribute('data-bs-dismiss')) return;
 
             // Ignore standard protocols that don't unload page
-            if (link.href.startsWith('javascript:') || 
-                link.href.startsWith('mailto:') || 
+            if (link.href.startsWith('javascript:') ||
+                link.href.startsWith('mailto:') ||
                 link.href.startsWith('tel:')) return;
 
             // Robust Hash Check
             const hrefAttr = link.getAttribute('href');
             if (!hrefAttr || hrefAttr === '#') return; // Empty or just hash
-            
+
             // Check for in-page anchors
             if (hrefAttr.startsWith('#')) {
                 return;
@@ -757,10 +802,10 @@
             // e.g. /path/to/page#section vs /path/to/page
             try {
                 const url = new URL(link.href);
-                const isSamePage = (url.origin === location.origin) && 
-                                   (url.pathname === location.pathname) && 
-                                   (url.search === location.search);
-                
+                const isSamePage = (url.origin === location.origin) &&
+                    (url.pathname === location.pathname) &&
+                    (url.search === location.search);
+
                 if (isSamePage && url.hash) {
                     return;
                 }
@@ -773,7 +818,7 @@
         });
 
         // Hide on Back Button (bfcache)
-        window.addEventListener('pageshow', function(event) {
+        window.addEventListener('pageshow', function (event) {
             hideLoader();
         });
     </script>
@@ -831,7 +876,7 @@
                         e.preventDefault(); // Prevent link navigation if it's an anchor
                         const currentTheme = document.documentElement.getAttribute('data-bs-theme');
                         const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-                        
+
                         setStoredTheme(newTheme);
                         setTheme(newTheme);
                         updateIcon(newTheme);
@@ -844,8 +889,9 @@
     <!-- Floating Action Button (Mobile Only) -->
     <div class="position-fixed bottom-0 end-0 p-4 d-md-none" style="z-index: 1050;">
         <div class="dropdown">
-            <button id="global-fab" class="btn btn-primary btn-lg rounded-circle shadow-lg d-flex align-items-center justify-content-center" 
-                    style="width: 60px; height: 60px;" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <button id="global-fab"
+                class="btn btn-primary btn-lg rounded-circle shadow-lg d-flex align-items-center justify-content-center"
+                style="width: 60px; height: 60px;" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                 <i class="bi bi-plus-lg fs-2"></i>
             </button>
             <ul class="dropdown-menu dropdown-menu-end shadow border-0 mb-2">
@@ -868,29 +914,31 @@
     {% if messages %}
     <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 11000;">
         {% for message in messages %}
-        <div class="toast align-items-center text-bg-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} border-0 shadow-lg mb-2" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast align-items-center text-bg-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} border-0 shadow-lg mb-2"
+            role="alert" aria-live="assertive" aria-atomic="true">
             <div class="d-flex">
                 <div class="toast-body">
                     {% if message.tags == 'error' %}
-                        <i class="bi bi-exclamation-circle-fill me-2"></i>
+                    <i class="bi bi-exclamation-circle-fill me-2"></i>
                     {% elif message.tags == 'success' %}
-                        <i class="bi bi-check-circle-fill me-2"></i>
+                    <i class="bi bi-check-circle-fill me-2"></i>
                     {% endif %}
                     {{ message }}
                 </div>
-                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"
+                    aria-label="Close"></button>
             </div>
         </div>
         {% endfor %}
     </div>
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             var toasts = document.querySelectorAll('.toast');
-            toasts.forEach(function(toastEl) {
+            toasts.forEach(function (toastEl) {
                 // Determine if this is a donation toast (which has manual control) or a message toast
                 if (!toastEl.id || toastEl.id !== 'donationToast') {
-                   var toast = new bootstrap.Toast(toastEl, { delay: 5000 });
-                   toast.show();
+                    var toast = new bootstrap.Toast(toastEl, { delay: 5000 });
+                    toast.show();
                 }
             });
         });
@@ -905,7 +953,7 @@
         // Global Bootstrap Multiselect Initialization
         // Usage: Add class 'django-multi-select' to any <select multiple>
         const initGlobalMultiselects = () => {
-            $('.django-multi-select').each(function() {
+            $('.django-multi-select').each(function () {
                 const placeholder = $(this).attr('placeholder') || 'Select...';
                 $(this).multiselect({
                     buttonWidth: '100%',
@@ -927,20 +975,23 @@
 
 
 
-        $(document).ready(function() {
+        $(document).ready(function () {
             initGlobalMultiselects();
         });
     </script>
     <!-- Donation Notification Toast -->
     <div class="toast-container position-fixed bottom-0 start-0 p-3" style="z-index: 1100;">
-        <div id="donationToast" class="toast border-0 shadow-lg" role="alert" aria-live="assertive" aria-atomic="true" data-bs-autohide="false">
+        <div id="donationToast" class="toast border-0 shadow-lg" role="alert" aria-live="assertive" aria-atomic="true"
+            data-bs-autohide="false">
             <div class="toast-header bg-primary text-white">
                 <i class="bi bi-heart-fill me-2"></i>
                 <strong class="me-auto">Support TrackMyRupee</strong>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"></button>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"
+                    aria-label="Close"></button>
             </div>
             <div class="toast-body bg-body-tertiary">
-                <p class="mb-2">If TrackMyRupee helped you understand your money better, consider supporting its development.</p>
+                <p class="mb-2">If TrackMyRupee helped you understand your money better, consider supporting its
+                    development.</p>
                 <a href="https://rzp.io/rzp/AP7kBG2" target="_blank" class="btn btn-primary btn-sm w-100">
                     <i class="bi bi-box-arrow-up-right me-1"></i> Donate Now
                 </a>
@@ -949,7 +1000,7 @@
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             const NAG_INTERVAL = 20 * 60 * 1000; // 20 minutes
             const toastElement = document.getElementById('donationToast');
             const donationToast = new bootstrap.Toast(toastElement);
@@ -966,17 +1017,17 @@
 
             // check every minute
             setInterval(showDonationNag, 60 * 1000);
-            
+
             // Initial check after 10 seconds
             setTimeout(showDonationNag, 10000);
         });
     </script>
 
     <!-- Driver.js for Tutorial -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/driver.js@1.0.1/dist/driver.css"/>
-    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/driver.js@1.0.1/dist/driver.css" />
+
     {% include 'components/cookie_consent.html' %}
-    
+
     {% block scripts %}{% endblock %}
 
     <script src="https://cdn.jsdelivr.net/npm/driver.js@1.0.1/dist/driver.js.iife.js"></script>
@@ -984,13 +1035,13 @@
     <script>
         // Set the URL for marking tutorial as complete globally for tutorial.js
         window.tutorialCompleteUrl = "{% url 'complete-tutorial' %}";
-        
+
         {% if show_tutorial %}
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             setTimeout(() => {
                 const mode = window.isOnboarding ? 'onboarding' : 'standard';
                 startTour(mode);
-            }, 1000); 
+            }, 1000);
         });
         {% endif %}
     </script>
