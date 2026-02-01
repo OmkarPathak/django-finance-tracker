@@ -279,6 +279,21 @@
                     }
                 });
             });
+
+            // Handle Copy Expense Button
+            const copyButtons = document.querySelectorAll('.copy-expense-btn');
+            copyButtons.forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    const expenseId = this.dataset.expenseId;
+                    
+                    // Show loader and redirect to create form with copy parameter
+                    showLoader();
+                    window.location.href = `/expenses/add/?copy=${expenseId}`;
+                });
+            });
         });
     </script>
     
@@ -393,6 +408,11 @@
                             </td>
                             <td class="text-end pe-4 text-nowrap" onclick="event.stopPropagation()">
                                 <div class="hstack gap-3 justify-content-end">
+                                    <button type="button" class="btn btn-sm btn-link text-decoration-none p-0 d-inline-flex align-items-center copy-expense-btn" 
+                                            title="Copy Transaction" 
+                                            data-expense-id="{{ expense.pk }}">
+                                        <i class="bi bi-copy text-success"></i>
+                                    </button>
                                     <a href="{% url 'expense-edit' expense.pk %}?next={{ request.get_full_path|urlencode }}" class="btn btn-sm btn-link text-decoration-none p-0 d-inline-flex align-items-center" title="Edit" onclick="setButtonLoading(this, '')">
                                         <i class="bi bi-pencil-square text-primary"></i>
                                     </a>

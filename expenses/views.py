@@ -1377,12 +1377,79 @@ class ExpenseCreateView(LoginRequiredMixin, generic.TemplateView):
                 request, self.template_name, {"formset": formset, "next_url": next_url}
             )
         else:
+            # Check if this is a copy operation
+            copy_expense_id = request.GET.get("copy")
+            
+            # Prepare initial data if copying
+            initial_data = {}
+            copy_shared_data = None
+            
+            if copy_expense_id:
+                try:
+                    # Fetch the expense to copy
+                    expense = get_object_or_404(Expense, pk=copy_expense_id, user=request.user)
+                    
+                    initial_data = {
+                        "date": expense.date,
+                        "amount": expense.amount,
+                        "description": f"{expense.description} (Copy)",
+                        "category": expense.category,
+                        "payment_method": expense.payment_method,
+                    }
+                    
+                    # Add cashback data if present
+                    if expense.has_cashback:
+                        initial_data["has_cashback"] = True
+                        initial_data["cashback_type"] = expense.cashback_type
+                        initial_data["cashback_value"] = expense.cashback_value
+                    
+                    # Handle shared expense data
+                    if hasattr(expense, 'shared_details') and expense.shared_details:
+                        shared = expense.shared_details
+                        participants_data = []
+                        
+                        for participant in shared.participants.all():
+                            # Find the share for this participant
+                            share = shared.shares.filter(participant=participant).first()
+                            participants_data.append({
+                                "id": participant.id,
+                                "name": participant.name,
+                                "is_user": participant.is_user,
+                                "is_payer": participant.is_payer,
+                                "amount": str(share.amount) if share else "0"
+                            })
+                        
+                        # Find payer
+                        payer = shared.participants.filter(is_payer=True).first()
+                        
+                        copy_shared_data = {
+                            "participants_json": json.dumps(participants_data),
+                            "payer_id": payer.name if payer else "You",
+                        }
+                        
+                        # Set initial values for hidden fields
+                        initial_data["participants_json"] = copy_shared_data["participants_json"]
+                        initial_data["payer_id"] = copy_shared_data["payer_id"]
+                        initial_data["expense_type"] = "shared"
+                    
+                except Expense.DoesNotExist:
+                    messages.error(request, "Expense not found.")
+            
             # Use single form for regular/shared expense entry
-            form = ExpenseForm(user=request.user)
+            form = ExpenseForm(user=request.user, initial=initial_data if copy_expense_id else None)
             next_url = request.GET.get("next", "")
-            return render(
-                request, self.template_name, {"form": form, "next_url": next_url}
-            )
+            
+            # Pass additional context
+            context = {
+                "form": form, 
+                "next_url": next_url,
+                "is_copy": bool(copy_expense_id),
+            }
+            
+            if copy_shared_data:
+                context["copy_shared_data"] = copy_shared_data
+            
+            return render(request, self.template_name, context)
 
     def post(self, request, *args, **kwargs):
         from django.db import transaction
