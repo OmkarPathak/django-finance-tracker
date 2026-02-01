@@ -1193,7 +1193,7 @@ def upload_view(request):
         except Exception as e:
             print(f"Error processing file: {e}")
             traceback.print_exc()
-                # Continue to render the upload page with error logged
+            # Continue to render the upload page with error logged
             pass
 
     # Context for year dropdown
@@ -1379,16 +1379,18 @@ class ExpenseCreateView(LoginRequiredMixin, generic.TemplateView):
         else:
             # Check if this is a copy operation
             copy_expense_id = request.GET.get("copy")
-            
+
             # Prepare initial data if copying
             initial_data = {}
             copy_shared_data = None
-            
+
             if copy_expense_id:
                 try:
                     # Fetch the expense to copy
-                    expense = get_object_or_404(Expense, pk=copy_expense_id, user=request.user)
-                    
+                    expense = get_object_or_404(
+                        Expense, pk=copy_expense_id, user=request.user
+                    )
+
                     initial_data = {
                         "date": expense.date,
                         "amount": expense.amount,
@@ -1396,59 +1398,67 @@ class ExpenseCreateView(LoginRequiredMixin, generic.TemplateView):
                         "category": expense.category,
                         "payment_method": expense.payment_method,
                     }
-                    
+
                     # Add cashback data if present
                     if expense.has_cashback:
                         initial_data["has_cashback"] = True
                         initial_data["cashback_type"] = expense.cashback_type
                         initial_data["cashback_value"] = expense.cashback_value
-                    
+
                     # Handle shared expense data
-                    if hasattr(expense, 'shared_details') and expense.shared_details:
+                    if hasattr(expense, "shared_details") and expense.shared_details:
                         shared = expense.shared_details
                         participants_data = []
-                        
+
                         for participant in shared.participants.all():
                             # Find the share for this participant
-                            share = shared.shares.filter(participant=participant).first()
-                            participants_data.append({
-                                "id": participant.id,
-                                "name": participant.name,
-                                "is_user": participant.is_user,
-                                "is_payer": participant.is_payer,
-                                "amount": str(share.amount) if share else "0"
-                            })
-                        
+                            share = shared.shares.filter(
+                                participant=participant
+                            ).first()
+                            participants_data.append(
+                                {
+                                    "id": participant.id,
+                                    "name": participant.name,
+                                    "is_user": participant.is_user,
+                                    "is_payer": participant.is_payer,
+                                    "amount": str(share.amount) if share else "0",
+                                }
+                            )
+
                         # Find payer
                         payer = shared.participants.filter(is_payer=True).first()
-                        
+
                         copy_shared_data = {
                             "participants_json": json.dumps(participants_data),
                             "payer_id": payer.name if payer else "You",
                         }
-                        
+
                         # Set initial values for hidden fields
-                        initial_data["participants_json"] = copy_shared_data["participants_json"]
+                        initial_data["participants_json"] = copy_shared_data[
+                            "participants_json"
+                        ]
                         initial_data["payer_id"] = copy_shared_data["payer_id"]
                         initial_data["expense_type"] = "shared"
-                    
+
                 except Expense.DoesNotExist:
                     messages.error(request, "Expense not found.")
-            
+
             # Use single form for regular/shared expense entry
-            form = ExpenseForm(user=request.user, initial=initial_data if copy_expense_id else None)
+            form = ExpenseForm(
+                user=request.user, initial=initial_data if copy_expense_id else None
+            )
             next_url = request.GET.get("next", "")
-            
+
             # Pass additional context
             context = {
-                "form": form, 
+                "form": form,
                 "next_url": next_url,
                 "is_copy": bool(copy_expense_id),
             }
-            
+
             if copy_shared_data:
                 context["copy_shared_data"] = copy_shared_data
-            
+
             return render(request, self.template_name, context)
 
     def post(self, request, *args, **kwargs):
@@ -1529,7 +1539,7 @@ class ExpenseCreateView(LoginRequiredMixin, generic.TemplateView):
                                         friend = None
                                         if not is_user:
                                             friend, _ = Friend.objects.get_or_create(
-                                                name=participant_name
+                                                user=request.user, name=participant_name
                                             )
 
                                         participant = (
@@ -1651,7 +1661,7 @@ class ExpenseCreateView(LoginRequiredMixin, generic.TemplateView):
                                     friend = None
                                     if not is_user:
                                         friend, _ = Friend.objects.get_or_create(
-                                            name=participant_name
+                                            user=request.user, name=participant_name
                                         )
 
                                     participant = (
@@ -1825,7 +1835,7 @@ class ExpenseUpdateView(LoginRequiredMixin, generic.UpdateView):
                             friend = None
                             if not is_user:
                                 friend, _ = Friend.objects.get_or_create(
-                                    name=participant_name
+                                    user=self.request.user, name=participant_name
                                 )
 
                             participant = SharedExpenseParticipant.objects.create(
@@ -3097,7 +3107,7 @@ class BalanceSummaryView(LoginRequiredMixin, TemplateView):
 
         # Get all friends for the user (for potential friend management)
         # Show ALL friends, not just those with transactions
-        context["all_friends"] = Friend.objects.all().order_by("name")
+        context["all_friends"] = Friend.objects.filter(user=user).order_by("name")
         context["friends_count"] = context["all_friends"].count()
 
         # Provide month and year options for filter dropdowns
@@ -3332,8 +3342,8 @@ def create_friend_ajax(request):
             if not name:
                 return JsonResponse({"success": False, "error": "Name is required"})
 
-            # Check if friend already exists
-            if Friend.objects.filter(name=name).exists():
+            # Check if friend already exists for this user
+            if Friend.objects.filter(user=request.user, name=name).exists():
                 return JsonResponse(
                     {
                         "success": False,
@@ -3341,8 +3351,9 @@ def create_friend_ajax(request):
                     }
                 )
 
-            # Create friend
+            # Create friend for current user
             friend = Friend.objects.create(
+                user=request.user,
                 name=name,
                 email=email if email else None,
                 phone=phone if phone else None,
@@ -3370,7 +3381,7 @@ def update_friend_ajax(request, pk):
     """AJAX endpoint to update an existing friend."""
     if request.method == "POST":
         try:
-            friend = get_object_or_404(Friend, pk=pk)
+            friend = get_object_or_404(Friend, pk=pk, user=request.user)
             data = json.loads(request.body)
 
             name = data.get("name", "").strip()
@@ -3380,8 +3391,12 @@ def update_friend_ajax(request, pk):
             if not name:
                 return JsonResponse({"success": False, "error": "Name is required"})
 
-            # Check if another friend has this name
-            if Friend.objects.filter(name=name).exclude(pk=pk).exists():
+            # Check if another friend of this user has this name
+            if (
+                Friend.objects.filter(user=request.user, name=name)
+                .exclude(pk=pk)
+                .exists()
+            ):
                 return JsonResponse(
                     {
                         "success": False,
@@ -3417,7 +3432,7 @@ def delete_friend_ajax(request, pk):
     """AJAX endpoint to delete a friend."""
     if request.method == "POST":
         try:
-            friend = get_object_or_404(Friend, pk=pk)
+            friend = get_object_or_404(Friend, pk=pk, user=request.user)
             friend_name = friend.name
 
             # Check if friend is used in any shared expenses
