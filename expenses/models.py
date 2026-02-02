@@ -34,6 +34,10 @@ class Expense(models.Model):
                 name='unique_expense'
             )
         ]
+        indexes = [
+            models.Index(fields=['user', 'category']),
+            models.Index(fields=['user', 'payment_method']),
+        ]
 
     def __str__(self):
         return f"{self.date} - {self.description} - {self.amount}"
@@ -80,6 +84,9 @@ class Income(models.Model):
                 fields=['user', 'date', 'amount', 'source'],
                 name='unique_income'
             )
+        ]
+        indexes = [
+            models.Index(fields=['user', 'source']),
         ]
 
     def __str__(self):

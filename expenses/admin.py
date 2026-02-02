@@ -4,6 +4,7 @@ from .models import Expense, Category, Income, RecurringTransaction, Notificatio
 @admin.register(Notification)
 class NotificationAdmin(admin.ModelAdmin):
     list_display = ('title', 'user', 'is_read', 'created_at', 'related_transaction')
+    list_select_related = ('user', 'related_transaction')
     list_filter = ('is_read', 'created_at', 'user')
     search_fields = ('title', 'message', 'user__username')
     ordering = ('-created_at',)
@@ -11,6 +12,7 @@ class NotificationAdmin(admin.ModelAdmin):
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
     list_display = ('name', 'limit', 'user')
+    list_select_related = ('user',)
     list_filter = ('user',)
     search_fields = ('name',)
 
@@ -18,6 +20,7 @@ class CategoryAdmin(admin.ModelAdmin):
 @admin.register(Expense)
 class ExpenseAdmin(admin.ModelAdmin):
     list_display = ('date', 'description', 'category', 'amount', 'user')
+    list_select_related = ('user',)
     list_filter = ('category', 'date', 'user')
     search_fields = ('description', 'category')
     ordering = ('-date',)
@@ -25,6 +28,7 @@ class ExpenseAdmin(admin.ModelAdmin):
 @admin.register(Income)
 class IncomeAdmin(admin.ModelAdmin):
     list_display = ('date', 'source', 'amount', 'user')
+    list_select_related = ('user',)
     list_filter = ('source', 'date', 'user')
     search_fields = ('description', 'source')
     ordering = ('-date',)
@@ -32,6 +36,7 @@ class IncomeAdmin(admin.ModelAdmin):
 @admin.register(RecurringTransaction)
 class RecurringTransactionAdmin(admin.ModelAdmin):
     list_display = ('description', 'transaction_type', 'amount', 'frequency', 'next_due_date', 'user', 'is_active')
+    list_select_related = ('user',)
     list_filter = ('transaction_type', 'frequency', 'is_active', 'user')
     search_fields = ('description',)
 
@@ -40,6 +45,7 @@ from .models import UserProfile, PaymentHistory
 @admin.register(UserProfile)
 class UserProfileAdmin(admin.ModelAdmin):
     list_display = ('user', 'tier', 'subscription_end_date', 'is_lifetime', 'is_pro', 'email_verified')
+    list_select_related = ('user',)
     list_filter = ('tier', 'is_lifetime')
     search_fields = ('user__username', 'user__email')
 

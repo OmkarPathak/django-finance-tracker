@@ -321,16 +321,20 @@ def home_view(request):
     category_data.sort(key=lambda x: x['total'], reverse=True)
 
     # Compute limits and usage per category for chart display
+    # Compute limits and usage per category for chart display
     category_limits = []
+    # Optimization: Pre-fetch all categories for the user to avoid N+1 queries in the loop
+    user_categories = {c.name: c for c in Category.objects.filter(user=request.user)}
+
     for item in category_data:
-        try:
-            cat_obj = Category.objects.get(user=request.user, name=item['category'])
-            limit = float(cat_obj.limit) if cat_obj.limit else None
-        except Category.DoesNotExist:
-            limit = None
+        cat_name = item['category']
+        cat_obj = user_categories.get(cat_name)
+        
+        limit = float(cat_obj.limit) if (cat_obj and cat_obj.limit) else None
+        
         used_percent = round((item['total'] / limit * 100), 1) if limit else None
         category_limits.append({
-            'name': item['category'],
+            'name': cat_name,
             'total': item['total'],
             'limit': limit,
             'used_percent': used_percent,
