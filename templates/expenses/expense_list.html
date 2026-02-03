@@ -4,11 +4,25 @@
 <style>
     /* Responsive Filter Widths */
     @media (min-width: 992px) {
-        .filter-w-search { width: 140px; }
-        .filter-w-date { width: 130px; }
-        .filter-w-year { width: 110px; }
-        .filter-w-month { width: 140px; }
-        .filter-w-category { width: 160px; }
+        .filter-w-search {
+            width: 140px;
+        }
+
+        .filter-w-date {
+            width: 130px;
+        }
+
+        .filter-w-year {
+            width: 110px;
+        }
+
+        .filter-w-month {
+            width: 140px;
+        }
+
+        .filter-w-category {
+            width: 160px;
+        }
     }
 </style>
 <div class="fade-in">
@@ -20,10 +34,13 @@
                 <a href="{% url 'expense-create' %}" class="btn btn-primary btn-sm d-flex align-items-center gap-1">
                     <i class="bi bi-plus-lg"></i> <span>Add<span class="d-none d-sm-inline"> Expense</span></span>
                 </a>
-                <a href="{% url 'export-expenses' %}?{{ request.GET.urlencode }}" class="btn btn-sm btn-link text-success text-decoration-none p-0 border-0 no-loader" title="Export">
+                <a href="{% url 'export-expenses' %}?{{ request.GET.urlencode }}"
+                    class="btn btn-sm btn-link text-success text-decoration-none p-0 border-0 no-loader" title="Export">
                     <i class="bi bi-download fs-5"></i>
                 </a>
-                <button class="btn btn-sm btn-link text-decoration-none text-muted p-0 border-0 fs-6" type="button" data-bs-toggle="collapse" data-bs-target="#expenseFilters" aria-expanded="false" aria-controls="expenseFilters">
+                <button class="btn btn-sm btn-link text-decoration-none text-muted p-0 border-0 fs-6" type="button"
+                    data-bs-toggle="collapse" data-bs-target="#expenseFilters" aria-expanded="false"
+                    aria-controls="expenseFilters">
                     <i class="bi bi-funnel me-1"></i> Filters
                 </button>
             </div>
@@ -36,102 +53,179 @@
         <div class="d-flex justify-content-between align-items-center">
             <h2 class="h4 mb-0 fw-bold">Expenses</h2>
             <div class="d-flex align-items-center gap-2">
-                <a href="{% url 'expense-create' %}" class="btn btn-primary btn-sm d-inline-flex align-items-center text-nowrap">
+                <a href="{% url 'expense-create' %}"
+                    class="btn btn-primary btn-sm d-inline-flex align-items-center text-nowrap">
                     <i class="bi bi-plus-lg me-1"></i> Add Expense
                 </a>
-                <a href="{% url 'export-expenses' %}?{{ request.GET.urlencode }}" class="btn btn-outline-success btn-sm d-inline-flex align-items-center no-loader">
+                <a href="{% url 'export-expenses' %}?{{ request.GET.urlencode }}"
+                    class="btn btn-outline-success btn-sm d-inline-flex align-items-center no-loader">
                     <i class="bi bi-download me-1"></i> Export
                 </a>
             </div>
         </div>
         <p class="text-muted small mb-0 mt-1">Tracking every penny is the first step to financial freedom.</p>
     </div>
-    
 
+
+
+    <!-- Filter Presets Bar -->
+    <div class="d-flex align-items-center gap-2 mb-2 px-3 flex-wrap" id="filterPresetsBar">
+        <span class="text-muted small"><i class="bi bi-bookmark me-1"></i>Saved Filters:</span>
+        <div class="d-flex gap-1 flex-wrap" id="filterPresetsList">
+            {% for preset in filter_presets %}
+            <button type="button" class="btn btn-outline-secondary btn-sm preset-btn" data-preset-id="{{ preset.id }}"
+                data-preset-config='{{ preset.filter_config|safe }}'>
+                {{ preset.name }}
+                <span class="ms-1 preset-delete" data-preset-id="{{ preset.id }}">&times;</span>
+            </button>
+            {% empty %}
+            <span class="text-muted small fst-italic">No saved filters</span>
+            {% endfor %}
+        </div>
+        <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal"
+            data-bs-target="#savePresetModal">
+            <i class="bi bi-plus"></i> Save Current
+        </button>
+    </div>
 
     <!-- Filter Form -->
     <div class="collapse d-md-block" id="expenseFilters" style="z-index: 1040; position: relative;">
         <form method="get" class="mb-4 bg-body-tertiary p-3 rounded shadow-sm" id="filter-form">
-        <div class="row g-2 align-items-end flex-lg-nowrap">
-            <!-- Search -->
-            <div class="col-12 col-md-auto filter-w-search">
-                <label for="search" class="form-label small text-muted">Search</label>
-                <input type="text" name="search" id="search" class="form-control form-control-sm" placeholder="Search..." value="{{ request.GET.search|default:'' }}">
-            </div>
-            
-            <!-- Date Range -->
-            <div class="col-6 col-md-auto filter-w-date">
-                <label for="start_date" class="form-label small text-muted d-none d-md-block">From</label>
-                <div class="input-group input-group-sm">
-                    <span class="input-group-text d-md-none">From</span>
-                    <input type="date" name="start_date" id="start_date" class="form-control" value="{{ start_date|default:'' }}">
+            <!-- Row 1: Basic Filters -->
+            <div class="row g-2 align-items-end flex-lg-nowrap mb-2">
+                <!-- Search -->
+                <div class="col-12 col-md-auto filter-w-search">
+                    <label for="search" class="form-label small text-muted">Search</label>
+                    <input type="text" name="search" id="search" class="form-control form-control-sm"
+                        placeholder="Search..." value="{{ request.GET.search|default:'' }}">
                 </div>
-            </div>
-            <div class="col-6 col-md-auto filter-w-date">
-                <label for="end_date" class="form-label small text-muted d-none d-md-block">To</label>
-                <div class="input-group input-group-sm">
-                    <span class="input-group-text d-md-none">To</span>
-                    <input type="date" name="end_date" id="end_date" class="form-control" value="{{ end_date|default:'' }}">
-                </div>
-            </div>
 
-            <!-- Year & Month -->
-            <div class="col-6 col-md-auto filter-w-year">
-                <label for="year-select" class="form-label small text-muted">Year</label>
-                <select name="year" id="year-select" class="form-control django-multi-select" multiple placeholder="Years...">
-                    {% for dt in years %}
+                <!-- Date Range -->
+                <div class="col-6 col-md-auto filter-w-date">
+                    <label for="start_date" class="form-label small text-muted d-none d-md-block">From</label>
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-text d-md-none">From</span>
+                        <input type="date" name="start_date" id="start_date" class="form-control"
+                            value="{{ start_date|default:'' }}">
+                    </div>
+                </div>
+                <div class="col-6 col-md-auto filter-w-date">
+                    <label for="end_date" class="form-label small text-muted d-none d-md-block">To</label>
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-text d-md-none">To</span>
+                        <input type="date" name="end_date" id="end_date" class="form-control"
+                            value="{{ end_date|default:'' }}">
+                    </div>
+                </div>
+
+                <!-- Year & Month -->
+                <div class="col-6 col-md-auto filter-w-year">
+                    <label for="year-select" class="form-label small text-muted">Year</label>
+                    <select name="year" id="year-select" class="form-control django-multi-select" multiple
+                        placeholder="Years...">
+                        {% for dt in years %}
                         <option value="{{ dt }}" {% if dt|stringformat:"s" in selected_years %}selected{% endif %}>
                             {{ dt }}
                         </option>
-                    {% endfor %}
-                </select>
-            </div>
-            <div class="col-6 col-md-auto filter-w-month">
-                <label for="month-select" class="form-label small text-muted">Month</label>
-                <select name="month" id="month-select" class="form-control django-multi-select" multiple placeholder="Months...">
-                    {% for num, name in months_list %}
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-6 col-md-auto filter-w-month">
+                    <label for="month-select" class="form-label small text-muted">Month</label>
+                    <select name="month" id="month-select" class="form-control django-multi-select" multiple
+                        placeholder="Months...">
+                        {% for num, name in months_list %}
                         <option value="{{ num }}" {% if num|stringformat:"s" in selected_months %}selected{% endif %}>
                             {{ name }}
                         </option>
-                    {% endfor %}
-                </select>
-            </div>
+                        {% endfor %}
+                    </select>
+                </div>
 
-            <!-- Category -->
-            <div class="col-12 col-md-auto filter-w-category">
-                <label for="category-select" class="form-label small text-muted">Category</label>
-                <select name="category" id="category-select" class="form-control django-multi-select" multiple placeholder="Categories...">
-                    {% for cat in categories %}
+                <!-- Category -->
+                <div class="col-12 col-md-auto filter-w-category">
+                    <label for="category-select" class="form-label small text-muted">Category</label>
+                    <select name="category" id="category-select" class="form-control django-multi-select" multiple
+                        placeholder="Categories...">
+                        {% for cat in categories %}
                         <option value="{{ cat }}" {% if cat in selected_categories %}selected{% endif %}>
                             {{ cat }}
                         </option>
-                    {% endfor %}
-                </select>
+                        {% endfor %}
+                    </select>
+                </div>
             </div>
 
-            <!-- Buttons -->
-            <div class="col-6 col-md-auto">
-                <button type="submit" class="btn btn-primary btn-sm w-100 w-md-auto" onclick="showLoader()">
-                    <i class="bi bi-filter me-1"></i> Apply
-                </button>
-            </div>
-            <!-- Reset -->
-            <div class="col-6 col-md-auto">
-                <a href="{% url 'expense-list' %}" class="btn btn-outline-secondary btn-sm w-100 w-md-auto" onclick="showLoader()">
-                    <i class="bi bi-arrow-counterclockwise me-1"></i> Reset
-                </a>
-            </div>
+            <!-- Row 2: Advanced Filters (Tags, Amount, Payment Method) -->
+            <div class="row g-2 align-items-end flex-lg-nowrap">
+                <!-- Tags -->
+                <div class="col-12 col-md-auto" style="min-width: 180px;">
+                    <label for="tag-select" class="form-label small text-muted">
+                        <i class="bi bi-tags me-1"></i>Tags
+                    </label>
+                    <select name="tags" id="tag-select" class="form-control django-multi-select" multiple
+                        placeholder="Tags...">
+                        {% for tag in tags %}
+                        <option value="{{ tag.id }}" {% if tag.id in selected_tags %}selected{% endif %}
+                            data-color="{{ tag.color }}">
+                            {{ tag.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
 
-            <!-- Bulk Delete -->
-            <div class="d-none d-md-block col-md-auto">
-                 <button type="button" class="btn btn-outline-danger btn-sm w-100 w-md-auto bulk-delete-btn" id="bulkDeleteBtn" disabled data-bs-toggle="modal" data-bs-target="#bulkDeleteModal">
-                    <i class="bi bi-trash me-1"></i> Delete Selected
-                </button>
+                <!-- Amount Range -->
+                <div class="col-6 col-md-auto" style="min-width: 100px;">
+                    <label for="min_amount" class="form-label small text-muted">Min ₹</label>
+                    <input type="number" name="min_amount" id="min_amount" class="form-control form-control-sm"
+                        placeholder="0" value="{{ request.GET.min_amount|default:'' }}" min="0" step="0.01">
+                </div>
+                <div class="col-6 col-md-auto" style="min-width: 100px;">
+                    <label for="max_amount" class="form-label small text-muted">Max ₹</label>
+                    <input type="number" name="max_amount" id="max_amount" class="form-control form-control-sm"
+                        placeholder="∞" value="{{ request.GET.max_amount|default:'' }}" min="0" step="0.01">
+                </div>
+
+                <!-- Payment Method -->
+                <div class="col-12 col-md-auto" style="min-width: 150px;">
+                    <label for="payment-method-select" class="form-label small text-muted">
+                        <i class="bi bi-credit-card me-1"></i>Payment
+                    </label>
+                    <select name="payment_method" id="payment-method-select" class="form-control django-multi-select"
+                        multiple placeholder="Payment...">
+                        {% for code, name in payment_methods %}
+                        <option value="{{ code }}" {% if code in selected_payment_methods %}selected{% endif %}>
+                            {{ name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Buttons -->
+                <div class="col-6 col-md-auto">
+                    <button type="submit" class="btn btn-primary btn-sm w-100 w-md-auto" onclick="showLoader()">
+                        <i class="bi bi-filter me-1"></i> Apply
+                    </button>
+                </div>
+                <!-- Reset -->
+                <div class="col-6 col-md-auto">
+                    <a href="{% url 'expense-list' %}" class="btn btn-outline-secondary btn-sm w-100 w-md-auto"
+                        onclick="showLoader()">
+                        <i class="bi bi-arrow-counterclockwise me-1"></i> Reset
+                    </a>
+                </div>
+
+                <!-- Bulk Delete -->
+                <div class="d-none d-md-block col-md-auto">
+                    <button type="button" class="btn btn-outline-danger btn-sm w-100 w-md-auto bulk-delete-btn"
+                        id="bulkDeleteBtn" disabled data-bs-toggle="modal" data-bs-target="#bulkDeleteModal">
+                        <i class="bi bi-trash me-1"></i> Delete Selected
+                    </button>
+                </div>
+
+
             </div>
-
-
-        </div>
-    </form>
+        </form>
     </div>
 
     <!-- Stats Row -->
@@ -139,13 +233,15 @@
         <div class="row g-2">
             <div class="col-6 col-md-auto">
                 <div class="p-2 border rounded bg-body-tertiary shadow-sm text-center text-md-start">
-                    <small class="text-muted d-block text-uppercase" style="font-size: 0.7rem; letter-spacing: 0.5px;">Total Records</small>
+                    <small class="text-muted d-block text-uppercase"
+                        style="font-size: 0.7rem; letter-spacing: 0.5px;">Total Records</small>
                     <span class="fw-bold">{{ filtered_count }}</span>
                 </div>
             </div>
             <div class="col-6 col-md-auto">
                 <div class="p-2 border rounded bg-body-tertiary shadow-sm text-center text-md-start">
-                    <small class="text-muted d-block text-uppercase" style="font-size: 0.7rem; letter-spacing: 0.5px;">Total Amount</small>
+                    <small class="text-muted d-block text-uppercase"
+                        style="font-size: 0.7rem; letter-spacing: 0.5px;">Total Amount</small>
                     <span class="fw-bold text-success">₹{{ filtered_amount|floatformat:2 }}</span>
                 </div>
             </div>
@@ -160,14 +256,14 @@
                 loader.classList.add('d-flex');
             }
         }
-    
+
         function showLoaderAndSubmit() {
             showLoader();
             document.getElementById('filter-form').submit();
         }
 
         // Bulk Delete Logic
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             const selectAllCheckbox = document.getElementById('selectAll');
             const expenseCheckboxes = document.querySelectorAll('.expense-checkbox');
             const bulkDeleteBtns = document.querySelectorAll('.bulk-delete-btn'); // Class based
@@ -175,10 +271,10 @@
 
             function updateDeleteButtonState() {
                 const anyChecked = Array.from(expenseCheckboxes).some(cb => cb.checked);
-                
+
                 // Toggle all delete buttons
                 bulkDeleteBtns.forEach(btn => btn.disabled = !anyChecked);
-                
+
                 // Toggle mobile actions bar visibility
                 if (mobileBulkActions) {
                     if (anyChecked) {
@@ -193,7 +289,7 @@
 
             // Handle Select All
             if (selectAllCheckbox) {
-                selectAllCheckbox.addEventListener('change', function() {
+                selectAllCheckbox.addEventListener('change', function () {
                     const isChecked = this.checked;
                     expenseCheckboxes.forEach(cb => {
                         cb.checked = isChecked;
@@ -204,7 +300,7 @@
 
             // Handle Individual Checkboxes
             expenseCheckboxes.forEach(cb => {
-                cb.addEventListener('change', function() {
+                cb.addEventListener('change', function () {
                     updateDeleteButtonState();
                     // Update Select All state
                     if (!this.checked) {
@@ -215,24 +311,26 @@
                     }
                 });
             });
-            
+
             // Handle Delete Button Click (Modal triggering is handled by bootstrap data-bs-target)
             // But we might want to ensure the modal knows which form to submit? 
             // The modal submit button does `document.getElementById('bulkDeleteForm').submit()`, which works globally.
         });
     </script>
-    
+
 
 
     <!-- Table -->
     <div class="card-body p-0">
         <form id="bulkDeleteForm" method="post" action="{% url 'expense-bulk-delete' %}">
             {% csrf_token %}
-            
+
             <!-- Mobile Bulk Actions (Hidden by default, shown via JS) -->
-            <div id="mobileBulkActions" class="d-md-none p-2 bg-body-tertiary border-bottom d-none justify-content-end align-items-center gap-2">
+            <div id="mobileBulkActions"
+                class="d-md-none p-2 bg-body-tertiary border-bottom d-none justify-content-end align-items-center gap-2">
                 <span class="small text-muted me-auto">Items Selected</span>
-                <button type="button" class="btn btn-outline-danger btn-sm bulk-delete-btn" disabled data-bs-toggle="modal" data-bs-target="#bulkDeleteModal">
+                <button type="button" class="btn btn-outline-danger btn-sm bulk-delete-btn" disabled
+                    data-bs-toggle="modal" data-bs-target="#bulkDeleteModal">
                     <i class="bi bi-trash me-1"></i> Delete Selected
                 </button>
             </div>
@@ -249,20 +347,23 @@
                             <th>Date</th>
                             <th>Description</th>
                             <th>Category</th>
+                            <th>Tags</th>
                             <th>Payment Method</th>
                             {% load expense_extras %}
                             {% if request.GET.sort == 'amount_asc' %}
-                                <th style="cursor: pointer;" onclick="window.location.href='?{% url_replace sort='amount_desc' %}'">
-                            {% else %}
-                                <th style="cursor: pointer;" onclick="window.location.href='?{% url_replace sort='amount_asc' %}'">
-                            {% endif %}
+                            <th style="cursor: pointer;"
+                                onclick="window.location.href='?{% url_replace sort='amount_desc' %}'">
+                                {% else %}
+                            <th style="cursor: pointer;"
+                                onclick="window.location.href='?{% url_replace sort='amount_asc' %}'">
+                                {% endif %}
                                 Amount
                                 {% if request.GET.sort == 'amount_asc' %}
-                                    <i class="bi bi-arrow-up-short"></i>
+                                <i class="bi bi-arrow-up-short"></i>
                                 {% elif request.GET.sort == 'amount_desc' %}
-                                    <i class="bi bi-arrow-down-short"></i>
+                                <i class="bi bi-arrow-down-short"></i>
                                 {% else %}
-                                    <i class="bi bi-arrow-down-up text-muted opacity-25" style="font-size: 0.8em;"></i>
+                                <i class="bi bi-arrow-down-up text-muted opacity-25" style="font-size: 0.8em;"></i>
                                 {% endif %}
                             </th>
                             <th class="text-end pe-4">Actions</th>
@@ -273,7 +374,8 @@
                         <tr>
                             <td class="ps-4">
                                 <div class="form-check">
-                                    <input class="form-check-input expense-checkbox" type="checkbox" name="expense_ids" value="{{ expense.pk }}">
+                                    <input class="form-check-input expense-checkbox" type="checkbox" name="expense_ids"
+                                        value="{{ expense.pk }}">
                                 </div>
                             </td>
                             <td class="text-nowrap">{{ expense.date|date:"d M Y" }}</td>
@@ -281,17 +383,28 @@
                             <td>
                                 <span class="badge bg-secondary opacity-75">{{ expense.category }}</span>
                             </td>
+                            <td>
+                                {% for tag in expense.tags.all %}
+                                <span class="badge bg-{{ tag.color }} me-1" style="font-size: 0.7em;">{{ tag.name
+                                    }}</span>
+                                {% empty %}
+                                <span class="text-muted" style="font-size: 0.8em;">—</span>
+                                {% endfor %}
+                            </td>
                             <td>{{ expense.payment_method }}</td>
                             <td class="fw-bold">{{ expense.amount }}</td>
                             <td class="text-end pe-4 text-nowrap">
                                 <div class="hstack gap-3 justify-content-end">
-                                    <a href="{% url 'expense-edit' expense.pk %}?next={{ request.get_full_path|urlencode }}" class="btn btn-sm btn-link text-decoration-none p-0 d-inline-flex align-items-center" title="Edit" onclick="setButtonLoading(this, '')">
+                                    <a href="{% url 'expense-edit' expense.pk %}?next={{ request.get_full_path|urlencode }}"
+                                        class="btn btn-sm btn-link text-decoration-none p-0 d-inline-flex align-items-center"
+                                        title="Edit" onclick="setButtonLoading(this, '')">
                                         <i class="bi bi-pencil-square text-primary"></i>
                                     </a>
-                                    <button type="button" class="btn btn-sm btn-link text-decoration-none p-0 delete-btn d-inline-flex align-items-center" 
-                                            data-bs-toggle="modal" data-bs-target="#deleteModal" 
-                                            data-url="{% url 'expense-delete' expense.pk %}"
-                                            data-message="Are you sure you want to delete '{{ expense.description|escapejs }}'?">
+                                    <button type="button"
+                                        class="btn btn-sm btn-link text-decoration-none p-0 delete-btn d-inline-flex align-items-center"
+                                        data-bs-toggle="modal" data-bs-target="#deleteModal"
+                                        data-url="{% url 'expense-delete' expense.pk %}"
+                                        data-message="Are you sure you want to delete '{{ expense.description|escapejs }}'?">
                                         <i class="bi bi-trash text-danger"></i>
                                     </button>
                                 </div>
@@ -299,25 +412,22 @@
                         </tr>
                         {% empty %}
                         <tr>
-                            <td colspan="7" class="text-center py-5">
+                            <td colspan="8" class="text-center py-5">
                                 <div class="py-4">
                                     <i class="bi bi-receipt text-muted display-1 mb-3 d-block"></i>
                                     <h4 class="fw-bold text-muted">No Expenses Found</h4>
                                     <p class="text-muted mb-4">
-                                        {% if request.GET.search or request.GET.start_date or request.GET.end_date or request.GET.category or request.GET.year or request.GET.month %}
-                                            We couldn't find any expenses matching your filters.
-                                        {% else %}
-                                            You haven't added any expenses yet. Start tracking your spending!
-                                        {% endif %}
+                                        {% if has_filters %}We couldn't find any expenses matching your filters.{% else
+                                        %}You haven't added any expenses yet. Start tracking your spending!{% endif %}
                                     </p>
                                     <div class="d-flex justify-content-center gap-2">
                                         <a href="{% url 'expense-create' %}" class="btn btn-primary">
                                             <i class="bi bi-plus-lg me-1"></i> Add Expense
                                         </a>
-                                        {% if request.GET.search or request.GET.start_date or request.GET.end_date or request.GET.category or request.GET.year or request.GET.month %}
-                                            <a href="{% url 'expense-list' %}" class="btn btn-outline-secondary">
-                                                <i class="bi bi-arrow-counterclockwise me-1"></i> Clear Filters
-                                            </a>
+                                        {% if has_filters %}
+                                        <a href="{% url 'expense-list' %}" class="btn btn-outline-secondary">
+                                            <i class="bi bi-arrow-counterclockwise me-1"></i> Clear Filters
+                                        </a>
                                         {% endif %}
                                     </div>
                                 </div>
@@ -336,17 +446,19 @@
             <ul class="pagination justify-content-center mb-0">
                 {% if page_obj.has_previous %}
                 <li class="page-item">
-                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}&{{ request.GET.urlencode|cut:'page=' }}">Previous</a>
+                    <a class="page-link"
+                        href="?page={{ page_obj.previous_page_number }}&{{ request.GET.urlencode|cut:'page=' }}">Previous</a>
                 </li>
                 {% endif %}
-                
+
                 <li class="page-item disabled">
                     <span class="page-link">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
                 </li>
 
                 {% if page_obj.has_next %}
                 <li class="page-item">
-                    <a class="page-link" href="?page={{ page_obj.next_page_number }}&{{ request.GET.urlencode|cut:'page=' }}">Next</a>
+                    <a class="page-link"
+                        href="?page={{ page_obj.next_page_number }}&{{ request.GET.urlencode|cut:'page=' }}">Next</a>
                 </li>
                 {% endif %}
             </ul>
@@ -357,22 +469,196 @@
 {% endblock %}
 
 {% block modals %}
-    <!-- Bulk Delete Confirmation Modal -->
-    <div class="modal fade" id="bulkDeleteModal" tabindex="-1" aria-hidden="true" style="z-index: 1055;">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Confirm Bulk Delete</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    Are you sure you want to delete the selected expenses? This action cannot be undone.
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-danger" onclick="setButtonLoading(this, 'Deleting...'); document.getElementById('bulkDeleteForm').submit()">Delete Selected</button>
-                </div>
+<!-- Bulk Delete Confirmation Modal -->
+<div class="modal fade" id="bulkDeleteModal" tabindex="-1" aria-hidden="true" style="z-index: 1055;">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirm Bulk Delete</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to delete the selected expenses? This action cannot be undone.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger"
+                    onclick="setButtonLoading(this, 'Deleting...'); document.getElementById('bulkDeleteForm').submit()">Delete
+                    Selected</button>
             </div>
         </div>
     </div>
+</div>
+
+<!-- Save Filter Preset Modal -->
+<div class="modal fade" id="savePresetModal" tabindex="-1" aria-hidden="true" style="z-index: 1055;">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-bookmark-plus me-2"></i>Save Filter Preset</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p class="text-muted small">Save the current filter settings to quickly apply them later.</p>
+                <div class="mb-3">
+                    <label for="presetName" class="form-label">Preset Name</label>
+                    <input type="text" class="form-control" id="presetName" placeholder="e.g., Last Month Food Expenses"
+                        required>
+                </div>
+                <div class="alert alert-info small">
+                    <i class="bi bi-info-circle me-1"></i>
+                    Current filters: <span id="currentFiltersPreview"></span>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="savePresetBtn">
+                    <i class="bi bi-check me-1"></i> Save Preset
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Filter Preset Functions
+        const filterForm = document.getElementById('filter-form');
+        const savePresetBtn = document.getElementById('savePresetBtn');
+        const presetNameInput = document.getElementById('presetName');
+        const currentFiltersPreview = document.getElementById('currentFiltersPreview');
+        const savePresetModal = document.getElementById('savePresetModal');
+
+        // Get current filter config from form
+        function getFilterConfig() {
+            const formData = new FormData(filterForm);
+            const config = {};
+
+            for (const [key, value] of formData.entries()) {
+                if (value) {
+                    if (config[key]) {
+                        if (Array.isArray(config[key])) {
+                            config[key].push(value);
+                        } else {
+                            config[key] = [config[key], value];
+                        }
+                    } else {
+                        config[key] = value;
+                    }
+                }
+            }
+            return config;
+        }
+
+        // Update preview when modal opens
+        if (savePresetModal) {
+            savePresetModal.addEventListener('show.bs.modal', function () {
+                const config = getFilterConfig();
+                const parts = [];
+
+                if (config.search) parts.push(`Search: "${config.search}"`);
+                if (config.start_date) parts.push(`From: ${config.start_date}`);
+                if (config.end_date) parts.push(`To: ${config.end_date}`);
+                if (config.year) parts.push(`Year: ${Array.isArray(config.year) ? config.year.join(', ') : config.year}`);
+                if (config.month) parts.push(`Month: ${Array.isArray(config.month) ? config.month.join(', ') : config.month}`);
+                if (config.category) parts.push(`Category: ${Array.isArray(config.category) ? config.category.join(', ') : config.category}`);
+                if (config.tags) parts.push(`Tags: ${Array.isArray(config.tags) ? config.tags.length : 1} selected`);
+                if (config.min_amount) parts.push(`Min: ₹${config.min_amount}`);
+                if (config.max_amount) parts.push(`Max: ₹${config.max_amount}`);
+                if (config.payment_method) parts.push(`Payment: ${Array.isArray(config.payment_method) ? config.payment_method.join(', ') : config.payment_method}`);
+
+                currentFiltersPreview.textContent = parts.length > 0 ? parts.join(' | ') : 'No filters applied';
+            });
+        }
+
+        // Save preset
+        if (savePresetBtn) {
+            savePresetBtn.addEventListener('click', function () {
+                const name = presetNameInput.value.trim();
+                if (!name) {
+                    presetNameInput.classList.add('is-invalid');
+                    return;
+                }
+
+                const config = getFilterConfig();
+
+                fetch('{% url "filter-preset-save" %}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    },
+                    body: JSON.stringify({ name: name, config: config })
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Close modal and reload page to show new preset
+                            bootstrap.Modal.getInstance(savePresetModal).hide();
+                            location.reload();
+                        } else {
+                            alert('Error saving preset: ' + (data.error || 'Unknown error'));
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Error saving preset');
+                    });
+            });
+        }
+
+        // Apply preset when clicked
+        document.querySelectorAll('.preset-btn').forEach(btn => {
+            btn.addEventListener('click', function (e) {
+                if (e.target.classList.contains('preset-delete')) return;
+
+                const config = JSON.parse(this.dataset.presetConfig);
+                const params = new URLSearchParams();
+
+                for (const [key, value] of Object.entries(config)) {
+                    if (Array.isArray(value)) {
+                        value.forEach(v => params.append(key, v));
+                    } else {
+                        params.set(key, value);
+                    }
+                }
+
+                showLoader();
+                window.location.href = '{% url "expense-list" %}?' + params.toString();
+            });
+        });
+
+        // Delete preset
+        document.querySelectorAll('.preset-delete').forEach(btn => {
+            btn.addEventListener('click', function (e) {
+                e.stopPropagation();
+
+                if (!confirm('Delete this filter preset?')) return;
+
+                const presetId = this.dataset.presetId;
+
+                fetch(`/expenses/filter-preset/${presetId}/delete/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    }
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            this.closest('.preset-btn').remove();
+                        } else {
+                            alert('Error deleting preset');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Error deleting preset');
+                    });
+            });
+        });
+    });
+</script>
 {% endblock %}

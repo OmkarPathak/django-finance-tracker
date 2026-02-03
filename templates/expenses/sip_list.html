@@ -1,0 +1,231 @@
+{% extends 'expenses/settings_base.html' %}
+{% load currency_filters %}
+
+{% block settings_content %}
+<style>
+    .sip-card {
+        transition: all 0.2s ease;
+    }
+
+    .sip-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    }
+
+    .sip-due {
+        border-left: 4px solid var(--bs-warning) !important;
+    }
+</style>
+
+<div class="fade-in">
+    <!-- Header -->
+    <div class="d-flex flex-column flex-sm-row justify-content-between align-items-stretch align-items-sm-center mb-4">
+        <div class="mb-3 mb-sm-0">
+            <h2 class="h3 fw-bold mb-0">
+                <i class="bi bi-graph-up-arrow text-primary me-2"></i>SIP Investments
+            </h2>
+            <p class="text-muted small mb-0 mt-1">Track your Systematic Investment Plans as expenses.</p>
+        </div>
+        <div class="d-flex gap-2 justify-content-end">
+            {% if can_create %}
+            <a href="{% url 'sip-create' %}" class="btn btn-sm btn-primary d-flex align-items-center shadow-sm">
+                <i class="bi bi-plus-lg me-2"></i> Add SIP
+            </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-lg-3">
+            <div class="card border-0 bg-primary bg-opacity-10 h-100">
+                <div class="card-body text-center">
+                    <small class="text-uppercase text-muted fw-bold" style="font-size: 0.7rem;">Total Paid</small>
+                    <div class="h4 fw-bold text-primary mb-0">{{ currency_symbol }}{{ total_paid|floatformat:0 }}</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="card border-0 bg-success bg-opacity-10 h-100">
+                <div class="card-body text-center">
+                    <small class="text-uppercase text-muted fw-bold" style="font-size: 0.7rem;">Installments</small>
+                    <div class="h4 fw-bold text-success mb-0">{{ installments_count }}</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="card border-0 bg-warning bg-opacity-10 h-100">
+                <div class="card-body text-center">
+                    <small class="text-uppercase text-muted fw-bold" style="font-size: 0.7rem;">Due Now</small>
+                    <div class="h4 fw-bold text-warning mb-0">{{ due_count }}</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="card border-0 bg-info bg-opacity-10 h-100">
+                <div class="card-body text-center">
+                    <small class="text-uppercase text-muted fw-bold" style="font-size: 0.7rem;">Monthly
+                        Commitment</small>
+                    <div class="h4 fw-bold text-info mb-0">{{ currency_symbol }}{{ monthly_commitment|floatformat:0 }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabs -->
+    <ul class="nav nav-pills mb-4 gap-2" id="sipTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active px-4 rounded-pill" id="active-tab" data-bs-toggle="tab"
+                data-bs-target="#active" type="button" role="tab">
+                Active <span class="badge bg-primary ms-1">{{ active_count }}</span>
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link px-4 rounded-pill" id="paused-tab" data-bs-toggle="tab" data-bs-target="#paused"
+                type="button" role="tab">
+                Paused <span class="badge bg-secondary ms-1">{{ paused_count }}</span>
+            </button>
+        </li>
+    </ul>
+
+    <!-- Tab Content -->
+    <div class="tab-content" id="sipTabContent">
+        <!-- Active SIPs -->
+        <div class="tab-pane fade show active" id="active" role="tabpanel">
+            {% if active_sips %}
+            <div class="row g-3">
+                {% for sip in active_sips %}
+                <div class="col-12 col-md-6 col-lg-4">
+                    <div class="card sip-card h-100 border-0 shadow-sm {% if sip.is_due %}sip-due{% endif %}">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                <div>
+                                    <h5 class="fw-bold mb-1 text-truncate" style="max-width: 200px;"
+                                        title="{{ sip.fund_name }}">{{ sip.fund_name }}</h5>
+                                    {% if sip.category %}
+                                    <span class="badge bg-secondary rounded-pill">{{ sip.category.name }}</span>
+                                    {% endif %}
+                                    {% if sip.is_due %}
+                                    <span class="badge bg-warning text-dark rounded-pill">Due</span>
+                                    {% endif %}
+                                </div>
+                                <div class="dropdown">
+                                    <button class="btn btn-sm btn-link text-muted p-0" type="button"
+                                        data-bs-toggle="dropdown">
+                                        <i class="bi bi-three-dots-vertical"></i>
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-end">
+                                        <li><a class="dropdown-item" href="{% url 'sip-edit' sip.pk %}"><i
+                                                    class="bi bi-pencil me-2"></i>Edit</a></li>
+                                        <li><a class="dropdown-item text-danger" href="{% url 'sip-delete' sip.pk %}"><i
+                                                    class="bi bi-trash me-2"></i>Delete</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <div class="row g-2 mb-3">
+                                <div class="col-6">
+                                    <small class="text-muted d-block">Total Paid</small>
+                                    <span class="fw-bold">{{ currency_symbol }}{{ sip.total_paid|floatformat:0 }}</span>
+                                </div>
+                                <div class="col-6">
+                                    <small class="text-muted d-block">Installments</small>
+                                    <span class="fw-bold">{{ sip.installments_count }}</span>
+                                </div>
+                            </div>
+
+                            <div class="d-flex justify-content-between align-items-center pt-2 border-top">
+                                <div>
+                                    <small class="text-muted">
+                                        {{ currency_symbol }}{{ sip.amount_per_installment|floatformat:0 }}/{{
+                                        sip.get_frequency_display|lower }}
+                                    </small>
+                                    <br>
+                                    <small class="text-muted">Next: {{ sip.next_due_date|date:"d M Y" }}</small>
+                                </div>
+                                {% if sip.is_due %}
+                                <form method="post" action="{% url 'sip-pay' sip.pk %}" class="d-inline">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-sm btn-success">
+                                        <i class="bi bi-check-lg me-1"></i> Pay Now
+                                    </button>
+                                </form>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="text-center py-5">
+                <i class="bi bi-graph-up-arrow display-1 text-muted opacity-25"></i>
+                <p class="text-muted mt-3">No active SIPs yet.</p>
+                <a href="{% url 'sip-create' %}" class="btn btn-primary">
+                    <i class="bi bi-plus-lg me-2"></i> Add Your First SIP
+                </a>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Paused SIPs -->
+        <div class="tab-pane fade" id="paused" role="tabpanel">
+            {% if paused_sips %}
+            <div class="row g-3">
+                {% for sip in paused_sips %}
+                <div class="col-12 col-md-6 col-lg-4">
+                    <div class="card sip-card h-100 border-0 shadow-sm opacity-75">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                <div>
+                                    <h5 class="fw-bold mb-1 text-truncate" style="max-width: 200px;">{{ sip.fund_name }}
+                                    </h5>
+                                    <span class="badge bg-secondary rounded-pill">Paused</span>
+                                </div>
+                                <div class="dropdown">
+                                    <button class="btn btn-sm btn-link text-muted p-0" type="button"
+                                        data-bs-toggle="dropdown">
+                                        <i class="bi bi-three-dots-vertical"></i>
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-end">
+                                        <li><a class="dropdown-item" href="{% url 'sip-edit' sip.pk %}"><i
+                                                    class="bi bi-pencil me-2"></i>Edit / Resume</a></li>
+                                        <li><a class="dropdown-item text-danger" href="{% url 'sip-delete' sip.pk %}"><i
+                                                    class="bi bi-trash me-2"></i>Delete</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <div class="row g-2 mb-3">
+                                <div class="col-6">
+                                    <small class="text-muted d-block">Total Paid</small>
+                                    <span class="fw-bold">{{ currency_symbol }}{{ sip.total_paid|floatformat:0 }}</span>
+                                </div>
+                                <div class="col-6">
+                                    <small class="text-muted d-block">Installments</small>
+                                    <span class="fw-bold">{{ sip.installments_count }}</span>
+                                </div>
+                            </div>
+
+                            <div class="pt-2 border-top">
+                                <small class="text-muted">
+                                    {{ currency_symbol }}{{ sip.amount_per_installment|floatformat:0 }}/{{
+                                    sip.get_frequency_display|lower }}
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="text-center py-5">
+                <i class="bi bi-pause-circle display-1 text-muted opacity-25"></i>
+                <p class="text-muted mt-3">No paused SIPs.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
