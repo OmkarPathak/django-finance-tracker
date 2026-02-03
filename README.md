@@ -30,6 +30,12 @@ Create custom categories and set monthly spending limits. The dashboard visualiz
 ### 6. Multi-Currency Support
 Work with your preferred currency. Update your profile settings to display your local currency symbol across the app.
 
+### 7. Smart Category Prediction 🧠
+Typing descriptions manually? Let the app do the work.
+- **Personalized Learning**: Recognizes your custom habits (e.g., "Momos" → "Street Food") from your history.
+- **Rule-Based Instant Match**: Instantly detects common terms like "Uber", "Netflix", "Zomato", etc.
+- **Generative AI (Optional)**: Connect Google Gemini AI for advanced context-aware categorization.
+
 
 ## Prerequisites
 
