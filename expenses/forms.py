@@ -209,7 +209,7 @@ class SIPForm(forms.ModelForm):
             'amount_per_installment': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01', 'placeholder': '5000'}),
             'frequency': forms.Select(attrs={'class': 'form-select'}),
             'start_date': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
-            'sip_day': forms.NumberInput(attrs={'class': 'form-control', 'min': '1', 'max': '28', 'placeholder': '1'}),
+            'sip_day': forms.NumberInput(attrs={'class': 'form-control', 'min': '1', 'max': '28', 'placeholder': '1', 'id': 'id_sip_day'}),
             'is_active': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }
 
@@ -232,8 +232,15 @@ class SIPForm(forms.ModelForm):
     
     def clean_sip_day(self):
         day = self.cleaned_data.get('sip_day')
-        if day and (day < 1 or day > 28):
-            raise forms.ValidationError("SIP day must be between 1 and 28.")
+        frequency = self.cleaned_data.get('frequency')
+        
+        if day:
+            if frequency == 'WEEKLY':
+                if day < 1 or day > 7:
+                    raise forms.ValidationError("For weekly SIPs, day must be between 1 (Monday) and 7 (Sunday).")
+            else:  # MONTHLY or QUARTERLY
+                if day < 1 or day > 28:
+                    raise forms.ValidationError("For monthly/quarterly SIPs, day must be between 1 and 28.")
         return day
     
     def clean_fund_name(self):

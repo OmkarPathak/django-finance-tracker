@@ -298,7 +298,7 @@ class SIPInvestment(models.Model):
     amount_per_installment = models.DecimalField(max_digits=10, decimal_places=2)
     frequency = models.CharField(max_length=15, choices=FREQUENCY_CHOICES, default='MONTHLY')
     start_date = models.DateField()
-    sip_day = models.PositiveIntegerField(default=1, help_text="Day of month for SIP deduction (1-28)")
+    sip_day = models.PositiveIntegerField(default=1, help_text="For Monthly/Quarterly: day of month (1-28), For Weekly: day of week (1=Mon, 7=Sun)")
     
     last_paid_date = models.DateField(null=True, blank=True)
     is_active = models.BooleanField(default=True)
