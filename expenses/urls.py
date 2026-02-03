@@ -29,6 +29,26 @@ urlpatterns = [
     path('income/<int:pk>/edit/', views.IncomeUpdateView.as_view(), name='income-edit'),
     path('income/<int:pk>/delete/', views.IncomeDeleteView.as_view(), name='income-delete'),
 
+    # SIP Investments
+    path('sip/', views.SIPListView.as_view(), name='sip-list'),
+    path('sip/add/', views.SIPCreateView.as_view(), name='sip-create'),
+    path('sip/<int:pk>/edit/', views.SIPUpdateView.as_view(), name='sip-edit'),
+    path('sip/<int:pk>/delete/', views.SIPDeleteView.as_view(), name='sip-delete'),
+    path('sip/<int:pk>/pay/', views.pay_sip, name='sip-pay'),
+    path('portfolio/', views.PortfolioDashboardView.as_view(), name='portfolio-dashboard'),
+
+    # Tags
+    path('tags/', views.TagListView.as_view(), name='tag-list'),
+    path('tags/add/', views.TagCreateView.as_view(), name='tag-create'),
+    path('tags/create/ajax/', views.create_tag_ajax, name='tag-create-ajax'),
+    path('tags/<int:pk>/edit/', views.TagUpdateView.as_view(), name='tag-edit'),
+    path('tags/<int:pk>/delete/', views.TagDeleteView.as_view(), name='tag-delete'),
+
+    # Filter Presets
+    path('filter-preset/save/', views.save_filter_preset, name='filter-preset-save'),
+    path('filter-preset/list/', views.get_filter_presets, name='filter-preset-list'),
+    path('filter-preset/<int:pk>/delete/', views.delete_filter_preset, name='filter-preset-delete'),
+
     # Calendar
     path('calendar/', views.CalendarView.as_view(), name='calendar'),
     path('calendar/<int:year>/<int:month>/', views.CalendarView.as_view(), name='calendar-month'),

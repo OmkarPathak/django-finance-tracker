@@ -1,0 +1,86 @@
+{% extends 'expenses/settings_base.html' %}
+
+{% block settings_content %}
+<div class="fade-in">
+    <div class="mb-4">
+        <a href="{% url 'tag-list' %}" class="text-decoration-none text-muted">
+            <i class="bi bi-arrow-left me-1"></i> Back to Tags
+        </a>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-transparent border-0 py-3">
+            <h4 class="mb-0 fw-bold">
+                <i class="bi bi-tag text-primary me-2"></i>{{ title }}
+            </h4>
+        </div>
+        <div class="card-body">
+            <form method="post" novalidate>
+                {% csrf_token %}
+
+                <div class="row g-3">
+                    <!-- Tag Name -->
+                    <div class="col-12 col-md-8">
+                        <label for="id_name" class="form-label fw-bold">Tag Name <span
+                                class="text-danger">*</span></label>
+                        {{ form.name }}
+                        {% if form.name.errors %}
+                        <div class="text-danger small mt-1">{{ form.name.errors.0 }}</div>
+                        {% endif %}
+                        <div class="form-text">e.g., "Tax Deductible", "Business", "Gift"</div>
+                    </div>
+
+                    <!-- Color -->
+                    <div class="col-12 col-md-4">
+                        <label for="id_color" class="form-label fw-bold">Color</label>
+                        {{ form.color }}
+                        {% if form.color.errors %}
+                        <div class="text-danger small mt-1">{{ form.color.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Preview -->
+                    <div class="col-12">
+                        <label class="form-label fw-bold">Preview</label>
+                        <div class="p-3 bg-body-tertiary rounded">
+                            <span id="tag-preview"
+                                class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 px-3 py-2 fs-6">
+                                Sample Tag
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="d-flex gap-2 mt-4 pt-3 border-top">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check-lg me-1"></i> {{ button_text }}
+                    </button>
+                    <a href="{% url 'tag-list' %}" class="btn btn-outline-secondary">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const nameInput = document.getElementById('id_name');
+        const colorSelect = document.getElementById('id_color');
+        const preview = document.getElementById('tag-preview');
+
+        function updatePreview() {
+            const name = nameInput.value || 'Sample Tag';
+            const color = colorSelect.value || 'primary';
+
+            preview.textContent = name;
+            preview.className = `badge bg-${color} bg-opacity-10 text-${color} border border-${color} border-opacity-25 px-3 py-2 fs-6`;
+        }
+
+        nameInput.addEventListener('input', updatePreview);
+        colorSelect.addEventListener('change', updatePreview);
+
+        updatePreview();
+    });
+</script>
+{% endblock %}

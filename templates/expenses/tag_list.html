@@ -1,0 +1,92 @@
+{% extends 'expenses/settings_base.html' %}
+
+{% block settings_content %}
+<div class="fade-in">
+    <!-- Header -->
+    <div class="d-flex flex-column flex-sm-row justify-content-between align-items-stretch align-items-sm-center mb-4">
+        <div class="mb-3 mb-sm-0">
+            <h2 class="h3 fw-bold mb-0">
+                <i class="bi bi-tags text-primary me-2"></i>Tags
+            </h2>
+            <p class="text-muted small mb-0 mt-1">Organize expenses with custom labels for better filtering.</p>
+        </div>
+        <div>
+            <a href="{% url 'tag-create' %}" class="btn btn-sm btn-primary shadow-sm">
+                <i class="bi bi-plus-lg me-2"></i> Create Tag
+            </a>
+        </div>
+    </div>
+
+    {% if tags_with_count %}
+    <div class="card border-0 shadow-sm">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="bg-body-tertiary">
+                    <tr>
+                        <th class="border-0 py-3">Tag</th>
+                        <th class="border-0 py-3 text-center">Color</th>
+                        <th class="border-0 py-3 text-center">Used In</th>
+                        <th class="border-0 py-3 text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in tags_with_count %}
+                    <tr>
+                        <td class="align-middle py-3">
+                            <span
+                                class="badge bg-{{ item.tag.color }} bg-opacity-10 text-{{ item.tag.color }} border border-{{ item.tag.color }} border-opacity-25 px-3 py-2 fs-6">
+                                {{ item.tag.name }}
+                            </span>
+                        </td>
+                        <td class="align-middle text-center py-3">
+                            <span class="badge bg-{{ item.tag.color }} rounded-circle p-2">&nbsp;&nbsp;</span>
+                            <span class="text-muted small ms-1">{{ item.tag.get_color_display }}</span>
+                        </td>
+                        <td class="align-middle text-center py-3">
+                            <span class="badge bg-secondary rounded-pill">{{ item.usage_count }} expenses</span>
+                        </td>
+                        <td class="align-middle text-end py-3">
+                            <a href="{% url 'tag-edit' item.tag.pk %}" class="btn btn-sm btn-outline-primary me-1"
+                                title="Edit">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <a href="{% url 'tag-delete' item.tag.pk %}" class="btn btn-sm btn-outline-danger"
+                                title="Delete">
+                                <i class="bi bi-trash"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% else %}
+    <div class="text-center py-5">
+        <i class="bi bi-tags display-1 text-muted opacity-25"></i>
+        <h5 class="text-muted mt-3">No tags created yet</h5>
+        <p class="text-muted">Tags help you organize and filter expenses across categories.</p>
+        <a href="{% url 'tag-create' %}" class="btn btn-primary">
+            <i class="bi bi-plus-lg me-2"></i> Create Your First Tag
+        </a>
+    </div>
+    {% endif %}
+
+    <!-- Help Text -->
+    <div class="mt-4 p-3 bg-body-tertiary rounded-3 border">
+        <div class="d-flex align-items-start">
+            <i class="bi bi-lightbulb text-warning fs-5 me-3"></i>
+            <div>
+                <h6 class="fw-bold mb-1">Tag Ideas</h6>
+                <p class="text-muted small mb-0">
+                    Use tags like <span class="badge bg-success bg-opacity-10 text-success">Tax Deductible</span>,
+                    <span class="badge bg-primary bg-opacity-10 text-primary">Business</span>,
+                    <span class="badge bg-warning bg-opacity-10 text-warning">Reimbursable</span>,
+                    <span class="badge bg-info bg-opacity-10 text-info">Gift</span>
+                    to track expenses across different categories.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
