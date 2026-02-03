@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Expense, Category, Income, RecurringTransaction, Notification
+from .models import Expense, Category, Income, RecurringTransaction, Notification, Tag, SIPInvestment, FilterPreset
 
 @admin.register(Notification)
 class NotificationAdmin(admin.ModelAdmin):
@@ -17,10 +17,49 @@ class CategoryAdmin(admin.ModelAdmin):
 
 @admin.register(Expense)
 class ExpenseAdmin(admin.ModelAdmin):
-    list_display = ('date', 'description', 'category', 'amount', 'user')
-    list_filter = ('category', 'date', 'user')
+    list_display = ('date', 'description', 'category', 'amount', 'user', 'get_tags')
+    list_filter = ('category', 'date', 'user', 'tags')
     search_fields = ('description', 'category')
     ordering = ('-date',)
+    filter_horizontal = ('tags',)
+
+    def get_tags(self, obj):
+        return ", ".join([t.name for t in obj.tags.all()])
+    get_tags.short_description = 'Tags'
+
+
+@admin.register(Tag)
+class TagAdmin(admin.ModelAdmin):
+    list_display = ('name', 'color', 'user', 'get_usage_count')
+    list_filter = ('color', 'user')
+    search_fields = ('name',)
+
+    def get_usage_count(self, obj):
+        return obj.expense_set.count()
+    get_usage_count.short_description = 'Used In'
+
+
+@admin.register(SIPInvestment)
+class SIPInvestmentAdmin(admin.ModelAdmin):
+    list_display = ('fund_name', 'user', 'amount_per_installment', 'frequency', 'sip_day', 'is_active', 'get_total_paid', 'get_installments')
+    list_filter = ('frequency', 'is_active', 'user')
+    search_fields = ('fund_name',)
+    ordering = ('-start_date',)
+
+    def get_total_paid(self, obj):
+        return f"₹{obj.total_paid:,.2f}"
+    get_total_paid.short_description = 'Total Paid'
+
+    def get_installments(self, obj):
+        return obj.installments_count
+    get_installments.short_description = 'Installments'
+
+
+@admin.register(FilterPreset)
+class FilterPresetAdmin(admin.ModelAdmin):
+    list_display = ('name', 'user', 'created_at')
+    list_filter = ('user',)
+    search_fields = ('name',)
 
 @admin.register(Income)
 class IncomeAdmin(admin.ModelAdmin):

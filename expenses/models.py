@@ -9,6 +9,8 @@ class Expense(models.Model):
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     description = models.TextField()
     category = models.CharField(max_length=255)
+    tags = models.ManyToManyField('Tag', blank=True, related_name='expenses')
+    sip = models.ForeignKey('SIPInvestment', on_delete=models.SET_NULL, null=True, blank=True)
     
     PAYMENT_OPTIONS = [
         ('Cash', 'Cash'),
@@ -240,3 +242,141 @@ class Notification(models.Model):
 
     def __str__(self):
         return f"Notification for {self.user.username}: {self.title}"
+
+
+class Tag(models.Model):
+    COLOR_CHOICES = [
+        ('primary', 'Blue'),
+        ('success', 'Green'),
+        ('danger', 'Red'),
+        ('warning', 'Yellow'),
+        ('info', 'Cyan'),
+        ('secondary', 'Gray'),
+        ('dark', 'Dark'),
+    ]
+    
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='tags')
+    name = models.CharField(max_length=50)
+    color = models.CharField(max_length=20, choices=COLOR_CHOICES, default='primary')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def save(self, *args, **kwargs):
+        if self.name:
+            self.name = self.name.strip()
+        super().save(*args, **kwargs)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['user', 'name'],
+                name='unique_tag'
+            )
+        ]
+
+    def __str__(self):
+        return self.name
+
+
+class SIPInvestment(models.Model):
+    FREQUENCY_CHOICES = [
+        ('WEEKLY', 'Weekly'),
+        ('MONTHLY', 'Monthly'),
+        ('QUARTERLY', 'Quarterly'),
+    ]
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sips')
+    fund_name = models.CharField(max_length=200)
+    category = models.ForeignKey('Category', on_delete=models.SET_NULL, null=True, blank=True)
+    
+    amount_per_installment = models.DecimalField(max_digits=10, decimal_places=2)
+    frequency = models.CharField(max_length=15, choices=FREQUENCY_CHOICES, default='MONTHLY')
+    start_date = models.DateField()
+    sip_day = models.PositiveIntegerField(default=1, help_text="Day of month for SIP deduction (1-28)")
+    
+    last_paid_date = models.DateField(null=True, blank=True)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def save(self, *args, **kwargs):
+        if self.fund_name:
+            self.fund_name = self.fund_name.strip()
+        # Ensure sip_day is between 1-28
+        if self.sip_day > 28:
+            self.sip_day = 28
+        super().save(*args, **kwargs)
+
+    @property
+    def next_due_date(self):
+        from datetime import date
+        from dateutil.relativedelta import relativedelta
+        
+        today = date.today()
+        
+        if self.last_paid_date:
+            if self.frequency == 'WEEKLY':
+                next_date = self.last_paid_date + relativedelta(weeks=1)
+            elif self.frequency == 'QUARTERLY':
+                next_date = self.last_paid_date + relativedelta(months=3)
+            else:  # MONTHLY
+                next_date = self.last_paid_date + relativedelta(months=1)
+        else:
+            # First payment - use start_date or next occurrence
+            if self.start_date >= today:
+                return self.start_date
+            # Find next occurrence based on sip_day
+            next_date = date(today.year, today.month, min(self.sip_day, 28))
+            if next_date <= today:
+                next_date = next_date + relativedelta(months=1)
+        
+        return next_date
+
+    @property
+    def is_due(self):
+        from datetime import date
+        return self.next_due_date <= date.today()
+
+    @property
+    def total_paid(self):
+        return self.expense_set.aggregate(total=models.Sum('amount'))['total'] or 0
+
+    @property
+    def installments_count(self):
+        return self.expense_set.count()
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['user', 'fund_name'],
+                name='unique_sip'
+            )
+        ]
+        ordering = ['-start_date']
+
+    def __str__(self):
+        return f"{self.fund_name} ({self.get_frequency_display()})"
+
+
+class FilterPreset(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='filter_presets')
+    name = models.CharField(max_length=100)
+    filter_config = models.JSONField(default=dict)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def save(self, *args, **kwargs):
+        if self.name:
+            self.name = self.name.strip()
+        super().save(*args, **kwargs)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['user', 'name'],
+                name='unique_filter_preset'
+            )
+        ]
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.name} ({self.user.username})"

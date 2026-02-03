@@ -20,9 +20,9 @@ from django.utils import timezone
 from datetime import datetime, date, timedelta
 import calendar
 
-from .models import Expense, Category, Income, RecurringTransaction, UserProfile, SubscriptionPlan, Notification
+from .models import Expense, Category, Income, RecurringTransaction, UserProfile, SubscriptionPlan, Notification, SIPInvestment, Tag, FilterPreset
 from finance_tracker.ai_utils import predict_category_ai
-from .forms import ExpenseForm, IncomeForm, RecurringTransactionForm, ProfileUpdateForm, CustomSignupForm, ContactForm
+from .forms import ExpenseForm, IncomeForm, RecurringTransactionForm, ProfileUpdateForm, CustomSignupForm, ContactForm, SIPForm, TagForm
 from allauth.socialaccount.models import SocialAccount
 import openpyxl
 import requests
@@ -959,20 +959,24 @@ class ExpenseListView(LoginRequiredMixin, RecurringTransactionMixin, ListView):
     paginate_by = 20
 
     def get_queryset(self):
-        queryset = Expense.objects.filter(user=self.request.user).order_by('-date')
+        queryset = Expense.objects.filter(user=self.request.user).prefetch_related('tags').order_by('-date')
         
         # Filtering
         selected_years = self.request.GET.getlist('year')
         selected_months = self.request.GET.getlist('month')
         selected_categories = self.request.GET.getlist('category')
+        selected_tags = self.request.GET.getlist('tag')
         search_query = self.request.GET.get('search')
         start_date = self.request.GET.get('start_date')
         end_date = self.request.GET.get('end_date')
+        min_amount = self.request.GET.get('min_amount')
+        max_amount = self.request.GET.get('max_amount')
 
         # Remove empty strings from lists
         selected_years = [y for y in selected_years if y]
         selected_months = [m for m in selected_months if m]
         selected_categories = [c for c in selected_categories if c]
+        selected_tags = [t for t in selected_tags if t]
         
         # Date Range Logic (Precedence over Year/Month)
         if start_date or end_date:
@@ -985,12 +989,13 @@ class ExpenseListView(LoginRequiredMixin, RecurringTransactionMixin, ListView):
             has_active_filters = (
                 selected_years or 
                 selected_months or 
-                search_query  # Don't check categories as we might want defaults even if cat is selected? No, usually filters are additive.
+                search_query or
+                selected_tags or
+                min_amount or
+                max_amount
             )
             
             # If no year/month/search filters, default to current month/year
-            # (ignoring category here might be debated, but typically if I just filter 'Food', I might want all time or current month? 
-            #  The dashboard logic defaults to current month if no year/month. Let's stick to that.)
             if not has_active_filters:
                 selected_years = [str(datetime.now().year)]
                 selected_months = [str(datetime.now().month)]
@@ -1003,6 +1008,22 @@ class ExpenseListView(LoginRequiredMixin, RecurringTransactionMixin, ListView):
 
         if selected_categories:
             queryset = queryset.filter(category__in=selected_categories)
+        
+        # Filter by Tags
+        if selected_tags:
+            queryset = queryset.filter(tags__id__in=selected_tags).distinct()
+        
+        # Filter by Amount Range
+        if min_amount:
+            try:
+                queryset = queryset.filter(amount__gte=float(min_amount))
+            except ValueError:
+                pass
+        if max_amount:
+            try:
+                queryset = queryset.filter(amount__lte=float(max_amount))
+            except ValueError:
+                pass
         
         # Filter by Payment Method
         payment_method = self.request.GET.get('payment_method')
@@ -1082,6 +1103,21 @@ class ExpenseListView(LoginRequiredMixin, RecurringTransactionMixin, ListView):
             context['selected_years'] = selected_years
             context['selected_months'] = selected_months
             context['selected_categories'] = selected_categories
+        
+        # Tags for filtering
+        context['tags'] = Tag.objects.filter(user=self.request.user).order_by('name')
+        context['selected_tags'] = self.request.GET.getlist('tag')
+        
+        # Amount range filters
+        context['min_amount'] = self.request.GET.get('min_amount', '')
+        context['max_amount'] = self.request.GET.get('max_amount', '')
+        
+        # Filter presets
+        context['filter_presets'] = FilterPreset.objects.filter(user=self.request.user).order_by('name')
+        
+        # Payment methods for multi-select
+        context['payment_methods'] = Expense.PAYMENT_OPTIONS
+        context['selected_payment_methods'] = self.request.GET.getlist('payment_method')
             
         return context
 
@@ -2366,6 +2402,383 @@ class AnalyticsView(LoginRequiredMixin, TemplateView):
             context['avg_balance_rate'] = round(((ytd_income_agg - ytd_expense_agg) / ytd_income_agg) * 100, 1)
         else:
             context['avg_balance_rate'] = 0
+        
+        # 4. Investment/SIP Data for Net Worth
+        from .models import SIPInvestment
+        active_sips = SIPInvestment.objects.filter(user=user, is_active=True)
+        
+        total_invested = sum(sip.total_invested for sip in active_sips)
+        current_investment_value = sum(sip.current_value for sip in active_sips)
+        investment_returns = current_investment_value - total_invested
+        
+        context['total_invested'] = total_invested
+        context['current_investment_value'] = current_investment_value
+        context['investment_returns'] = investment_returns
+        context['investment_returns_percentage'] = round((investment_returns / total_invested * 100), 2) if total_invested > 0 else 0
+        context['active_sips_count'] = active_sips.count()
+        
+        # Net Worth = Savings (YTD Balance) + Investment Returns
+        context['net_worth'] = context['total_balance_ytd'] + investment_returns
             
         return context
+
+
+# ============================================
+# SIP Investment Views
+# ============================================
+
+class SIPListView(LoginRequiredMixin, ListView):
+    model = SIPInvestment
+    template_name = 'expenses/sip_list.html'
+    context_object_name = 'sips'
+    paginate_by = 20
+
+    def get_queryset(self):
+        from .models import SIPInvestment
+        return SIPInvestment.objects.filter(user=self.request.user).order_by('-is_active', '-start_date')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        from .models import SIPInvestment
+        
+        all_sips = SIPInvestment.objects.filter(user=self.request.user)
+        active_sips = all_sips.filter(is_active=True)
+        paused_sips = all_sips.filter(is_active=False)
+        
+        context['active_sips'] = active_sips
+        context['paused_sips'] = paused_sips
+        context['active_count'] = active_sips.count()
+        context['paused_count'] = paused_sips.count()
+        
+        # Calculate totals from actual expenses
+        context['total_paid'] = sum(sip.total_paid for sip in all_sips)
+        context['installments_count'] = sum(sip.installments_count for sip in all_sips)
+        
+        # Count due SIPs
+        context['due_count'] = sum(1 for sip in active_sips if sip.is_due)
+        
+        # Monthly SIP commitment
+        monthly_commitment = sum(
+            sip.amount_per_installment for sip in active_sips 
+            if sip.frequency == 'MONTHLY'
+        )
+        weekly_commitment = sum(
+            sip.amount_per_installment * 4 for sip in active_sips 
+            if sip.frequency == 'WEEKLY'
+        )
+        quarterly_commitment = sum(
+            sip.amount_per_installment / 3 for sip in active_sips 
+            if sip.frequency == 'QUARTERLY'
+        )
+        context['monthly_commitment'] = monthly_commitment + weekly_commitment + quarterly_commitment
+        
+        context['can_create'] = True
+        
+        return context
+
+
+@login_required
+def pay_sip(request, pk):
+    """Mark an SIP installment as paid - creates an expense entry"""
+    from .models import SIPInvestment, Expense
+    from datetime import date
+    
+    sip = get_object_or_404(SIPInvestment, pk=pk, user=request.user)
+    
+    if request.method == 'POST':
+        # Create expense for this SIP payment
+        expense = Expense.objects.create(
+            user=request.user,
+            date=date.today(),
+            amount=sip.amount_per_installment,
+            description=f"SIP: {sip.fund_name}",
+            category=sip.category.name if sip.category else "Investments",
+            payment_method='NetBanking',
+            sip=sip
+        )
+        
+        # Update last_paid_date
+        sip.last_paid_date = date.today()
+        sip.save()
+        
+        messages.success(request, f'SIP payment of ₹{sip.amount_per_installment} recorded for {sip.fund_name}')
+        return redirect('sip-list')
+    
+    return redirect('sip-list')
+
+
+class SIPCreateView(LoginRequiredMixin, CreateView):
+    model = SIPInvestment
+    form_class = SIPForm
+    template_name = 'expenses/sip_form.html'
+    success_url = reverse_lazy('sip-list')
+
+    def dispatch(self, request, *args, **kwargs):
+        # Only Pro users can create SIPs (temporarily disabled for testing)
+        # if not request.user.profile.is_pro:
+        #     messages.error(request, 'SIP Tracking is a Pro feature. Please upgrade to access it.')
+        #     return redirect('pricing')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['user'] = self.request.user
+        return kwargs
+
+    def form_valid(self, form):
+        form.instance.user = self.request.user
+        messages.success(self.request, f'SIP "{form.instance.fund_name}" added successfully!')
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Add New SIP'
+        context['button_text'] = 'Add SIP'
+        return context
+
+
+class SIPUpdateView(LoginRequiredMixin, UpdateView):
+    model = SIPInvestment
+    form_class = SIPForm
+    template_name = 'expenses/sip_form.html'
+    success_url = reverse_lazy('sip-list')
+
+    def get_queryset(self):
+        from .models import SIPInvestment
+        return SIPInvestment.objects.filter(user=self.request.user)
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['user'] = self.request.user
+        return kwargs
+
+    def form_valid(self, form):
+        messages.success(self.request, f'SIP "{form.instance.fund_name}" updated successfully!')
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Update SIP'
+        context['button_text'] = 'Save Changes'
+        return context
+
+
+class SIPDeleteView(LoginRequiredMixin, DeleteView):
+    model = SIPInvestment
+    template_name = 'expenses/sip_confirm_delete.html'
+    success_url = reverse_lazy('sip-list')
+
+    def get_queryset(self):
+        from .models import SIPInvestment
+        return SIPInvestment.objects.filter(user=self.request.user)
+
+    def form_valid(self, form):
+        messages.success(self.request, 'SIP deleted successfully!')
+        return super().form_valid(form)
+
+
+class PortfolioDashboardView(LoginRequiredMixin, TemplateView):
+    """Simple SIP summary view - redirects to SIP list"""
+    template_name = 'expenses/sip_list.html'
+
+    def get(self, request, *args, **kwargs):
+        # Redirect to SIP list since we simplified the feature
+        return redirect('sip-list')
+
+
+# ============================================
+# Tag Views
+# ============================================
+
+class TagListView(LoginRequiredMixin, ListView):
+    model = Tag
+    template_name = 'expenses/tag_list.html'
+    context_object_name = 'tags'
+
+    def get_queryset(self):
+        from .models import Tag
+        return Tag.objects.filter(user=self.request.user).order_by('name')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        from .models import Tag
+        
+        # Add usage count for each tag
+        tags_with_count = []
+        for tag in context['tags']:
+            tags_with_count.append({
+                'tag': tag,
+                'usage_count': tag.expenses.count()
+            })
+        context['tags_with_count'] = tags_with_count
+        return context
+
+
+class TagCreateView(LoginRequiredMixin, CreateView):
+    model = Tag
+    form_class = TagForm
+    template_name = 'expenses/tag_form.html'
+    success_url = reverse_lazy('tag-list')
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['user'] = self.request.user
+        return kwargs
+
+    def form_valid(self, form):
+        form.instance.user = self.request.user
+        messages.success(self.request, f'Tag "{form.instance.name}" created successfully!')
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Create Tag'
+        context['button_text'] = 'Create'
+        return context
+
+
+class TagUpdateView(LoginRequiredMixin, UpdateView):
+    model = Tag
+    form_class = TagForm
+    template_name = 'expenses/tag_form.html'
+    success_url = reverse_lazy('tag-list')
+
+    def get_queryset(self):
+        from .models import Tag
+        return Tag.objects.filter(user=self.request.user)
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['user'] = self.request.user
+        return kwargs
+
+    def form_valid(self, form):
+        messages.success(self.request, f'Tag "{form.instance.name}" updated successfully!')
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Edit Tag'
+        context['button_text'] = 'Save Changes'
+        return context
+
+
+class TagDeleteView(LoginRequiredMixin, DeleteView):
+    model = Tag
+    template_name = 'expenses/tag_confirm_delete.html'
+    success_url = reverse_lazy('tag-list')
+
+    def get_queryset(self):
+        from .models import Tag
+        return Tag.objects.filter(user=self.request.user)
+
+    def form_valid(self, form):
+        messages.success(self.request, 'Tag deleted successfully!')
+        return super().form_valid(form)
+
+
+@login_required
+def create_tag_ajax(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            name = data.get('name', '').strip()
+            color = data.get('color', 'primary')
+            
+            if not name:
+                return JsonResponse({'success': False, 'error': 'Tag name cannot be empty.'}, status=400)
+            
+            from .models import Tag
+            tag = Tag.objects.create(user=request.user, name=name, color=color)
+            return JsonResponse({
+                'success': True, 
+                'id': tag.id, 
+                'name': tag.name,
+                'color': tag.color
+            })
+            
+        except IntegrityError:
+            return JsonResponse({'success': False, 'error': 'This tag already exists.'}, status=400)
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)}, status=500)
+            
+    return JsonResponse({'success': False, 'error': 'Invalid request method.'}, status=405)
+
+
+# ============================================
+# Filter Preset Views
+# ============================================
+
+@login_required
+def save_filter_preset(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            name = data.get('name', '').strip()
+            filter_config = data.get('filter_config', {})
+            
+            if not name:
+                return JsonResponse({'success': False, 'error': 'Preset name cannot be empty.'}, status=400)
+            
+            from .models import FilterPreset
+            
+            # Check limits based on tier
+            current_count = FilterPreset.objects.filter(user=request.user).count()
+            limit = 3  # Free
+            if request.user.profile.is_plus:
+                limit = 10
+            if request.user.profile.is_pro:
+                limit = float('inf')
+            
+            if current_count >= limit:
+                return JsonResponse({
+                    'success': False, 
+                    'error': f'Filter preset limit reached ({int(limit)}). Please upgrade or delete existing presets.'
+                }, status=403)
+            
+            preset, created = FilterPreset.objects.update_or_create(
+                user=request.user,
+                name=name,
+                defaults={'filter_config': filter_config}
+            )
+            
+            return JsonResponse({
+                'success': True,
+                'id': preset.id,
+                'name': preset.name,
+                'created': created
+            })
+            
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)}, status=500)
+            
+    return JsonResponse({'success': False, 'error': 'Invalid request method.'}, status=405)
+
+
+@login_required
+def get_filter_presets(request):
+    from .models import FilterPreset
+    presets = FilterPreset.objects.filter(user=request.user).order_by('name')
+    
+    data = [{
+        'id': p.id,
+        'name': p.name,
+        'filter_config': p.filter_config
+    } for p in presets]
+    
+    return JsonResponse({'success': True, 'presets': data})
+
+
+@login_required
+def delete_filter_preset(request, pk):
+    if request.method == 'POST':
+        try:
+            from .models import FilterPreset
+            preset = get_object_or_404(FilterPreset, pk=pk, user=request.user)
+            preset.delete()
+            return JsonResponse({'success': True})
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)}, status=500)
+    
+    return JsonResponse({'success': False, 'error': 'Invalid request method.'}, status=405)
 

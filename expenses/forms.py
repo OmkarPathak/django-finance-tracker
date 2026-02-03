@@ -2,14 +2,24 @@ from django import forms
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
 from allauth.socialaccount.models import SocialAccount
-from .models import Expense, Category, Income, RecurringTransaction
+from .models import Expense, Category, Income, RecurringTransaction, SIPInvestment, Tag, FilterPreset
 
 from datetime import date
 
 class ExpenseForm(forms.ModelForm):
+    tags = forms.ModelMultipleChoiceField(
+        queryset=Tag.objects.none(),
+        required=False,
+        widget=forms.SelectMultiple(attrs={
+            'class': 'form-select',
+            'data-live-search': 'true',
+            'size': '4'
+        })
+    )
+    
     class Meta:
         model = Expense
-        fields = ['date', 'amount', 'description', 'category', 'payment_method']
+        fields = ['date', 'amount', 'description', 'category', 'payment_method', 'tags']
         widgets = {
             'date': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
             'amount': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
@@ -28,6 +38,9 @@ class ExpenseForm(forms.ModelForm):
             # Create choices list: [(name, name), ...]
             choices = [(cat.name, cat.name) for cat in categories]
             self.fields['category'].widget = forms.Select(choices=choices, attrs={'class': 'form-select'})
+            
+            # Populate tags queryset
+            self.fields['tags'].queryset = Tag.objects.filter(user=user).order_by('name')
         else:
             self.fields['category'].widget = forms.TextInput(attrs={'class': 'form-control'})
 
@@ -183,4 +196,69 @@ class ContactForm(forms.Form):
             from django_recaptcha.fields import ReCaptchaField
             from django_recaptcha.widgets import ReCaptchaV3
             self.fields['captcha'] = ReCaptchaField(widget=ReCaptchaV3)
+
+
+class SIPForm(forms.ModelForm):
+    class Meta:
+        model = SIPInvestment
+        fields = ['fund_name', 'category', 'amount_per_installment', 
+                  'frequency', 'start_date', 'sip_day', 'is_active']
+        widgets = {
+            'fund_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g. Axis Bluechip Fund'}),
+            'category': forms.Select(attrs={'class': 'form-select'}),
+            'amount_per_installment': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01', 'placeholder': '5000'}),
+            'frequency': forms.Select(attrs={'class': 'form-select'}),
+            'start_date': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
+            'sip_day': forms.NumberInput(attrs={'class': 'form-control', 'min': '1', 'max': '28', 'placeholder': '1'}),
+            'is_active': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        self.user = kwargs.pop('user', None)
+        super().__init__(*args, **kwargs)
+        self.fields['start_date'].initial = date.today
+        self.fields['sip_day'].initial = 1
+        
+        # Filter categories for current user
+        if self.user:
+            from .models import Category
+            self.fields['category'].queryset = Category.objects.filter(user=self.user)
+        
+    def clean_amount_per_installment(self):
+        amount = self.cleaned_data.get('amount_per_installment')
+        if amount and amount <= 0:
+            raise forms.ValidationError("Amount must be greater than zero.")
+        return amount
+    
+    def clean_sip_day(self):
+        day = self.cleaned_data.get('sip_day')
+        if day and (day < 1 or day > 28):
+            raise forms.ValidationError("SIP day must be between 1 and 28.")
+        return day
+    
+    def clean_fund_name(self):
+        fund_name = self.cleaned_data.get('fund_name')
+        if fund_name:
+            return fund_name.strip()
+        return fund_name
+
+
+class TagForm(forms.ModelForm):
+    class Meta:
+        model = Tag
+        fields = ['name', 'color']
+        widgets = {
+            'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g. Tax Deductible'}),
+            'color': forms.Select(attrs={'class': 'form-select'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        self.user = kwargs.pop('user', None)
+        super().__init__(*args, **kwargs)
+
+    def clean_name(self):
+        name = self.cleaned_data.get('name')
+        if name:
+            return name.strip()
+        return name
 
