@@ -1,39 +1,37 @@
-from django.shortcuts import render, redirect, get_object_or_404
-from django.http import HttpResponse
-from django.db import IntegrityError
+import calendar
 import csv
-from django.forms import modelformset_factory
-from django.contrib.auth.models import User
-from django.contrib.auth.forms import UserCreationForm
+import json
+import traceback
+from datetime import datetime, date, timedelta
+
+import openpyxl
+from allauth.account.models import EmailAddress
+from allauth.socialaccount.models import SocialAccount
+from django.conf import settings
+from django.contrib import messages
+from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.contrib.auth import login, logout
-from django.contrib import messages
-from django.urls import reverse_lazy, reverse
-from django.views import generic
-from django.views.generic import TemplateView, ListView, CreateView, UpdateView, DeleteView, View
-from django.views.decorators.csrf import csrf_exempt
+from django.contrib.auth.models import User
+from django.core.cache import cache
+from django.core.mail import send_mail
+from django.core.management import call_command
+from django.db import IntegrityError
 from django.db.models import Sum, Q
+from django.db.models.functions import TruncMonth, TruncDay
+from django.forms import modelformset_factory
 from django.http import JsonResponse, HttpResponse
-import json
+from django.shortcuts import render, redirect, get_object_or_404
+from django.urls import reverse_lazy, reverse
 from django.utils import timezone
-from datetime import datetime, date, timedelta
-import calendar
+from django.utils.html import mark_safe, format_html, format_html_join
+from django.views import generic
+from django.views.decorators.csrf import csrf_exempt
+from django.views.generic import TemplateView, ListView, CreateView, UpdateView, DeleteView, View
 
-from .models import Expense, Category, Income, RecurringTransaction, UserProfile, SubscriptionPlan, Notification
 from finance_tracker.ai_utils import predict_category_ai
 from .forms import ExpenseForm, IncomeForm, RecurringTransactionForm, ProfileUpdateForm, CustomSignupForm, ContactForm
-from allauth.socialaccount.models import SocialAccount
-import openpyxl
-import requests
-import traceback
-from django.core.management import call_command
-from allauth.account.models import EmailAddress
-from django.core.mail import send_mail
-from django.conf import settings
-from django.core.cache import cache
-from django.db.models.functions import TruncMonth, TruncDay
-from django.utils.html import mark_safe, escape, format_html, format_html_join
+from .models import Expense, Category, Income, RecurringTransaction, UserProfile, SubscriptionPlan, Notification
 
 
 def create_category_ajax(request):
@@ -1093,19 +1091,25 @@ class ExpenseCreateView(LoginRequiredMixin, generic.TemplateView):
     template_name = 'expenses/expense_form.html'
 
     def get(self, request, *args, **kwargs):
-        # We need to wrap the formset to pass 'user' to the form constructor
         ExpenseFormSet = modelformset_factory(Expense, form=ExpenseForm, extra=1, can_delete=True)
-        # Pass user to form kwargs using formset_factory's form_kwargs (requires Django 4.0+)
-        # For older Django or modelformset, we might need a custom formset or curry the form.
-        # Simpler approach: Use a lambda or partial, but modelformset_factory creates a class.
-        
-        # Actually, best way for modelformset with custom init args is to override BaseFormSet or manually iterate.
-        # But simpler hack: Set the widget choices in the view by iterating forms? No, new forms need it.
-        
-        # Let's use form_kwargs in the formset initialization if supported.
-        # Django 1.9+ supports form_kwargs in formset constructor.
-        
-        initial_data = [{'date': datetime.now().date()} for _ in range(1)]
+
+        initial_data = [{'date': datetime.now().date()}]
+
+        # Check if copying from existing expense
+        copy_from_id = request.GET.get('copy_from')
+        if copy_from_id:
+            try:
+                original = Expense.objects.get(id=copy_from_id, user=request.user)
+                initial_data = [{
+                    'date': datetime.now().date(),
+                    'amount': original.amount,
+                    'description': original.description,
+                    'category': original.category,
+                    'payment_method': original.payment_method,
+                }]
+            except Expense.DoesNotExist:
+                pass
+
         formset = ExpenseFormSet(queryset=Expense.objects.none(), initial=initial_data, form_kwargs={'user': request.user})
         next_url = request.GET.get('next', '')
         return render(request, self.template_name, {'formset': formset, 'next_url': next_url})
