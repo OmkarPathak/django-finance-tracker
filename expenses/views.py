@@ -1,37 +1,39 @@
-import calendar
+from django.shortcuts import render, redirect, get_object_or_404
+from django.http import HttpResponse
+from django.db import IntegrityError
 import csv
-import json
-import traceback
-from datetime import datetime, date, timedelta
-
-import openpyxl
-from allauth.account.models import EmailAddress
-from allauth.socialaccount.models import SocialAccount
-from django.conf import settings
-from django.contrib import messages
-from django.contrib.auth import login, logout
+from django.forms import modelformset_factory
+from django.contrib.auth.models import User
+from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.contrib.auth.models import User
-from django.core.cache import cache
-from django.core.mail import send_mail
-from django.core.management import call_command
-from django.db import IntegrityError
-from django.db.models import Sum, Q
-from django.db.models.functions import TruncMonth, TruncDay
-from django.forms import modelformset_factory
-from django.http import JsonResponse, HttpResponse
-from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth import login, logout
+from django.contrib import messages
 from django.urls import reverse_lazy, reverse
-from django.utils import timezone
-from django.utils.html import mark_safe, format_html, format_html_join
 from django.views import generic
-from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import TemplateView, ListView, CreateView, UpdateView, DeleteView, View
+from django.views.decorators.csrf import csrf_exempt
+from django.db.models import Sum, Q
+from django.http import JsonResponse, HttpResponse
+import json
+from django.utils import timezone
+from datetime import datetime, date, timedelta
+import calendar
 
+from .models import Expense, Category, Income, RecurringTransaction, UserProfile, SubscriptionPlan, Notification
 from finance_tracker.ai_utils import predict_category_ai
 from .forms import ExpenseForm, IncomeForm, RecurringTransactionForm, ProfileUpdateForm, CustomSignupForm, ContactForm
-from .models import Expense, Category, Income, RecurringTransaction, UserProfile, SubscriptionPlan, Notification
+from allauth.socialaccount.models import SocialAccount
+import openpyxl
+import requests
+import traceback
+from django.core.management import call_command
+from allauth.account.models import EmailAddress
+from django.core.mail import send_mail
+from django.conf import settings
+from django.core.cache import cache
+from django.db.models.functions import TruncMonth, TruncDay
+from django.utils.html import mark_safe, escape, format_html, format_html_join
 
 
 def create_category_ajax(request):
