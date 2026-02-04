@@ -1,135 +1,142 @@
-# Django Finance Tracker
+# TrackMyRupee
+## Privacy-First Personal Finance Tracker & Expense Tracking App (No SMS, No Bank Access)
 
-A personal finance application to track expenses, analyze spending trends, and visualize data.
+**TrackMyRupee** is a privacy-first personal finance tracker and expense tracking app built for people who want complete control over their money — without giving away their data.
 
-**🚀 Use the hosted version comfortably at [trackmyrupee.com](https://trackmyrupee.com)**
+Unlike most money management apps, TrackMyRupee does not read SMS, connect to bank accounts, or sell user data.
+You manually track expenses, analyze spending, manage budgets, and stay in control — on your terms.
 
-## Standout Features
+**🌐 Try Live App:** https://trackmyrupee.com  
+**⭐ Star on GitHub:** https://github.com/OmkarPathak/django-finance-tracker
 
-### 1. Interactive Budget Dashboard
-Visualize your monthly spending against your budget goals. Get instant alerts when you're nearing your limits.
-![Budget Dashboard Screenshot](misc/dashboard1.png)
-![Budget Dashboard Screenshot](misc/dashboard2.png)
+![Django](https://img.shields.io/badge/Django-4.x-green)
+![License](https://img.shields.io/badge/license-MIT-blue)
+![Privacy First](https://img.shields.io/badge/Privacy-First-brightgreen)
+![Coverage](https://img.shields.io/badge/Coverage-74%25-green)
 
-### 2. Smart Excel Import
-Bulk upload your expenses with intelligence. The system automatically enforces the selected year and handles various date formats.
-![Upload Page Screenshot](misc/upload.png)
+---
 
-### 3. Comprehensive Filtering
-Slice and dice your financial data. Filter by **Year**, **Month**, **Category**, and **Date Range** to get the insights you need.
-![Filtering Screenshot](misc/filters.png)
+## Why TrackMyRupee?
 
-### 4. Recurring Transactions
-Set it and forget it. Automate your regular income and expenses (like rent or subscriptions) so you never miss an entry.
-![Recurring Transactions Screenshot](misc/subscriptions.png)
+TrackMyRupee follows strict privacy principles:
 
-### 5. Category Management & Limits
-Create custom categories and set monthly spending limits. The dashboard visualizes your progress against these limits.
-![Category Limits Screenshot](misc/limits.png)
+-  ❌ No SMS reading
+-  ❌ No bank account access
+-  ❌ No selling or sharing financial data
+-  ✅ Full data export and account deletion
+-  Your money. Your data. Your control.
 
-### 6. Multi-Currency Support
-Work with your preferred currency. Update your profile settings to display your local currency symbol across the app.
+---
 
-### 7. Smart Category Prediction 🧠
-Typing descriptions manually? Let the app do the work.
-- **Personalized Learning**: Recognizes your custom habits (e.g., "Momos" → "Street Food") from your history.
-- **Rule-Based Instant Match**: Instantly detects common terms like "Uber", "Netflix", "Zomato", etc.
-- **Generative AI (Optional)**: Connect Google Gemini AI for advanced context-aware categorization.
+## Personal Finance Tracking Without Surveillance
 
+Most expense tracking apps rely on:
+- Reading SMS messages
+- Connecting to bank accounts
+- Sharing financial insights with third parties
 
-## Prerequisites
+**TrackMyRupee is different.**
 
--   Python 3.8+
--   pip (Python package manager)
+It is a **privacy-first expense tracker** that gives you:
+- Complete ownership of your financial data
+- Manual and bulk expense tracking
+- Transparent analytics with zero hidden tracking
 
-## Installation
+![Budget Dashboard – TrackMyRupee](misc/dashboard2.png)
 
-1.  **Clone the repository**:
-    ```bash
-    git clone <repository-url>
-    cd django-finance-tracker
-    ```
+---
 
-2.  **Create a virtual environment** (optional but recommended):
-    ```bash
-    python3 -m venv env
-    source env/bin/activate  # On Windows use `env\Scripts\activate`
-    ```
+## Features – Expense Tracking & Money Management
 
-3.  **Install dependencies**:
-    ```bash
-    pip install -r requirements.txt
-    ```
+TrackMyRupee includes all the essential features expected from a modern **expense tracker and budget management app**:
 
-4.  **Apply database migrations**:
-    ```bash
-    python manage.py migrate
-    ```
-5.  **Setup Demo User** (Optional but recommended):
-    ```bash
-    python manage.py setup_demo_user
-    ```
+✔ Daily expense tracking (manual entry)  
+✔ Excel-based bulk expense import  
+✔ Budget vs actual spending analysis  
+✔ Visual dashboards and charts  
+✔ Subscription and recurring payment tracking  
+✔ Category-based expense filtering  
+✔ Multi-currency support  
+✔ Export your financial data anytime  
 
-    **Note**: This command populates the database with sample data for the demo mode.
-## Docker Setup
+This makes TrackMyRupee ideal for:
+- Individuals managing personal expenses
+- Freelancers tracking income and costs
+- Privacy-conscious users avoiding SMS-based apps
 
-1.  **Clone the repository**:
-    ```bash
-    git clone <repository-url>
-    cd django-finance-tracker
-    ```
+See [FEATURES.md] for detailed breakdown.
 
-2.  **Create `.env` file**:
-    Create a file named `.env` in the root directory. Fill in the values:
-    ```env
-    SECRET_KEY=''
-    DEBUG=True
-    EMAIL_HOST='smtp.gmail.com' # if you want to use gmail for sending emails
-    EMAIL_PORT=587
-    EMAIL_USE_TLS=True
-    EMAIL_HOST_USER=''
-    EMAIL_HOST_PASSWORD=''
-    ```
-    **Note**: The application will not run correctly without this file.
+---
 
-3.  **Run with Docker Compose**:
-    ```bash
-    docker-compose up --build
-    ```
-    **Note**: The container defaults to running migrations and setting up the demo user automatically on startup.
+## Who Should Use TrackMyRupee?
 
-4.  **Access the application**:
-    Open your browser and navigate to `http://localhost:8000`.
+TrackMyRupee is designed for:
 
+- Users looking for a **simple expense tracker**
+- People who want a **budget tracker without bank access**
+- Anyone avoiding SMS-reading finance apps
+- Developers looking for an **open source finance tracker**
+- Users who want a **self-hosted personal finance app**
 
-## Usage
+---
 
-### Running the Server
+### 🚀 Quick Start – Self-Hosted Expense Tracker (Docker)
 
-Start the development server:
+Run your own self-hosted personal finance tracker in minutes:
 
 ```bash
+git clone https://github.com/OmkarPathak/django-finance-tracker
+cd django-finance-tracker
+docker-compose up
+```
+
+Open 👉 http://localhost:8000
+
+### Manual Setup (Django)
+
+```bash
+pip install -r requirements.txt
+python manage.py migrate
+python manage.py createsuperuser
 python manage.py runserver
 ```
 
-Open your browser and navigate to `http://127.0.0.1:8000/`.
+---
 
-### Getting Started
+Detailed steps can be found in `SETUP.md`
 
-1.  **Sign Up**: Create a new account.
-2.  **Add Expenses**: Manually add expenses or use the "Upload More" button.
-3.  **View Dashboard**: authenticating will take you to the dashboard where you can filter and analyze your spending.
+## Contributing to TrackMyRupee
 
-### Bulk Upload Format
+TrackMyRupee is an open-source personal finance tracker.
+Contributions are welcome — features, bug fixes, documentation, and UI improvements.
 
-To upload expenses via Excel, ensure your file follows this format:
+👉 See `CONTRIBUTING.md`
 
--   **File Type**: `.xlsx`
--   **Sheets**: You can have multiple sheets (e.g., "Jan", "Feb").
--   **Columns**: The following columns are strictly required (headers are case-insensitive):
-    -   `Date`: Supported formats: `DD MMM YYYY` (e.g., 01 Jan 2025), `YYYY-MM-DD`.
-    -   `Amount`: Numeric value.
-    -   `Description`: Text description.
-    -   `Category`: Expense category (e.g., Food, Travel).
+---
 
-**Note**: When uploading, you will be asked to select a "Target Year". This year will override the year in the Excel dates to ensure data consistency.
+## 💬 What users say
+
+> “Finally a finance app that doesn’t read my SMS.”  
+> — Early user
+
+> “Simple, clean, and private.”  
+> — Indie Hacker
+
+---
+
+## FAQ
+
+**What makes this different from other finance apps?**  
+TrackMyRupee doesn’t require bank linking or SMS reading — prioritizing user privacy.
+
+**Can I self-host?**  
+Yes — full Docker support and manual setup available.
+
+**Is there a mobile app?**  
+Android & iOS builds are coming soon.
+
+---
+
+## 📝 License
+
+TrackMyRupee is licensed under the MIT License.

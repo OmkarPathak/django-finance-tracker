@@ -1,0 +1,18 @@
+Welcome to the Family!
+
+Hi {{ user.username }},
+
+We're thrilled to have you on board. TrackMyRupee is designed to make managing your finances simple, smart, and stress-free.
+
+Here are a few things you can do to get started:
+- Track Expenses: Log your daily spends in seconds.
+- Manage Subscriptions: Never miss a renewal date.
+- Gain Insights: See where your money goes with visual charts.
+
+Start exploring your dashboard:
+https://trackmyrupee.com/dashboard
+
+If you have any questions, feel free to reply to this email. We're here to help!
+
+Happy Tracking,
+The TrackMyRupee Team

@@ -1,48 +1,23 @@
+{% extends "account/email/base_email.html" %}
 {% load i18n %}
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="utf-8">
-    <title>{% trans "Confirm E-mail Address" %}</title>
-    <!-- Import Google Fonts directly in email (some clients support it) -->
-    <link href="https://fonts.googleapis.com/css2?family=Clash+Display:wght@600&family=Outfit:wght@400;500&display=swap" rel="stylesheet">
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Clash+Display:wght@600&family=Outfit:wght@400;500&display=swap');
-    </style>
-</head>
-<body style="font-family: 'Outfit', 'Helvetica Neue', Helvetica, Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f8f9fa;">
-    
-    <div style="text-align: center; margin-bottom: 30px; margin-top: 20px;">
-        <!-- Brand Name with Clash Display Font Fallback -->
-        <h1 style="font-family: 'Clash Display', 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #0575e6; margin-bottom: 5px; font-size: 28px; font-weight: 600; letter-spacing: -0.5px;">TrackMyRupee</h1>
-        <p style="color: #666; font-size: 14px; margin-top: 0; font-weight: 500;">Master Your Money</p>
-    </div>
 
-    <div style="background: #ffffff; border-radius: 16px; padding: 40px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); text-align: center;">
-        <h2 style="font-family: 'Clash Display', sans-serif; color: #1a1d21; margin-top: 0; margin-bottom: 20px; font-size: 24px;">Welcome aboard!</h2>
-        
-        <p style="font-size: 16px; color: #4a5568; margin-bottom: 30px;">Hi <strong>{{ user.username }}</strong>,<br>Thank you for joining. We're excited to help you take control of your finances!</p>
-        
-        <p style="font-size: 16px; color: #4a5568; margin-bottom: 30px;">To get started, please confirm your email address:</p>
-        
-        <div style="margin: 35px 0;">
-            <!-- Primary Gradient Button -->
-            <a href="{{ activate_url }}" style="background: linear-gradient(135deg, #00f260 0%, #0575e6 100%); color: white; text-decoration: none; padding: 14px 40px; border-radius: 50px; font-weight: 500; font-size: 16px; display: inline-block; box-shadow: 0 4px 15px rgba(5, 117, 230, 0.3);">
-                Confirm Email Address
-            </a>
-        </div>
-        
-        <p style="font-size: 13px; color: #718096; margin-bottom: 0;">
-            Button not working? Copy this link:<br>
-            <a href="{{ activate_url }}" style="color: #0575e6; word-break: break-all;">{{ activate_url }}</a>
-        </p>
+{% block title %}{% trans "Confirm E-mail Address" %}{% endblock %}
+
+{% block content %}
+    <h2>{% trans "Welcome aboard!" %}</h2>
+    
+    <p>{% blocktrans with user.username as username %}Hi <strong>{{ username }}</strong>,<br>Thank you for joining. We're excited to help you take control of your finances!{% endblocktrans %}</p>
+    
+    <p>{% trans "To get started, please confirm your email address:" %}</p>
+    
+    <div style="margin: 35px 0;">
+        <a href="{{ activate_url }}" class="btn btn-primary">
+            {% trans "Confirm Email Address" %}
+        </a>
     </div>
     
-    <div style="text-align: center; margin-top: 30px; font-size: 12px; color: #a0aec0;">
-        <p style="margin-bottom: 10px;">If you didn't create an account, you can safely ignore this email.</p>
-        &copy; {% now "Y" %} TrackMyRupee. All rights reserved.<br>
-        <a href="https://trackmyrupee.com" style="color: #a0aec0; text-decoration: underline;">www.trackmyrupee.com</a>
-    </div>
-
-</body>
-</html>
+    <p style="font-size: 13px; color: #718096; margin-bottom: 0;">
+        {% trans "Button not working? Copy this link:" %}<br>
+        <a href="{{ activate_url }}" style="color: #219EBC; word-break: break-all;">{{ activate_url }}</a>
+    </p>
+{% endblock %}

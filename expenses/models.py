@@ -2,6 +2,7 @@ from datetime import timedelta, date
 
 from django.contrib.auth.models import User
 from django.db import models
+from django.utils import timezone
 
 
 class PaymentSource(models.Model):
@@ -262,6 +263,10 @@ class Expense(models.Model):
                 name="unique_expense",
             )
         ]
+        indexes = [
+            models.Index(fields=['user', 'category']),
+            models.Index(fields=['user', 'payment_method']),
+        ]
 
     def __str__(self):
         return f"{self.date} - {self.description} - {self.amount}"
@@ -306,6 +311,9 @@ class Income(models.Model):
             models.UniqueConstraint(
                 fields=["user", "date", "amount", "source"], name="unique_income"
             )
+        ]
+        indexes = [
+            models.Index(fields=['user', 'source']),
         ]
 
     def __str__(self):
@@ -411,28 +419,22 @@ class UserProfile(models.Model):
     @property
     def is_pro(self):
         """Check if user has active Pro access (either lifetime or valid subscription)."""
-        # TEMPORARY: Unlock all features for free
-        return True
-        # from django.utils import timezone
-        # if self.tier == 'PRO':
-        #     if self.is_lifetime:
-        #         return True
-        #     if self.subscription_end_date and self.subscription_end_date > timezone.now():
-        #         return True
-        # return False
-
+        if self.tier == 'PRO':
+            if self.is_lifetime:
+                return True
+            if self.subscription_end_date and self.subscription_end_date > timezone.now():
+                return True
+        return False
+    
     @property
     def is_plus(self):
         """Check if user has active Plus access (or higher)."""
-        # TEMPORARY: Unlock all features for free
-        return True
-        # from django.utils import timezone
-        # if self.tier in ['PLUS', 'PRO']:
-        #     if self.is_lifetime:
-        #         return True
-        #     if self.subscription_end_date and self.subscription_end_date > timezone.now():
-        #         return True
-        # return False
+        if self.tier in ['PLUS', 'PRO']:
+            if self.is_lifetime:
+                return True
+            if self.subscription_end_date and self.subscription_end_date > timezone.now():
+                return True
+        return False
 
     def __str__(self):
         return f"{self.user.username}'s Profile ({self.tier})"
@@ -639,3 +641,15 @@ class Share(models.Model):
 
     def __str__(self):
         return f"{self.participant.name}: ₹{self.amount}"
+
+class Notification(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications')
+    title = models.CharField(max_length=255)
+    message = models.TextField()
+    is_read = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    # Optional link to the transaction that triggered it
+    related_transaction = models.ForeignKey('RecurringTransaction', on_delete=models.SET_NULL, null=True, blank=True)
+
+    def __str__(self):
+        return f"Notification for {self.user.username}: {self.title}"

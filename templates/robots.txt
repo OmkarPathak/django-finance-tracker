@@ -5,5 +5,9 @@ Disallow: /dashboard/
 Disallow: /expenses/
 Disallow: /settings/
 Disallow: /accounts/
+Allow: /blog/
+Allow: /pricing/
+Allow: /contact/
+Allow: /about/
 
 Sitemap: https://trackmyrupee.com/sitemap.xml

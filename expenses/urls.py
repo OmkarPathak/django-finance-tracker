@@ -1,12 +1,14 @@
 from django.urls import path
-from . import views, views_payment
 from django.views.generic import TemplateView
+
+from . import views, views_payment
 
 urlpatterns = [
     path("signup/", views.SignUpView.as_view(), name="signup"),
     path("", views.LandingPageView.as_view(), name="landing"),
     path("dashboard/", views.home_view, name="home"),
     path("budget/", views.BudgetDashboardView.as_view(), name="budget"),
+    path("analytics/", views.AnalyticsView.as_view(), name="analytics"),
     path("demo/", views.demo_login, name="demo_login"),
     path("demo-signup/", views.demo_signup, name="demo_signup"),
     path("upload/", views.upload_view, name="upload"),
@@ -116,6 +118,9 @@ urlpatterns = [
         name="refund-policy",
     ),
     path("about/", TemplateView.as_view(template_name="about.html"), name="about"),
+    path(
+        "offline/", TemplateView.as_view(template_name="offline.html"), name="offline"
+    ),
     path("contact/", views.ContactView.as_view(), name="contact"),
     # to keep alive on render
     path("ping/", views.ping, name="ping"),
@@ -128,16 +133,88 @@ urlpatterns = [
         views.resend_verification_email,
         name="resend-verification",
     ),
+    # Notification URLs
+    path(
+        "notifications/", views.NotificationListView.as_view(), name="notification-list"
+    ),
+    path(
+        "notifications/mark-all-read/",
+        views.mark_notifications_read,
+        name="mark-all-read",
+    ),
+    path(
+        "notifications/<int:pk>/read/",
+        views.mark_single_notification_read,
+        name="mark-single-notification-read",
+    ),
+    path(
+        "api/cron/send-notifications/",
+        views.trigger_notifications,
+        name="cron-send-notifications",
+    ),
+    # Sentry Debug
+    path("sentry-debug/", lambda request: 1 / 0),
+    path("income/list/", views.IncomeListView.as_view(), name="income-list"),
+    path("income/add/", views.IncomeCreateView.as_view(), name="income-create"),
+    path("income/<int:pk>/edit/", views.IncomeUpdateView.as_view(), name="income-edit"),
+    path(
+        "income/<int:pk>/delete/",
+        views.IncomeDeleteView.as_view(),
+        name="income-delete",
+    ),
+    path("calendar/", views.CalendarView.as_view(), name="calendar"),
+    path(
+        "calendar/<int:year>/<int:month>/",
+        views.CalendarView.as_view(),
+        name="calendar-month",
+    ),
+    path(
+        "recurring/",
+        views.RecurringTransactionListView.as_view(),
+        name="recurring-list",
+    ),
+    path(
+        "recurring/manage/",
+        views.RecurringTransactionManageView.as_view(),
+        name="recurring-manage",
+    ),
+    path("pricing/", views.PricingView.as_view(), name="pricing"),
+    path(
+        "recurring/create/",
+        views.RecurringTransactionCreateView.as_view(),
+        name="recurring-create",
+    ),
+    path(
+        "recurring/<int:pk>/edit/",
+        views.RecurringTransactionUpdateView.as_view(),
+        name="recurring-edit",
+    ),
+    path(
+        "recurring/<int:pk>/delete/",
+        views.RecurringTransactionDeleteView.as_view(),
+        name="recurring-delete",
+    ),
+    path(
+        "settings/currency/",
+        views.CurrencyUpdateView.as_view(),
+        name="currency-settings",
+    ),
+    path(
+        "settings/profile/", views.ProfileUpdateView.as_view(), name="profile-settings"
+    ),
+    path(
+        "settings/", views.SettingsHomeView.as_view(), name="settings-home"
+    ),  # Settings Home
+    path("account/delete/", views.AccountDeleteView.as_view(), name="account-delete"),
+    path("tutorial/complete/", views.complete_tutorial, name="complete-tutorial"),
     path("api/predict-category/", views.predict_category_view, name="predict-category"),
-    
+
     # Shared Expenses
     path('balance-summary/', views.BalanceSummaryView.as_view(), name='balance-summary'),
-    
+
     # Friend Management (AJAX)
     path('api/friend/create/', views.create_friend_ajax, name='friend-create-ajax'),
     path('api/friend/<int:pk>/update/', views.update_friend_ajax, name='friend-update-ajax'),
     path('api/friend/<int:pk>/delete/', views.delete_friend_ajax, name='friend-delete-ajax'),
-    
-    # Sentry Debug
     path("sentry-debug/", lambda request: 1 / 0),
 ]
