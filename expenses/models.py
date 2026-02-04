@@ -1,7 +1,135 @@
-from datetime import timedelta
+from datetime import timedelta, date
 
 from django.contrib.auth.models import User
 from django.db import models
+
+
+class PaymentSource(models.Model):
+    """
+    Unified model for Bank Accounts, Digital Wallets, and Cash.
+    Balance is deducted immediately when used for payments.
+    """
+
+    ACCOUNT_TYPE_CHOICES = [
+        ("savings", "Savings Account"),
+        ("current", "Current Account"),
+        ("wallet", "Digital Wallet"),
+        ("cash", "Cash in Hand"),
+    ]
+
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="payment_sources"
+    )
+    name = models.CharField(
+        max_length=100
+    )  # e.g., "Axis Savings", "Paytm Wallet", "Pocket Cash"
+    account_type = models.CharField(max_length=20, choices=ACCOUNT_TYPE_CHOICES)
+    bank_name = models.CharField(
+        max_length=100, blank=True, null=True
+    )  # e.g., "Axis Bank", "Paytm"
+    balance = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["user", "name"],
+                name="unique_payment_source_per_user",
+            )
+        ]
+        ordering = ["account_type", "name"]
+
+    def deduct(self, amount):
+        """Deduct amount from balance."""
+        self.balance -= amount
+        self.save()
+
+    def add(self, amount):
+        """Add amount to balance (for refunds, deposits, etc.)."""
+        self.balance += amount
+        self.save()
+
+    def __str__(self):
+        return f"{self.name} ({self.get_account_type_display()}) - ₹{self.balance}"
+
+
+class CreditCard(models.Model):
+    """
+    Credit Card model with billing cycle tracking.
+    Tracks available limit and generates billing information.
+    """
+
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="credit_cards"
+    )
+    name = models.CharField(
+        max_length=100
+    )  # e.g., "Axis Flipkart Card", "HDFC Regalia"
+    bank_name = models.CharField(max_length=100)  # e.g., "Axis Bank", "HDFC"
+    credit_limit = models.DecimalField(max_digits=12, decimal_places=2)
+    available_limit = models.DecimalField(max_digits=12, decimal_places=2)
+    billing_cycle_day = models.PositiveIntegerField(
+        help_text="Day of month when bill generates (1-28)"
+    )
+    due_date_days = models.PositiveIntegerField(
+        default=20, help_text="Days after billing date to pay"
+    )
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["user", "name"],
+                name="unique_credit_card_per_user",
+            )
+        ]
+        ordering = ["bank_name", "name"]
+
+    @property
+    def used_limit(self):
+        """Amount of credit used."""
+        return self.credit_limit - self.available_limit
+
+    @property
+    def next_billing_date(self):
+        """Calculate next billing date based on billing cycle day."""
+        today = date.today()
+        try:
+            if today.day <= self.billing_cycle_day:
+                return today.replace(day=self.billing_cycle_day)
+            else:
+                # Move to next month
+                if today.month == 12:
+                    return date(today.year + 1, 1, self.billing_cycle_day)
+                else:
+                    return date(today.year, today.month + 1, self.billing_cycle_day)
+        except ValueError:
+            # Handle months with fewer days (e.g., Feb 30)
+            next_month = today.replace(day=1) + timedelta(days=32)
+            last_day = (next_month.replace(day=1) - timedelta(days=1)).day
+            return next_month.replace(day=min(self.billing_cycle_day, last_day))
+
+    @property
+    def next_due_date(self):
+        """Calculate payment due date (billing date + due_date_days)."""
+        return self.next_billing_date + timedelta(days=self.due_date_days)
+
+    def use_credit(self, amount):
+        """Use credit (reduce available limit)."""
+        self.available_limit -= amount
+        self.save()
+
+    def pay_bill(self, amount):
+        """Pay bill (restore available limit)."""
+        self.available_limit = min(self.credit_limit, self.available_limit + amount)
+        self.save()
+
+    def __str__(self):
+        return f"{self.name} ({self.bank_name}) - Available: ₹{self.available_limit}/{self.credit_limit}"
 
 
 class Expense(models.Model):
@@ -20,6 +148,26 @@ class Expense(models.Model):
     ]
     payment_method = models.CharField(
         max_length=50, choices=PAYMENT_OPTIONS, default="Cash"
+    )
+
+    # Linked payment source (for bank accounts, wallets, cash tracking)
+    payment_source = models.ForeignKey(
+        PaymentSource,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="expenses",
+        help_text="Bank account, wallet, or cash source used for this expense",
+    )
+
+    # Linked credit card (for credit card payments)
+    credit_card = models.ForeignKey(
+        CreditCard,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="expenses",
+        help_text="Credit card used for this expense",
     )
 
     # Cashback fields
@@ -338,6 +486,7 @@ class Friend(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="friends")
 
     class Meta:
+        ordering = ["name"]
         constraints = [
             models.UniqueConstraint(
                 fields=["user", "name"], name="unique_friend_per_user"
@@ -387,9 +536,6 @@ class Friend(models.Model):
 
     def __str__(self):
         return self.name
-
-    class Meta:
-        ordering = ["name"]
 
 
 class SharedExpense(models.Model):
