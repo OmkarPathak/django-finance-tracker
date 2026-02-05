@@ -45,3 +45,25 @@ class TimezoneMiddleware:
             timezone.deactivate()
             
         return self.get_response(request)
+
+class LocaleMiddlewareByProfile:
+    """
+    Activates the language stored in the UserProfile.
+    """
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        if request.user.is_authenticated:
+            from django.utils import translation
+            try:
+                # Use getattr to avoid issues if profile doesn't exist yet
+                profile = getattr(request.user, 'profile', None)
+                if profile and profile.language:
+                    translation.activate(profile.language)
+                    request.LANGUAGE_CODE = translation.get_language()
+            except Exception:
+                pass
+        
+        response = self.get_response(request)
+        return response

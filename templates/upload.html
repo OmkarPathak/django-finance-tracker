@@ -1,26 +1,37 @@
 {% extends 'expenses/settings_base.html' %}
+{% load i18n digit_filters %}
 
 {% block settings_content %}
 <div class="fade-in">
     <div class="py-3 mb-3">
-        <h2 class="h4 mb-0 fw-bold">Upload Expenses</h2>
+        <h2 class="h4 mb-0 fw-bold">{% trans "Upload Expenses" %}</h2>
     </div>
     <div>
         <p class="text-muted mb-4 small">
+            {% blocktrans %}
             Upload your Excel file to update your expense records. Each sheet corresponds to a month.
+            {% endblocktrans %}
         </p>
 
         <div class="alert alert-info border-0 shadow-sm mb-4">
-            <h6 class="alert-heading fw-bold"><i class="bi bi-info-circle me-2"></i>Required Format</h6>
-            <p class="mb-2 small">Your Excel file <strong>must</strong> contain the following columns (headers are Case-Sensitive):</p>
+            <h6 class="alert-heading fw-bold">
+                <i class="bi bi-info-circle me-2"></i>{% trans "Required Format" %}</h6>
+            <p class="mb-2 small">
+                {% blocktrans %}
+                Your Excel file must contain the following columns (headers are Case-Sensitive):
+                {% endblocktrans %}
+            </p>
             <ul class="small mb-3">
-                <li><code>Date</code> (e.g., <i>01 Jan 2025</i>, <i>2025-01-01</i>)</li>
-                <li><code>Amount</code> (Numeric value)</li>
-                <li><code>Description</code> (Text details)</li>
-                <li><code>Category</code> (e.g., Food, Travel)</li>
+                <li><code>{% trans "Date" %}</code> (e.g., <i>01 Jan 2025</i>, <i>2025-01-01</i>)</li>
+                <li><code>{% trans "Amount" %}</code> ({% trans "Numeric value" %})</li>
+                <li><code>{% trans "Description" %}</code> ({% trans "Text details" %})</li>
+                <li><code>{% trans "Category" %}</code> (e.g., {% trans "Food" %}, {% trans "Travel" %})</li>
             </ul>
             <p class="mb-0 small text-muted">
-                <strong>Note:</strong> The "Select Year" below will override the year in your excel dates to ensure consistency.
+                <strong>{% trans "Note" %}:</strong>
+                {% blocktrans %}
+                The "Select Year" below will override the year in your excel dates to ensure consistency.
+                {% endblocktrans %}
             </p>
         </div>
 
@@ -28,28 +39,28 @@
         <form method="post" enctype="multipart/form-data">
             {% csrf_token %}
             <div class="mb-3">
-                <label for="year" class="form-label">Select Year</label>
+                <label for="year" class="form-label">{% trans "Select Year" %}</label>
                 <select name="year" id="year" class="form-select" required>
                     {% for y in years %}
-                        <option value="{{ y }}" {% if y == current_year %}selected{% endif %}>{{ y }}</option>
+                        <option value="{{ y }}" {% if y == current_year %}selected{% endif %}>{{ y|translate_digits }}</option>
                     {% endfor %}
                 </select>
                 <div class="form-text">This year will be applied to all uploaded records.</div>
             </div>
 
             <div class="mb-4">
-                <label for="formFile" class="form-label">Excel File (.xlsx, .xls)</label>
+                <label for="formFile" class="form-label">{% trans "Excel File (.xlsx, .xls)" %}</label>
                 <input class="form-control" type="file" id="formFile" name="file"
                     accept=".xlsx, .xls" required>
             </div>
 
             <button type="submit" class="btn btn-primary px-4">
-                <i class="bi bi-cloud-arrow-up me-2"></i>Upload & Process
+                <i class="bi bi-cloud-arrow-up me-2"></i>{% trans "Upload & Process" %}
             </button>
         </form>
     </div>
     <div class="text-muted small py-3 mt-3">
-        Supported formats: .xlsx, .xls
+        {% trans "Supported formats: .xlsx, .xls" %}
     </div>
 </div>
 {% endblock %}

@@ -1,46 +1,70 @@
 {% extends 'base.html' %}
+{% load i18n %}
 
-{% block title %}About Us - TrackMyRupee{% endblock %}
+{% block title %}{% trans "About Us" %} - TrackMyRupee{% endblock %}
 
 {% block content %}
 <div class="container py-5">
     <div class="row justify-content-center">
         <div class="col-lg-10 col-xl-8">
-            <h1 class="display-4 fw-bold mb-4 text-center">About Us</h1>
+            <h1 class="display-4 fw-bold mb-4 text-center">{% trans "About Us" %}</h1>
             
                     <p class="lead mb-5 text-center">
+                        {% blocktrans %}
                         We are on a mission to simplify personal finance for everyone. TrackMyRupee is built to give you clarity, control, and confidence over your money.
+                        {% endblocktrans %}
                     </p>
 
                     <div class="mb-5">
-                        <h3 class="h4 fw-bold mb-3">Our Story</h3>
+                        <h3 class="h4 fw-bold mb-3">{% trans "Our Story" %}</h3>
                         <p class="text-muted">
+                            {% blocktrans %}
                             TrackMyRupee started with a simple idea: understanding your finances shouldn't be complicated. We realized that many people struggle to keep track of their daily expenses, subscriptions, and budgets because existing tools were either too complex or too manual.
+                            {% endblocktrans %}
                         </p>
                         <p class="text-muted">
+                            {% blocktrans %}
                             We built TrackMyRupee to be the intuitive, powerful, and privacy-focused solution we always wanted for ourselves. Today, we help thousands of users track their spending, spot trends, and make smarter financial decisions.
+                            {% endblocktrans %}
                         </p>
                     </div>
 
                     <div class="mb-5">
-                        <h3 class="h4 fw-bold mb-3">What We Belief In</h3>
+                        <h3 class="h4 fw-bold mb-3">{% trans "What We Believe In" %}</h3>
                         <ul class="text-muted">
-                            <li class="mb-3"><strong>Simplicity First:</strong> Finance is hard enough. Your tools shouldn't be. We prioritize clean design and ease of use.</li>
-                            <li class="mb-3"><strong>Privacy by Design:</strong> Your financial data is yours. We optimize for security and privacy in everything we build.</li>
-                            <li class="mb-3"><strong>Empowerment:</strong> We believe that financial clarity leads to financial freedom. We give you the data you need to take charge.</li>
+                            <li class="mb-3">
+                                <strong>{% trans "Simplicity First" %}:</strong>
+                                {% blocktrans %}
+                                Finance is hard enough. Your tools shouldn't be. We prioritize clean design and ease of use.
+                                {% endblocktrans %}
+                            </li>
+                            <li class="mb-3">
+                                <strong>{% trans "Privacy by Design" %}:</strong>
+                                {% blocktrans %}
+                                Your financial data is yours. We optimize for security and privacy in everything we build.
+                                {% endblocktrans %}
+                            </li>
+                            <li class="mb-3">
+                                <strong>{% trans "Empowerment" %}:</strong>
+                                {% blocktrans %}
+                                We believe that financial clarity leads to financial freedom. We give you the data you need to take charge.
+                                {% endblocktrans %}
+                            </li>
                         </ul>
                     </div>
 
                     <div class="mb-0">
-                        <h3 class="h4 fw-bold mb-3">Get in Touch</h3>
+                        <h3 class="h4 fw-bold mb-3">{% trans "Get in Touch" %}</h3>
                         <p class="text-muted mb-0">
+                            {% blocktrans %}
                             We love hearing from our users. Whether you have a feature request, feedback, or just want to say hi, feel free to reach out to us.
+                            {% endblocktrans %}
                         </p>
                     </div>
             
             <div class="text-center mt-5">
                 <a href="{% url 'contact' %}" class="btn btn-primary btn-lg px-5 rounded-pill shadow-sm">
-                    Contact Us
+                    {% trans "Contact Us" %}
                 </a>
             </div>
         </div>

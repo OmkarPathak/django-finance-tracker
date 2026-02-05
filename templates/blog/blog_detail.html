@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load blog_extras %}
+{% load i18n %}
 
 {% block title %}{{ post.title }} | TrackMyRupee{% endblock %}
 
@@ -63,7 +64,9 @@
         <div class="col-lg-8">
             <nav aria-label="breadcrumb" class="mb-4">
                 <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="{% url 'blog_list' %}" class="text-decoration-none">Blog</a></li>
+                    <li class="breadcrumb-item">
+                        <a href="{% url 'blog_list' %}" class="text-decoration-none">{% trans "Blog" %}</a>
+                    </li>
                     <li class="breadcrumb-item active" aria-current="page">{{ post.title }}</li>
                 </ol>
             </nav>
@@ -116,7 +119,7 @@
 
             <div class="mt-5 pt-4 border-top text-center">
                 <a href="{% url 'blog_list' %}" class="btn btn-outline-primary rounded-pill px-4">
-                    <i class="bi bi-arrow-left me-1"></i> Back to Blog
+                    <i class="bi bi-arrow-left me-1"></i> {% trans "Back to Blog" %}
                 </a>
             </div>
         </div>

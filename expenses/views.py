@@ -17,12 +17,13 @@ from django.db.models import Sum, Q
 from django.http import JsonResponse, HttpResponse
 import json
 from django.utils import timezone
+from django.utils.translation import gettext as _
 from datetime import datetime, date, timedelta
 import calendar
 
 from .models import Expense, Category, Income, RecurringTransaction, UserProfile, SubscriptionPlan, Notification
 from finance_tracker.ai_utils import predict_category_ai
-from .forms import ExpenseForm, IncomeForm, RecurringTransactionForm, ProfileUpdateForm, CustomSignupForm, ContactForm
+from .forms import ExpenseForm, IncomeForm, RecurringTransactionForm, ProfileUpdateForm, CustomSignupForm, ContactForm, LanguageUpdateForm
 from allauth.socialaccount.models import SocialAccount
 import openpyxl
 import requests
@@ -34,6 +35,8 @@ from django.conf import settings
 from django.core.cache import cache
 from django.db.models.functions import TruncMonth, TruncDay
 from django.utils.html import mark_safe, escape, format_html, format_html_join
+from django.utils.formats import date_format
+
 
 
 def create_category_ajax(request):
@@ -43,7 +46,7 @@ def create_category_ajax(request):
             name = data.get('name', '').strip()
             
             if not name:
-                return JsonResponse({'success': False, 'error': 'Category name cannot be empty.'}, status=400)
+                return JsonResponse({'success': False, 'error': _('Category name cannot be empty.')}, status=400)
             
             # Check Limits
             current_count = Category.objects.filter(user=request.user).count()
@@ -54,17 +57,17 @@ def create_category_ajax(request):
                 limit = float('inf')
 
             if current_count >= limit:
-                 return JsonResponse({'success': False, 'error': f'Category limit reached ({limit}). Please upgrade.'}, status=403)
+                 return JsonResponse({'success': False, 'error': _('Category limit reached (%(limit)s). Please upgrade.') % {'limit': limit}}, status=403)
 
             category = Category.objects.create(user=request.user, name=name)
             return JsonResponse({'success': True, 'id': category.id, 'name': category.name})
             
         except IntegrityError:
-            return JsonResponse({'success': False, 'error': 'This category already exists.'}, status=400)
+            return JsonResponse({'success': False, 'error': _('This category already exists.')}, status=400)
         except Exception as e:
             return JsonResponse({'success': False, 'error': str(e)}, status=500)
             
-    return JsonResponse({'success': False, 'error': 'Invalid request method.'}, status=405)
+    return JsonResponse({'success': False, 'error': _('Invalid request method.')}, status=405)
 
 
 def resend_verification_email(request):
@@ -258,7 +261,7 @@ def home_view(request):
         selected_years = []
         selected_months = []
         
-        trend_title = "Expenses Trend (Custom Range)"
+        trend_title = _("Expenses Trend (Custom Range)")
     else:
         # Default to current month/year ONLY on initial land (no params)
         if not request.GET and not (selected_years or selected_months):
@@ -271,9 +274,9 @@ def home_view(request):
             expenses = expenses.filter(date__month__in=selected_months)
             
         if len(selected_months) == 1 and len(selected_years) == 1:
-            trend_title = f"Daily Expenses for {selected_months[0]}/{selected_years[0]}"
+            trend_title = _("Daily Expenses for %(month)s/%(year)s") % {'month': selected_months[0], 'year': selected_years[0]}
         else:
-            trend_title = "Monthly Expenses Trend"
+            trend_title = _("Monthly Expenses Trend")
 
     if selected_categories:
         expenses = expenses.filter(category__in=selected_categories)
@@ -522,7 +525,7 @@ def home_view(request):
     if len(selected_months) == 1:
         try:
             m_idx = int(selected_months[0])
-            display_month = calendar.month_name[m_idx]
+            display_month = _(calendar.month_name[m_idx])
         except (ValueError, IndexError):
             pass
 
@@ -632,8 +635,8 @@ def home_view(request):
                     insights.append({
                         'type': 'warning',
                         'icon': 'graph-up-arrow',
-                        'title': 'Traffic Alert 🚦',
-                        'message': f"You're pacing {pct_higher}% higher than usual. Slow down to stay on track!",
+                        'title': _('Traffic Alert 🚦'),
+                        'message': _("You're pacing %(pct_higher)s%% higher than usual. Slow down to stay on track!") % {'pct_higher': pct_higher},
                         'allow_share': False
                     })
 
@@ -650,15 +653,15 @@ def home_view(request):
         
         if savings_rate >= 20:
             # Contextualized Warning for High Savers
-            msg = format_html("Even strong months have leaks. You crossed limits in {} — catching this keeps you on track.", cats_str)
+            msg = format_html(_("Even strong months have leaks. You crossed limits in {cats_str} — catching this keeps you on track."), cats_str=cats_str)
         else:
             # Standard Coaching Warning - "Warning" type (Yellow) instead of Danger (Red) for empathy
-            msg = format_html("⚠️ Budget crossed in {} — let’s rebalance to stay safe.", cats_str)
+            msg = format_html(_("⚠️ Budget crossed in {cats_str} — let’s rebalance to stay safe."), cats_str=cats_str)
 
         insights.append({
             'type': 'warning', # Changed from danger
             'icon': 'exclamation-octagon-fill',
-            'title': 'Budget Breached',
+            'title': _('Budget Breached'),
             'message': msg,
             'allow_share': False
         })
@@ -667,8 +670,8 @@ def home_view(request):
         insights.append({
             'type': 'warning',
             'icon': 'exclamation-triangle-fill',
-            'title': 'Approaching Limit',
-            'message': format_html("Heads up! You're close to overspending on {}.", cats_str),
+            'title': _('Approaching Limit'),
+            'message': format_html(_("Heads up! You're close to overspending on {cats_str}."), cats_str=cats_str),
             'allow_share': False
         })
 
@@ -693,19 +696,19 @@ def home_view(request):
         if total_income > 0 and savings > 0:
             savings_rate = (savings / total_income) * 100
             if savings_rate >= 20:
-                msg_text = f"You've saved {savings_rate:.0f}% of your income this month."
-                share_text = f"I saved {savings_rate:.0f}% of my income this month using TrackMyRupee! 🏆"
+                msg_text = _("You've saved %(savings_rate)s%% of your income this month.") % {'savings_rate': f"{savings_rate:.0f}"}
+                share_text = _("I saved %(savings_rate)s%% of my income this month using TrackMyRupee! 🏆") % {'savings_rate': f"{savings_rate:.0f}"}
                 
                 if top_savers:
                     cats_link = link_cats(top_savers)
-                    msg = format_html("{} You spent less on {} — that's where the magic happened.", msg_text, cats_link)
+                    msg = format_html(_("{msg_text} You spent less on {cats_link} — that's where the magic happened."), msg_text=msg_text, cats_link=cats_link)
                 else:
                     msg = msg_text
 
                 insights.append({
                     'type': 'success',
                     'icon': 'trophy-fill',
-                    'title': 'Super Saver Status! 🏆',
+                    'title': _('Super Saver Status! 🏆'),
                     'message': msg,
                     'allow_share': True,
                     'share_text': share_text
@@ -714,31 +717,31 @@ def home_view(request):
                  insights.append({
                     'type': 'success',
                     'icon': 'graph-up-arrow',
-                    'title': 'Momentum Building 🚀',
-                    'message': f"Your savings grew by {prev_month_data['savings_pct_abs']:.0f}% vs last month. You're getting better at this!",
+                    'title': _('Momentum Building 🚀'),
+                    'message': _("Your savings grew by %(savings_pct_abs)s%% vs last month. You're getting better at this!") % {'savings_pct_abs': f"{prev_month_data['savings_pct_abs']:.0f}"},
                     'allow_share': True,
-                    'share_text': f"My savings grew by {prev_month_data['savings_pct_abs']:.0f}% this month! 🚀 via TrackMyRupee"
+                    'share_text': _("My savings grew by %(savings_pct_abs)s%% this month! 🚀 via TrackMyRupee") % {'savings_pct_abs': f"{prev_month_data['savings_pct_abs']:.0f}"}
                 })
         
         # Expense Control Win (if we haven't already praised savings)
         if len(insights) == 0: 
             if prev_month_data['expense_pct'] and prev_month_data['expense_pct'] < -5:
-                 msg_text = f"You've cut spending by {prev_month_data['expense_pct_abs']:.0f}%."
-                 share_text = f"I cut my spending by {prev_month_data['expense_pct_abs']:.0f}% this month! 👍 via TrackMyRupee"
+                 msg_text = _("You've cut spending by %(expense_pct_abs)s%%.") % {'expense_pct_abs': f"{prev_month_data['expense_pct_abs']:.0f}"}
+                 share_text = _("I cut my spending by %(expense_pct_abs)s%% this month! 👍 via TrackMyRupee") % {'expense_pct_abs': f"{prev_month_data['expense_pct_abs']:.0f}"}
                  
                  if top_savers:
                      cats_link = link_cats(top_savers)
-                     msg = format_html("{} {} saw the biggest drops.", msg_text, cats_link)
+                     msg = format_html(_("{msg_text} {cats_link} saw the biggest drops."), msg_text=msg_text, cats_link=cats_link)
                  else:
                      msg = msg_text
                  
                  insights.append({
                     'type': 'success',
                     'icon': 'check-circle-fill',
-                    'title': 'You’re in Control 👍',
+                    'title': _('You’re in Control 👍'),
                     'message': msg,
                     'allow_share': True,
-                    'share_text': share_text
+                    'share_text': _("I cut my spending by %(expense_pct_abs)s%% this month! 👍 via TrackMyRupee") % {'expense_pct_abs': f"{prev_month_data['expense_pct_abs']:.0f}"}
                 })
 
     # 3. Streak & Identity (Reassuring / Habit Forming)
@@ -765,10 +768,10 @@ def home_view(request):
             insights.append({
                 'type': 'info', # Use Info for "Identity/Streak"
                 'icon': 'fire',
-                'title': 'On a Roll!',
-                'message': f"🔥 This is your {streak}th month in a row staying under budget.",
+                'title': _('On a Roll!'),
+                'message': _("🔥 This is your %(streak)s month in a row staying under budget.") % {'streak': streak},
                 'allow_share': True,
-                'share_text': f"🔥 I've stayed under budget for {streak} months in a row! via TrackMyRupee"
+                'share_text': _("🔥 I've stayed under budget for %(streak)s months in a row! via TrackMyRupee") % {'streak': streak}
             })
 
     # 4. Fallback
@@ -776,16 +779,16 @@ def home_view(request):
         insights.append({
             'type': 'info',
             'icon': 'piggy-bank-fill',
-            'title': 'In the Green',
-            'message': f"You've saved {savings} so far. Keep it up!",
+            'title': _('In the Green'),
+            'message': _("You've saved %(savings)s so far. Keep it up!") % {'savings': savings},
             'allow_share': False
         })
     elif not insights:
         insights.append({
             'type': 'secondary',
             'icon': 'stars',
-            'title': 'Fresh Start',
-            'message': "Small steps today lead to big results tomorrow. Let's track some expenses!",
+            'title': _('Fresh Start'),
+            'message': _("Small steps today lead to big results tomorrow. Let's track some expenses!"),
             'allow_share': False
         })
 
@@ -1125,7 +1128,7 @@ class ExpenseCreateView(LoginRequiredMixin, generic.TemplateView):
                     return redirect(next_url)
                 return redirect('expense-list')
             except IntegrityError as e:
-                messages.error(request, f"Duplicate record found! You already have this expense recorded for this date.")
+                messages.error(request, _("Duplicate record found! You already have this expense recorded for this date."))
                 return render(request, self.template_name, {'formset': formset})
         return render(request, self.template_name, {'formset': formset})
 
@@ -1220,7 +1223,7 @@ class CategoryCreateView(LoginRequiredMixin, generic.CreateView):
             form.instance.user = self.request.user
             return super().form_valid(form)
         except IntegrityError:
-            messages.error(self.request, "This category already exists.")
+            messages.error(self.request, _("This category already exists."))
             return self.form_invalid(form)
 
 class CategoryUpdateView(LoginRequiredMixin, generic.UpdateView):
@@ -1413,7 +1416,7 @@ class IncomeCreateView(LoginRequiredMixin, generic.CreateView):
             form.instance.user = self.request.user
             return super().form_valid(form)
         except IntegrityError:
-            messages.error(self.request, "This income entry already exists.")
+            messages.error(self.request, _("This income entry already exists."))
             return self.form_invalid(form)
 
     def get_success_url(self):
@@ -1457,7 +1460,7 @@ class IncomeUpdateView(LoginRequiredMixin, generic.UpdateView):
         try:
             return super().form_valid(form)
         except IntegrityError:
-            messages.error(self.request, "This income entry already exists.")
+            messages.error(self.request, _("This income entry already exists."))
             return self.form_invalid(form)
 
 class IncomeDeleteView(LoginRequiredMixin, generic.DeleteView):
@@ -1553,7 +1556,7 @@ class CalendarView(LoginRequiredMixin, RecurringTransactionMixin, TemplateView):
         context['calendar_data'] = calendar_data
         context['current_year'] = year
         context['current_month'] = month
-        context['month_name'] = calendar.month_name[month]
+        context['month_name'] = date_format(date(year, month, 1), 'F')
         context['month_net_savings'] = month_net_savings
         context['prev_year'] = prev_month_date.year
         context['prev_month'] = prev_month_date.month
@@ -1833,11 +1836,11 @@ class RecurringTransactionCreateView(LoginRequiredMixin, CreateView):
             limit = float('inf')
 
         if current_count >= limit:
-             messages.error(self.request, f"Recurring Transaction limit reached ({limit}). Please upgrade.")
+             messages.error(self.request, _("Recurring Transaction limit reached (%(limit)s). Please upgrade.") % {'limit': limit})
              return redirect('pricing')
              
         form.instance.user = self.request.user
-        messages.success(self.request, 'Recurring transaction created successfully.')
+        messages.success(self.request, _('Recurring transaction created successfully.'))
         return super().form_valid(form)
 
     def get_success_url(self):
@@ -1911,9 +1914,9 @@ class RecurringTransactionUpdateView(LoginRequiredMixin, UpdateView):
             if hasattr(self.request.user, 'userprofile'):
                 currency = self.request.user.userprofile.currency
                 
-            messages.success(self.request, f"You just saved {currency}{yearly_saving:,.0f}/year 🎉")
+            messages.success(self.request, _("You just saved %(currency)s%(amount)s/year 🎉") % {'currency': currency, 'amount': f"{yearly_saving:,.0f}"})
         else:
-            messages.success(self.request, 'Recurring transaction updated successfully.')
+            messages.success(self.request, _('Recurring transaction updated successfully.'))
             
         return super().form_valid(form)
 
@@ -1942,7 +1945,7 @@ class RecurringTransactionDeleteView(LoginRequiredMixin, DeleteView):
         if hasattr(self.request.user, 'userprofile'):
             currency = self.request.user.userprofile.currency
             
-        messages.success(self.request, f"You just saved {currency}{yearly_saving:,.0f}/year 🎉")
+        messages.success(self.request, _("You just saved %(currency)s%(amount)s/year 🎉") % {'currency': currency, 'amount': f"{yearly_saving:,.0f}"})
         return super().form_valid(form)
 
 class AccountDeleteView(LoginRequiredMixin, DeleteView):
@@ -1973,6 +1976,27 @@ class CurrencyUpdateView(LoginRequiredMixin, UpdateView):
     def form_valid(self, form):
         messages.success(self.request, 'Currency preference updated successfully.')
         return super().form_valid(form)
+
+class LanguageUpdateView(LoginRequiredMixin, UpdateView):
+    model = UserProfile
+    form_class = LanguageUpdateForm
+    template_name = 'expenses/language_settings.html'
+    success_url = reverse_lazy('language-settings')
+
+    def get_object(self, queryset=None):
+        profile, created = UserProfile.objects.get_or_create(user=self.request.user)
+        return profile
+
+    def form_valid(self, form):
+        from django.utils import translation
+        from django.conf import settings
+        lang = form.cleaned_data.get('language')
+        translation.activate(lang)
+        messages.success(self.request, 'Language preference updated successfully.')
+        
+        response = super().form_valid(form)
+        response.set_cookie(settings.LANGUAGE_COOKIE_NAME, lang)
+        return response
 
 class ProfileUpdateView(LoginRequiredMixin, UpdateView):
     model = User
@@ -2326,7 +2350,7 @@ class AnalyticsView(LoginRequiredMixin, TemplateView):
         sorted_keys = sorted_keys[-12:]
         
         for k in sorted_keys:
-            labels.append(k.strftime('%b %Y'))
+            labels.append(date_format(k, 'M Y'))
             inc = data_map[k]['income']
             exp = data_map[k]['expense']
             income_data.append(inc)
@@ -2350,7 +2374,7 @@ class AnalyticsView(LoginRequiredMixin, TemplateView):
             user=user, date__year=current_year
         ).values('category').annotate(total=Sum('amount')).order_by('-total')
         
-        cat_labels = [x['category'] for x in category_stats]
+        cat_labels = [_(x['category']) for x in category_stats]
         cat_data = [float(x['total']) for x in category_stats]
         
         context['cat_labels'] = cat_labels

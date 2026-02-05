@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load i18n digit_filters %}
 
 {% block content %}
 <div class="fade-in">
@@ -46,13 +47,13 @@
                                     <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill">Income</span>
                                 {% endif %}
                             </td>
-                            <td class="fw-bold">{{ currency_symbol }}{{ sub.amount|floatformat:2 }}</td>
+                            <td class="fw-bold">{{ currency_symbol }}{{ sub.amount|floatformat:2|translate_digits }}</td>
                             <td>{{ sub.get_frequency_display }}</td>
                             <td>
-                                <div>{{ sub.annotated_next_date|date:"M d, Y" }}</div>
+                                <div>{{ sub.annotated_next_date|date:"M d, Y"|translate_digits }}</div>
                                 {% if sub.annotated_days_until <= 30 and sub.transaction_type == 'EXPENSE' %}
                                     <div class="small fw-bold {% if sub.annotated_days_until <= 3 %}text-danger{% elif sub.annotated_days_until <= 7 %}text-warning{% else %}text-muted{% endif %}">
-                                        {% if sub.annotated_days_until == 0 %}Today{% elif sub.annotated_days_until == 1 %}Tomorrow{% else %}In {{ sub.annotated_days_until }} days{% endif %}
+                                        {% if sub.annotated_days_until == 0 %}Today{% elif sub.annotated_days_until == 1 %}Tomorrow{% else %}In {{ sub.annotated_days_until|translate_digits }} days{% endif %}
                                     </div>
                                 {% endif %}
                             </td>
@@ -87,7 +88,7 @@
                                     <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle rounded-pill">Income</span>
                                 {% endif %}
                             </td>
-                            <td class="fw-bold text-muted">{{ currency_symbol }}{{ sub.amount|floatformat:2 }}</td>
+                            <td class="fw-bold text-muted">{{ currency_symbol }}{{ sub.amount|floatformat:2|translate_digits }}</td>
                             <td>{{ sub.get_frequency_display }}</td>
                             <td>-</td>
                             <td>

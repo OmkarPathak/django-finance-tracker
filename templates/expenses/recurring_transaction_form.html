@@ -1,11 +1,12 @@
 {% extends 'base.html' %}
+{% load i18n %}
 
 {% block content %}
 <div class="row justify-content-center fade-in">
     <div class="col-md-8">
 <div class="card shadow-lg border-0 fade-in">
     <div class="card-header bg-transparent py-3">
-        <h2 class="h4 mb-0 fw-bold">{% if form.instance.pk %}Edit{% else %}Add{% endif %} Subscription</h2>
+        <h2 class="h4 mb-0 fw-bold">{% if form.instance.pk %}{% trans "Edit" %}{% else %}{% trans "Add" %}{% endif %} {% trans "Subscription" %}</h2>
     </div>
 
     <div class="card-body">
@@ -22,56 +23,56 @@
 
             <div class="row g-3">
                 <div class="col-md-6">
-                    <label class="form-label">Type</label>
+                    <label class="form-label">{% trans "Type" %}</label>
                     {{ form.transaction_type }}
                     {% if form.transaction_type.errors %}
                         <div class="text-danger small">{{ form.transaction_type.errors|first }}</div>
                     {% endif %}
                 </div>
                 <div class="col-md-6">
-                    <label class="form-label">Frequency</label>
+                    <label class="form-label">{% trans "Frequency" %}</label>
                     {{ form.frequency }}
                     {% if form.frequency.errors %}
                         <div class="text-danger small">{{ form.frequency.errors|first }}</div>
                     {% endif %}
                 </div>
                 <div class="col-md-6">
-                    <label class="form-label">Amount</label>
+                    <label class="form-label">{% trans "Amount" %}</label>
                     {{ form.amount }}
                     {% if form.amount.errors %}
                         <div class="text-danger small">{{ form.amount.errors|first }}</div>
                     {% endif %}
                 </div>
                 <div class="col-md-6">
-                    <label class="form-label">Start Date</label>
+                    <label class="form-label">{% trans "Start Date" %}</label>
                     {{ form.start_date }}
                     {% if form.start_date.errors %}
                         <div class="text-danger small">{{ form.start_date.errors|first }}</div>
                     {% endif %}
                 </div>
                 <div class="col-12" id="categoryGroup">
-                    <label class="form-label">Category (For Expense)</label>
+                    <label class="form-label">{% trans "Category (For Expense)" %}</label>
                     {{ form.category }}
                     {% if form.category.errors %}
                         <div class="text-danger small">{{ form.category.errors|first }}</div>
                     {% endif %}
                 </div>
                 <div class="col-12" id="sourceGroup" style="display: none;">
-                    <label class="form-label">Source (For Income)</label>
+                    <label class="form-label">{% trans "Source (For Income)" %}</label>
                     {{ form.source }}
                     {% if form.source.errors %}
                         <div class="text-danger small">{{ form.source.errors|first }}</div>
                     {% endif %}
                 </div>
                 <div class="col-12" id="paymentMethodGroup">
-                    <label class="form-label">Payment Source Method</label>
+                    <label class="form-label">{% trans "Payment Source Method" %}</label>
                     {{ form.payment_method }}
                     {% if form.payment_method.errors %}
                         <div class="text-danger small">{{ form.payment_method.errors|first }}</div>
                     {% endif %}
                 </div>
                 <div class="col-12">
-                    <label class="form-label">Description</label>
+                    <label class="form-label">{% trans "Description" %}</label>
                     {{ form.description }}
                     {% if form.description.errors %}
                         <div class="text-danger small">{{ form.description.errors|first }}</div>
@@ -80,18 +81,18 @@
                 <div class="col-12">
                     <div class="form-check">
                         {{ form.is_active }}
-                        <label class="form-check-label">Active</label>
+                        <label class="form-check-label">{% trans "Active" %}</label>
                     </div>
                 </div>
             </div>
 
             <div class="mt-4">
                 <button type="submit" class="btn btn-primary px-4">
-                    <i class="bi bi-check-lg me-1"></i> Save Task
+                    <i class="bi bi-check-lg me-1"></i> {% trans "Save Task" %}
                 </button>
                 
                 <input type="hidden" name="next" value="{{ next_url }}">
-                <a href="{{ next_url|default:'/recurring/' }}" class="btn btn-outline-secondary px-4 ms-2">Cancel</a>
+                <a href="{{ next_url|default:'/recurring/' }}" class="btn btn-outline-secondary px-4 ms-2">{% trans "Cancel" %}</a>
             </div>
         </form>
     </div>

@@ -1,46 +1,63 @@
 {% extends 'base.html' %}
+{% load i18n %}
 
 {% block content %}
 <div class="container py-5">
     <div class="row justify-content-center">
         <div class="col-lg-8">
-            <h1 class="display-4 fw-bold mb-4 text-center">Terms of Service</h1>
-            <p class="text-muted text-center mb-5">Last updated: January 2026</p>
+            <h1 class="display-4 fw-bold mb-4 text-center">{% trans "Terms of Service" %}</h1>
+            <p class="text-muted text-center mb-5">{% trans "Last updated: January 2026" %}</p>
 
-                    <h3 class="h5 fw-bold mb-3">1. Acceptance of Terms</h3>
+                    <h3 class="h5 fw-bold mb-3">{% trans "1. Acceptance of Terms" %}</h3>
                     <p class="text-muted mb-4">
+                        {% blocktrans %}
                         By accessing or using TrackMyRupee, you agree to be bound by these Terms of Service. If you disagree with any part of the terms, 
                         you may not access the service.
+                        {% endblocktrans %}
                     </p>
 
-                    <h3 class="h5 fw-bold mb-3">2. Use of Service</h3>
+                    <h3 class="h5 fw-bold mb-3">{% trans "2. Use of Service" %}</h3>
                     <p class="text-muted mb-4">
+                        {% blocktrans %}
                         You are responsible for maintaining the confidentiality of your account and password. You agree to accept responsibility for all 
                         activities that occur under your account.
+                        {% endblocktrans %}
                     </p>
 
-                    <h3 class="h5 fw-bold mb-3">3. User Content</h3>
+                    <h3 class="h5 fw-bold mb-3">{% trans "3. User Content" %}</h3>
                     <p class="text-muted mb-4">
+                        {% blocktrans %}
                         You retain ownership of the data you enter into the application. We claim no intellectual property rights over the material 
                         you provide to the service.
+                        {% endblocktrans %}
                     </p>
 
-                    <h3 class="h5 fw-bold mb-3">4. Limitation of Liability and Disclaimer</h3>
+                    <h3 class="h5 fw-bold mb-3">{% trans "4. Limitation of Liability and Disclaimer" %}</h3>
                     <p class="text-muted mb-4">
+                        {% blocktrans %}
                         The service is provided on an "AS IS" and "AS AVAILABLE" basis. TrackMyRupee makes no seeking to warranties regarding the reliability, accuracy, or availability of the service. 
+                        {% endblocktrans %}
                         <br><br>
-                        <strong>We are not liable for any data loss, service interruptions, or financial damages resulting from the use or inability to use our application.</strong> 
+                        <strong>
+                            {% blocktrans %}
+                            We are not liable for any data loss, service interruptions, or financial damages resulting from the use or inability to use our application.
+                            {% endblocktrans %}
+                        </strong> 
+                        {% blocktrans %}
                         In no event shall TrackMyRupee be liable for any indirect, incidental, special, consequential, or punitive damages, including without limitation, loss of profits, data, use, goodwill, or other intangible losses.
+                        {% endblocktrans %}
                     </p>
                     
-                    <h3 class="h5 fw-bold mb-3">5. Changes to Terms</h3>
+                    <h3 class="h5 fw-bold mb-3">{% trans "5. Changes to Terms" %}</h3>
                     <p class="text-muted mb-0">
+                        {% blocktrans %}
                         We reserve the right to modify or replace these Terms at any time. We will try to provide at least 30 days' notice prior to any 
                         new terms taking effect.
+                        {% endblocktrans %}
                     </p>
              <div class="text-center mt-4">
                 <a href="{% url 'home' %}" class="btn btn-outline-secondary">
-                    <i class="bi bi-arrow-left me-1"></i> Back to Home
+                    <i class="bi bi-arrow-left me-1"></i> {% trans "Back to Home" %}
                 </a>
             </div>
         </div>

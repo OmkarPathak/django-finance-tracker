@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load i18n digit_filters %}
 
 {% block content %}
 <div class="fade-in">
@@ -8,7 +9,7 @@
             <a href="{% url 'calendar-month' prev_year prev_month %}{% if search_query %}?search={{ search_query }}{% endif %}" class="btn btn-sm">
                 <i class="bi bi-chevron-left"></i>
             </a>
-            <h2 class="h4 mb-0 fw-bold">{{ month_name }} {{ current_year }}</h2>
+            <h2 class="h4 mb-0 fw-bold">{{ month_name }} {{ current_year|translate_digits }}</h2>
             <a href="{% url 'calendar-month' next_year next_month %}{% if search_query %}?search={{ search_query }}{% endif %}" class="btn btn-sm">
                 <i class="bi bi-chevron-right"></i>
             </a>
@@ -19,9 +20,9 @@
             <form method="get" class="d-flex flex-grow-1 flex-md-grow-0" role="search">
                 <div class="input-group input-group-sm">
                     <span class="input-group-text bg-transparent border-end-0"><i class="bi bi-search"></i></span>
-                    <input class="form-control border-start-0 border-end-0" type="search" name="search" placeholder="Search entries..." value="{{ search_query }}" aria-label="Search">
+                    <input class="form-control border-start-0 border-end-0" type="search" name="search" placeholder="{% trans 'Search entries...' %}" value="{{ search_query }}" aria-label="{% trans 'Search' %}">
                     {% if search_query %}
-                    <a href="{% url 'calendar-month' current_year current_month %}" class="input-group-text bg-transparent border-start-0 text-decoration-none" title="Clear search">
+                    <a href="{% url 'calendar-month' current_year current_month %}" class="input-group-text bg-transparent border-start-0 text-decoration-none" title="{% trans 'Clear search' %}">
                         <i class="bi bi-x-lg"></i>
                     </a>
                     {% else %}
@@ -31,7 +32,7 @@
             </form>
             
             <a href="{% url 'home' %}" class="btn btn-outline-secondary btn-sm text-nowrap">
-                 Back to Dashboard
+                 {% trans "Back to Dashboard" %}
             </a>
         </div>
     </div>
@@ -39,17 +40,17 @@
     <!-- Legend & Net Savings -->
     <div class="px-3 py-3 d-flex flex-column flex-sm-row justify-content-between align-items-center gap-2 border-bottom">
         <div class="h5 mb-0">
-            {{ month_name }} net savings: 
+            {% blocktrans with month=month_name %}{{ month }} net savings:{% endblocktrans %} 
             <span class="{% if month_net_savings >= 0 %}text-success{% else %}text-danger{% endif %} fw-bold">
-                {{ currency_symbol }}{{ month_net_savings|floatformat:2 }}
+                {{ currency_symbol }}{{ month_net_savings|floatformat:2|translate_digits }}
             </span>
         </div>
         <div class="d-flex gap-3 small">
             <div class="d-flex align-items-center gap-1">
-                <span class="d-inline-block rounded-circle bg-success" style="width: 10px; height: 10px;"></span> Income
+                <span class="d-inline-block rounded-circle bg-success" style="width: 10px; height: 10px;"></span> {% trans "Income" %}
             </div>
             <div class="d-flex align-items-center gap-1">
-                <span class="d-inline-block rounded-circle bg-danger" style="width: 10px; height: 10px;"></span> Expense
+                <span class="d-inline-block rounded-circle bg-danger" style="width: 10px; height: 10px;"></span> {% trans "Expense" %}
             </div>
         </div>
     </div>
@@ -58,13 +59,13 @@
     <div class="card-body p-0">
         <!-- Weekday Headers -->
         <div class="d-grid text-center border-bottom bg-body-tertiary" style="grid-template-columns: repeat(7, 1fr);">
-            <div class="p-2 fw-bold text-muted small">Sun</div>
-            <div class="p-2 fw-bold text-muted small">Mon</div>
-            <div class="p-2 fw-bold text-muted small">Tue</div>
-            <div class="p-2 fw-bold text-muted small">Wed</div>
-            <div class="p-2 fw-bold text-muted small">Thu</div>
-            <div class="p-2 fw-bold text-muted small">Fri</div>
-            <div class="p-2 fw-bold text-muted small">Sat</div>
+            <div class="p-2 fw-bold text-muted small">{% trans "Sun" %}</div>
+            <div class="p-2 fw-bold text-muted small">{% trans "Mon" %}</div>
+            <div class="p-2 fw-bold text-muted small">{% trans "Tue" %}</div>
+            <div class="p-2 fw-bold text-muted small">{% trans "Wed" %}</div>
+            <div class="p-2 fw-bold text-muted small">{% trans "Thu" %}</div>
+            <div class="p-2 fw-bold text-muted small">{% trans "Fri" %}</div>
+            <div class="p-2 fw-bold text-muted small">{% trans "Sat" %}</div>
         </div>
 
         <!-- Days -->
@@ -80,15 +81,15 @@
                          data-bs-placement="top"
                          data-bs-html="true"
                          data-bs-custom-class="custom-popover"
-                         data-bs-title="<b>{{ day_data.day }} {{ month_name }}</b>"
-                         data-bs-content="{% if day_data.income > 0 %}<div class='text-success mb-1'>Income: <b>{{ currency_symbol }}{{ day_data.income|floatformat:0 }}</b></div>{% endif %}{% if day_data.expense > 0 %}<div class='text-danger mb-1'>Expense: <b>{{ currency_symbol }}{{ day_data.expense|floatformat:0 }}</b></div>{% endif %}{% if day_data.income == 0 and day_data.expense == 0 %}<div class='text-muted mb-1'>No activity</div>{% endif %}<a href='{% url 'expense-list' %}?start_date={{ current_year }}-{{ current_month|stringformat:'02d' }}-{{ day_data.day|stringformat:'02d' }}&end_date={{ current_year }}-{{ current_month|stringformat:'02d' }}-{{ day_data.day|stringformat:'02d' }}' class='btn btn-sm btn-outline-secondary w-100 mt-2'>View Details</a>">
+                         data-bs-title="<b>{{ day_data.day|translate_digits }} {{ month_name }}</b>"
+                         data-bs-content="{% if day_data.income > 0 %}<div class='text-success mb-1'>{% trans 'Income' %}: <b>{{ currency_symbol }}{{ day_data.income|floatformat:0|translate_digits }}</b></div>{% endif %}{% if day_data.expense > 0 %}<div class='text-danger mb-1'>{% trans 'Expense' %}: <b>{{ currency_symbol }}{{ day_data.expense|floatformat:0|translate_digits }}</b></div>{% endif %}{% if day_data.income == 0 and day_data.expense == 0 %}<div class='text-muted mb-1'>{% trans 'No activity' %}</div>{% endif %}<a href='{% url 'expense-list' %}?start_date={{ current_year }}-{{ current_month|stringformat:'02d' }}-{{ day_data.day|stringformat:'02d' }}&end_date={{ current_year }}-{{ current_month|stringformat:'02d' }}-{{ day_data.day|stringformat:'02d' }}' class='btn btn-sm btn-outline-secondary w-100 mt-2'>{% trans 'View Details' %}</a>">
                         
                         <!-- Date Number & Link -->
                         <div class="d-flex justify-content-between w-100 px-1 mb-1 mb-md-2">
-                            <span class="small fw-bold">{{ day_data.day }}</span>
+                            <span class="small fw-bold">{{ day_data.day|translate_digits }}</span>
                             <a href="{% url 'expense-list' %}?start_date={{ current_year }}-{{ current_month|stringformat:'02d' }}-{{ day_data.day|stringformat:'02d' }}&end_date={{ current_year }}-{{ current_month|stringformat:'02d' }}-{{ day_data.day|stringformat:'02d' }}" 
                                class="text-decoration-none text-muted d-none d-md-inline" 
-                               title="View expenses for this day"
+                               title="{% trans 'View expenses for this day' %}"
                                onclick="event.stopPropagation();">
                                 <i class="bi bi-box-arrow-up-right" style="font-size: 0.75rem;"></i>
                             </a>
@@ -98,13 +99,13 @@
                         <div class="d-none d-md-flex flex-column gap-1">
                             {% if day_data.income > 0 %}
                             <div class="badge text-bg-success text-start w-100 fw-normal text-truncate">
-                                + {{ currency_symbol }}{{ day_data.income|floatformat:0 }}
+                                + {{ currency_symbol }}{{ day_data.income|floatformat:0|translate_digits }}
                             </div>
                             {% endif %}
                             
                             {% if day_data.expense > 0 %}
                             <div class="badge text-bg-danger text-start w-100 fw-normal text-truncate">
-                                - {{ currency_symbol }}{{ day_data.expense|floatformat:0 }}
+                                - {{ currency_symbol }}{{ day_data.expense|floatformat:0|translate_digits }}
                             </div>
                             {% endif %}
                         </div>
