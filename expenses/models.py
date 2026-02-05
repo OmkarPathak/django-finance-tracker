@@ -505,6 +505,7 @@ class Friend(models.Model):
         """
         Calculate net balance with this friend.
         Positive = friend owes you, Negative = you owe friend.
+        Includes settlements (payments made between you and friend).
         """
         from django.db.models import Sum
 
@@ -530,7 +531,24 @@ class Friend(models.Model):
             or 0
         )
 
-        return friend_owes - you_owe
+        # Settlement payments - friend paid you back (reduces what they owe)
+        friend_paid_back = (
+            self.settlements.filter(payer_is_user=False).aggregate(
+                total=Sum("amount")
+            )["total"]
+            or 0
+        )
+
+        # Settlement payments - you paid friend (reduces what you owe)
+        you_paid_back = (
+            self.settlements.filter(payer_is_user=True).aggregate(
+                total=Sum("amount")
+            )["total"]
+            or 0
+        )
+
+        # Net balance = (friend owes - friend paid back) - (you owe - you paid back)
+        return (friend_owes - friend_paid_back) - (you_owe - you_paid_back)
 
     def get_transactions(self):
         """Get all shared expenses involving this friend."""
@@ -642,6 +660,32 @@ class Share(models.Model):
     def __str__(self):
         return f"{self.participant.name}: ₹{self.amount}"
 
+
+class Settlement(models.Model):
+    """
+    Records settlement transactions between user and friends.
+    When a friend pays back or you pay a friend, record it here.
+    """
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='settlements')
+    friend = models.ForeignKey(Friend, on_delete=models.CASCADE, related_name='settlements')
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    date = models.DateField()
+    notes = models.TextField(blank=True)
+    # Who paid whom: True = user paid friend, False = friend paid user
+    payer_is_user = models.BooleanField(
+        help_text="True if you paid the friend, False if friend paid you"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-date', '-created_at']
+
+    def __str__(self):
+        if self.payer_is_user:
+            return f"You paid {self.friend.name}: ₹{self.amount}"
+        return f"{self.friend.name} paid you: ₹{self.amount}"
+
+
 class Notification(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications')
     title = models.CharField(max_length=255)
@@ -653,3 +697,4 @@ class Notification(models.Model):
 
     def __str__(self):
         return f"Notification for {self.user.username}: {self.title}"
+

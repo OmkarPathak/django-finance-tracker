@@ -1,0 +1,96 @@
+{% extends "expenses/settings_base.html" %}
+{% load humanize %}
+
+{% block settings_content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h3 class="fw-bold mb-0">
+        <i class="bi bi-people me-2"></i> Friends
+    </h3>
+    <a href="{% url 'friend-add' %}" class="btn btn-primary">
+        <i class="bi bi-plus-lg me-1"></i> Add Friend
+    </a>
+</div>
+
+{% if friends %}
+<!-- Summary Cards -->
+<div class="row g-3 mb-4">
+    {% for friend in friends %}
+    <div class="col-md-6 col-lg-4">
+        <div class="card border-0 rounded-4 shadow-sm h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <div class="d-flex align-items-center">
+                        <div class="avatar bg-primary bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center me-3"
+                            style="width: 48px; height: 48px;">
+                            <span class="fw-bold text-primary" style="font-size: 1.2rem;">{{ friend.name|make_list|first|upper }}</span>
+                        </div>
+                        <div>
+                            <h5 class="mb-0 fw-bold">{{ friend.name }}</h5>
+                            {% if friend.email %}
+                            <small class="text-muted">{{ friend.email }}</small>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="dropdown">
+                        <button class="btn btn-link text-muted p-0" type="button" data-bs-toggle="dropdown">
+                            <i class="bi bi-three-dots-vertical"></i>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end shadow border-0 rounded-3">
+                            <li><a class="dropdown-item" href="{% url 'friend-detail' friend.pk %}"><i
+                                        class="bi bi-eye me-2"></i> View Details</a></li>
+                            <li><a class="dropdown-item" href="{% url 'friend-edit' friend.pk %}"><i
+                                        class="bi bi-pencil me-2"></i> Edit</a></li>
+                            <li><a class="dropdown-item" href="{% url 'settlement-create' friend.pk %}"><i
+                                        class="bi bi-cash-coin me-2"></i> Settle Up</a></li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+                            <li><a class="dropdown-item text-danger" href="{% url 'friend-delete' friend.pk %}"><i
+                                        class="bi bi-trash me-2"></i> Delete</a></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Balance -->
+                <div class="d-flex align-items-center justify-content-between">
+                    <span class="text-muted">Balance</span>
+                    {% if friend.balance > 0 %}
+                    <span class="badge bg-success-subtle text-success rounded-pill px-3 py-2">
+                        <i class="bi bi-arrow-down me-1"></i> ₹{{ friend.balance|floatformat:2|intcomma }}
+                    </span>
+                    {% elif friend.balance < 0 %} <span
+                        class="badge bg-danger-subtle text-danger rounded-pill px-3 py-2">
+                        <i class="bi bi-arrow-up me-1"></i> ₹{{ friend.balance|floatformat:2|intcomma|slice:"1:" }}
+                        </span>
+                        {% else %}
+                        <span class="badge bg-secondary-subtle text-secondary rounded-pill px-3 py-2">
+                            <i class="bi bi-check me-1"></i> Settled
+                        </span>
+                        {% endif %}
+                </div>
+
+                <!-- Quick Action -->
+                <div class="mt-3 pt-3 border-top">
+                    <a href="{% url 'friend-detail' friend.pk %}" class="btn btn-outline-primary btn-sm w-100">
+                        View Ledger <i class="bi bi-arrow-right ms-1"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<!-- Empty State -->
+<div class="text-center py-5">
+    <div class="mb-4">
+        <i class="bi bi-people text-muted" style="font-size: 4rem;"></i>
+    </div>
+    <h4 class="fw-bold">No Friends Added Yet</h4>
+    <p class="text-muted mb-4">Add friends to track shared expenses and settlements.</p>
+    <a href="{% url 'friend-add' %}" class="btn btn-primary px-4">
+        <i class="bi bi-plus-lg me-1"></i> Add Your First Friend
+    </a>
+</div>
+{% endif %}
+{% endblock %}

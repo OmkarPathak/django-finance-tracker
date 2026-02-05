@@ -1,0 +1,214 @@
+{% extends 'expenses/settings_base.html' %}
+
+{% block settings_content %}
+<div class="fade-in">
+    <div class="py-3 mb-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+                <h2 class="h4 mb-0 fw-bold">Payment Sources</h2>
+                <p class="text-muted small mb-0">Manage your bank accounts, wallets, and cash</p>
+            </div>
+            <a href="{% url 'payment-source-add' %}" class="btn btn-primary btn-sm">
+                <i class="bi bi-plus-lg me-1"></i> Add Account
+            </a>
+        </div>
+    </div>
+
+    <!-- Total Balance Card -->
+    <div class="card border-0 shadow-sm mb-4 bg-gradient" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+        <div class="card-body text-white py-4">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <p class="mb-1 opacity-75 small text-uppercase">Total Balance</p>
+                    <h2 class="mb-0 fw-bold">{{ currency_symbol }}{{ total_balance|floatformat:2 }}</h2>
+                </div>
+                <div class="opacity-50">
+                    <i class="bi bi-wallet2 display-4"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Savings Accounts -->
+    {% if savings_accounts %}
+    <div class="mb-4">
+        <h5 class="fw-bold mb-3"><i class="bi bi-bank me-2 text-primary"></i>Savings Accounts</h5>
+        <div class="row g-3">
+            {% for source in savings_accounts %}
+            <div class="col-md-6 col-lg-4">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <div>
+                                <h6 class="mb-1 fw-bold">{{ source.name }}</h6>
+                                <small class="text-muted">{{ source.bank_name|default:"Bank Account" }}</small>
+                            </div>
+                            <div class="dropdown">
+                                <button class="btn btn-sm btn-link text-muted p-0" data-bs-toggle="dropdown">
+                                    <i class="bi bi-three-dots-vertical"></i>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    <li><a class="dropdown-item" href="{% url 'payment-source-detail' source.pk %}"><i class="bi bi-eye me-2"></i>View Details</a></li>
+                                    <li><a class="dropdown-item" href="{% url 'payment-source-edit' source.pk %}"><i class="bi bi-pencil me-2"></i>Edit</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li>
+                                        <form method="post" action="{% url 'payment-source-delete' source.pk %}" class="d-inline">
+                                            {% csrf_token %}
+                                            <button type="submit" class="dropdown-item text-danger" onclick="return confirm('Delete {{ source.name }}?')">
+                                                <i class="bi bi-trash me-2"></i>Delete
+                                            </button>
+                                        </form>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                        <h4 class="mb-0 text-primary">{{ currency_symbol }}{{ source.balance|floatformat:2 }}</h4>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Current Accounts -->
+    {% if current_accounts %}
+    <div class="mb-4">
+        <h5 class="fw-bold mb-3"><i class="bi bi-building me-2 text-success"></i>Current Accounts</h5>
+        <div class="row g-3">
+            {% for source in current_accounts %}
+            <div class="col-md-6 col-lg-4">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <div>
+                                <h6 class="mb-1 fw-bold">{{ source.name }}</h6>
+                                <small class="text-muted">{{ source.bank_name|default:"Bank Account" }}</small>
+                            </div>
+                            <div class="dropdown">
+                                <button class="btn btn-sm btn-link text-muted p-0" data-bs-toggle="dropdown">
+                                    <i class="bi bi-three-dots-vertical"></i>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    <li><a class="dropdown-item" href="{% url 'payment-source-detail' source.pk %}"><i class="bi bi-eye me-2"></i>View Details</a></li>
+                                    <li><a class="dropdown-item" href="{% url 'payment-source-edit' source.pk %}"><i class="bi bi-pencil me-2"></i>Edit</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li>
+                                        <form method="post" action="{% url 'payment-source-delete' source.pk %}" class="d-inline">
+                                            {% csrf_token %}
+                                            <button type="submit" class="dropdown-item text-danger" onclick="return confirm('Delete {{ source.name }}?')">
+                                                <i class="bi bi-trash me-2"></i>Delete
+                                            </button>
+                                        </form>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                        <h4 class="mb-0 text-success">{{ currency_symbol }}{{ source.balance|floatformat:2 }}</h4>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Digital Wallets -->
+    {% if wallets %}
+    <div class="mb-4">
+        <h5 class="fw-bold mb-3"><i class="bi bi-phone me-2 text-info"></i>Digital Wallets</h5>
+        <div class="row g-3">
+            {% for source in wallets %}
+            <div class="col-md-6 col-lg-4">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <div>
+                                <h6 class="mb-1 fw-bold">{{ source.name }}</h6>
+                                <small class="text-muted">{{ source.bank_name|default:"Wallet" }}</small>
+                            </div>
+                            <div class="dropdown">
+                                <button class="btn btn-sm btn-link text-muted p-0" data-bs-toggle="dropdown">
+                                    <i class="bi bi-three-dots-vertical"></i>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    <li><a class="dropdown-item" href="{% url 'payment-source-detail' source.pk %}"><i class="bi bi-eye me-2"></i>View Details</a></li>
+                                    <li><a class="dropdown-item" href="{% url 'payment-source-edit' source.pk %}"><i class="bi bi-pencil me-2"></i>Edit</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li>
+                                        <form method="post" action="{% url 'payment-source-delete' source.pk %}" class="d-inline">
+                                            {% csrf_token %}
+                                            <button type="submit" class="dropdown-item text-danger" onclick="return confirm('Delete {{ source.name }}?')">
+                                                <i class="bi bi-trash me-2"></i>Delete
+                                            </button>
+                                        </form>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                        <h4 class="mb-0 text-info">{{ currency_symbol }}{{ source.balance|floatformat:2 }}</h4>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Cash -->
+    {% if cash_sources %}
+    <div class="mb-4">
+        <h5 class="fw-bold mb-3"><i class="bi bi-cash-coin me-2 text-warning"></i>Cash in Hand</h5>
+        <div class="row g-3">
+            {% for source in cash_sources %}
+            <div class="col-md-6 col-lg-4">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <div>
+                                <h6 class="mb-1 fw-bold">{{ source.name }}</h6>
+                                <small class="text-muted">Cash</small>
+                            </div>
+                            <div class="dropdown">
+                                <button class="btn btn-sm btn-link text-muted p-0" data-bs-toggle="dropdown">
+                                    <i class="bi bi-three-dots-vertical"></i>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    <li><a class="dropdown-item" href="{% url 'payment-source-detail' source.pk %}"><i class="bi bi-eye me-2"></i>View Details</a></li>
+                                    <li><a class="dropdown-item" href="{% url 'payment-source-edit' source.pk %}"><i class="bi bi-pencil me-2"></i>Edit</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li>
+                                        <form method="post" action="{% url 'payment-source-delete' source.pk %}" class="d-inline">
+                                            {% csrf_token %}
+                                            <button type="submit" class="dropdown-item text-danger" onclick="return confirm('Delete {{ source.name }}?')">
+                                                <i class="bi bi-trash me-2"></i>Delete
+                                            </button>
+                                        </form>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                        <h4 class="mb-0 text-warning">{{ currency_symbol }}{{ source.balance|floatformat:2 }}</h4>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Empty State -->
+    {% if not payment_sources %}
+    <div class="card border-0 shadow-sm">
+        <div class="card-body text-center py-5">
+            <i class="bi bi-wallet2 text-muted display-1 mb-3 d-block"></i>
+            <h4 class="fw-bold text-muted">No Payment Sources Yet</h4>
+            <p class="text-muted mb-4">Add your bank accounts, wallets, and cash to track balances.</p>
+            <a href="{% url 'payment-source-add' %}" class="btn btn-primary">
+                <i class="bi bi-plus-lg me-1"></i> Add Your First Account
+            </a>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

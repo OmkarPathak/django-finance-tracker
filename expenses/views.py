@@ -2864,7 +2864,6 @@ def update_friend_ajax(request, pk):
 
     return JsonResponse({"success": False, "error": "Invalid request method"})
 
-        return JsonResponse({'category': category})
 
 # --------------------
 # Notification Views
