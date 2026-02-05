@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load i18n digit_filters %}
 
 {% block content %}
 <style>
@@ -15,36 +16,36 @@
     <!-- Mobile Header -->
     <div class="card-header bg-transparent d-md-none py-3">
         <div class="d-flex justify-content-between align-items-center">
-            <h2 class="h4 mb-0 fw-bold">Expenses</h2>
+            <h2 class="h4 mb-0 fw-bold">{% trans "Expenses" %}</h2>
             <div class="d-flex align-items-center gap-3">
                 <a href="{% url 'expense-create' %}" class="btn btn-primary btn-sm d-flex align-items-center gap-1">
-                    <i class="bi bi-plus-lg"></i> <span>Add<span class="d-none d-sm-inline"> Expense</span></span>
+                    <i class="bi bi-plus-lg"></i> <span>{% trans "Add" %}<span class="d-none d-sm-inline"> {% trans "Expense" %}</span></span>
                 </a>
                 <a href="{% url 'export-expenses' %}?{{ request.GET.urlencode }}" class="btn btn-sm btn-link text-success text-decoration-none p-0 border-0 no-loader" title="Export">
                     <i class="bi bi-download fs-5"></i>
                 </a>
                 <button class="btn btn-sm btn-link text-decoration-none text-muted p-0 border-0 fs-6" type="button" data-bs-toggle="collapse" data-bs-target="#expenseFilters" aria-expanded="false" aria-controls="expenseFilters">
-                    <i class="bi bi-funnel me-1"></i> Filters
+                    <i class="bi bi-funnel me-1"></i> {% trans "Filters" %}
                 </button>
             </div>
         </div>
-        <p class="text-muted small mb-0 mt-1">Tracking every penny is the first step to financial freedom.</p>
+        <p class="text-muted small mb-0 mt-1">{% trans "Tracking every penny is the first step to financial freedom." %}</p>
     </div>
 
     <!-- Desktop Header -->
     <div class="card-header bg-transparent d-none d-md-block py-3">
         <div class="d-flex justify-content-between align-items-center">
-            <h2 class="h4 mb-0 fw-bold">Expenses</h2>
+            <h2 class="h4 mb-0 fw-bold">{% trans "Expenses" %}</h2>
             <div class="d-flex align-items-center gap-2">
                 <a href="{% url 'expense-create' %}" class="btn btn-primary btn-sm d-inline-flex align-items-center text-nowrap">
-                    <i class="bi bi-plus-lg me-1"></i> Add Expense
+                    <i class="bi bi-plus-lg me-1"></i> {% trans "Add Expense" %}
                 </a>
                 <a href="{% url 'export-expenses' %}?{{ request.GET.urlencode }}" class="btn btn-outline-success btn-sm d-inline-flex align-items-center no-loader">
-                    <i class="bi bi-download me-1"></i> Export
+                    <i class="bi bi-download me-1"></i> {% trans "Export" %}
                 </a>
             </div>
         </div>
-        <p class="text-muted small mb-0 mt-1">Tracking every penny is the first step to financial freedom.</p>
+        <p class="text-muted small mb-0 mt-1">{% trans "Tracking every penny is the first step to financial freedom." %}</p>
     </div>
     
 
@@ -55,39 +56,39 @@
         <div class="row g-2 align-items-end flex-lg-nowrap">
             <!-- Search -->
             <div class="col-12 col-md-auto filter-w-search">
-                <label for="search" class="form-label small text-muted">Search</label>
-                <input type="text" name="search" id="search" class="form-control form-control-sm" placeholder="Search..." value="{{ request.GET.search|default:'' }}">
+                <label for="search" class="form-label small text-muted">{% trans "Search" %}</label>
+                <input type="text" name="search" id="search" class="form-control form-control-sm" placeholder="{% trans 'Search...' %}" value="{{ request.GET.search|default:'' }}">
             </div>
             
             <!-- Date Range -->
             <div class="col-6 col-md-auto filter-w-date">
-                <label for="start_date" class="form-label small text-muted d-none d-md-block">From</label>
+                <label for="start_date" class="form-label small text-muted d-none d-md-block">{% trans "From" %}</label>
                 <div class="input-group input-group-sm">
-                    <span class="input-group-text d-md-none">From</span>
+                    <span class="input-group-text d-md-none">{% trans "From" %}</span>
                     <input type="date" name="start_date" id="start_date" class="form-control" value="{{ start_date|default:'' }}">
                 </div>
             </div>
             <div class="col-6 col-md-auto filter-w-date">
-                <label for="end_date" class="form-label small text-muted d-none d-md-block">To</label>
+                <label for="end_date" class="form-label small text-muted d-none d-md-block">{% trans "To" %}</label>
                 <div class="input-group input-group-sm">
-                    <span class="input-group-text d-md-none">To</span>
+                    <span class="input-group-text d-md-none">{% trans "To" %}</span>
                     <input type="date" name="end_date" id="end_date" class="form-control" value="{{ end_date|default:'' }}">
                 </div>
             </div>
 
             <!-- Year & Month -->
             <div class="col-6 col-md-auto filter-w-year">
-                <label for="year-select" class="form-label small text-muted">Year</label>
+                <label for="year-select" class="form-label small text-muted">{% trans "Year" %}</label>
                 <select name="year" id="year-select" class="form-control django-multi-select" multiple placeholder="Years...">
                     {% for dt in years %}
                         <option value="{{ dt }}" {% if dt|stringformat:"s" in selected_years %}selected{% endif %}>
-                            {{ dt }}
+                            {{ dt|translate_digits }}
                         </option>
                     {% endfor %}
                 </select>
             </div>
             <div class="col-6 col-md-auto filter-w-month">
-                <label for="month-select" class="form-label small text-muted">Month</label>
+                <label for="month-select" class="form-label small text-muted">{% trans "Month" %}</label>
                 <select name="month" id="month-select" class="form-control django-multi-select" multiple placeholder="Months...">
                     {% for num, name in months_list %}
                         <option value="{{ num }}" {% if num|stringformat:"s" in selected_months %}selected{% endif %}>
@@ -99,7 +100,7 @@
 
             <!-- Category -->
             <div class="col-12 col-md-auto filter-w-category">
-                <label for="category-select" class="form-label small text-muted">Category</label>
+                <label for="category-select" class="form-label small text-muted">{% trans "Category" %}</label>
                 <select name="category" id="category-select" class="form-control django-multi-select" multiple placeholder="Categories...">
                     {% for cat in categories %}
                         <option value="{{ cat }}" {% if cat in selected_categories %}selected{% endif %}>
@@ -112,20 +113,20 @@
             <!-- Buttons -->
             <div class="col-6 col-md-auto">
                 <button type="submit" class="btn btn-primary btn-sm w-100 w-md-auto" onclick="showLoader()">
-                    <i class="bi bi-filter me-1"></i> Apply
+                    <i class="bi bi-filter me-1"></i> {% trans "Apply" %}
                 </button>
             </div>
             <!-- Reset -->
             <div class="col-6 col-md-auto">
                 <a href="{% url 'expense-list' %}" class="btn btn-outline-secondary btn-sm w-100 w-md-auto" onclick="showLoader()">
-                    <i class="bi bi-arrow-counterclockwise me-1"></i> Reset
+                    <i class="bi bi-arrow-counterclockwise me-1"></i> {% trans "Reset" %}
                 </a>
             </div>
 
             <!-- Bulk Delete -->
             <div class="d-none d-md-block col-md-auto">
                  <button type="button" class="btn btn-outline-danger btn-sm w-100 w-md-auto bulk-delete-btn" id="bulkDeleteBtn" disabled data-bs-toggle="modal" data-bs-target="#bulkDeleteModal">
-                    <i class="bi bi-trash me-1"></i> Delete Selected
+                    <i class="bi bi-trash me-1"></i> {% trans "Delete Selected" %}
                 </button>
             </div>
 
@@ -139,14 +140,14 @@
         <div class="row g-2">
             <div class="col-6 col-md-auto">
                 <div class="p-2 border rounded bg-body-tertiary shadow-sm text-center text-md-start">
-                    <small class="text-muted d-block text-uppercase" style="font-size: 0.7rem; letter-spacing: 0.5px;">Total Records</small>
-                    <span class="fw-bold">{{ filtered_count }}</span>
+                    <small class="text-muted d-block text-uppercase" style="font-size: 0.7rem; letter-spacing: 0.5px;">{% trans "Total Records" %}</small>
+                    <span class="fw-bold">{{ filtered_count|translate_digits }}</span>
                 </div>
             </div>
             <div class="col-6 col-md-auto">
                 <div class="p-2 border rounded bg-body-tertiary shadow-sm text-center text-md-start">
-                    <small class="text-muted d-block text-uppercase" style="font-size: 0.7rem; letter-spacing: 0.5px;">Total Amount</small>
-                    <span class="fw-bold text-success">₹{{ filtered_amount|floatformat:2 }}</span>
+                    <small class="text-muted d-block text-uppercase" style="font-size: 0.7rem; letter-spacing: 0.5px;">{% trans "Total Amount" %}</small>
+                    <span class="fw-bold text-success">₹{{ filtered_amount|floatformat:2|translate_digits }}</span>
                 </div>
             </div>
         </div>
@@ -231,9 +232,9 @@
             
             <!-- Mobile Bulk Actions (Hidden by default, shown via JS) -->
             <div id="mobileBulkActions" class="d-md-none p-2 bg-body-tertiary border-bottom d-none justify-content-end align-items-center gap-2">
-                <span class="small text-muted me-auto">Items Selected</span>
+                <span class="small text-muted me-auto">{% trans "Items Selected" %}</span>
                 <button type="button" class="btn btn-outline-danger btn-sm bulk-delete-btn" disabled data-bs-toggle="modal" data-bs-target="#bulkDeleteModal">
-                    <i class="bi bi-trash me-1"></i> Delete Selected
+                    <i class="bi bi-trash me-1"></i> {% trans "Delete Selected" %}
                 </button>
             </div>
 
@@ -246,17 +247,17 @@
                                     <input class="form-check-input" type="checkbox" id="selectAll">
                                 </div>
                             </th>
-                            <th>Date</th>
-                            <th>Description</th>
-                            <th>Category</th>
-                            <th>Payment Method</th>
+                            <th>{% trans "Date" %}</th>
+                            <th>{% trans "Description" %}</th>
+                            <th>{% trans "Category" %}</th>
+                            <th>{% trans "Payment Method" %}</th>
                             {% load expense_extras %}
                             {% if request.GET.sort == 'amount_asc' %}
                                 <th style="cursor: pointer;" onclick="window.location.href='?{% url_replace sort='amount_desc' %}'">
                             {% else %}
                                 <th style="cursor: pointer;" onclick="window.location.href='?{% url_replace sort='amount_asc' %}'">
                             {% endif %}
-                                Amount
+                                {% trans "Amount" %}
                                 {% if request.GET.sort == 'amount_asc' %}
                                     <i class="bi bi-arrow-up-short"></i>
                                 {% elif request.GET.sort == 'amount_desc' %}
@@ -265,7 +266,7 @@
                                     <i class="bi bi-arrow-down-up text-muted opacity-25" style="font-size: 0.8em;"></i>
                                 {% endif %}
                             </th>
-                            <th class="text-end pe-4">Actions</th>
+                            <th class="text-end pe-4">{% trans "Actions" %}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -276,13 +277,13 @@
                                     <input class="form-check-input expense-checkbox" type="checkbox" name="expense_ids" value="{{ expense.pk }}">
                                 </div>
                             </td>
-                            <td class="text-nowrap">{{ expense.date|date:"d M Y" }}</td>
+                            <td class="text-nowrap">{{ expense.date|date:"d M Y"|translate_digits }}</td>
                             <td>{{ expense.description }}</td>
                             <td>
                                 <span class="badge bg-secondary opacity-75">{{ expense.category }}</span>
                             </td>
                             <td>{{ expense.payment_method }}</td>
-                            <td class="fw-bold">{{ expense.amount }}</td>
+                            <td class="fw-bold">{{ expense.amount|translate_digits }}</td>
                             <td class="text-end pe-4 text-nowrap">
                                 <div class="hstack gap-3 justify-content-end">
                                     <a href="{% url 'expense-edit' expense.pk %}?next={{ request.get_full_path|urlencode }}" class="btn btn-sm btn-link text-decoration-none p-0 d-inline-flex align-items-center" title="Edit" onclick="setButtonLoading(this, '')">
@@ -291,7 +292,7 @@
                                     <button type="button" class="btn btn-sm btn-link text-decoration-none p-0 delete-btn d-inline-flex align-items-center" 
                                             data-bs-toggle="modal" data-bs-target="#deleteModal" 
                                             data-url="{% url 'expense-delete' expense.pk %}"
-                                            data-message="Are you sure you want to delete '{{ expense.description|escapejs }}'?">
+                                            data-message="{% trans 'Are you sure you want to delete' %} '{{ expense.description|escapejs }}'?">
                                         <i class="bi bi-trash text-danger"></i>
                                     </button>
                                 </div>
@@ -302,21 +303,21 @@
                             <td colspan="7" class="text-center py-5">
                                 <div class="py-4">
                                     <i class="bi bi-receipt text-muted display-1 mb-3 d-block"></i>
-                                    <h4 class="fw-bold text-muted">No Expenses Found</h4>
+                                    <h4 class="fw-bold text-muted">{% trans "No Expenses Found" %}</h4>
                                     <p class="text-muted mb-4">
                                         {% if request.GET.search or request.GET.start_date or request.GET.end_date or request.GET.category or request.GET.year or request.GET.month %}
-                                            We couldn't find any expenses matching your filters.
+                                            {% trans "We couldn't find any expenses matching your filters." %}
                                         {% else %}
-                                            You haven't added any expenses yet. Start tracking your spending!
+                                            {% trans "You haven't added any expenses yet. Start tracking your spending!" %}
                                         {% endif %}
                                     </p>
                                     <div class="d-flex justify-content-center gap-2">
                                         <a href="{% url 'expense-create' %}" class="btn btn-primary">
-                                            <i class="bi bi-plus-lg me-1"></i> Add Expense
+                                            <i class="bi bi-plus-lg me-1"></i> {% trans "Add Expense" %}
                                         </a>
                                         {% if request.GET.search or request.GET.start_date or request.GET.end_date or request.GET.category or request.GET.year or request.GET.month %}
                                             <a href="{% url 'expense-list' %}" class="btn btn-outline-secondary">
-                                                <i class="bi bi-arrow-counterclockwise me-1"></i> Clear Filters
+                                                <i class="bi bi-arrow-counterclockwise me-1"></i> {% trans "Clear Filters" %}
                                             </a>
                                         {% endif %}
                                     </div>
@@ -336,17 +337,17 @@
             <ul class="pagination justify-content-center mb-0">
                 {% if page_obj.has_previous %}
                 <li class="page-item">
-                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}&{{ request.GET.urlencode|cut:'page=' }}">Previous</a>
+                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}&{{ request.GET.urlencode|cut:'page=' }}">{% trans "Previous" %}</a>
                 </li>
                 {% endif %}
                 
                 <li class="page-item disabled">
-                    <span class="page-link">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+                    <span class="page-link">{% trans "Page" %} {{ page_obj.number|translate_digits }} {% trans "of" %} {{ page_obj.paginator.num_pages|translate_digits }}</span>
                 </li>
 
                 {% if page_obj.has_next %}
                 <li class="page-item">
-                    <a class="page-link" href="?page={{ page_obj.next_page_number }}&{{ request.GET.urlencode|cut:'page=' }}">Next</a>
+                    <a class="page-link" href="?page={{ page_obj.next_page_number }}&{{ request.GET.urlencode|cut:'page=' }}">{% trans "Next" %}</a>
                 </li>
                 {% endif %}
             </ul>
@@ -362,15 +363,15 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Confirm Bulk Delete</h5>
+                    <h5 class="modal-title">{% trans "Confirm Bulk Delete" %}</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    Are you sure you want to delete the selected expenses? This action cannot be undone.
+                    {% trans "Are you sure you want to delete the selected expenses? This action cannot be undone." %}
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-danger" onclick="setButtonLoading(this, 'Deleting...'); document.getElementById('bulkDeleteForm').submit()">Delete Selected</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{% trans "Cancel" %}</button>
+                    <button type="button" class="btn btn-danger" onclick="setButtonLoading(this, '{% trans 'Deleting...' %}'); document.getElementById('bulkDeleteForm').submit()">{% trans "Delete Selected" %}</button>
                 </div>
             </div>
         </div>

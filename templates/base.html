@@ -1,6 +1,6 @@
-{% load static %}
+{% load static i18n digit_filters %}
 <!DOCTYPE html>
-<html lang="en" data-bs-theme="dark">
+<html lang="{{ request.LANGUAGE_CODE|default:'en' }}" data-bs-theme="dark">
 
 <head>
     {% if GOOGLE_ANALYTICS_ID %}
@@ -38,6 +38,19 @@
     <script>
         const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
         document.cookie = "django_timezone=" + tz + "; path=/; SameSite=Lax";
+
+        // Global Digit Translation Utility
+        window.translateDigits = function(value) {
+            if (value === null || value === undefined) return value;
+            const lang = document.documentElement.lang || 'en';
+            if (!lang.startsWith('mr') && !lang.startsWith('hi')) return value;
+            
+            const arabicToDevanagari = {
+                '0': '०', '1': '१', '2': '२', '3': '३', '4': '४',
+                '5': '५', '6': '६', '7': '७', '8': '८', '9': '९'
+            };
+            return String(value).replace(/[0-9]/g, w => arabicToDevanagari[w]);
+        };
     </script>
     <title>{% block title %}TrackMyRupee - Know Exactly Where Every Rupee Goes{% endblock %}</title>
     <link rel="canonical" href="{{ request.scheme }}://{{ request.get_host }}{{ request.path }}">
@@ -532,12 +545,12 @@
                         <span class="fs-4 fw-bold text-body">TrackMyRupee</span>
                     </a>
                     <p class="text-muted small mb-4">
-                        Turn financial chaos into clarity. TrackMyRupee gives you a precision dashboard to visualize
-                        your spending, spot trends, and master your monthly budget.
+                        {% blocktrans %}Turn financial chaos into clarity. TrackMyRupee gives you a precision dashboard to visualize
+                        your spending, spot trends, and master your monthly budget.{% endblocktrans %}
                     </p>
                     <a href="https://rzp.io/rzp/AP7kBG2" target="_blank"
                         class="btn btn-primary btn-sm rounded-pill px-3 shadow-sm">
-                        <i class="bi bi-heart-fill me-1 text-white"></i> Support Us
+                        <i class="bi bi-heart-fill me-1 text-white"></i> {% trans "Support Us" %}
                     </a>
                 </div>
 
@@ -547,44 +560,43 @@
 
                         <!-- Product Column -->
                         <div class="col-6 col-sm-4">
-                            <h5 class="fw-bold mb-3 small text-uppercase tracking-wider">Product</h5>
+                            <h5 class="fw-bold mb-3 small text-uppercase tracking-wider">{% trans "Product" %}</h5>
                             <ul class="list-unstyled mb-0 d-flex flex-column gap-2">
                                 <li><a href="{% if not user.is_authenticated %}{% url 'landing' %}#features{% else %}{% url 'home' %}{% endif %}"
-                                        class="text-decoration-none text-muted small hover-primary">Features</a></li>
+                                        class="text-decoration-none text-muted small hover-primary">{% trans "Features" %}</a></li>
                                 <li><a href="{% if not user.is_authenticated %}{% url 'landing' %}#pricing{% else %}{% url 'pricing' %}{% endif %}"
-                                        class="text-decoration-none text-muted small hover-primary">Pricing</a></li>
+                                        class="text-decoration-none text-muted small hover-primary">{% trans "Pricing" %}</a></li>
                                 <li><a href="{% url 'blog_list' %}"
-                                        class="text-decoration-none text-muted small hover-primary">Blog</a></li>
+                                        class="text-decoration-none text-muted small hover-primary">{% trans "Blog" %}</a></li>
                                 <li><a href="{% url 'demo_login' %}"
-                                        class="text-decoration-none text-muted small hover-primary">Live Demo</a></li>
+                                        class="text-decoration-none text-muted small hover-primary">{% trans "Live Demo" %}</a></li>
                             </ul>
                         </div>
 
                         <!-- Company Column -->
                         <div class="col-6 col-sm-4">
-                            <h5 class="fw-bold mb-3 small text-uppercase tracking-wider">Company</h5>
+                            <h5 class="fw-bold mb-3 small text-uppercase tracking-wider">{% trans "Company" %}</h5>
                             <ul class="list-unstyled mb-0 d-flex flex-column gap-2">
                                 <li><a href="{% url 'about' %}"
-                                        class="text-decoration-none text-muted small hover-primary">About</a></li>
+                                        class="text-decoration-none text-muted small hover-primary">{% trans "About" %}</a></li>
                                 <li><a href="{% url 'contact' %}"
-                                        class="text-decoration-none text-muted small hover-primary">Contact</a></li>
+                                        class="text-decoration-none text-muted small hover-primary">{% trans "Contact" %}</a></li>
                                 <!-- <li><a href="#" class="text-decoration-none text-muted small hover-primary">FAQs</a></li> -->
                             </ul>
                         </div>
 
                         <!-- Legal Column -->
                         <div class="col-6 col-sm-4">
-                            <h5 class="fw-bold mb-3 small text-uppercase tracking-wider">Legal</h5>
+                            <h5 class="fw-bold mb-3 small text-uppercase tracking-wider">{% trans "Legal" %}</h5>
                             <ul class="list-unstyled mb-0 d-flex flex-column gap-2">
                                 <li><a href="{% url 'privacy-policy' %}"
-                                        class="text-decoration-none text-muted small hover-primary">Privacy Policy</a>
+                                        class="text-decoration-none text-muted small hover-primary">{% trans "Privacy Policy" %}</a>
                                 </li>
                                 <li><a href="{% url 'terms-of-service' %}"
-                                        class="text-decoration-none text-muted small hover-primary">Terms of Service</a>
+                                        class="text-decoration-none text-muted small hover-primary">{% trans "Terms of Service" %}</a>
                                 </li>
                                 <li><a href="{% url 'refund-policy' %}"
-                                        class="text-decoration-none text-muted small hover-primary">Refund &
-                                        Cancellation</a></li>
+                                        class="text-decoration-none text-muted small hover-primary">{% trans "Refund & Cancellation" %}</a></li>
                             </ul>
                         </div>
                     </div>
@@ -595,7 +607,7 @@
 
             <div class="row align-items-center">
                 <div class="col-md-6 text-center text-md-start mb-3 mb-md-0">
-                    <p class="text-muted small mb-0">&copy; {% now "Y" %} TrackMyRupee. All rights reserved.</p>
+                    <p class="text-muted small mb-0">&copy; {% now "Y" %} TrackMyRupee. {% trans "All rights reserved." %}</p>
                 </div>
                 <div class="col-md-6 text-center text-md-end">
                     <!-- Social links could go here -->
@@ -897,12 +909,12 @@
             <ul class="dropdown-menu dropdown-menu-end shadow border-0 mb-2">
                 <li>
                     <a class="dropdown-item py-2 d-flex align-items-center" href="{% url 'expense-create' %}" onclick="showLoader()">
-                        <i class="bi bi-dash-circle text-primary me-2"></i> Add Expense
+                        <i class="bi bi-dash-circle text-primary me-2"></i> {% trans "Add Expense" %}
                     </a>
                 </li>
                 <li>
                     <a class="dropdown-item py-2 d-flex align-items-center" href="{% url 'income-create' %}" onclick="showLoader()">
-                        <i class="bi bi-plus-circle text-success me-2"></i> Add Income
+                        <i class="bi bi-plus-circle text-success me-2"></i> {% trans "Add Income" %}
                     </a>
                 </li>
             </ul>
@@ -957,14 +969,14 @@
                 const placeholder = $(this).attr('placeholder') || 'Select...';
                 $(this).multiselect({
                     buttonWidth: '100%',
-                    nonSelectedText: placeholder,
-                    nSelectedText: ' - Selected',
-                    allSelectedText: 'All Selected',
+                    nonSelectedText: "{% trans 'Select...' %}",
+                    nSelectedText: " {% trans '- Selected' %}",
+                    allSelectedText: "{% trans 'All Selected' %}",
                     numberDisplayed: 1,
                     includeSelectAllOption: true,
                     enableFiltering: true,
                     enableCaseInsensitiveFiltering: true,
-                    filterPlaceholder: 'Search...',
+                    filterPlaceholder: "{% trans 'Search...' %}",
                     buttonClass: 'btn btn-outline-secondary form-select form-select-sm text-start d-flex align-items-center justify-content-between',
                     templates: {
                         button: '<button type="button" class="multiselect dropdown-toggle" data-bs-toggle="dropdown" data-bs-boundary="viewport"><span class="multiselect-selected-text"></span></button>'
@@ -985,15 +997,14 @@
             data-bs-autohide="false">
             <div class="toast-header bg-primary text-white">
                 <i class="bi bi-heart-fill me-2"></i>
-                <strong class="me-auto">Support TrackMyRupee</strong>
+                <strong class="me-auto">{% trans "Support TrackMyRupee" %}</strong>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"
                     aria-label="Close"></button>
             </div>
             <div class="toast-body bg-body-tertiary">
-                <p class="mb-2">If TrackMyRupee helped you understand your money better, consider supporting its
-                    development.</p>
+                <p class="mb-2">{% trans "If TrackMyRupee helped you understand your money better, consider supporting its development." %}</p>
                 <a href="https://rzp.io/rzp/AP7kBG2" target="_blank" class="btn btn-primary btn-sm w-100">
-                    <i class="bi bi-box-arrow-up-right me-1"></i> Donate Now
+                    <i class="bi bi-box-arrow-up-right me-1"></i> {% trans "Donate Now" %}
                 </a>
             </div>
         </div>

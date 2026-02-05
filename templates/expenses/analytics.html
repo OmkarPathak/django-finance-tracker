@@ -1,20 +1,20 @@
 {% extends 'base.html' %}
-{% load static %}
-{% load currency_filters %}
+{% load static i18n %}
+{% load currency_filters digit_filters %}
 
-{% block title %}Analytics - TrackMyRupee{% endblock %}
+{% block title %}{% trans "Analytics" %} - TrackMyRupee{% endblock %}
 
 {% block content %}
 <div class="row mb-4 animate__animated animate__fadeIn">
     <div class="col-12 d-flex justify-content-between align-items-center">
         <div>
-            <h1 class="h3 fw-bold mb-1">Analytics & Trends</h1>
-            <p class="text-muted mb-0">Visualizing your financial journey over the last 12 months.</p>
+            <h1 class="h3 fw-bold mb-1">{% trans "Analytics & Trends" %}</h1>
+            <p class="text-muted mb-0">{% trans "Visualizing your financial journey over the last 12 months." %}</p>
         </div>
         <div class="d-none d-md-block">
            <!-- Placeholder for Date Range Picker in v2 -->
            <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2 rounded-pill border border-primary border-opacity-10">
-                <i class="bi bi-calendar3 me-1"></i> Last 12 Months
+                <i class="bi bi-calendar3 me-1"></i> {% trans "Last 12 Months" %}
            </span>
         </div>
     </div>
@@ -30,11 +30,11 @@
                         <i class="bi bi-graph-up-arrow fs-5"></i>
                     </div>
                     <div>
-                        <h6 class="text-muted mb-0">Total Income (YTD)</h6>
+                        <h6 class="text-muted mb-0">{% trans "Total Income (YTD)" %}</h6>
                     </div>
                 </div>
                 <h3 class="fw-bold mb-0">
-                    {{ user.profile.currency }}{{ total_income_ytd|floatformat:0 }}
+                    {{ user.profile.currency }}{{ total_income_ytd|floatformat:0|translate_digits }}
                 </h3>
             </div>
         </div>
@@ -48,11 +48,11 @@
                         <i class="bi bi-cart3 fs-5"></i>
                     </div>
                     <div>
-                        <h6 class="text-muted mb-0">Total Expenses (YTD)</h6>
+                        <h6 class="text-muted mb-0">{% trans "Total Expenses (YTD)" %}</h6>
                     </div>
                 </div>
                 <h3 class="fw-bold mb-0">
-                    {{ user.profile.currency }}{{ total_expense_ytd|floatformat:0 }}
+                    {{ user.profile.currency }}{{ total_expense_ytd|floatformat:0|translate_digits }}
                 </h3>
             </div>
         </div>
@@ -66,13 +66,13 @@
                         <i class="bi bi-piggy-bank fs-5"></i>
                     </div>
                     <div>
-                        <h6 class="text-muted mb-0">Avg. Balance Rate (YTD)</h6>
+                        <h6 class="text-muted mb-0">{% trans "Avg. Balance Rate (YTD)" %}</h6>
                     </div>
                 </div>
                 <h3 class="fw-bold mb-0">
-                    {{ avg_balance_rate }}%
+                    {{ avg_balance_rate|translate_digits }}%
                 </h3>
-                 <small class="text-muted">Percentage of income kept as balance/savings</small>
+                 <small class="text-muted">{% trans "Percentage of income kept as balance/savings" %}</small>
             </div>
         </div>
     </div>
@@ -84,7 +84,7 @@
     <div class="col-lg-8">
         <div class="card border-0 shadow-lg h-100">
             <div class="card-header bg-transparent border-bottom py-3">
-                <h5 class="fw-bold mb-0">Income vs Expenses Analysis</h5>
+                <h5 class="fw-bold mb-0">{% trans "Income vs Expenses Analysis" %}</h5>
             </div>
             <div class="card-body">
                 <div style="height: 350px;">
@@ -93,7 +93,7 @@
                  <div class="mt-3 text-center">
                     <small class="text-muted">
                         <i class="bi bi-info-circle me-1"></i> 
-                        Comparing what comes in (Green) vs. what goes out (Red). The gap is your potential savings.
+                        {% trans "Comparing what comes in (Green) vs. what goes out (Red). The gap is your potential savings." %}
                     </small>
                 </div>
             </div>
@@ -104,7 +104,7 @@
     <div class="col-lg-4">
         <div class="card border-0 shadow-lg h-100">
             <div class="card-header bg-transparent border-bottom py-3">
-                <h5 class="fw-bold mb-0">Spending by Category ({% now "Y" %})</h5>
+                <h5 class="fw-bold mb-0">{% trans "Spending by Category" %} ({% now "Y" %})</h5>
             </div>
             <div class="card-body d-flex flex-column align-items-center justify-content-center position-relative">
                 <div style="height: 300px; width: 100%;">
@@ -113,7 +113,7 @@
                  <div class="mt-3 text-center">
                     <small class="text-muted">
                         <i class="bi bi-info-circle me-1"></i> 
-                        See which categories are consuming the most of your budget this year.
+                        {% trans "See which categories are consuming the most of your budget this year." %}
                     </small>
                 </div>
             </div>
@@ -126,7 +126,7 @@
     <div class="col-12">
         <div class="card border-0 shadow-lg">
              <div class="card-header bg-transparent border-bottom py-3">
-                <h5 class="fw-bold mb-0">Balance Rate Trend (%)</h5>
+                <h5 class="fw-bold mb-0">{% trans "Balance Rate Trend (%)" %}</h5>
             </div>
             <div class="card-body">
                  <div style="height: 300px;">
@@ -135,7 +135,7 @@
                 <div class="mt-3 text-center">
                     <small class="text-muted">
                         <i class="bi bi-info-circle me-1"></i> 
-                        Shows what % of your income is left after expenses. A higher positive percentage means you're growing your wealth.
+                        {% trans "Shows what % of your income is left after expenses. A higher positive percentage means you're growing your wealth." %}
                     </small>
                 </div>
             </div>
@@ -191,6 +191,7 @@
                              // Currency for others (approx) - can just show number
                              text = value.toLocaleString(); 
                         }
+                        text = translateDigits(text);
 
                         ctx.font = 'bold 10px "Outfit", sans-serif';
                         ctx.fillStyle = isDark ? '#adb5bd' : '#6c757d';
@@ -217,7 +218,7 @@
                 labels: labels,
                 datasets: [
                     {
-                        label: 'Income',
+                        label: '{% trans "Income" %}',
                         data: incomeData,
                         backgroundColor: 'rgba(75, 192, 192, 0.2)', // Green fill
                         borderColor: 'rgba(75, 192, 192, 1)',
@@ -226,7 +227,7 @@
                         order: 2
                     },
                     {
-                        label: 'Expense',
+                        label: '{% trans "Expense" %}',
                         data: expenseData,
                         backgroundColor: 'rgba(255, 99, 132, 0.2)', // Red fill
                         borderColor: 'rgba(255, 99, 132, 1)',
@@ -236,7 +237,7 @@
                     },
                     {
                         type: 'line',
-                        label: 'Net Balance',
+                        label: '{% trans "Net Balance" %}',
                         data: incomeData.map((inc, i) => inc - expenseData[i]),
                         borderColor: '#2196f3', // Blue line
                         borderWidth: 2,
@@ -284,7 +285,7 @@
         const donutLabelsWithValues = catLabels.map((label, i) => {
             const val = catData[i];
             const percent = totalSpending > 0 ? ((val / totalSpending) * 100).toFixed(1) + '%' : '0%';
-            return `${label} (${val.toLocaleString()} | ${percent})`;
+            return `${label} (${translateDigits(val.toLocaleString())} | ${translateDigits(percent)})`;
         });
         
         // --- Custom Plugin for Donut Percentages ---
@@ -308,7 +309,7 @@
                          // Only show text if slice is > 5% to avoid overlap
                          if (percentage < 0.05) return;
                          
-                         const text = (percentage * 100).toFixed(0) + '%';
+                         const text = translateDigits((percentage * 100).toFixed(0)) + '%';
                          
                          // Calculate position (centroid of arc)
                          const { x, y } = element.tooltipPosition();
@@ -364,7 +365,7 @@
             data: {
                 labels: labels,
                 datasets: [{
-                    label: 'Balance Rate (%)',
+                    label: '{% trans "Balance Rate (%)" %}',
                     data: rateData,
                     borderColor: '#0dcaf0',
                     backgroundColor: gradientRate,
@@ -384,7 +385,7 @@
                     tooltip: { 
                         callbacks: {
                             label: function(context) {
-                                return context.parsed.y + '%';
+                                 return translateDigits(context.parsed.y) + '%';
                             }
                         }
                     }

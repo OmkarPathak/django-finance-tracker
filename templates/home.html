@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load currency_filters %}
+{% load currency_filters i18n digit_filters %}
 
 {% block content %}
 <style>
@@ -29,15 +29,15 @@
                     </div>
                 </div>
                 <script>window.isOnboarding = true;</script>
-                <h2 class="fw-bold mb-3 display-6">Welcome to TrackMyRupee!</h2>
-                <p class="h5 text-muted mb-5 fw-normal">Your journey to financial freedom starts here. Let's record your first transaction to get the dashboard moving.</p>
+                <h2 class="fw-bold mb-3 display-6">{% trans "Welcome to TrackMyRupee!" %}</h2>
+                <p class="h5 text-muted mb-5 fw-normal">{% trans "Your journey to financial freedom starts here. Let's record your first transaction to get the dashboard moving." %}</p>
                 
                 <div class="d-flex flex-column flex-sm-row justify-content-center gap-3">
                     <a href="{% url 'income-create' %}" id="hero-income-btn" class="btn btn-success btn-lg px-4 py-3 rounded-pill fw-bold hover-scale shadow-sm">
-                        <i class="bi bi-wallet2 me-2"></i> Record Income
+                        <i class="bi bi-wallet2 me-2"></i> {% trans "Record Income" %}
                     </a>
                     <a href="{% url 'expense-create' %}" id="hero-expense-btn" class="btn btn-danger btn-lg px-4 py-3 rounded-pill fw-bold hover-scale shadow-sm">
-                        <i class="bi bi-cart-plus me-2"></i> Add Expense
+                        <i class="bi bi-cart-plus me-2"></i> {% trans "Add Expense" %}
                     </a>
                 </div>
             
@@ -60,11 +60,11 @@
             {% endif %}
             <h1 class="h3 mb-0 d-flex align-items-center gap-2">
                 {% if selected_month and selected_year %}
-                    {{ selected_month|slice:":3" }} {{ selected_year }}
+                    {{ selected_month|slice:":3" }} {{ selected_year|translate_digits }}
                 {% elif selected_month %}
                     {{ selected_month }}
                 {% else %}
-                    Dashboard
+                    {% trans "Dashboard" %}
                 {% endif %}
             </h1>
             {% if next_month_url %}
@@ -78,7 +78,7 @@
                 <i class="bi bi-info-circle fs-5"></i>
             </button>
             <button class="btn btn-link text-decoration-none text-muted p-0 border-0 fs-6" type="button" data-bs-toggle="collapse" data-bs-target="#dashboardFilters" aria-expanded="false" aria-controls="dashboardFilters">
-                <i class="bi bi-funnel me-1"></i> Filters
+                <i class="bi bi-funnel me-1"></i> {% trans "Filters" %}
             </button>
         </div>
     </div>
@@ -93,7 +93,7 @@
         
         <h1 class="h3 fw-bold mb-0 text-body">
             {% if selected_month and selected_year %}
-                {{ selected_month|slice:":3" }} {{ selected_year }}
+                {{ selected_month|slice:":3" }} {{ selected_year|translate_digits }}
             {% elif selected_month %}
                 {{ selected_month }}
             {% else %}
@@ -119,11 +119,11 @@
         <form method="get" class="d-flex gap-2 align-items-center bg-body-tertiary p-2 rounded shadow-sm flex-wrap" id="filter-form" style="position: relative; z-index: 1060;">
             <!-- Date Range -->
             <div class="input-group input-group-sm" style="width: auto;">
-                <span class="input-group-text bg-body-tertiary">From</span>
+                <span class="input-group-text bg-body-tertiary">{% trans "From" %}</span>
                 <input type="date" name="start_date" id="start_date" class="form-control" value="{{ start_date|default:'' }}">
             </div>
             <div class="input-group input-group-sm" style="width: auto;">
-                <span class="input-group-text bg-body-tertiary">To</span>
+                <span class="input-group-text bg-body-tertiary">{% trans "To" %}</span>
                 <input type="date" name="end_date" id="end_date" class="form-control" value="{{ end_date|default:'' }}">
             </div>
 
@@ -151,10 +151,10 @@
             <!-- Apply & Reset -->
             <div class="d-flex gap-2">
                 <button type="submit" class="btn btn-primary btn-sm" onclick="showLoader()">
-                    <i class="bi bi-filter me-1"></i> Apply
+                    <i class="bi bi-filter me-1"></i> {% trans "Apply" %}
                 </button>
                 <a href="{% url 'home' %}" class="btn btn-outline-secondary btn-sm" onclick="showLoader()">
-                    <i class="bi bi-arrow-counterclockwise me-1"></i> Reset
+                    <i class="bi bi-arrow-counterclockwise me-1"></i> {% trans "Reset" %}
                 </a>
             </div>
         </form>
@@ -218,8 +218,8 @@
                 <button class="accordion-button collapsed bg-body-tertiary fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#insightsCollapse" aria-expanded="false" aria-controls="insightsCollapse">
                     <div class="d-flex align-items-center w-100">
                         <i class="bi bi-lightbulb-fill text-warning me-2 fs-5"></i> 
-                        <span class="fw-bold me-2">This Month's Insights</span>
-                        <span class="badge rounded-pill bg-primary opacity-75 ms-auto me-3">{{ insights|length }}</span>
+                        <span class="fw-bold me-2">{% trans "This Month's Insights" %}</span>
+                        <span class="badge rounded-pill bg-primary opacity-75 ms-auto me-3">{{ insights|length|translate_digits }}</span>
                     </div>
                 </button>
             </h2>
@@ -287,13 +287,13 @@
                     <i class="bi bi-box-arrow-up-right"></i>
                 </div>
                 <div class="card-body">
-                    <h5 class="card-title opacity-75 text-body"><i class="bi bi-cash-coin me-2"></i>Total Income</h5>
+                    <h5 class="card-title opacity-75 text-body"><i class="bi bi-cash-coin me-2"></i>{% trans "Total Income" %}</h5>
                     <div class="d-flex flex-wrap align-items-center mb-0 gap-2">
-                        <h2 class="display-6 fw-bold mb-0 text-body">{{ currency_symbol }}{{ total_income|humanize_currency:currency_symbol }}</h2>
+                        <h2 class="display-6 fw-bold mb-0 text-body">{{ currency_symbol }}{{ total_income|humanize_currency:currency_symbol|translate_digits }}</h2>
                         {% if prev_month_data.income_pct is not None %}
                             <span class="badge rounded-pill {% if prev_month_data.income_pct >= 0 %}bg-success{% else %}bg-danger{% endif %}" style="font-size: 0.75rem;" title="vs last month">
                                 <i class="bi bi-arrow-{% if prev_month_data.income_pct >= 0 %}up{% else %}down{% endif %}"></i>
-                                {{ prev_month_data.income_pct_abs|floatformat:1 }}%
+                                {{ prev_month_data.income_pct_abs|floatformat:1|translate_digits }}%
                             </span>
                         {% endif %}
                     </div>
@@ -301,11 +301,11 @@
                         {% if start_date %}
                             Custom Range
                         {% elif selected_month and selected_year %}
-                            For {{ selected_month }} {{ selected_year }}
+                            {% blocktrans with month=selected_month year=selected_year|translate_digits %}For {{ month }} {{ year }}{% endblocktrans %}
                         {% elif selected_year %}
-                            For {{ selected_year }}
+                            {% blocktrans with year=selected_year|translate_digits %}For {{ year }}{% endblocktrans %}
                         {% else %}
-                            All Time
+                            {% trans "All Time" %}
                         {% endif %}
                     </small>
                 </div>
@@ -320,13 +320,13 @@
                     <i class="bi bi-box-arrow-up-right"></i>
                 </div>
                 <div class="card-body">
-                    <h5 class="card-title opacity-75 text-body"><i class="bi bi-wallet2 me-2"></i>Total Expenses</h5>
+                    <h5 class="card-title opacity-75 text-body"><i class="bi bi-wallet2 me-2"></i>{% trans "Total Expenses" %}</h5>
                     <div class="d-flex flex-wrap align-items-center mb-0 gap-2">
-                        <h2 class="display-6 fw-bold mb-0 text-body">{{ currency_symbol }}{{ total_expenses|humanize_currency:currency_symbol }}</h2>
+                        <h2 class="display-6 fw-bold mb-0 text-body">{{ currency_symbol }}{{ total_expenses|humanize_currency:currency_symbol|translate_digits }}</h2>
                         {% if prev_month_data.expense_pct is not None %}
                             <span class="badge rounded-pill {% if prev_month_data.expense_pct > 0 %}bg-danger{% else %}bg-success{% endif %}" style="font-size: 0.75rem;" title="vs last month">
                                 <i class="bi bi-arrow-{% if prev_month_data.expense_pct > 0 %}up{% else %}down{% endif %}"></i>
-                                {{ prev_month_data.expense_pct_abs|floatformat:1 }}%
+                                {{ prev_month_data.expense_pct_abs|floatformat:1|translate_digits }}%
                             </span>
                         {% endif %}
                     </div>
@@ -334,11 +334,11 @@
                         {% if start_date %}
                             Custom Range
                         {% elif selected_month and selected_year %}
-                            For {{ selected_month }} {{ selected_year }}
+                            {% blocktrans with month=selected_month year=selected_year|translate_digits %}For {{ month }} {{ year }}{% endblocktrans %}
                         {% elif selected_year %}
-                            For {{ selected_year }}
+                            {% blocktrans with year=selected_year|translate_digits %}For {{ year }}{% endblocktrans %}
                         {% else %}
-                            All Time
+                            {% trans "All Time" %}
                         {% endif %}
                     </small>
                 </div>
@@ -350,13 +350,13 @@
     <div class="col-6 col-md-3">
         <div class="card shadow-lg border-0 h-100 hover-lift fade-in" style="animation-delay: 0.2s">
             <div class="card-body">
-                <h5 class="card-title opacity-75"><i class="bi bi-piggy-bank me-2"></i>Balance</h5>
+                <h5 class="card-title opacity-75"><i class="bi bi-piggy-bank me-2"></i>{% trans "Balance" %}</h5>
                 <div class="d-flex flex-wrap align-items-center mb-0 gap-2">
-                    <h2 class="display-6 fw-bold mb-0">{{ currency_symbol }}{{ savings|humanize_currency:currency_symbol }}</h2>
+                    <h2 class="display-6 fw-bold mb-0">{{ currency_symbol }}{{ savings|humanize_currency:currency_symbol|translate_digits }}</h2>
                     {% if prev_month_data.savings_pct is not None %}
                         <span class="badge rounded-pill {% if prev_month_data.savings_pct >= 0 %}bg-success{% else %}bg-danger{% endif %}" style="font-size: 0.75rem;" title="vs last month">
                             <i class="bi bi-arrow-{% if prev_month_data.savings_pct >= 0 %}up{% else %}down{% endif %}"></i>
-                            {{ prev_month_data.savings_pct_abs|floatformat:1 }}%
+                            {{ prev_month_data.savings_pct_abs|floatformat:1|translate_digits }}%
                         </span>
                     {% endif %}
                 </div>
@@ -364,9 +364,9 @@
                     {% if start_date %}
                         Custom Range
                     {% elif selected_month and selected_year %}
-                        For {{ selected_month }} {{ selected_year }}
+                        {% blocktrans with month=selected_month year=selected_year %}For {{ month }} {{ year }}{% endblocktrans %}
                     {% elif selected_year %}
-                         For {{ selected_year }}
+                        {% blocktrans with year=selected_year %}For {{ year }}{% endblocktrans %}
                     {% else %}
                         All Time
                     {% endif %}
@@ -379,20 +379,20 @@
     <div class="col-6 col-md-3">
         <div class="card shadow-lg border-0 h-100 hover-lift fade-in" style="animation-delay: 0.3s">
             <div class="card-body">
-                <h5 class="card-title opacity-75"><i class="bi bi-graph-up-arrow me-2"></i>Projected Savings</h5>
+                <h5 class="card-title opacity-75"><i class="bi bi-graph-up-arrow me-2"></i>{% trans "Projected Savings" %}</h5>
                 <div class="d-flex flex-wrap align-items-center mb-0 gap-2">
                     {% if projected_savings > 0 %}
-                        <h2 class="display-6 fw-bold mb-0">{{ currency_symbol }}{{ projected_savings|humanize_currency:currency_symbol }}</h2>
+                        <h2 class="display-6 fw-bold mb-0">{{ currency_symbol }}{{ projected_savings|humanize_currency:currency_symbol|translate_digits }}</h2>
                         <span class="badge rounded-pill bg-success bg-opacity-10 text-success" style="font-size: 0.75rem;" title="Estimated by year end based on current avg">
-                            Year End
+                            {% trans "Year End" %}
                         </span>
                     {% else %}
                         <h2 class="display-6 fw-bold mb-0 text-muted">-</h2>
-                        <small class="text-muted">Keep saving to see this!</small>
+                        <small class="text-muted">{% trans "Keep saving to see this!" %}</small>
                     {% endif %}
                 </div>
                 <small class="text-muted">
-                    Based on your YTD average
+                    {% trans "Based on your YTD average" %}
                 </small>
             </div>
         </div>
@@ -404,20 +404,20 @@
     <div class="col-md-4">
         <div class="card shadow-lg border-0 h-100 hover-lift fade-in" style="animation-delay: 0.3s">
             <div class="card-header bg-transparent border-bottom">
-                <span class="fw-bold">Income vs Expenses</span>
+                <span class="fw-bold">{% trans "Income vs Expenses" %}</span>
             </div>
             <div class="card-body d-flex align-items-center justify-content-center p-4">
                 <div class="position-relative" style="height: 180px; width: 180px;">
                     <canvas id="incomeExpensesChart"></canvas>
                     <div class="position-absolute top-50 start-50 translate-middle text-center">
-                        <span class="h2 fw-bold mb-0" id="ie-percentage">0%</span>
+                        <span class="h2 fw-bold mb-0" id="ie-percentage">{{ total_expenses|floatformat:0|translate_digits }}%</span>
                     </div>
                 </div>
                 <div class="ms-5">
-                    <h3 class="fw-bold mb-1">Expenses</h3>
+                    <h3 class="fw-bold mb-1">{% trans "Expenses" %}</h3>
                     <p class="text-muted mb-0 h6">
-                        <span class="fw-bold text-body-emphasis">{{ currency_symbol }}{{ total_expenses|floatformat:0 }}</span> 
-                        of {{ currency_symbol }}{{ total_income|floatformat:0 }} used
+                        <span class="fw-bold text-body-emphasis">{{ currency_symbol }}{{ total_expenses|floatformat:0|translate_digits }}</span> 
+                        {% blocktrans with expense=total_expenses|floatformat:0|translate_digits income=total_income|floatformat:0|translate_digits %}of {{ currency_symbol }}{{ income }} used{% endblocktrans %}
                     </p>
                 </div>
             </div>
@@ -428,7 +428,7 @@
     <div class="col-md-4" id="tour-budget-card">
         <div class="card shadow-lg border-0 h-100 hover-lift fade-in" style="animation-delay: 0.4s">
             <div class="card-header bg-transparent border-bottom">
-                <span class="fw-bold">Budget vs Spent</span>
+                <span class="fw-bold">{% trans "Budget vs Spent" %}</span>
             </div>
             <div class="card-body px-3 pb-4">
                 {% if has_any_budget %}
@@ -446,8 +446,8 @@
                                 <!-- Middle: Amount & Progress -->
                                 <div class="d-flex flex-column align-items-end flex-grow-1">
                                     <div class="d-flex justify-content-between w-100 mb-1 small">
-                                        <span class="fw-bold">{{ currency_symbol }}{{ item.total|floatformat:0 }}</span>
-                                        <span class="text-muted">{{ currency_symbol }}{{ item.limit|floatformat:0 }}</span>
+                                        <span class="fw-bold">{{ currency_symbol }}{{ item.total|floatformat:0|translate_digits }}</span>
+                                        <span class="text-muted">{{ currency_symbol }}{{ item.limit|floatformat:0|translate_digits }}</span>
                                     </div>
                                     
                                     <div class="progress w-100 progress-thin">
@@ -468,9 +468,9 @@
                         <div class="mb-3 text-primary opacity-50">
                             <i class="bi bi-pie-chart-fill display-4"></i>
                         </div>
-                        <h6 class="fw-bold mb-2">No Budgets Set</h6>
-                        <p class="small text-muted mb-3">Set limits for your categories to track spending.</p>
-                        <a href="{% url 'category-list' %}" class="btn btn-primary btn-sm rounded-pill px-4">Set Budget</a>
+                        <h6 class="fw-bold mb-2">{% trans "No Budgets Set" %}</h6>
+                        <p class="small text-muted mb-3">{% trans "Set limits for your categories to track spending." %}</p>
+                        <a href="{% url 'category-list' %}" class="btn btn-primary btn-sm rounded-pill px-4">{% trans "Set Budget" %}</a>
                     </div>
                 {% endif %}
             </div>
@@ -481,14 +481,14 @@
     <div class="col-md-4">
         <div class="card shadow-lg border-0 h-100 hover-lift fade-in" style="animation-delay: 0.5s">
             <div class="card-header bg-transparent border-bottom fw-bold">
-                Payment Method Distribution
+                {% trans "Payment Method Distribution" %}
             </div>
             <div class="card-body">
                 <div style="height: 180px; width: 100%;">
                     <canvas id="paymentChart"></canvas>
                 </div>
                 {% if not payment_data %}
-                <div class="text-center text-muted mt-5">No data available</div>
+                <div class="text-center text-muted mt-5">{% trans "No data available" %}</div>
                 {% endif %}
             </div>
         </div>
@@ -501,7 +501,7 @@
     <div class="col-md-6">
         <div class="card shadow-lg border-0 h-100">
             <div class="card-header bg-transparent border-bottom fw-bold d-flex justify-content-between">
-                <span>{{ trend_title }} (Stacked by Category)</span>
+                <span>{{ trend_title }} {% trans "(Stacked by Category)" %}</span>
             </div>
             <div class="card-body">
                 <div style="height: 350px; width: 100%;">
@@ -515,8 +515,8 @@
     <div class="col-md-6">
         <div class="card shadow-lg border-0 h-100">
             <div class="card-header bg-transparent border-bottom d-flex justify-content-between align-items-center">
-                <span class="fw-bold">Recent Transactions</span>
-                <a href="{% url 'expense-list' %}" class="btn btn-sm btn-link text-decoration-none fw-bold">View All</a>
+                <span class="fw-bold">{% trans "Recent Transactions" %}</span>
+                <a href="{% url 'expense-list' %}" class="btn btn-sm btn-link text-decoration-none fw-bold">{% trans "View All" %}</a>
             </div>
             <div class="card-body p-0">
                 <div class="list-group list-group-flush">
@@ -531,13 +531,13 @@
                         <div class="flex-grow-1 me-2 me-md-3" style="min-width: 0;">
                             <h6 class="mb-0 fw-bold text-truncate">{{ expense.description }}</h6>
                             <small class="text-muted d-block text-truncate">
-                                {{ expense.date|date:"M d" }} • {{ expense.category }}
+                                {{ expense.date|date:"M d"|translate_digits }} • {{ expense.category }}
                             </small>
                         </div>
                         
                         <!-- Right: Amount -->
                         <div class="text-end flex-shrink-0">
-                            <span class="d-block fw-bold fs-6">{{ currency_symbol }}{{ expense.amount }}</span>
+                            <span class="d-block fw-bold fs-6">{{ currency_symbol }}{{ expense.amount|translate_digits }}</span>
                         </div>
                         
                         <!-- Clickable Stretched Link -->
@@ -546,7 +546,7 @@
                     {% empty %}
                     <div class="text-center py-5 text-muted">
                         <i class="bi bi-receipt fs-1 d-block mb-3 opacity-50"></i>
-                        No recent transactions
+                        {% trans "No recent transactions" %}
                     </div>
                     {% endfor %}
                 </div>
@@ -561,14 +561,14 @@
     <div class="col-md-6">
         <div class="card shadow-lg border-0 h-100">
             <div class="card-header bg-transparent border-bottom fw-bold">
-                Category Distribution
+                {% trans "Category Distribution" %}
             </div>
             <div class="card-body">
                 <div style="height: 320px; width: 100%;">
                     <canvas id="categoryChart"></canvas>
                 </div>
                 {% if not categories %}
-                <div class="text-center text-muted mt-5">No data available</div>
+                <div class="text-center text-muted mt-5">{% trans "No data available" %}</div>
                 {% endif %}
             </div>
         </div>
@@ -578,8 +578,8 @@
     <div class="col-md-6">
         <div class="card shadow-lg border-0 h-100">
             <div class="card-header bg-transparent border-bottom d-flex justify-content-between align-items-center">
-                <span class="fw-bold mb-0">Top Categories</span>
-                <a href="{% url 'category-list' %}" class="btn btn-sm btn-link text-decoration-none fw-bold">View All</a>
+                <span class="fw-bold mb-0">{% trans "Top Categories" %}</span>
+                <a href="{% url 'category-list' %}" class="btn btn-sm btn-link text-decoration-none fw-bold">{% trans "View All" %}</a>
             </div>
             <div class="card-body px-3 pb-4">
                 <div class="d-flex flex-column gap-1">
@@ -595,9 +595,9 @@
                         <!-- Middle: Amount & Progress -->
                         <div class="d-flex flex-column align-items-end flex-grow-1">
                             <div class="d-flex justify-content-between w-100 mb-1 small">
-                                <span class="fw-bold">{{ currency_symbol }}{{ item.total|floatformat:0 }}</span>
+                                <span class="fw-bold">{{ currency_symbol }}{{ item.total|floatformat:0|translate_digits }}</span>
                                 {% if item.limit %}
-                                    <span class="text-muted">{{ currency_symbol }}{{ item.limit|floatformat:0 }}</span>
+                                    <span class="text-muted">{{ currency_symbol }}{{ item.limit|floatformat:0|translate_digits }}</span>
                                 {% endif %}
                             </div>
                             
@@ -624,7 +624,7 @@
                     {% empty %}
                     <div class="text-center py-5 text-muted">
                         <i class="bi bi-inbox fs-1 d-block mb-3 opacity-50"></i>
-                        No expense data available
+                        {% trans "No expense data available" %}
                     </div>
                     {% endfor %}
                 </div>
@@ -752,8 +752,8 @@
             chartColor = gradBlue; 
         }
         
-        document.getElementById('ie-percentage').innerText = iePercentage + '%';
-        if (iePercentage > 100) document.getElementById('ie-percentage').innerText = '>100%';
+        document.getElementById('ie-percentage').innerText = translateDigits(iePercentage) + '%';
+        if (iePercentage > 100) document.getElementById('ie-percentage').innerText = '>' + translateDigits(100) + '%';
 
         charts.incomeExpenses = new Chart(ctxIncome, {
             type: 'doughnut',
@@ -819,7 +819,12 @@
                             font: { size: 11 }
                         }
                     },
-                    y: { stacked: true, grid: { color: currentColors.grid }, beginAtZero: true }
+                    y: { 
+                        stacked: true, 
+                        grid: { color: currentColors.grid }, 
+                        beginAtZero: true,
+                        ticks: { callback: (val) => translateDigits(val) }
+                    }
                 }
             }
         });
@@ -854,7 +859,7 @@
                         meta.data.forEach((arc, index) => {
                             const center = arc.getCenterPoint();
                             const value = categoryAmounts[index];
-                            const text = '{{ currency_symbol }}' + value.toLocaleString();
+                            const text = '{{ currency_symbol }}' + translateDigits(value.toLocaleString());
                             if (arc.circumference > 0.25) {
                                 ctx.font = 'bold 10px sans-serif';
                                 ctx.textAlign = 'center';
@@ -948,7 +953,7 @@
                             const item = withLimits[index];
                             const y = bar.y;
                             const x = left + width / 2;
-                            const text = `{{ currency_symbol }}${item.total.toLocaleString()} / {{ currency_symbol }}${item.limit.toLocaleString()}`;
+                            const text = `{{ currency_symbol }}${translateDigits(item.total.toLocaleString())} / {{ currency_symbol }}${translateDigits(item.limit.toLocaleString())}`;
                             ctx.font = 'bold 11px sans-serif';
                             ctx.textAlign = 'center';
                             ctx.textBaseline = 'middle';
@@ -973,11 +978,11 @@
                                 title: (c) => c[0].label,
                                 label: (c) => {
                                     const item = withLimits[c.dataIndex];
-                                    if (c.dataset.label === 'Spent') return `Spent: {{ currency_symbol }}${item.total.toLocaleString()} (${item.used_percent}%)`;
+                                    if (c.dataset.label === 'Spent') return `Spent: {{ currency_symbol }}${translateDigits(item.total.toLocaleString())} (${translateDigits(item.used_percent)}%)`;
                                     const remaining = Math.max(0, item.limit - item.total);
-                                    return `Remaining: {{ currency_symbol }}${remaining.toLocaleString()}`;
+                                    return `Remaining: {{ currency_symbol }}${translateDigits(remaining.toLocaleString())}`;
                                 },
-                                footer: (c) => `Limit: {{ currency_symbol }}${withLimits[c[0].dataIndex].limit.toLocaleString()}`
+                                footer: (c) => `Limit: {{ currency_symbol }}${translateDigits(withLimits[c[0].dataIndex].limit.toLocaleString())}`
                             }
                         }
                     },
@@ -1077,7 +1082,7 @@
                                                      label += ': ';
                                                  }
                                                  if (context.parsed.x !== null) {
-                                                     label += '{{ currency_symbol }}' + context.parsed.x.toLocaleString();
+                                                     label += '{{ currency_symbol }}' + translateDigits(context.parsed.x.toLocaleString());
                                                  }
                                                  return label;
                                              }
@@ -1106,7 +1111,7 @@
                                      const meta = chart.getDatasetMeta(0);
                                      meta.data.forEach((bar, index) => {
                                          const value = paymentData[index];
-                                         const text = '{{ currency_symbol }}' + value.toLocaleString();
+                                         const text = '{{ currency_symbol }}' + translateDigits(value.toLocaleString());
                                          ctx.font = 'bold 11px sans-serif';
                                          ctx.fillStyle = '#6c757d'; // Muted text color
                                          ctx.textAlign = 'left';

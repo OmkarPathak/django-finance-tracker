@@ -13,6 +13,10 @@ First off, thank you for considering contributing to TrackMyRupee! It's people l
 
 -   **Open a Feature Request**: If you have an idea for a new feature or improvement, please open an issue and tag it as `enhancement`.
 
+### Translations
+
+-   **Contribute Translations**: Help us reach more people by contributing translations for your language! See [SETUP.md](SETUP.md#localization--internationalization) for the translation workflow.
+
 ## Local Development
 
 To set up the project locally for development, please refer to [SETUP.md](SETUP.md).

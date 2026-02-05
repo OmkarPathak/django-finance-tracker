@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load static %}
+{% load static digit_filters %}
 
 {% block title %}Notifications - TrackMyRupee{% endblock %}
 
@@ -33,7 +33,7 @@
                     <div class="flex-grow-1">
                         <div class="d-flex w-100 justify-content-between align-items-center mb-1">
                             <h6 class="mb-0 fw-bold {% if not notification.is_read %}text-primary{% endif %}">{{ notification.title }}</h6>
-                            <small class="text-muted">{{ notification.created_at|timesince }} ago</small>
+                            <small class="text-muted">{{ notification.created_at|timesince|translate_digits }} ago</small>
                         </div>
                         <p class="mb-1 text-muted">{{ notification.message }}</p>
                         {% if notification.recurring_transaction %}
@@ -67,7 +67,7 @@
                 {% endif %}
                 
                 <li class="page-item disabled">
-                    <span class="page-link border-0 bg-transparent text-muted">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+                    <span class="page-link border-0 bg-transparent text-muted">Page {{ page_obj.number|translate_digits }} of {{ page_obj.paginator.num_pages|translate_digits }}</span>
                 </li>
 
                 {% if page_obj.has_next %}

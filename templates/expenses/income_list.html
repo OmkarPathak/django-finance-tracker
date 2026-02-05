@@ -1,33 +1,34 @@
 {% extends 'expenses/settings_base.html' %}
+{% load i18n digit_filters %}
 
 {% block settings_content %}
     <!-- Mobile Header -->
     <div class="d-md-none py-3 mb-3">
         <div class="d-flex justify-content-between align-items-center">
-            <h2 class="h4 mb-0 fw-bold">Income</h2>
+            <h2 class="h4 mb-0 fw-bold">{% trans "Income" %}</h2>
             <div class="d-flex align-items-center gap-3">
                 <a href="{% url 'income-create' %}" class="btn btn-primary btn-sm d-flex align-items-center gap-1">
-                    <i class="bi bi-plus-lg"></i> <span>Add<span class="d-none d-sm-inline"> Income</span></span>
+                    <i class="bi bi-plus-lg"></i> <span>{% trans "Add" %}<span class="d-none d-sm-inline"> {% trans "Income" %}</span></span>
                 </a>
                 <button class="btn btn-sm btn-link text-decoration-none text-muted p-0 border-0 fs-6" type="button" data-bs-toggle="collapse" data-bs-target="#incomeFilters" aria-expanded="false" aria-controls="incomeFilters">
-                    <i class="bi bi-funnel me-1"></i> Filters
+                    <i class="bi bi-funnel me-1"></i> {% trans "Filters" %}
                 </button>
             </div>
         </div>
-        <p class="text-muted small mb-0 mt-1">Celebrate every earning. You've worked hard for this.</p>
+        <p class="text-muted small mb-0 mt-1">{% trans "Celebrate every earning. You've worked hard for this." %}</p>
     </div>
 
     <!-- Desktop Header -->
     <div class="d-none d-md-block py-3 mb-4">
         <div class="d-flex justify-content-between align-items-center">
-            <h2 class="h4 mb-0 fw-bold">Income</h2>
+            <h2 class="h4 mb-0 fw-bold">{% trans "Income" %}</h2>
             <div class="d-flex gap-2">
                 <a href="{% url 'income-create' %}" class="btn btn-primary btn-sm d-inline-flex align-items-center text-nowrap">
-                    <i class="bi bi-plus-lg me-1"></i> Add Income
+                    <i class="bi bi-plus-lg me-1"></i> {% trans "Add Income" %}
                 </a>
             </div>
         </div>
-        <p class="text-muted small mb-0 mt-1">Celebrate every earning. You've worked hard for this.</p>
+        <p class="text-muted small mb-0 mt-1">{% trans "Celebrate every earning. You've worked hard for this." %}</p>
     </div>
     
 
@@ -37,23 +38,23 @@
         <form method="get" class="mb-4 bg-body-tertiary p-3 rounded shadow-sm border-0">
             <div class="row g-3 align-items-end">
                 <div class="col-6 col-md-3">
-                    <label for="date_from" class="form-label small text-muted">Date From</label>
+                    <label for="date_from" class="form-label small text-muted">{% trans "Date From" %}</label>
                     <input type="date" class="form-control form-control-sm" id="date_from" name="date_from" value="{{ filter_form.date_from }}">
                 </div>
                 <div class="col-6 col-md-3">
-                    <label for="date_to" class="form-label small text-muted">Date To</label>
+                    <label for="date_to" class="form-label small text-muted">{% trans "Date To" %}</label>
                     <input type="date" class="form-control form-control-sm" id="date_to" name="date_to" value="{{ filter_form.date_to }}">
                 </div>
                 <div class="col-md-3">
-                    <label for="source" class="form-label small text-muted">Source</label>
-                    <input type="text" class="form-control form-control-sm" id="source" name="source" value="{{ filter_form.source }}" placeholder="Search source...">
+                    <label for="source" class="form-label small text-muted">{% trans "Source" %}</label>
+                    <input type="text" class="form-control form-control-sm" id="source" name="source" value="{{ filter_form.source }}" placeholder="{% trans 'Search source...' %}">
                 </div>
                 <div class="col-auto d-flex gap-2">
                     <button type="submit" class="btn btn-primary btn-sm">
-                        <i class="bi bi-filter me-1"></i> Apply
+                        <i class="bi bi-filter me-1"></i> {% trans "Apply" %}
                     </button>
                     <a href="{% url 'income-list' %}" class="btn btn-outline-secondary btn-sm">
-                        Reset
+                        {% trans "Reset" %}
                     </a>
                 </div>
             </div>
@@ -65,14 +66,14 @@
         <div class="row g-2">
             <div class="col-6 col-md-auto">
                 <div class="p-2 border rounded bg-body-tertiary shadow-sm text-center text-md-start">
-                    <small class="text-muted d-block text-uppercase" style="font-size: 0.7rem; letter-spacing: 0.5px;">Total Records</small>
-                    <span class="fw-bold text-body-emphasis">{{ filtered_count }}</span>
+                    <small class="text-muted d-block text-uppercase" style="font-size: 0.7rem; letter-spacing: 0.5px;">{% trans "Total Records" %}</small>
+                    <span class="fw-bold text-body-emphasis">{{ filtered_count|translate_digits }}</span>
                 </div>
             </div>
              <div class="col-6 col-md-auto">
                 <div class="p-2 border rounded bg-body-tertiary shadow-sm text-center text-md-start">
-                    <small class="text-muted d-block text-uppercase" style="font-size: 0.7rem; letter-spacing: 0.5px;">Total Amount</small>
-                    <span class="fw-bold text-info">₹{{ filtered_amount|floatformat:2 }}</span>
+                    <small class="text-muted d-block text-uppercase" style="font-size: 0.7rem; letter-spacing: 0.5px;">{% trans "Total Amount" %}</small>
+                    <span class="fw-bold text-info">₹{{ filtered_amount|floatformat:2|translate_digits }}</span>
                 </div>
             </div>
         </div>
@@ -85,22 +86,22 @@
             <table class="table table-hover table-striped mb-0 text-start align-middle">
                 <thead>
                     <tr>
-                        <th class="ps-4">Date</th>
-                        <th>Source</th>
-                        <th>Description</th>
-                        <th>Amount</th>
-                        <th class="text-end pe-4">Actions</th>
+                        <th class="ps-4">{% trans "Date" %}</th>
+                        <th>{% trans "Source" %}</th>
+                        <th>{% trans "Description" %}</th>
+                        <th>{% trans "Amount" %}</th>
+                        <th class="text-end pe-4">{% trans "Actions" %}</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for income in incomes %}
                     <tr>
-                        <td class="ps-4 text-nowrap">{{ income.date|date:"d M Y" }}</td>
+                        <td class="ps-4 text-nowrap">{{ income.date|date:"d M Y"|translate_digits }}</td>
                         <td>
                             <span class="badge bg-success opacity-75">{{ income.source }}</span>
                         </td>
                         <td>{{ income.description|default:"-"|truncatechars:30 }}</td>
-                        <td class="fw-bold text-success">{{ income.amount|floatformat:2 }}</td>
+                        <td class="fw-bold text-success">{{ income.amount|floatformat:2|translate_digits }}</td>
                         <td class="text-end pe-4 text-nowrap">
                             <div class="hstack gap-3 justify-content-end">
                                     <button type="button" class="btn btn-sm btn-link text-decoration-none p-0 d-inline-flex align-items-center" 
@@ -110,13 +111,13 @@
                                             data-source="{{ income.source }}"
                                             data-description="{{ income.description|default_if_none:'' }}"
                                             data-amount="{{ income.amount }}"
-                                            title="Edit">
+                                            title="{% trans 'Edit' %}">
                                         <i class="bi bi-pencil-square text-primary fs-6"></i>
                                     </button>
                                 <button type="button" class="btn btn-sm btn-link text-decoration-none p-0 delete-btn d-inline-flex align-items-center" 
                                         data-bs-toggle="modal" data-bs-target="#deleteModal" 
                                         data-url="{% url 'income-delete' income.pk %}"
-                                        data-message="Are you sure you want to delete '{{ income.source }}'?">
+                                        data-message="{% blocktrans with source=income.source %}Are you sure you want to delete '{{ source }}'?{% endblocktrans %}">
                                     <i class="bi bi-trash text-danger fs-6"></i>
                                 </button>
                             </div>
@@ -127,21 +128,21 @@
                         <td colspan="5" class="text-center py-5">
                             <div class="py-4">
                                 <i class="bi bi-cash-stack text-muted display-1 mb-3 d-block"></i>
-                                <h4 class="fw-bold text-muted">No Income Records</h4>
+                                <h4 class="fw-bold text-muted">{% trans "No Income Records" %}</h4>
                                 <p class="text-muted mb-4">
                                     {% if filter_form.date_from or filter_form.date_to or filter_form.source %}
-                                        We couldn't find any income records matching your filters.
+                                        {% trans "We couldn't find any income records matching your filters." %}
                                     {% else %}
-                                        You haven't recorded any income yet. Start tracking your earnings!
+                                        {% trans "You haven't recorded any income yet. Start tracking your earnings!" %}
                                     {% endif %}
                                 </p>
                                 <div class="d-flex justify-content-center gap-2">
                                     <a href="{% url 'income-create' %}" class="btn btn-primary">
-                                        <i class="bi bi-plus-lg me-1"></i> Add Income
+                                        <i class="bi bi-plus-lg me-1"></i> {% trans "Add Income" %}
                                     </a>
                                     {% if filter_form.date_from or filter_form.date_to or filter_form.source %}
                                         <a href="{% url 'income-list' %}" class="btn btn-outline-secondary">
-                                            <i class="bi bi-arrow-counterclockwise me-1"></i> Clear Filters
+                                            <i class="bi bi-arrow-counterclockwise me-1"></i> {% trans "Clear Filters" %}
                                         </a>
                                     {% endif %}
                                 </div>
@@ -162,25 +163,25 @@
             <ul class="pagination justify-content-center mb-0">
                 {% if page_obj.has_previous %}
                     <li class="page-item">
-                        <a class="page-link" href="?page=1{% if filter_form.date_from %}&date_from={{ filter_form.date_from }}{% endif %}{% if filter_form.date_to %}&date_to={{ filter_form.date_to }}{% endif %}{% if filter_form.source %}&source={{ filter_form.source }}{% endif %}">&laquo; First</a>
+                        <a class="page-link" href="?page=1{% if filter_form.date_from %}&date_from={{ filter_form.date_from }}{% endif %}{% if filter_form.date_to %}&date_to={{ filter_form.date_to }}{% endif %}{% if filter_form.source %}&source={{ filter_form.source }}{% endif %}">&laquo; {% trans "First" %}</a>
                     </li>
                     <li class="page-item">
-                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if filter_form.date_from %}&date_from={{ filter_form.date_from }}{% endif %}{% if filter_form.date_to %}&date_to={{ filter_form.date_to }}{% endif %}{% if filter_form.source %}&source={{ filter_form.source }}{% endif %}">Previous</a>
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if filter_form.date_from %}&date_from={{ filter_form.date_from }}{% endif %}{% if filter_form.date_to %}&date_to={{ filter_form.date_to }}{% endif %}{% if filter_form.source %}&source={{ filter_form.source }}{% endif %}">{% trans "Previous" %}</a>
                     </li>
                 {% endif %}
 
                 <li class="page-item disabled">
                     <span class="page-link">
-                        Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                        {% trans "Page" %} {{ page_obj.number|translate_digits }} {% trans "of" %} {{ page_obj.paginator.num_pages|translate_digits }}
                     </span>
                 </li>
 
                 {% if page_obj.has_next %}
                     <li class="page-item">
-                        <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if filter_form.date_from %}&date_from={{ filter_form.date_from }}{% endif %}{% if filter_form.date_to %}&date_to={{ filter_form.date_to }}{% endif %}{% if filter_form.source %}&source={{ filter_form.source }}{% endif %}">Next</a>
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if filter_form.date_from %}&date_from={{ filter_form.date_from }}{% endif %}{% if filter_form.date_to %}&date_to={{ filter_form.date_to }}{% endif %}{% if filter_form.source %}&source={{ filter_form.source }}{% endif %}">{% trans "Next" %}</a>
                     </li>
                     <li class="page-item">
-                        <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if filter_form.date_from %}&date_from={{ filter_form.date_from }}{% endif %}{% if filter_form.date_to %}&date_to={{ filter_form.date_to }}{% endif %}{% if filter_form.source %}&source={{ filter_form.source }}{% endif %}">Last &raquo;</a>
+                        <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if filter_form.date_from %}&date_from={{ filter_form.date_from }}{% endif %}{% if filter_form.date_to %}&date_to={{ filter_form.date_to }}{% endif %}{% if filter_form.source %}&source={{ filter_form.source }}{% endif %}">{% trans "Last" %} &raquo;</a>
                     </li>
                 {% endif %}
             </ul>
@@ -195,7 +196,7 @@
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header border-0 pb-0">
-                    <h5 class="modal-title fw-bold">Edit Income</h5>
+                    <h5 class="modal-title fw-bold">{% trans "Edit Income" %}</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
@@ -204,22 +205,22 @@
                         <input type="hidden" name="next" value="{{ request.path }}">
                         
                         <div class="mb-3">
-                            <label for="edit_date" class="form-label text-muted small text-uppercase">Date</label>
+                            <label for="edit_date" class="form-label text-muted small text-uppercase">{% trans "Date" %}</label>
                             <input type="date" class="form-control" id="edit_date" name="date" required>
                         </div>
 
                         <div class="mb-3">
-                            <label for="edit_source" class="form-label text-muted small text-uppercase">Source</label>
+                            <label for="edit_source" class="form-label text-muted small text-uppercase">{% trans "Source" %}</label>
                             <input type="text" class="form-control" id="edit_source" name="source" required>
                         </div>
                         
                          <div class="mb-3">
-                            <label for="edit_description" class="form-label text-muted small text-uppercase">Description</label>
+                            <label for="edit_description" class="form-label text-muted small text-uppercase">{% trans "Description" %}</label>
                             <textarea class="form-control" id="edit_description" name="description" rows="2"></textarea>
                         </div>
                         
                         <div class="mb-4">
-                            <label for="edit_amount" class="form-label text-muted small text-uppercase">Amount</label>
+                            <label for="edit_amount" class="form-label text-muted small text-uppercase">{% trans "Amount" %}</label>
                             <div class="input-group">
                                 <span class="input-group-text bg-transparent border-end-0 text-muted">{{ currency_symbol }}</span>
                                 <input type="number" class="form-control border-start-0 ps-0" id="edit_amount" name="amount" step="0.01" required>
@@ -227,7 +228,7 @@
                         </div>
                         
                         <div class="d-grid">
-                            <button type="submit" class="btn btn-primary">Save Changes</button>
+                            <button type="submit" class="btn btn-primary">{% trans "Save Changes" %}</button>
                         </div>
                     </form>
                 </div>

@@ -1,8 +1,10 @@
+from django import template
+from django.utils.translation import gettext_lazy as _
 from django import forms
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
 from allauth.socialaccount.models import SocialAccount
-from .models import Expense, Category, Income, RecurringTransaction
+from .models import Expense, Category, Income, RecurringTransaction, UserProfile
 
 from datetime import date
 
@@ -44,7 +46,7 @@ class IncomeForm(forms.ModelForm):
         widgets = {
             'date': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
             'amount': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
-            'source': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g. Salary, Freelance'}),
+            'source': forms.TextInput(attrs={'class': 'form-control', 'placeholder': _('e.g. Salary, Freelance')}),
             'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 2}),
         }
     
@@ -67,7 +69,7 @@ class RecurringTransactionForm(forms.ModelForm):
             'transaction_type': forms.Select(attrs={'class': 'form-select', 'onchange': 'toggleFields()'}),
             'amount': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
             'category': forms.Select(attrs={'class': 'form-select'}),
-            'source': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g. Salary, Rent'}),
+            'source': forms.TextInput(attrs={'class': 'form-control', 'placeholder': _('e.g. Salary, Rent')}),
             'frequency': forms.Select(attrs={'class': 'form-select'}),
             'start_date': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
             'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 2}),
@@ -87,7 +89,7 @@ class RecurringTransactionForm(forms.ModelForm):
         else:
             self.fields['category'].widget = forms.TextInput(attrs={'class': 'form-control'})
         
-        self.fields['source'].widget = forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g. Salary (For Income only)'})
+        self.fields['source'].widget = forms.TextInput(attrs={'class': 'form-control', 'placeholder': _('e.g. Salary (For Income only)')})
         
         # Ensure fields are optional at form level since we handle them in clean()
         self.fields['category'].required = False
@@ -100,11 +102,11 @@ class RecurringTransactionForm(forms.ModelForm):
         source = cleaned_data.get('source')
 
         if transaction_type == 'EXPENSE' and not category:
-            self.add_error('category', 'Category is required for expenses.')
+            self.add_error('category', _('Category is required for expenses.'))
         
 
         if transaction_type == 'INCOME' and not source:
-            self.add_error('source', 'Source is required for income.')
+            self.add_error('source', _('Source is required for income.'))
 
         return cleaned_data
 
@@ -148,6 +150,14 @@ class ProfileUpdateForm(forms.ModelForm):
         if commit:
             user.save()
         return user
+
+class LanguageUpdateForm(forms.ModelForm):
+    class Meta:
+        model = UserProfile
+        fields = ['language']
+        widgets = {
+            'language': forms.Select(attrs={'class': 'form-select'}),
+        }
 
 class CustomSignupForm(UserCreationForm):
     email = forms.EmailField(required=True, label='Email Address')
