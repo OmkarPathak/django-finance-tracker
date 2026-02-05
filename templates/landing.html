@@ -1,4 +1,4 @@
-{% load static %}
+{% load static i18n %}
 <!DOCTYPE html>
 <html lang="en" data-bs-theme="light">
 
@@ -481,7 +481,7 @@
                             <i class="bi bi-credit-card-2-front-fill"></i>
                         </div>
                         <h2 class="display-5 fw-bold mb-4">Never Miss a <span class="text-gradient"
-                                style="background: linear-gradient(135deg, #ff4d6d 0%, #ff8c42 100%); -webkit-background-clip: text;">Bill
+                                style="background: linear-gradient(135deg, #ff4d6d 0%, #ff8c42 100%); -webkit-background-clip: text; background-clip: text;">Bill
                                 Again</span></h2>
                         <p class="text-muted fs-5 mb-4">
                             Consolidate all your subscriptions in one dashboard. Get timely renewal alerts, spot rising
@@ -966,12 +966,12 @@
                         <span class="fs-4 fw-bold text-body">TrackMyRupee</span>
                     </a>
                     <p class="text-muted small mb-4">
-                        Turn financial chaos into clarity. TrackMyRupee gives you a precision dashboard to visualize
-                        your spending, spot trends, and master your monthly budget.
+                        {% blocktrans %}Turn financial chaos into clarity. TrackMyRupee gives you a precision dashboard to visualize
+                        your spending, spot trends, and master your monthly budget.{% endblocktrans %}
                     </p>
                     <a href="https://rzp.io/rzp/AP7kBG2" target="_blank"
                         class="btn btn-primary btn-sm rounded-pill px-3 shadow-sm">
-                        <i class="bi bi-heart-fill me-1 text-white"></i> Support Us
+                        <i class="bi bi-heart-fill me-1 text-white"></i> {% trans "Support Us" %}
                     </a>
                 </div>
 
@@ -981,43 +981,42 @@
 
                         <!-- Product Column -->
                         <div class="col-6 col-sm-4">
-                            <h5 class="fw-bold mb-3 small text-uppercase tracking-wider">Product</h5>
+                            <h5 class="fw-bold mb-3 small text-uppercase tracking-wider">{% trans "Product" %}</h5>
                             <ul class="list-unstyled mb-0 d-flex flex-column gap-2">
                                 <li><a href="#features"
-                                        class="text-decoration-none text-muted small hover-primary">Features</a></li>
+                                        class="text-decoration-none text-muted small hover-primary">{% trans "Features" %}</a></li>
                                 <li><a href="#pricing"
-                                        class="text-decoration-none text-muted small hover-primary">Pricing</a></li>
+                                        class="text-decoration-none text-muted small hover-primary">{% trans "Pricing" %}</a></li>
                                 <li><a href="{% url 'blog_list' %}"
-                                        class="text-decoration-none text-muted small hover-primary">Blog</a></li>
+                                        class="text-decoration-none text-muted small hover-primary">{% trans "Blog" %}</a></li>
                                 <li><a href="{% url 'demo_login' %}"
-                                        class="text-decoration-none text-muted small hover-primary">Live Demo</a></li>
+                                        class="text-decoration-none text-muted small hover-primary">{% trans "Live Demo" %}</a></li>
                             </ul>
                         </div>
 
                         <!-- Company Column -->
                         <div class="col-6 col-sm-4">
-                            <h5 class="fw-bold mb-3 small text-uppercase tracking-wider">Company</h5>
+                            <h5 class="fw-bold mb-3 small text-uppercase tracking-wider">{% trans "Company" %}</h5>
                             <ul class="list-unstyled mb-0 d-flex flex-column gap-2">
                                 <li><a href="{% url 'about' %}"
-                                        class="text-decoration-none text-muted small hover-primary">About</a></li>
+                                        class="text-decoration-none text-muted small hover-primary">{% trans "About" %}</a></li>
                                 <li><a href="{% url 'contact' %}"
-                                        class="text-decoration-none text-muted small hover-primary">Contact</a></li>
+                                        class="text-decoration-none text-muted small hover-primary">{% trans "Contact" %}</a></li>
                             </ul>
                         </div>
 
                         <!-- Legal Column -->
                         <div class="col-6 col-sm-4">
-                            <h5 class="fw-bold mb-3 small text-uppercase tracking-wider">Legal</h5>
+                            <h5 class="fw-bold mb-3 small text-uppercase tracking-wider">{% trans "Legal" %}</h5>
                             <ul class="list-unstyled mb-0 d-flex flex-column gap-2">
                                 <li><a href="{% url 'privacy-policy' %}"
-                                        class="text-decoration-none text-muted small hover-primary">Privacy Policy</a>
+                                        class="text-decoration-none text-muted small hover-primary">{% trans "Privacy Policy" %}</a>
                                 </li>
                                 <li><a href="{% url 'terms-of-service' %}"
-                                        class="text-decoration-none text-muted small hover-primary">Terms of Service</a>
+                                        class="text-decoration-none text-muted small hover-primary">{% trans "Terms of Service" %}</a>
                                 </li>
                                 <li><a href="{% url 'refund-policy' %}"
-                                        class="text-decoration-none text-muted small hover-primary">Refund &
-                                        Cancellation</a></li>
+                                        class="text-decoration-none text-muted small hover-primary">{% trans "Refund & Cancellation" %}</a></li>
                             </ul>
                         </div>
                     </div>
@@ -1028,7 +1027,7 @@
 
             <div class="row align-items-center">
                 <div class="col-md-6 text-center text-md-start mb-3 mb-md-0">
-                    <p class="text-muted small mb-0">&copy; {% now "Y" %} TrackMyRupee. All rights reserved.</p>
+                    <p class="text-muted small mb-0">&copy; {% now "Y" %} TrackMyRupee. {% trans "All rights reserved." %}</p>
                 </div>
             </div>
         </div>

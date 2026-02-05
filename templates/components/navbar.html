@@ -1,4 +1,4 @@
-{% load static %}
+{% load static i18n %}
 <!-- Unified Navbar -->
 <nav class="navbar navbar-expand-lg {% if is_landing %}fixed-top navbar-landing{% else %}bg-body-tertiary border-bottom{% endif %}">
     <div class="container">
@@ -8,7 +8,7 @@
         </a>
         
         {% if not user.is_authenticated %}
-            <a href="{% url 'account_login' %}" class="btn btn-primary btn-sm d-lg-none ms-auto me-2">Login</a>
+            <a href="{% url 'account_login' %}" class="btn btn-primary btn-sm d-lg-none ms-auto me-2">{% trans "Login" %}</a>
         {% endif %}
 
         {% if user.is_authenticated %}
@@ -69,27 +69,27 @@
                 {% if user.is_authenticated %}
                     <li class="nav-item">
                         <a href="{% url 'home' %}" class="nav-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}" onclick="showLoader()">
-                            Dashboard
+                            {% trans "Dashboard" %}
                         </a>
                     </li>
                     <li class="nav-item">
                         <a href="{% url 'expense-list' %}" class="nav-link {% if 'expense' in request.resolver_match.url_name %}active{% endif %}" onclick="showLoader()">
-                            Expenses
+                            {% trans "Expenses" %}
                         </a>
                     </li>
                     <li class="nav-item">
                         <a href="{% url 'recurring-list' %}" class="nav-link {% if 'recurring' in request.resolver_match.url_name %}active{% endif %}" onclick="showLoader()">
-                            Subscriptions
+                            {% trans "Subscriptions" %}
                         </a>
                     </li>
                     <li class="nav-item">
                         <a href="{% url 'calendar' %}" class="nav-link {% if 'calendar' in request.resolver_match.url_name %}active{% endif %}" onclick="showLoader()">
-                            Calendar
+                            {% trans "Calendar" %}
                         </a>
                     </li>
                     <li class="nav-item">
                         <a href="{% url 'analytics' %}" class="nav-link {% if 'analytics' in request.resolver_match.url_name %}active{% endif %}" onclick="showLoader()">
-                            Analytics
+                            {% trans "Analytics" %}
                         </a>
                     </li>
                     <!-- Settings Link (Removed, moving to dropdown) -->
@@ -102,12 +102,12 @@
                     <!-- Action Dropdown -->
                     <li class="nav-item dropdown d-none d-lg-block ms-2">
                         <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            <span class="text-gradient-primary">Add</span>
+                            <span class="text-gradient-primary">{% trans "Add" %}</span>
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2">
-                            <li><a class="dropdown-item py-2" href="{% url 'expense-create' %}?next={{ request.path }}"><i class="bi bi-dash-circle text-danger me-2"></i> Add Expense</a></li>
-                            <li><a class="dropdown-item py-2" href="{% url 'recurring-create' %}?next={{ request.path }}"><i class="bi bi-arrow-repeat text-primary me-2"></i> Add Subscription</a></li>
-                            <li><a class="dropdown-item py-2" href="{% url 'income-create' %}?next={{ request.path }}"><i class="bi bi-plus-circle text-success me-2"></i> Add Income</a></li>
+                            <li><a class="dropdown-item py-2" href="{% url 'expense-create' %}?next={{ request.path }}"><i class="bi bi-dash-circle text-danger me-2"></i> {% trans "Add Expense" %}</a></li>
+                            <li><a class="dropdown-item py-2" href="{% url 'recurring-create' %}?next={{ request.path }}"><i class="bi bi-arrow-repeat text-primary me-2"></i> {% trans "Add Subscription" %}</a></li>
+                            <li><a class="dropdown-item py-2" href="{% url 'income-create' %}?next={{ request.path }}"><i class="bi bi-plus-circle text-success me-2"></i> {% trans "Add Income" %}</a></li>
                         </ul>
                     </li>
 
@@ -176,7 +176,7 @@
                             </li>
                             <li>
                                 <a class="dropdown-item rounded py-2 d-flex align-items-center gap-2" href="{% url 'settings-home' %}">
-                                    <i class="bi bi-gear"></i> Settings
+                                    <i class="bi bi-gear"></i> {% trans "Settings" %}
                                 </a>
                             </li>
                             <li>
@@ -189,7 +189,7 @@
                                 <form action="{% url 'account_logout' %}" method="post" class="d-block w-100 mb-0">
                                     {% csrf_token %}
                                     <button type="submit" class="dropdown-item rounded py-2 d-flex align-items-center gap-2 text-danger">
-                                        <i class="bi bi-box-arrow-right"></i> Logout
+                                        <i class="bi bi-box-arrow-right"></i> {% trans "Logout" %}
                                     </button>
                                 </form>
                             </li>

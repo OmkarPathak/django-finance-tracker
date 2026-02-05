@@ -2,7 +2,7 @@ from django import forms
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
 from allauth.socialaccount.models import SocialAccount
-from .models import Expense, Category, Income, RecurringTransaction
+from .models import Expense, Category, Income, RecurringTransaction, UserProfile
 
 from datetime import date
 
@@ -148,6 +148,14 @@ class ProfileUpdateForm(forms.ModelForm):
         if commit:
             user.save()
         return user
+
+class LanguageUpdateForm(forms.ModelForm):
+    class Meta:
+        model = UserProfile
+        fields = ['language']
+        widgets = {
+            'language': forms.Select(attrs={'class': 'form-select'}),
+        }
 
 class CustomSignupForm(UserCreationForm):
     email = forms.EmailField(required=True, label='Email Address')

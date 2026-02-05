@@ -1,0 +1,2627 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-02-05 16:29+0530\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: expenses/views.py:262
+msgid "Expenses Trend (Custom Range)"
+msgstr "खर्च की प्रवृत्ति (कस्टम रेंज)"
+
+#: expenses/views.py:275
+#, python-format
+msgid "Daily Expenses for %(month)s/%(year)s"
+msgstr "दैनिक खर्च %(month)s/%(year)s के लिए"
+
+#: expenses/views.py:277
+#, fuzzy
+#| msgid "Total Expenses"
+msgid "Monthly Expenses Trend"
+msgstr "कुल खर्च"
+
+#: finance_tracker/settings.py:184
+msgid "English"
+msgstr ""
+
+#: finance_tracker/settings.py:185
+msgid "Hindi"
+msgstr ""
+
+#: finance_tracker/settings.py:186
+msgid "Marathi"
+msgstr ""
+
+#: templates/404.html:11
+msgid "Page Not Found"
+msgstr ""
+
+#: templates/404.html:13
+msgid ""
+"\n"
+"        We couldn't find the page you're looking for. It might have been "
+"moved, deleted, or never existed in the first place.\n"
+"        "
+msgstr ""
+
+#: templates/404.html:18
+#, fuzzy
+#| msgid "Budget Dashboard"
+msgid "Take Me Home"
+msgstr "बजट डैशबोर्ड"
+
+#: templates/about.html:4 templates/about.html:10
+msgid "About Us"
+msgstr "हमारे बारे में"
+
+#: templates/about.html:13
+msgid ""
+"\n"
+"                        We are on a mission to simplify personal finance for "
+"everyone. TrackMyRupee is built to give you clarity, control, and confidence "
+"over your money.\n"
+"                        "
+msgstr ""
+"\n"
+"                        हमारा मिशन हर किसी के लिए व्यक्तिगत वित्त को सरल बनाना है। TrackMyRupee आपके पैसे पर आपको स्पष्टता, नियंत्रण और आत्मविश्वास देने के लिए बनाया गया है।\n"
+"                        "
+
+#: templates/about.html:19
+msgid "Our Story"
+msgstr "हमारी कहानी"
+
+#: templates/about.html:21
+msgid ""
+"\n"
+"                            TrackMyRupee started with a simple idea: "
+"understanding your finances shouldn't be complicated. We realized that many "
+"people struggle to keep track of their daily expenses, subscriptions, and "
+"budgets because existing tools were either too complex or too manual.\n"
+"                            "
+msgstr ""
+"\n"
+"                            TrackMyRupee की शुरुआत एक साधारण विचार के साथ हुई: अपने वित्त को समझना जटिल नहीं होना चाहिए। हमने महसूस किया कि कई लोग अपने दैनिक खर्चों, सदस्यताओं और बजट का ट्रैक रखने के लिए संघर्ष करते हैं क्योंकि मौजूदा उपकरण या तो बहुत जटिल थे या बहुत मैनुअल।\n"
+"                            "
+
+#: templates/about.html:26
+msgid ""
+"\n"
+"                            We built TrackMyRupee to be the intuitive, "
+"powerful, and privacy-focused solution we always wanted for ourselves. "
+"Today, we help thousands of users track their spending, spot trends, and "
+"make smarter financial decisions.\n"
+"                            "
+msgstr ""
+"\n"
+"                            हमने TrackMyRupee को सहज, शक्तिशाली और गोपनीयता-केंद्रित समाधान के रूप में बनाया है जिसे हम हमेशा अपने लिए चाहते थे। आज, हम हजारों उपयोगकर्ताओं को उनके खर्चों को ट्रैक करने, रुझानों को पहचानने और बेहतर वित्तीय निर्णय लेने में मदद करते हैं।\n"
+"                            "
+
+#: templates/about.html:33
+msgid "What We Believe In"
+msgstr "हमारी आस्था"
+
+#: templates/about.html:36
+msgid "Simplicity First"
+msgstr "सरलता पहले"
+
+#: templates/about.html:37
+msgid ""
+"\n"
+"                                Finance is hard enough. Your tools shouldn't "
+"be. We prioritize clean design and ease of use.\n"
+"                                "
+msgstr ""
+"\n"
+"                                वित्त पहले से ही कठिन है। आपके उपकरण नहीं होने चाहिए। हम स्वच्छ डिज़ाइन और उपयोग में आसानी को प्राथमिकता देते हैं।\n"
+"                                "
+
+#: templates/about.html:42
+msgid "Privacy by Design"
+msgstr "डिज़ाइन से गोपनीयता"
+
+#: templates/about.html:43
+msgid ""
+"\n"
+"                                Your financial data is yours. We optimize "
+"for security and privacy in everything we build.\n"
+"                                "
+msgstr ""
+"\n"
+"                                आपका वित्तीय डेटा आपका है। हम जो कुछ भी बनाते हैं उसमें सुरक्षा और गोपनीयता के लिए अनुकूलन करते हैं।\n"
+"                                "
+
+#: templates/about.html:48
+msgid "Empowerment"
+msgstr "सशक्तिकरण"
+
+#: templates/about.html:49
+msgid ""
+"\n"
+"                                We believe that financial clarity leads to "
+"financial freedom. We give you the data you need to take charge.\n"
+"                                "
+msgstr ""
+"\n"
+"                                हमारा मानना है कि वित्तीय स्पष्टता से वित्तीय स्वतंत्रता मिलती है। हम आपको वह डेटा देते हैं जिसकी आपको जिम्मेदारी संभालने के लिए आवश्यकता होती है।\n"
+"                                "
+
+#: templates/about.html:57
+msgid "Get in Touch"
+msgstr "संपर्क में रहें"
+
+#: templates/about.html:59
+msgid ""
+"\n"
+"                            We love hearing from our users. Whether you have "
+"a feature request, feedback, or just want to say hi, feel free to reach out "
+"to us.\n"
+"                            "
+msgstr ""
+"\n"
+"                            हमें अपने उपयोगकर्ताओं से सुनना पसंद है। चाहे आपके पास कोई फीचर अनुरोध हो, प्रतिक्रिया हो, या सिर्फ नमस्ते कहना चाहते हों, बेझिझक हमसे संपर्क करें।\n"
+"                            "
+
+#: templates/about.html:67 templates/contact.html:8
+msgid "Contact Us"
+msgstr "हमसे संपर्क करें"
+
+#: templates/account/email/email_confirmation_message.html:4
+#: templates/account/email/email_confirmation_message.html:7
+#: templates/account/email/email_confirmation_signup_message.html:4
+msgid "Confirm E-mail Address"
+msgstr ""
+
+#: templates/account/email/email_confirmation_message.html:9
+#: templates/account/email/password_reset_key_message.html:9
+#, python-format
+msgid "Hello <strong>%(username)s</strong>,"
+msgstr ""
+
+#: templates/account/email/email_confirmation_message.html:11
+msgid ""
+"You or someone else has requested that this email address be added to your "
+"account on TrackMyRupee."
+msgstr ""
+
+#: templates/account/email/email_confirmation_message.html:12
+msgid "To confirm this is correct, please click the button below:"
+msgstr ""
+
+#: templates/account/email/email_confirmation_message.html:16
+#: templates/account/email/email_confirmation_signup_message.html:15
+msgid "Confirm Email Address"
+msgstr ""
+
+#: templates/account/email/email_confirmation_message.html:21
+msgid "If you did not make this request, you can safely ignore this email."
+msgstr ""
+
+#: templates/account/email/email_confirmation_message.html:22
+#: templates/account/email/email_confirmation_signup_message.html:20
+#: templates/account/email/password_reset_key_message.html:23
+msgid "Button not working? Copy this link:"
+msgstr ""
+
+#: templates/account/email/email_confirmation_signup_message.html:7
+#: templates/account/email/email_confirmation_signup_message.txt:2
+msgid "Welcome aboard!"
+msgstr ""
+
+#: templates/account/email/email_confirmation_signup_message.html:9
+#, python-format
+msgid ""
+"Hi <strong>%(username)s</strong>,<br>Thank you for joining. We're excited to "
+"help you take control of your finances!"
+msgstr ""
+
+#: templates/account/email/email_confirmation_signup_message.html:11
+msgid "To get started, please confirm your email address:"
+msgstr ""
+
+#: templates/account/email/email_confirmation_signup_message.txt:4
+#, python-format
+msgid "Hi %(username)s,"
+msgstr ""
+
+#: templates/account/email/email_confirmation_signup_message.txt:6
+msgid ""
+"Thank you for joining. We're excited to help you take control of your "
+"finances!"
+msgstr ""
+
+#: templates/account/email/email_confirmation_signup_message.txt:8
+msgid ""
+"To get started, please confirm your email address by visiting the link below:"
+msgstr ""
+
+#: templates/account/email/email_confirmation_signup_message.txt:12
+msgid "If you didn't create an account, you can safely ignore this email."
+msgstr ""
+
+#: templates/account/email/password_reset_key_message.html:4
+#: templates/account/email/password_reset_key_message.txt:2
+msgid "Password Reset E-mail"
+msgstr ""
+
+#: templates/account/email/password_reset_key_message.html:7
+#: templates/account/password_reset.html:9
+msgid "Password Reset"
+msgstr ""
+
+#: templates/account/email/password_reset_key_message.html:11
+#: templates/account/email/password_reset_key_message.txt:6
+msgid ""
+"You're receiving this email because you requested a password reset for your "
+"user account at TrackMyRupee."
+msgstr ""
+
+#: templates/account/email/password_reset_key_message.html:13
+#: templates/account/email/password_reset_key_message.txt:8
+msgid "Please go to the following page and choose a new password:"
+msgstr ""
+
+#: templates/account/email/password_reset_key_message.html:17
+msgid "Reset Password"
+msgstr ""
+
+#: templates/account/email/password_reset_key_message.html:22
+#: templates/account/email/password_reset_key_message.txt:12
+msgid "Your username, in case you've forgotten:"
+msgstr ""
+
+#: templates/account/email/password_reset_key_message.html:28
+#: templates/account/email/password_reset_key_message.txt:14
+msgid ""
+"If you didn't request this, please ignore this email. Your password will "
+"remain unchanged."
+msgstr ""
+
+#: templates/account/email/password_reset_key_message.txt:4
+#, python-format
+msgid "Hello %(username)s,"
+msgstr ""
+
+#: templates/account/email/password_reset_key_message.txt:16
+msgid "Note: This link is valid for a limited time."
+msgstr ""
+
+#: templates/account/login.html:7
+msgid "Welcome Back"
+msgstr ""
+
+#: templates/account/login.html:50
+#: templates/account/password_reset_from_key_done.html:13
+msgid "Sign In"
+msgstr ""
+
+#: templates/account/login.html:68
+#, python-format
+msgid ""
+"Don't have an account? <a href=\"%(signup_url)s\" class=\"text-decoration-"
+"none fw-bold\">Sign Up</a>"
+msgstr ""
+
+#: templates/account/login.html:70
+msgid "Forgot Password?"
+msgstr ""
+
+#: templates/account/logout.html:9 templates/account/logout.html:21
+msgid "Sign Out"
+msgstr ""
+
+#: templates/account/logout.html:10
+msgid "Are you sure you want to sign out?"
+msgstr ""
+
+#: templates/account/logout.html:24
+msgid "Stay Logged In"
+msgstr ""
+
+#: templates/account/password_change.html:10
+#: templates/account/password_change.html:44
+#: templates/account/password_reset_from_key.html:8
+#: templates/account/password_reset_from_key.html:51
+#: templates/expenses/profile_settings.html:44
+msgid "Change Password"
+msgstr ""
+
+#: templates/account/password_change.html:11
+msgid "Ensure your account is using a long, random password to stay secure."
+msgstr ""
+
+#: templates/account/password_change.html:48
+msgid "Back to Settings"
+msgstr ""
+
+#: templates/account/password_change_done.html:9
+#: templates/account/password_reset_from_key_done.html:8
+msgid "Password Changed"
+msgstr ""
+
+#: templates/account/password_change_done.html:10
+msgid "Your password has been successfully changed."
+msgstr ""
+
+#: templates/account/password_change_done.html:14
+msgid "Back to Profile"
+msgstr ""
+
+#: templates/account/password_reset.html:10
+msgid "Enter your email address to reset your password"
+msgstr ""
+
+#: templates/account/password_reset.html:25
+msgid "Reset My Password"
+msgstr ""
+
+#: templates/account/password_reset.html:28
+#: templates/account/password_reset_done.html:17
+msgid "Back to Login"
+msgstr ""
+
+#: templates/account/password_reset_done.html:9
+msgid "Email Sent"
+msgstr ""
+
+#: templates/account/password_reset_done.html:11
+msgid ""
+"We have sent you an e-mail. Please contact us if you do not receive it "
+"within a few minutes."
+msgstr ""
+
+#: templates/account/password_reset_from_key.html:8
+msgid "Bad Token"
+msgstr ""
+
+#: templates/account/password_reset_from_key.html:10
+msgid ""
+"The password reset link was invalid, possibly because it has already been "
+"used.  Please request a new password reset."
+msgstr ""
+
+#: templates/account/password_reset_from_key.html:12
+msgid "Enter your new password below."
+msgstr ""
+
+#: templates/account/password_reset_from_key.html:18
+msgid "New Password Reset"
+msgstr ""
+
+#: templates/account/password_reset_from_key_done.html:9
+msgid "Your password has been changed."
+msgstr ""
+
+#: templates/account/signup.html:7
+msgid "Create Account"
+msgstr ""
+
+#: templates/account/signup.html:40 templates/socialaccount/signup.html:9
+msgid "Sign Up"
+msgstr ""
+
+#: templates/account/signup.html:54
+#, python-format
+msgid ""
+"Already have an account? <a href=\"%(login_url)s\" class=\"text-decoration-"
+"none fw-bold\">Sign In</a>"
+msgstr ""
+
+#: templates/account/verification_sent.html:6
+msgid "Verify Your E-mail Address"
+msgstr ""
+
+#: templates/base.html:535 templates/landing.html:969
+msgid ""
+"Turn financial chaos into clarity. TrackMyRupee gives you a precision "
+"dashboard to visualize\n"
+"                        your spending, spot trends, and master your monthly "
+"budget."
+msgstr ""
+"वित्तीय अराजकता को स्पष्टता में बदलें। TrackMyRupee आपको अपने खर्च की कल्पना करने, "
+"रुझानों को पहचानने और अपने मासिक बजट में महारत हासिल करने के लिए एक सटीक डैशबोर्ड देता "
+"है।"
+
+#: templates/base.html:540 templates/landing.html:974
+msgid "Support Us"
+msgstr "हमारा समर्थन करें"
+
+#: templates/base.html:550 templates/landing.html:984
+msgid "Product"
+msgstr "उत्पाद"
+
+#: templates/base.html:553 templates/landing.html:987
+msgid "Features"
+msgstr "सुविधाएँ"
+
+#: templates/base.html:555 templates/landing.html:989
+msgid "Pricing"
+msgstr "मूल्य निर्धारण"
+
+#: templates/base.html:557 templates/blog/blog_detail.html:68
+#: templates/landing.html:991
+msgid "Blog"
+msgstr "ब्लॉग"
+
+#: templates/base.html:559 templates/landing.html:993
+msgid "Live Demo"
+msgstr "लाइव डेमो"
+
+#: templates/base.html:565 templates/landing.html:999
+msgid "Company"
+msgstr "कंपनी"
+
+#: templates/base.html:568 templates/landing.html:1002
+msgid "About"
+msgstr "के बारे में"
+
+#: templates/base.html:570 templates/landing.html:1004
+msgid "Contact"
+msgstr "संपर्क करें"
+
+#: templates/base.html:577 templates/landing.html:1010
+msgid "Legal"
+msgstr "कानूनी"
+
+#: templates/base.html:580 templates/components/cookie_consent.html:8
+#: templates/landing.html:1013 templates/privacy_policy.html:8
+msgid "Privacy Policy"
+msgstr "गोपनीयता नीति"
+
+#: templates/base.html:583 templates/landing.html:1016
+#: templates/terms_of_service.html:8
+msgid "Terms of Service"
+msgstr "सेवा की शर्तें"
+
+#: templates/base.html:586 templates/landing.html:1019
+msgid "Refund & Cancellation"
+msgstr "धनवापसी और रद्दीकरण"
+
+#: templates/base.html:597 templates/landing.html:1030
+msgid "All rights reserved."
+msgstr "सर्वाधिकार सुरक्षित।"
+
+#: templates/base.html:899 templates/components/navbar.html:108
+#: templates/expenses/expense_list.html:41
+#: templates/expenses/expense_list.html:316 templates/home.html:40
+msgid "Add Expense"
+msgstr "खर्च जोड़ें"
+
+#: templates/base.html:904 templates/components/navbar.html:110
+#: templates/expenses/income_list.html:27
+#: templates/expenses/income_list.html:141
+msgid "Add Income"
+msgstr "आय जोड़ें"
+
+#: templates/base.html:959
+msgid "Select..."
+msgstr "चुनें..."
+
+#: templates/base.html:960
+#, fuzzy
+#| msgid "Items Selected"
+msgid "- Selected"
+msgstr "चयनित आइटम"
+
+#: templates/base.html:961
+#, fuzzy
+#| msgid "Delete Selected"
+msgid "All Selected"
+msgstr "चयनित हटाएं"
+
+#: templates/base.html:966 templates/expenses/expense_list.html:60
+msgid "Search..."
+msgstr "खोजें..."
+
+#: templates/base.html:987
+#, fuzzy
+#| msgid "Welcome to TrackMyRupee!"
+msgid "Support TrackMyRupee"
+msgstr "TrackMyRupee में आपका स्वागत है!"
+
+#: templates/base.html:992
+msgid ""
+"If TrackMyRupee helped you understand your money better, consider supporting "
+"its development."
+msgstr ""
+
+#: templates/base.html:994
+msgid "Donate Now"
+msgstr "अभी दान करें"
+
+#: templates/blog/blog_detail.html:122
+#, fuzzy
+#| msgid "Budget Dashboard"
+msgid "Back to Blog"
+msgstr "बजट डैशबोर्ड"
+
+#: templates/blog/blog_list.html:6
+#, fuzzy
+#| msgid "Blog"
+msgid "Blogs"
+msgstr "ब्लॉग"
+
+#: templates/blog/blog_list.html:23
+msgid "Read Article"
+msgstr ""
+
+#: templates/blog/blog_list.html:32
+msgid "No blog posts yet. Check back soon!"
+msgstr ""
+
+#: templates/components/cookie_consent.html:6
+msgid "We use cookies to improve your experience and analyze site traffic."
+msgstr ""
+"हम आपके अनुभव को बेहतर बनाने और साइट ट्रैफ़िक का विश्लेषण करने के लिए कुकीज़ का उपयोग करते "
+"हैं।हम आपके अनुभव को बेहतर बनाने और साइट ट्रैफ़िक का विश्लेषण करने के लिए कुकीज़ का उपयोग "
+"करते हैं।हम आपके अनुभव को बेहतर बनाने और साइट ट्रैफ़िक का विश्लेषण करने के लिए कुकीज़ का "
+"उपयोग करते हैं।हम आपके अनुभव को बेहतर बनाने और साइट ट्रैफ़िक का विश्लेषण करने के लिए कुकीज़ "
+"का उपयोग करते हैं।हम आपके अनुभव को बेहतर बनाने और साइट ट्रैफ़िक का विश्लेषण करने के लिए "
+"कुकीज़ का उपयोग करते हैं।हम आपके अनुभव को बेहतर बनाने और साइट ट्रैफ़िक का विश्लेषण करने के "
+"लिए कुकीज़ का उपयोग करते हैं।हम आपके अनुभव को बेहतर बनाने और साइट ट्रैफ़िक का विश्लेषण करने "
+"के लिए कुकीज़ का उपयोग करते हैं।हम आपके अनुभव को बेहतर बनाने और साइट ट्रैफ़िक का विश्लेषण "
+"करने के लिए कुकीज़ का उपयोग करते हैं।हम आपके अनुभव को बेहतर बनाने और साइट ट्रैफ़िक का "
+"विश्लेषण करने के लिए कुकीज़ का उपयोग करते हैं।हम आपके अनुभव को बेहतर बनाने और साइट ट्रैफ़िक "
+"का विश्लेषण करने के लिए कुकीज़ का उपयोग करते हैं।"
+
+#: templates/components/cookie_consent.html:7
+msgid "By clicking \\"
+msgstr ""
+
+#: templates/components/cookie_consent.html:12
+msgid "Decline"
+msgstr "अस्वीकार करें"
+
+#: templates/components/cookie_consent.html:13
+msgid "Accept"
+msgstr "स्वीकार करें"
+
+#: templates/components/navbar.html:11
+msgid "Login"
+msgstr ""
+
+#: templates/components/navbar.html:72 templates/home.html:67
+msgid "Dashboard"
+msgstr "डैशबोर्ड"
+
+#: templates/components/navbar.html:77 templates/expenses/expense_list.html:19
+#: templates/expenses/expense_list.html:38 templates/home.html:417
+msgid "Expenses"
+msgstr "खर्च"
+
+#: templates/components/navbar.html:82
+#: templates/expenses/recurring_transaction_list.html:38
+msgid "Subscriptions"
+msgstr "सदस्यताएँ"
+
+#: templates/components/navbar.html:87
+msgid "Calendar"
+msgstr ""
+
+#: templates/components/navbar.html:92 templates/expenses/analytics.html:5
+msgid "Analytics"
+msgstr "विश्लेषण"
+
+#: templates/components/navbar.html:105 templates/expenses/expense_list.html:22
+#: templates/expenses/income_list.html:11
+#: templates/expenses/recurring_transaction_list.html:46
+msgid "Add"
+msgstr "जोड़ें"
+
+#: templates/components/navbar.html:109
+msgid "Add Subscription"
+msgstr ""
+
+#: templates/components/navbar.html:179
+#: templates/expenses/settings_base.html:80
+#: templates/expenses/settings_home.html:7
+#: templates/expenses/settings_home.html:126
+msgid "Settings"
+msgstr "सेटिंग्स"
+
+#: templates/components/navbar.html:192
+msgid "Logout"
+msgstr ""
+
+#: templates/contact.html:9
+msgid "We'd love to hear from you!"
+msgstr ""
+
+#: templates/contact.html:12
+msgid "Send us a message"
+msgstr ""
+
+#: templates/contact.html:30 templates/expenses/category_list.html:29
+#: templates/expenses/category_list.html:138
+msgid "Name"
+msgstr "नाम"
+
+#: templates/contact.html:37
+msgid "Email"
+msgstr ""
+
+#: templates/contact.html:45
+msgid "Subject"
+msgstr ""
+
+#: templates/contact.html:52
+msgid "Message"
+msgstr ""
+
+#: templates/contact.html:71
+msgid "Send Message"
+msgstr ""
+
+#: templates/contact.html:81
+msgid "Open Source"
+msgstr ""
+
+#: templates/contact.html:83
+msgid ""
+"\n"
+"                            Check out our code, report bugs, or contribute "
+"feature requests on GitHub.\n"
+"                            "
+msgstr ""
+
+#: templates/contact.html:88
+msgid "Visit GitHub"
+msgstr ""
+
+#: templates/contact.html:95
+msgid "Social"
+msgstr ""
+
+#: templates/contact.html:96
+msgid "Follow us for the latest updates and finance tips."
+msgstr ""
+
+#: templates/contact.html:98
+#, fuzzy
+#| msgid "Welcome to TrackMyRupee!"
+msgid "Follow @TrackMyRupee"
+msgstr "TrackMyRupee में आपका स्वागत है!"
+
+#: templates/contact.html:106 templates/privacy_policy.html:274
+#: templates/refund_policy.html:110 templates/terms_of_service.html:60
+#, fuzzy
+#| msgid "Budget Dashboard"
+msgid "Back to Home"
+msgstr "बजट डैशबोर्ड"
+
+#: templates/expenses/analytics.html:11
+msgid "Analytics & Trends"
+msgstr "विश्लेषण और रुझान"
+
+#: templates/expenses/analytics.html:12
+msgid "Visualizing your financial journey over the last 12 months."
+msgstr "पिछले 12 महीनों में अपनी वित्तीय यात्रा को देख रहे हैं।"
+
+#: templates/expenses/analytics.html:17
+msgid "Last 12 Months"
+msgstr "पिछले 12 महीने"
+
+#: templates/expenses/analytics.html:33
+#, fuzzy
+#| msgid "Total Income"
+msgid "Total Income (YTD)"
+msgstr "कुल आय"
+
+#: templates/expenses/analytics.html:51
+#, fuzzy
+#| msgid "Total Expenses"
+msgid "Total Expenses (YTD)"
+msgstr "कुल खर्च"
+
+#: templates/expenses/analytics.html:69
+msgid "Avg. Balance Rate (YTD)"
+msgstr "औसत शेष दर (YTD)"
+
+#: templates/expenses/analytics.html:75
+msgid "Percentage of income kept as balance/savings"
+msgstr "शेष/बचत के रूप में रखी गई आय का प्रतिशत"
+
+#: templates/expenses/analytics.html:87
+#, fuzzy
+#| msgid "Income vs Expenses"
+msgid "Income vs Expenses Analysis"
+msgstr "आय बनाम खर्च"
+
+#: templates/expenses/analytics.html:96
+msgid ""
+"Comparing what comes in (Green) vs. what goes out (Red). The gap is your "
+"potential savings."
+msgstr ""
+
+#: templates/expenses/analytics.html:107
+msgid "Spending by Category"
+msgstr "श्रेणी के अनुसार खर्च"
+
+#: templates/expenses/analytics.html:116
+msgid "See which categories are consuming the most of your budget this year."
+msgstr "देखें कि इस वर्ष आपके बजट का अधिकांश भाग किन श्रेणियों में खर्च हो रहा है।"
+
+#: templates/expenses/analytics.html:129
+#, python-format
+msgid "Balance Rate Trend (%%)"
+msgstr ""
+
+#: templates/expenses/analytics.html:138
+#, python-format
+msgid ""
+"Shows what %% of your income is left after expenses. A higher positive "
+"percentage means you're growing your wealth."
+msgstr ""
+
+#: templates/expenses/analytics.html:220 templates/expenses/calendar.html:50
+#: templates/expenses/calendar.html:85 templates/expenses/income_list.html:8
+#: templates/expenses/income_list.html:11
+#: templates/expenses/income_list.html:24
+#: templates/expenses/settings_base.html:29
+#: templates/expenses/settings_home.html:37
+msgid "Income"
+msgstr "आय"
+
+#: templates/expenses/analytics.html:229 templates/expenses/calendar.html:53
+#: templates/expenses/calendar.html:85 templates/expenses/expense_list.html:22
+msgid "Expense"
+msgstr "खर्च"
+
+#: templates/expenses/analytics.html:239
+#, fuzzy
+#| msgid "Balance"
+msgid "Net Balance"
+msgstr "शेष राशि"
+
+#: templates/expenses/analytics.html:367
+#, python-format
+msgid "Balance Rate (%%)"
+msgstr ""
+
+#: templates/expenses/budget_dashboard.html:9
+#: templates/expenses/settings_base.html:32
+msgid "Budget"
+msgstr "बजट"
+
+#: templates/expenses/budget_dashboard.html:29
+msgid ""
+"A budget is telling your money where to go, instead of wondering where it "
+"went."
+msgstr "बजट आपके पैसों को बताता है कि कहां जाना है, बजाय इसके कि वह कहां गया।"
+
+#: templates/expenses/budget_dashboard.html:39
+msgid "Total Budget Goal"
+msgstr "कुल बजट लक्ष्य"
+
+#: templates/expenses/budget_dashboard.html:43
+msgid "vs last month"
+msgstr "बनाम पिछले महीने"
+
+#: templates/expenses/budget_dashboard.html:62
+#, python-format
+msgid "%(percent)s%% Used"
+msgstr "%(percent)s%% उपयोग"
+
+#: templates/expenses/budget_dashboard.html:65
+#, python-format
+msgid "Over budget by %(currency)s%(amount)s"
+msgstr "%(currency)s%(amount)s से बजट से अधिक"
+
+#: templates/expenses/budget_dashboard.html:67
+#, python-format
+msgid "%(currency)s%(amount)s remaining"
+msgstr "%(currency)s%(amount)s शेष"
+
+#: templates/expenses/budget_dashboard.html:86
+#, fuzzy
+#| msgid "Expenses"
+msgid "View Expenses"
+msgstr "खर्च"
+
+#: templates/expenses/budget_dashboard.html:90
+msgid "Edit Limit"
+msgstr "सीमा संपादित करें"
+
+#: templates/expenses/budget_dashboard.html:94
+#, python-format
+msgid "Spent: %(currency)s%(amount)s"
+msgstr "खर्च: %(currency)s%(amount)s"
+
+#: templates/expenses/budget_dashboard.html:116
+#, python-format
+msgid "Limit: %(currency)s%(limit)s"
+msgstr "सीमा: %(currency)s%(limit)s"
+
+#: templates/expenses/budget_dashboard.html:121
+#, python-format
+msgid "%(currency)s%(left)s left"
+msgstr "%(currency)s%(left)s शेष"
+
+#: templates/expenses/budget_dashboard.html:128
+msgid "Limit reached — consider adjusting"
+msgstr "सीमा समाप्त — समायोजन पर विचार करें"
+
+#: templates/expenses/budget_dashboard.html:132
+msgid "You’re close to your limit"
+msgstr "आप अपनी सीमा के करीब हैं"
+
+#: templates/expenses/budget_dashboard.html:137
+msgid "No limit set"
+msgstr "कोई सीमा निर्धारित नहीं"
+
+#: templates/expenses/budget_dashboard.html:138
+msgid "Set limit"
+msgstr "सीमा निर्धारित करें"
+
+#: templates/expenses/budget_dashboard.html:147
+msgid "No categories found. Start by adding some categories to your settings."
+msgstr "कोई श्रेणियाँ नहीं मिलीं। अपनी सेटिंग्स में कुछ श्रेणियाँ जोड़कर शुरुआत करें।"
+
+#: templates/expenses/budget_dashboard.html:148
+#: templates/expenses/category_list.html:10
+#: templates/expenses/category_list.html:66
+msgid "Add Category"
+msgstr "श्रेणी जोड़ें"
+
+#: templates/expenses/calendar.html:23
+#, fuzzy
+#| msgid "Search..."
+msgid "Search entries..."
+msgstr "खोजें..."
+
+#: templates/expenses/calendar.html:23 templates/expenses/category_list.html:16
+#: templates/expenses/expense_list.html:59
+msgid "Search"
+msgstr "खोजें"
+
+#: templates/expenses/calendar.html:25
+#, fuzzy
+#| msgid "Clear Filters"
+msgid "Clear search"
+msgstr "फ़िल्टर साफ़ करें"
+
+#: templates/expenses/calendar.html:35
+#, fuzzy
+#| msgid "Budget Dashboard"
+msgid "Back to Dashboard"
+msgstr "बजट डैशबोर्ड"
+
+#: templates/expenses/calendar.html:43
+#, python-format
+msgid "%(month_name)s net savings:"
+msgstr ""
+
+#: templates/expenses/calendar.html:62
+msgid "Sun"
+msgstr "रवि"
+
+#: templates/expenses/calendar.html:63
+msgid "Mon"
+msgstr "सोम"
+
+#: templates/expenses/calendar.html:64
+msgid "Tue"
+msgstr "मंगल"
+
+#: templates/expenses/calendar.html:65
+msgid "Wed"
+msgstr "बुध"
+
+#: templates/expenses/calendar.html:66
+msgid "Thu"
+msgstr "गुरु"
+
+#: templates/expenses/calendar.html:67
+msgid "Fri"
+msgstr "शुक्र"
+
+#: templates/expenses/calendar.html:68
+msgid "Sat"
+msgstr "शनि"
+
+#: templates/expenses/calendar.html:84
+#, python-format
+msgid "%(month_name)s"
+msgstr ""
+
+#: templates/expenses/calendar.html:85
+msgid "No activity"
+msgstr "कोई गतिविधि नहीं"
+
+#: templates/expenses/calendar.html:85
+#, fuzzy
+#| msgid "View All"
+msgid "View Details"
+msgstr "सभी देखें"
+
+#: templates/expenses/calendar.html:92
+msgid "View expenses for this day"
+msgstr "इस दिन के खर्च देखें"
+
+#: templates/expenses/category_list.html:8
+#: templates/expenses/settings_base.html:35
+#: templates/expenses/settings_home.html:51
+msgid "Categories"
+msgstr "श्रेणियां"
+
+#: templates/expenses/category_list.html:13
+msgid "Categories help you understand your spending habits"
+msgstr "श्रेणियाँ आपको अपनी खर्च करने की आदतों को समझने में मदद करती हैं"
+
+#: templates/expenses/category_list.html:15
+msgid "Search categories..."
+msgstr "श्रेणियां खोजें..."
+
+#: templates/expenses/category_list.html:18
+#: templates/expenses/expense_list.html:122
+#: templates/expenses/income_list.html:57
+#: templates/expenses/recurring_transaction_list.html:79
+#: templates/home.html:157
+msgid "Reset"
+msgstr "रीसेट"
+
+#: templates/expenses/category_list.html:30
+msgid "Monthly Limit"
+msgstr "मासिक सीमा"
+
+#: templates/expenses/category_list.html:31
+#: templates/expenses/expense_list.html:269
+#: templates/expenses/income_list.html:93
+msgid "Actions"
+msgstr "कार्रवाई"
+
+#: templates/expenses/category_list.html:46
+#: templates/expenses/income_list.html:114
+#: templates/expenses/recurring_transaction_list.html:182
+msgid "Edit"
+msgstr "संपादित करें"
+
+#: templates/expenses/category_list.html:52
+#, python-format
+msgid ""
+"Are you sure you want to delete category '%(name)s'? This will NOT delete "
+"expenses in this category, but they will be unlinked or require update."
+msgstr ""
+
+#: templates/expenses/category_list.html:63
+#, fuzzy
+#| msgid "Top Categories"
+msgid "No Categories Yet"
+msgstr "शीर्ष श्रेणियां"
+
+#: templates/expenses/category_list.html:64
+msgid "Organize your transactions by creating custom categories."
+msgstr "कस्टम श्रेणियाँ बनाकर अपने लेनदेन को व्यवस्थित करें।"
+
+#: templates/expenses/category_list.html:129
+#, fuzzy
+#| msgid "Category"
+msgid "Edit Category"
+msgstr "श्रेणी"
+
+#: templates/expenses/category_list.html:143
+msgid "Monthly Limit (Optional)"
+msgstr "मासिक सीमा (वैकल्पिक)"
+
+#: templates/expenses/category_list.html:151
+#: templates/expenses/income_list.html:231
+#: templates/expenses/profile_settings.html:47
+msgid "Save Changes"
+msgstr "परिवर्तन सहेजें"
+
+#: templates/expenses/currency_settings.html:7
+msgid "Default Currency"
+msgstr "डिफॉल्ट मुद्रा"
+
+#: templates/expenses/currency_settings.html:10
+msgid ""
+"Select your preferred currency symbol to be used across the application."
+msgstr "एप्लिकेशन में उपयोग किए जाने वाले अपने पसंदीदा मुद्रा चिह्न का चयन करें।"
+
+#: templates/expenses/currency_settings.html:14
+msgid "Select Currency Symbol"
+msgstr "मुद्रा चिह्न चुनें"
+
+#: templates/expenses/currency_settings.html:27
+#: templates/expenses/language_settings.html:27
+msgid "How this works:"
+msgstr "यह कैसे काम करता है:"
+
+#: templates/expenses/currency_settings.html:27
+msgid ""
+"This symbol will be displayed next to all amount values (Income, Expenses, "
+"Budgets, and Charts)."
+msgstr "यह चिह्न सभी राशि मूल्यों (आय, खर्च, बजट और चार्ट) के पास प्रदर्शित होगा।"
+
+#: templates/expenses/currency_settings.html:34
+#: templates/expenses/language_settings.html:34
+msgid "Save Preference"
+msgstr "प्राथमिकता सहेजें"
+
+#: templates/expenses/expense_list.html:28
+#: templates/expenses/income_list.html:14 templates/home.html:81
+msgid "Filters"
+msgstr "फ़िल्टर"
+
+#: templates/expenses/expense_list.html:32
+#: templates/expenses/expense_list.html:48
+msgid "Tracking every penny is the first step to financial freedom."
+msgstr "हर पैसे की ट्रैकिंग वित्तीय स्वतंत्रता का पहला कदम है।"
+
+#: templates/expenses/expense_list.html:44
+msgid "Export"
+msgstr "निर्यात करें"
+
+#: templates/expenses/expense_list.html:65
+#: templates/expenses/expense_list.html:67 templates/home.html:122
+msgid "From"
+msgstr "से"
+
+#: templates/expenses/expense_list.html:72
+#: templates/expenses/expense_list.html:74 templates/home.html:126
+msgid "To"
+msgstr "तक"
+
+#: templates/expenses/expense_list.html:81
+msgid "Year"
+msgstr "वर्ष"
+
+#: templates/expenses/expense_list.html:91
+msgid "Month"
+msgstr "महीना"
+
+#: templates/expenses/expense_list.html:103
+#: templates/expenses/expense_list.html:252
+#: templates/expenses/recurring_transaction_list.html:60
+#: templates/upload.html:28
+msgid "Category"
+msgstr "श्रेणी"
+
+#: templates/expenses/expense_list.html:116
+#: templates/expenses/income_list.html:54
+#: templates/expenses/recurring_transaction_list.html:73
+#: templates/home.html:154
+msgid "Apply"
+msgstr "लागू करें"
+
+#: templates/expenses/expense_list.html:129
+#: templates/expenses/expense_list.html:237
+#: templates/expenses/expense_list.html:374
+msgid "Delete Selected"
+msgstr "चयनित हटाएं"
+
+#: templates/expenses/expense_list.html:143
+#: templates/expenses/income_list.html:69
+msgid "Total Records"
+msgstr "कुल रिकॉर्ड"
+
+#: templates/expenses/expense_list.html:149
+#: templates/expenses/income_list.html:75
+msgid "Total Amount"
+msgstr "कुल राशि"
+
+#: templates/expenses/expense_list.html:235
+msgid "Items Selected"
+msgstr "चयनित आइटम"
+
+#: templates/expenses/expense_list.html:250
+#: templates/expenses/income_list.html:89
+#: templates/expenses/income_list.html:208 templates/upload.html:25
+msgid "Date"
+msgstr "दिनांक"
+
+#: templates/expenses/expense_list.html:251
+#: templates/expenses/income_list.html:91
+#: templates/expenses/income_list.html:218 templates/upload.html:27
+msgid "Description"
+msgstr "विवरण"
+
+#: templates/expenses/expense_list.html:253
+msgid "Payment Method"
+msgstr "भुगतान विधि"
+
+#: templates/expenses/expense_list.html:260
+#: templates/expenses/income_list.html:92
+#: templates/expenses/income_list.html:223 templates/upload.html:26
+msgid "Amount"
+msgstr "राशि"
+
+#: templates/expenses/expense_list.html:295
+msgid "Are you sure you want to delete"
+msgstr "क्या आप वाकई हटाना चाहते हैं"
+
+#: templates/expenses/expense_list.html:306
+msgid "No Expenses Found"
+msgstr "कोई खर्च नहीं मिला"
+
+#: templates/expenses/expense_list.html:309
+msgid "We couldn't find any expenses matching your filters."
+msgstr "हमें आपके फ़िल्टर से मेल खाने वाला कोई खर्च नहीं मिला।"
+
+#: templates/expenses/expense_list.html:311
+msgid "You haven't added any expenses yet. Start tracking your spending!"
+msgstr "आपने अभी तक कोई खर्च नहीं जोड़ा है। अपना खर्च ट्रैक करना शुरू करें!"
+
+#: templates/expenses/expense_list.html:320
+#: templates/expenses/income_list.html:145
+msgid "Clear Filters"
+msgstr "फ़िल्टर साफ़ करें"
+
+#: templates/expenses/expense_list.html:340
+#: templates/expenses/income_list.html:169
+msgid "Previous"
+msgstr "पिछला"
+
+#: templates/expenses/expense_list.html:345
+#: templates/expenses/income_list.html:175
+msgid "Page"
+msgstr "पृष्ठ"
+
+#: templates/expenses/expense_list.html:345
+#: templates/expenses/income_list.html:175
+msgid "of"
+msgstr "का"
+
+#: templates/expenses/expense_list.html:350
+#: templates/expenses/income_list.html:181
+msgid "Next"
+msgstr "अगला"
+
+#: templates/expenses/expense_list.html:366
+msgid "Confirm Bulk Delete"
+msgstr "बल्क डिलीट की पुष्टि करें"
+
+#: templates/expenses/expense_list.html:370
+msgid ""
+"Are you sure you want to delete the selected expenses? This action cannot be "
+"undone."
+msgstr ""
+
+#: templates/expenses/expense_list.html:373
+#: templates/socialaccount/login.html:22
+msgid "Cancel"
+msgstr "रद्द करें"
+
+#: templates/expenses/expense_list.html:374
+msgid "Deleting..."
+msgstr "हटाया जा रहा है..."
+
+#: templates/expenses/income_list.html:18
+#: templates/expenses/income_list.html:31
+msgid "Celebrate every earning. You've worked hard for this."
+msgstr "हर कमाई का जश्न मनाएं। आपने इसके लिए कड़ी मेहनत की है।"
+
+#: templates/expenses/income_list.html:41
+msgid "Date From"
+msgstr "तारीख से"
+
+#: templates/expenses/income_list.html:45
+msgid "Date To"
+msgstr "तारीख तक"
+
+#: templates/expenses/income_list.html:49
+#: templates/expenses/income_list.html:90
+#: templates/expenses/income_list.html:213
+msgid "Source"
+msgstr "स्रोत"
+
+#: templates/expenses/income_list.html:50
+msgid "Search source..."
+msgstr "स्रोत खोजें..."
+
+#: templates/expenses/income_list.html:120
+#, fuzzy, python-format
+#| msgid "Are you sure you want to delete"
+msgid "Are you sure you want to delete '%(source)s'?"
+msgstr "क्या आप वाकई हटाना चाहते हैं"
+
+#: templates/expenses/income_list.html:131
+msgid "No Income Records"
+msgstr "कोई आय रिकॉर्ड नहीं"
+
+#: templates/expenses/income_list.html:134
+#, fuzzy
+#| msgid "We couldn't find any expenses matching your filters."
+msgid "We couldn't find any income records matching your filters."
+msgstr "हमें आपके फ़िल्टर से मेल खाने वाला कोई खर्च नहीं मिला।"
+
+#: templates/expenses/income_list.html:136
+#, fuzzy
+#| msgid "You haven't added any expenses yet. Start tracking your spending!"
+msgid "You haven't recorded any income yet. Start tracking your earnings!"
+msgstr "आपने अभी तक कोई खर्च नहीं जोड़ा है। अपना खर्च ट्रैक करना शुरू करें!"
+
+#: templates/expenses/income_list.html:166
+msgid "First"
+msgstr ""
+
+#: templates/expenses/income_list.html:184
+msgid "Last"
+msgstr ""
+
+#: templates/expenses/income_list.html:199
+#, fuzzy
+#| msgid "Add Income"
+msgid "Edit Income"
+msgstr "आय जोड़ें"
+
+#: templates/expenses/language_settings.html:7
+msgid "Language Preference"
+msgstr "भाषा प्राथमिकता"
+
+#: templates/expenses/language_settings.html:10
+msgid "Select your preferred language to be used across the application."
+msgstr "एप्लिकेशन में उपयोग की जाने वाली आपकी पसंदीदा भाषा चुनें।"
+
+#: templates/expenses/language_settings.html:14
+msgid "Select Language"
+msgstr "भाषा चुनें"
+
+#: templates/expenses/language_settings.html:27
+msgid ""
+"Updating this setting will change the language of the menus, labels, and "
+"messages in TrackMyRupee."
+msgstr ""
+
+#: templates/expenses/profile_settings.html:8
+msgid "Profile Settings"
+msgstr "प्रोफाइल सेटिंग्स"
+
+#: templates/expenses/profile_settings.html:17
+msgid "First Name"
+msgstr "पहला नाम"
+
+#: templates/expenses/profile_settings.html:25
+msgid "Last Name"
+msgstr "उपनाम"
+
+#: templates/expenses/profile_settings.html:34
+msgid "Email Address"
+msgstr "ईमेल पता"
+
+#: templates/expenses/profile_settings.html:39
+msgid "This email will be used for logins and account recovery."
+msgstr "यह ईमेल लॉगिन और खाता पुनर्प्राप्ति के लिए उपयोग किया जाएगा।"
+
+#: templates/expenses/recurring_transaction_list.html:39
+msgid "Manage your recurring payments and never miss a due date again."
+msgstr "अपने आवर्ती भुगतानों को प्रबंधित करें और कभी भी नियत तारीख न चूकें।"
+
+#: templates/expenses/recurring_transaction_list.html:43
+#: templates/expenses/recurring_transaction_list.html:235
+msgid "Manage"
+msgstr "प्रबंधित करें"
+
+#: templates/expenses/recurring_transaction_list.html:46
+#: templates/expenses/settings_home.html:10
+msgid "Subscription"
+msgstr "सदस्यता"
+
+#: templates/expenses/recurring_transaction_list.html:91
+msgid "Total Monthly Cost"
+msgstr "कुल मासिक लागत"
+
+#: templates/expenses/recurring_transaction_list.html:92
+msgid "mo"
+msgstr "माह"
+
+#: templates/expenses/recurring_transaction_list.html:97
+msgid "Yearly Projection"
+msgstr "वार्षिक प्रक्षेपण"
+
+#: templates/expenses/recurring_transaction_list.html:98
+msgid "yr"
+msgstr "वर्ष"
+
+#: templates/expenses/recurring_transaction_list.html:103
+#: templates/expenses/recurring_transaction_list.html:111
+msgid "renewals due soon"
+msgstr "नवीनीकरण जल्द ही होने वाले हैं"
+
+#: templates/expenses/recurring_transaction_list.html:122
+msgid "All"
+msgstr "सभी"
+
+#: templates/expenses/recurring_transaction_list.html:128
+msgid "Renewing Soon"
+msgstr "जल्द ही नवीनीकरण"
+
+#: templates/expenses/recurring_transaction_list.html:133
+#: templates/expenses/recurring_transaction_list.html:261
+#, fuzzy
+#| msgid "Cancel"
+msgid "Cancelled"
+msgstr "रद्द करें"
+
+#: templates/expenses/recurring_transaction_list.html:160
+#: templates/expenses/recurring_transaction_list.html:164
+#, python-format
+msgid "In %(sub.annotated_days_until)s day"
+msgstr ""
+
+#: templates/expenses/recurring_transaction_list.html:168
+#, python-format
+msgid "In %(sub.annotated_days_until)s days"
+msgstr ""
+
+#: templates/expenses/recurring_transaction_list.html:188
+#, fuzzy
+#| msgid "Are you sure you want to delete"
+msgid "Are you sure you want to delete subscription"
+msgstr "क्या आप वाकई हटाना चाहते हैं"
+
+#: templates/expenses/recurring_transaction_list.html:188
+msgid "This will stop all future tracking for this item."
+msgstr "यह इस मद के लिए भविष्य की सभी ट्रैकिंग रोक देगा।"
+
+#: templates/expenses/recurring_transaction_list.html:189
+#: templates/expenses/settings_base.html:54
+msgid "Delete"
+msgstr "हटाएं"
+
+#: templates/expenses/recurring_transaction_list.html:206
+#, fuzzy
+#| msgid "Subscription"
+msgid "No active subscriptions"
+msgstr "सदस्यता"
+
+#: templates/expenses/recurring_transaction_list.html:207
+msgid ""
+"Most people forget at least one renewal every year. Add yours now so we can "
+"remind you before you pay."
+msgstr ""
+
+#: templates/expenses/recurring_transaction_list.html:209
+msgid "Add your first subscription"
+msgstr "अपनी पहली सदस्यता जोड़ें"
+
+#: templates/expenses/recurring_transaction_list.html:228
+msgid "Renewing This Month"
+msgstr "इस महीने नवीनीकरण"
+
+#: templates/expenses/recurring_transaction_list.html:243
+msgid "No renewals coming up this month!"
+msgstr "इस महीने कोई नवीनीकरण नहीं आ रहा है!"
+
+#: templates/expenses/recurring_transaction_list.html:268
+msgid "Reactivate"
+msgstr "फिर से सक्रिय करें"
+
+#: templates/expenses/recurring_transaction_list.html:275
+msgid "No cancelled subscriptions."
+msgstr "कोई रद्द की गई सदस्यता नहीं।"
+
+#: templates/expenses/settings_base.html:14
+#: templates/expenses/settings_home.html:16
+msgid "Current Plan"
+msgstr "वर्तमान योजना"
+
+#: templates/expenses/settings_base.html:21
+#: templates/expenses/settings_home.html:24
+msgid "Upgrade"
+msgstr "अपग्रेड करें"
+
+#: templates/expenses/settings_base.html:26
+#: templates/expenses/settings_home.html:32
+msgid "Tools"
+msgstr "उपकरण"
+
+#: templates/expenses/settings_base.html:38
+#: templates/expenses/settings_home.html:58
+msgid "Upload Data"
+msgstr "डेटा अपलोड करें"
+
+#: templates/expenses/settings_base.html:42
+#: templates/expenses/settings_home.html:65
+msgid "Account"
+msgstr "खाता"
+
+#: templates/expenses/settings_base.html:45
+#: templates/expenses/settings_home.html:70
+msgid "Currency"
+msgstr ""
+
+#: templates/expenses/settings_base.html:48
+#: templates/expenses/settings_home.html:77
+msgid "Language"
+msgstr "भाषा"
+
+#: templates/expenses/settings_base.html:51
+#: templates/expenses/settings_home.html:84
+msgid "Profile"
+msgstr "प्रोफ़ाइल"
+
+#: templates/expenses/settings_base.html:57
+#: templates/expenses/settings_home.html:96
+msgid "Tutorial"
+msgstr "ट्यूटोरियल"
+
+#: templates/expenses/settings_home.html:44
+msgid "Budget Dashboard"
+msgstr "बजट डैशबोर्ड"
+
+#: templates/expenses/settings_home.html:91
+msgid "Support"
+msgstr ""
+
+#: templates/expenses/settings_home.html:103
+msgid "Contact Support"
+msgstr "सहायता से संपर्क करें"
+
+#: templates/expenses/settings_home.html:110
+msgid "Danger Zone"
+msgstr "खतरा क्षेत्र"
+
+#: templates/expenses/settings_home.html:115
+msgid "Delete Account"
+msgstr "खाता हटाएं"
+
+#: templates/expenses/settings_home.html:127
+msgid "Select an option from the sidebar to manage your preferences."
+msgstr "अपनी प्राथमिकताओं को प्रबंधित करने के लिए साइडबार से एक विकल्प चुनें।"
+
+#: templates/home.html:32
+msgid "Welcome to TrackMyRupee!"
+msgstr "TrackMyRupee में आपका स्वागत है!"
+
+#: templates/home.html:33
+msgid ""
+"Your journey to financial freedom starts here. Let's record your first "
+"transaction to get the dashboard moving."
+msgstr ""
+
+#: templates/home.html:37
+msgid "Record Income"
+msgstr "आय रिकॉर्ड करें"
+
+#: templates/home.html:221
+msgid "This Month's Insights"
+msgstr "इस महीने की अंतर्दृष्टि"
+
+#: templates/home.html:290
+msgid "Total Income"
+msgstr "कुल आय"
+
+#: templates/home.html:304 templates/home.html:337 templates/home.html:367
+#, fuzzy, python-format
+#| msgid "Daily Expenses for %(month)s/%(year)s"
+msgid "For %(month)s %(year)s"
+msgstr "दैनिक खर्च %(month)s/%(year)s के लिए"
+
+#: templates/home.html:306 templates/home.html:339 templates/home.html:369
+#, python-format
+msgid "For %(year)s"
+msgstr "%(year)s के लिए"
+
+#: templates/home.html:308 templates/home.html:341
+msgid "All Time"
+msgstr "पूरा समय"
+
+#: templates/home.html:323
+msgid "Total Expenses"
+msgstr "कुल खर्च"
+
+#: templates/home.html:353
+msgid "Balance"
+msgstr "शेष राशि"
+
+#: templates/home.html:382
+msgid "Projected Savings"
+msgstr "अनुमानित बचत"
+
+#: templates/home.html:387
+#, fuzzy
+#| msgid "Year"
+msgid "Year End"
+msgstr "वर्ष"
+
+#: templates/home.html:391
+msgid "Keep saving to see this!"
+msgstr "यह देखने के लिए बचत करते रहें!"
+
+#: templates/home.html:395
+msgid "Based on your YTD average"
+msgstr "आपके YTD औसत पर आधारित"
+
+#: templates/home.html:407
+msgid "Income vs Expenses"
+msgstr "आय बनाम खर्च"
+
+#: templates/home.html:420
+#, python-format
+msgid "of %(currency_symbol)s%(total_income|floatformat:0)s used"
+msgstr ""
+
+#: templates/home.html:431
+msgid "Budget vs Spent"
+msgstr "बजट बनाम खर्च"
+
+#: templates/home.html:471
+#, fuzzy
+#| msgid "Budget vs Spent"
+msgid "No Budgets Set"
+msgstr "बजट बनाम खर्च"
+
+#: templates/home.html:472
+msgid "Set limits for your categories to track spending."
+msgstr "खर्च पर नज़र रखने के लिए अपनी श्रेणियों के लिए सीमाएँ निर्धारित करें।"
+
+#: templates/home.html:473
+#, fuzzy
+#| msgid "Budget"
+msgid "Set Budget"
+msgstr "बजट"
+
+#: templates/home.html:484
+msgid "Payment Method Distribution"
+msgstr "भुगतान विधि वितरण"
+
+#: templates/home.html:491 templates/home.html:571
+msgid "No data available"
+msgstr "कोई डेटा उपलब्ध नहीं"
+
+#: templates/home.html:504
+#, fuzzy
+#| msgid "Spending by Category"
+msgid "(Stacked by Category)"
+msgstr "श्रेणी के अनुसार खर्च"
+
+#: templates/home.html:518
+msgid "Recent Transactions"
+msgstr "हाल के लेन-देन"
+
+#: templates/home.html:519 templates/home.html:582
+msgid "View All"
+msgstr "सभी देखें"
+
+#: templates/home.html:549
+msgid "No recent transactions"
+msgstr "कोई हाल का लेन-देन नहीं"
+
+#: templates/home.html:564
+msgid "Category Distribution"
+msgstr "श्रेणी वितरण"
+
+#: templates/home.html:581
+msgid "Top Categories"
+msgstr "शीर्ष श्रेणियां"
+
+#: templates/home.html:627
+msgid "No expense data available"
+msgstr "कोई व्यय डेटा उपलब्ध नहीं"
+
+#: templates/offline.html:5
+msgid "You are offline"
+msgstr ""
+
+#: templates/offline.html:12
+msgid "You seem to be offline"
+msgstr ""
+
+#: templates/offline.html:14
+msgid ""
+"\n"
+"        TrackMyRupee requires an internet connection to work.\n"
+"        "
+msgstr ""
+
+#: templates/offline.html:17
+msgid "Please check your connection and try again."
+msgstr ""
+
+#: templates/offline.html:20
+#: templates/socialaccount/authentication_error.html:21
+msgid "Try Again"
+msgstr ""
+
+#: templates/privacy_policy.html:9
+msgid "Last updated: January 14, 2026"
+msgstr ""
+
+#: templates/privacy_policy.html:12
+msgid ""
+"\n"
+"                        Your privacy matters to us. This policy explains how "
+"TrackMyRupee collects, uses, and protects your information.\n"
+"                        "
+msgstr ""
+
+#: templates/privacy_policy.html:18 templates/refund_policy.html:18
+msgid "Table of Contents"
+msgstr ""
+
+#: templates/privacy_policy.html:20 templates/privacy_policy.html:34
+msgid "1. Information We Collect"
+msgstr ""
+
+#: templates/privacy_policy.html:21 templates/privacy_policy.html:69
+msgid "2. How We Use Your Information"
+msgstr ""
+
+#: templates/privacy_policy.html:22 templates/privacy_policy.html:103
+msgid "3. Cookies & Tracking Technologies"
+msgstr ""
+
+#: templates/privacy_policy.html:23 templates/privacy_policy.html:124
+msgid "4. Information Sharing"
+msgstr ""
+
+#: templates/privacy_policy.html:24 templates/privacy_policy.html:154
+msgid "5. Data Security"
+msgstr ""
+
+#: templates/privacy_policy.html:25 templates/privacy_policy.html:185
+msgid "6. Your Rights & Choices"
+msgstr ""
+
+#: templates/privacy_policy.html:26 templates/privacy_policy.html:220
+msgid "7. Data Retention"
+msgstr ""
+
+#: templates/privacy_policy.html:27 templates/privacy_policy.html:243
+msgid "8. Children's Privacy"
+msgstr ""
+
+#: templates/privacy_policy.html:28
+#, fuzzy
+#| msgid "Privacy Policy"
+msgid "9. Changes to Privacy Policy"
+msgstr "गोपनीयता नीति"
+
+#: templates/privacy_policy.html:29
+#, fuzzy
+#| msgid "Contact Support"
+msgid "10. Contact Us"
+msgstr "सहायता से संपर्क करें"
+
+#: templates/privacy_policy.html:36
+msgid ""
+"\n"
+"                            We collect information you provide directly to "
+"us when you create an account, input financial data, or interact with our "
+"platform.\n"
+"                            "
+msgstr ""
+
+#: templates/privacy_policy.html:42
+msgid "Account Information"
+msgstr ""
+
+#: templates/privacy_policy.html:43
+msgid ""
+"\n"
+"                                Your username, email address, and password "
+"(encrypted).\n"
+"                                "
+msgstr ""
+
+#: templates/privacy_policy.html:48
+msgid "Financial Data"
+msgstr ""
+
+#: templates/privacy_policy.html:49
+msgid ""
+"\n"
+"                                Incomes, expenses, categories, budgets, and "
+"subscriptions you manually enter.\n"
+"                                "
+msgstr ""
+
+#: templates/privacy_policy.html:54
+#, fuzzy
+#| msgid "Save Preference"
+msgid "Profile Preferences"
+msgstr "प्राथमिकता सहेजें"
+
+#: templates/privacy_policy.html:55
+msgid ""
+"\n"
+"                                Currency settings, theme preferences (light/"
+"dark mode).\n"
+"                                "
+msgstr ""
+
+#: templates/privacy_policy.html:60
+#, fuzzy
+#| msgid "Upload Data"
+msgid "Usage Data"
+msgstr "डेटा अपलोड करें"
+
+#: templates/privacy_policy.html:61
+msgid ""
+"\n"
+"                                Device information, IP address, browser "
+"type, and interaction logs to help us improve the service.\n"
+"                                "
+msgstr ""
+
+#: templates/privacy_policy.html:71
+msgid ""
+"\n"
+"                            We use the information we collect to provide, "
+"maintain, and improve our services.\n"
+"                            "
+msgstr ""
+
+#: templates/privacy_policy.html:77
+msgid ""
+"\n"
+"                                Provide the TrackMyRupee dashboard, expense "
+"tracking, and financial reports.\n"
+"                                "
+msgstr ""
+
+#: templates/privacy_policy.html:82
+msgid ""
+"\n"
+"                                Process and visualize your financial data.\n"
+"                                "
+msgstr ""
+
+#: templates/privacy_policy.html:87
+msgid ""
+"\n"
+"                                Send important notifications, such as "
+"password resets or account alerts.\n"
+"                                "
+msgstr ""
+
+#: templates/privacy_policy.html:92
+msgid ""
+"\n"
+"                                Analyze usage patterns to fix bugs and "
+"improve performance.\n"
+"                                "
+msgstr ""
+
+#: templates/privacy_policy.html:97
+msgid ""
+"\n"
+"                                Prevent abuse and enforce our Terms of "
+"Service.\n"
+"                                "
+msgstr ""
+
+#: templates/privacy_policy.html:105
+msgid ""
+"\n"
+"                            We use cookies and similar tracking technologies "
+"to track the activity on our Service and hold certain information.\n"
+"                            "
+msgstr ""
+
+#: templates/privacy_policy.html:109
+#, fuzzy
+#| msgid "Analytics"
+msgid "Google Analytics"
+msgstr "विश्लेषण"
+
+#: templates/privacy_policy.html:111
+msgid ""
+"\n"
+"                            We use Google Analytics to monitor and analyze "
+"the use of our Service. Google Analytics involves the use of cookies to "
+"collect information such as your IP address, browser type, and pages "
+"visited. This helps us understand user behavior and improve our platform.\n"
+"                            "
+msgstr ""
+
+#: templates/privacy_policy.html:116
+msgid ""
+"\n"
+"                            You can opt-out of having your activity "
+"available to Google Analytics by installing the Google Analytics Opt-out "
+"Browser Add-on.\n"
+"                            "
+msgstr ""
+
+#: templates/privacy_policy.html:126
+msgid "We do not sell your personal information."
+msgstr ""
+
+#: templates/privacy_policy.html:127
+msgid ""
+"\n"
+"                            We only share data in limited circumstances:\n"
+"                            "
+msgstr ""
+
+#: templates/privacy_policy.html:133
+msgid "Service Providers"
+msgstr ""
+
+#: templates/privacy_policy.html:134
+msgid ""
+"\n"
+"                                With trusted third-party vendors (e.g., "
+"hosting providers, email services, analytics) who assist our operations.\n"
+"                                "
+msgstr ""
+
+#: templates/privacy_policy.html:139
+msgid "Legal Compliance"
+msgstr ""
+
+#: templates/privacy_policy.html:140
+msgid ""
+"\n"
+"                                If required by law, regulation, or legal "
+"process to protect the rights, property, or safety of TrackMyRupee or "
+"others.\n"
+"                                "
+msgstr ""
+
+#: templates/privacy_policy.html:145
+msgid "Business Transfers"
+msgstr ""
+
+#: templates/privacy_policy.html:146
+msgid ""
+"\n"
+"                                In connection with, or during negotiations "
+"of, any merger, sale of company assets, financing, or acquisition of all or "
+"a portion of our business.\n"
+"                                "
+msgstr ""
+
+#: templates/privacy_policy.html:156
+msgid ""
+"\n"
+"                            We implement appropriate technical and "
+"organizational measures to protect your information.\n"
+"                            "
+msgstr ""
+
+#: templates/privacy_policy.html:162
+msgid ""
+"\n"
+"                                Encryption of sensitive data (like "
+"passwords) at rest.\n"
+"                                "
+msgstr ""
+
+#: templates/privacy_policy.html:167
+msgid ""
+"\n"
+"                                Secure HTTPS (TLS/SSL) for all data in "
+"transit.\n"
+"                                "
+msgstr ""
+
+#: templates/privacy_policy.html:172
+msgid ""
+"\n"
+"                                Regular backups and security assessments.\n"
+"                                "
+msgstr ""
+
+#: templates/privacy_policy.html:177
+msgid ""
+"\n"
+"                                Access controls to limit internal access to "
+"personal data.\n"
+"                                "
+msgstr ""
+
+#: templates/privacy_policy.html:187
+msgid ""
+"\n"
+"                            You have control over your personal "
+"information.\n"
+"                            "
+msgstr ""
+
+#: templates/privacy_policy.html:193
+msgid "Access & Correction"
+msgstr ""
+
+#: templates/privacy_policy.html:194
+msgid ""
+"\n"
+"                                You can view and edit your profile and "
+"financial data directly within the application.\n"
+"                                "
+msgstr ""
+
+#: templates/privacy_policy.html:199
+#, fuzzy
+#| msgid "Export"
+msgid "Data Export"
+msgstr "निर्यात करें"
+
+#: templates/privacy_policy.html:200
+msgid ""
+"\n"
+"                                You can export your data (e.g., to CSV/"
+"Excel) at any time.\n"
+"                                "
+msgstr ""
+
+#: templates/privacy_policy.html:205
+#, fuzzy
+#| msgid "Account"
+msgid "Account Deletion"
+msgstr "खाता"
+
+#: templates/privacy_policy.html:206
+msgid ""
+"\n"
+"                                You can request to delete your account and "
+"all associated data permanently.\n"
+"                                "
+msgstr ""
+
+#: templates/privacy_policy.html:211
+msgid "Communications"
+msgstr ""
+
+#: templates/privacy_policy.html:212
+msgid ""
+"\n"
+"                                You can manage your email preferences or "
+"unsubscribe from non-essential emails.\n"
+"                                "
+msgstr ""
+
+#: templates/privacy_policy.html:222
+msgid ""
+"\n"
+"                            We retain your information only as long as "
+"necessary to provide our services and comply with legal obligations.\n"
+"                            "
+msgstr ""
+
+#: templates/privacy_policy.html:228
+#, fuzzy
+#| msgid "Delete Account"
+msgid "Active Accounts"
+msgstr "खाता हटाएं"
+
+#: templates/privacy_policy.html:229
+msgid ""
+"\n"
+"                                Data is retained while your account remains "
+"active.\n"
+"                                "
+msgstr ""
+
+#: templates/privacy_policy.html:234
+#, fuzzy
+#| msgid "Delete Account"
+msgid "Deleted Accounts"
+msgstr "खाता हटाएं"
+
+#: templates/privacy_policy.html:235
+msgid ""
+"\n"
+"                                If you delete your account, your personal "
+"data is removed from our live databases immediately and from backups within "
+"30-90 days.\n"
+"                                "
+msgstr ""
+
+#: templates/privacy_policy.html:245
+msgid ""
+"\n"
+"                            TrackMyRupee is not intended for children under "
+"13. We do not knowingly collect information from children. \n"
+"                            If we learn we have collected personal "
+"information from a child under 13, we will delete it.\n"
+"                            "
+msgstr ""
+
+#: templates/privacy_policy.html:253
+#, fuzzy
+#| msgid "Privacy Policy"
+msgid "8. Changes to Privacy Policy"
+msgstr "गोपनीयता नीति"
+
+#: templates/privacy_policy.html:255
+msgid ""
+"\n"
+"                            We may update this privacy policy from time to "
+"time. We will notify you of significant changes by posting the new policy on "
+"this page \n"
+"                            or sending you an email. Your continued use of "
+"the Service constitutes acceptance of the changes.\n"
+"                            "
+msgstr ""
+
+#: templates/privacy_policy.html:263
+#, fuzzy
+#| msgid "Contact Support"
+msgid "9. Contact Us"
+msgstr "सहायता से संपर्क करें"
+
+#: templates/privacy_policy.html:265
+msgid ""
+"\n"
+"                            If you have questions about this privacy policy "
+"or our practices, please contact us at:\n"
+"                            "
+msgstr ""
+
+#: templates/refund_policy.html:8
+#, fuzzy
+#| msgid "Refund & Cancellation"
+msgid "Refund and Cancellation Policy"
+msgstr "धनवापसी और रद्दीकरण"
+
+#: templates/refund_policy.html:9
+msgid "Last updated: January 24, 2026"
+msgstr ""
+
+#: templates/refund_policy.html:12
+msgid ""
+"\n"
+"                At TrackMyRupee, we strive to ensure your satisfaction with "
+"our services. This policy outlines the terms for cancellations and refunds.\n"
+"                "
+msgstr ""
+
+#: templates/refund_policy.html:20 templates/refund_policy.html:28
+#, fuzzy
+#| msgid "Refund & Cancellation"
+msgid "1. Cancellation Policy"
+msgstr "धनवापसी और रद्दीकरण"
+
+#: templates/refund_policy.html:21 templates/refund_policy.html:53
+msgid "2. Refund Policy"
+msgstr ""
+
+#: templates/refund_policy.html:22 templates/refund_policy.html:82
+msgid "3. Refund Processing"
+msgstr ""
+
+#: templates/refund_policy.html:23 templates/refund_policy.html:99
+#, fuzzy
+#| msgid "Contact Support"
+msgid "4. Contact Us"
+msgstr "सहायता से संपर्क करें"
+
+#: templates/refund_policy.html:29
+msgid "You are free to cancel your subscription at any time."
+msgstr ""
+
+#: templates/refund_policy.html:32
+#, fuzzy
+#| msgid "Cancel"
+msgid "How to Cancel"
+msgstr "रद्द करें"
+
+#: templates/refund_policy.html:33
+msgid ""
+"\n"
+"                        You can cancel your subscription directly from your "
+"account settings page or by contacting our support team.\n"
+"                        "
+msgstr ""
+
+#: templates/refund_policy.html:38
+#, fuzzy
+#| msgid "Refund & Cancellation"
+msgid "Effect of Cancellation"
+msgstr "धनवापसी और रद्दीकरण"
+
+#: templates/refund_policy.html:39
+msgid ""
+"\n"
+"                        Upon cancellation, your subscription will remain "
+"active until the end of the current billing cycle. You will not be charged "
+"for the next cycle.\n"
+"                        "
+msgstr ""
+
+#: templates/refund_policy.html:44
+msgid "Data Retention"
+msgstr ""
+
+#: templates/refund_policy.html:45
+msgid ""
+"\n"
+"                        After cancellation, your account will revert to the "
+"Free plan (if applicable) or remain accessible as per our data retention "
+"policy. You may request full account deletion at any time.\n"
+"                        "
+msgstr ""
+
+#: templates/refund_policy.html:55
+msgid ""
+"\n"
+"                    We offer a transparent refund policy to ensure you feel "
+"confident in trying our premium features.\n"
+"                    "
+msgstr ""
+
+#: templates/refund_policy.html:61
+msgid "14-Day Money-Back Guarantee"
+msgstr ""
+
+#: templates/refund_policy.html:62
+msgid ""
+"\n"
+"                        If you are not satisfied with your premium "
+"subscription (Plus or Pro), you may request a full refund within 14 days of "
+"your initial purchase.\n"
+"                        "
+msgstr ""
+
+#: templates/refund_policy.html:67
+msgid "Eligibility"
+msgstr ""
+
+#: templates/refund_policy.html:68
+msgid ""
+"\n"
+"                        To be eligible for a refund, you must submit your "
+"request within the 14-day window. Refunds are generally not provided for "
+"partial months after the initial 14-day period.\n"
+"                        "
+msgstr ""
+
+#: templates/refund_policy.html:73
+#, fuzzy
+#| msgid "Actions"
+msgid "Exceptions"
+msgstr "कार्रवाई"
+
+#: templates/refund_policy.html:74
+msgid ""
+"\n"
+"                        We reserve the right to deny refunds in cases of "
+"suspected abuse of the policy or violation of our Terms of Service.\n"
+"                        "
+msgstr ""
+
+#: templates/refund_policy.html:83
+msgid "Once a refund is approved:"
+msgstr ""
+
+#: templates/refund_policy.html:86
+msgid ""
+"\n"
+"                        The refund amount will be credited back to your "
+"original payment method.\n"
+"                        "
+msgstr ""
+
+#: templates/refund_policy.html:91
+msgid ""
+"\n"
+"                        Processing times typically range from 5 to 10 "
+"business days, depending on your bank or payment provider.\n"
+"                        "
+msgstr ""
+
+#: templates/refund_policy.html:101
+msgid ""
+"\n"
+"                    If you wish to request a refund or have any questions "
+"about this policy, please contact our support team at:\n"
+"                    "
+msgstr ""
+
+#: templates/socialaccount/authentication_error.html:9
+msgid "Social Network Login Failure"
+msgstr ""
+
+#: templates/socialaccount/authentication_error.html:11
+msgid ""
+"An error occurred while attempting to login via your social network account."
+msgstr ""
+
+#: templates/socialaccount/connections.html:6
+msgid "Account Connections"
+msgstr ""
+
+#: templates/socialaccount/connections.html:7
+msgid "Manage your linked social accounts"
+msgstr ""
+
+#: templates/socialaccount/connections.html:11
+msgid ""
+"You can sign in to your account using any of the following third party "
+"accounts:"
+msgstr ""
+
+#: templates/socialaccount/connections.html:32
+msgid "Remove Connection"
+msgstr ""
+
+#: templates/socialaccount/connections.html:37
+msgid "You currently have no social accounts connected."
+msgstr ""
+
+#: templates/socialaccount/connections.html:42
+msgid "Add a 3rd Party Account"
+msgstr ""
+
+#: templates/socialaccount/login.html:9
+msgid "Sign In Via Google"
+msgstr ""
+
+#: templates/socialaccount/login.html:11
+#, python-format
+msgid ""
+"You are about to sign in using a third-party account from %(provider_name)s."
+msgstr ""
+
+#: templates/socialaccount/login.html:19
+msgid "Continue"
+msgstr ""
+
+#: templates/socialaccount/signup.html:11
+#, python-format
+msgid ""
+"You are about to use your %(provider_name)s account to login to "
+"%(site_name)s. As a final step, please complete the following form:"
+msgstr ""
+
+#: templates/socialaccount/signup.html:48
+msgid "Complete Sign Up"
+msgstr ""
+
+#: templates/terms_of_service.html:9
+msgid "Last updated: January 2026"
+msgstr ""
+
+#: templates/terms_of_service.html:11
+msgid "1. Acceptance of Terms"
+msgstr ""
+
+#: templates/terms_of_service.html:13
+msgid ""
+"\n"
+"                        By accessing or using TrackMyRupee, you agree to be "
+"bound by these Terms of Service. If you disagree with any part of the "
+"terms, \n"
+"                        you may not access the service.\n"
+"                        "
+msgstr ""
+
+#: templates/terms_of_service.html:19
+#, fuzzy
+#| msgid "Terms of Service"
+msgid "2. Use of Service"
+msgstr "सेवा की शर्तें"
+
+#: templates/terms_of_service.html:21
+msgid ""
+"\n"
+"                        You are responsible for maintaining the "
+"confidentiality of your account and password. You agree to accept "
+"responsibility for all \n"
+"                        activities that occur under your account.\n"
+"                        "
+msgstr ""
+
+#: templates/terms_of_service.html:27
+msgid "3. User Content"
+msgstr ""
+
+#: templates/terms_of_service.html:29
+msgid ""
+"\n"
+"                        You retain ownership of the data you enter into the "
+"application. We claim no intellectual property rights over the material \n"
+"                        you provide to the service.\n"
+"                        "
+msgstr ""
+
+#: templates/terms_of_service.html:35
+msgid "4. Limitation of Liability and Disclaimer"
+msgstr ""
+
+#: templates/terms_of_service.html:37
+msgid ""
+"\n"
+"                        The service is provided on an \"AS IS\" and \"AS "
+"AVAILABLE\" basis. TrackMyRupee makes no seeking to warranties regarding the "
+"reliability, accuracy, or availability of the service. \n"
+"                        "
+msgstr ""
+
+#: templates/terms_of_service.html:42
+msgid ""
+"\n"
+"                            We are not liable for any data loss, service "
+"interruptions, or financial damages resulting from the use or inability to "
+"use our application.\n"
+"                            "
+msgstr ""
+
+#: templates/terms_of_service.html:46
+msgid ""
+"\n"
+"                        In no event shall TrackMyRupee be liable for any "
+"indirect, incidental, special, consequential, or punitive damages, including "
+"without limitation, loss of profits, data, use, goodwill, or other "
+"intangible losses.\n"
+"                        "
+msgstr ""
+
+#: templates/terms_of_service.html:51
+msgid "5. Changes to Terms"
+msgstr ""
+
+#: templates/terms_of_service.html:53
+msgid ""
+"\n"
+"                        We reserve the right to modify or replace these "
+"Terms at any time. We will try to provide at least 30 days' notice prior to "
+"any \n"
+"                        new terms taking effect.\n"
+"                        "
+msgstr ""
+
+#: templates/upload.html:7
+msgid "Upload Expenses"
+msgstr "खर्च अपलोड करें"
+
+#: templates/upload.html:11
+msgid ""
+"\n"
+"            Upload your Excel file to update your expense records. Each "
+"sheet corresponds to a month.\n"
+"            "
+msgstr ""
+"\n"
+"अपने खर्च रेकॉर्ड अपडेट करने के लिए अपनी एक्सेल फाइल अपलोड करें। प्रत्येक शीट एक महीने से मेल "
+"खाती है।\n"
+"            "
+
+#: templates/upload.html:18
+msgid "Required Format"
+msgstr "आवश्यक फॉर्मेट"
+
+#: templates/upload.html:20
+msgid ""
+"\n"
+"                Your Excel file must contain the following columns (headers "
+"are Case-Sensitive):\n"
+"                "
+msgstr ""
+"\n"
+"आपकी एक्सेल फाइल में निम्नलिखित कॉलम होने चाहिए (हेडर केस-सेंसिटिव हैं):\n"
+"                "
+
+#: templates/upload.html:26
+msgid "Numeric value"
+msgstr "संख्यात्मक मान"
+
+#: templates/upload.html:27
+msgid "Text details"
+msgstr "पाठ विवरण"
+
+#: templates/upload.html:28
+msgid "Food"
+msgstr "भोजन"
+
+#: templates/upload.html:28
+msgid "Travel"
+msgstr "यात्रा"
+
+#: templates/upload.html:31
+msgid "Note"
+msgstr "नोट"
+
+#: templates/upload.html:32
+msgid ""
+"\n"
+"                The \"Select Year\" below will override the year in your "
+"excel dates to ensure consistency.\n"
+"                "
+msgstr ""
+"\n"
+"नीचे \"वर्ष चुनें\" आपकी एक्सेल तारीखों में वर्ष को ओवरराइड करेगा संगति सुनिश्चित करने के "
+"लिए।\n"
+"                "
+
+#: templates/upload.html:42
+msgid "Select Year"
+msgstr "वर्ष चुनें"
+
+#: templates/upload.html:52
+msgid "Excel File (.xlsx, .xls)"
+msgstr "एक्सेल फाइल (.xlsx, .xls)"
+
+#: templates/upload.html:58
+msgid "Upload & Process"
+msgstr "अपलोड और प्रोसेस करें"
+
+#: templates/upload.html:63
+msgid "Supported formats: .xlsx, .xls"
+msgstr "समर्थित फॉर्मेट: .xlsx, .xls"
+
+#, fuzzy
+#~| msgid "Sun"
+#~ msgid "and"
+#~ msgstr "रवि"
+
+#, fuzzy
+#~| msgid "December"
+#~ msgid "Decimal number"
+#~ msgstr "दिसंबर"
+
+#, fuzzy
+#~| msgid "Description"
+#~ msgid "Duration"
+#~ msgstr "विवरण"
+
+#, fuzzy
+#~| msgid "All Time"
+#~ msgid "Time"
+#~ msgstr "पूरा समय"
+
+#, fuzzy
+#~| msgid "Current Plan"
+#~ msgid "Currently"
+#~ msgstr "वर्तमान योजना"
+
+#, fuzzy
+#~| msgid "Save Changes"
+#~ msgid "Change"
+#~ msgstr "परिवर्तन सहेजें"
+
+#~ msgid "January"
+#~ msgstr "जनवरी"
+
+#~ msgid "February"
+#~ msgstr "फरवरी"
+
+#, fuzzy
+#~| msgid "Search"
+#~ msgid "March"
+#~ msgstr "खोजें"
+
+#~ msgid "April"
+#~ msgstr "अप्रैल"
+
+#, fuzzy
+#~| msgid "Company"
+#~ msgid "May"
+#~ msgstr "कंपनी"
+
+#~ msgid "June"
+#~ msgstr "जून"
+
+#~ msgid "July"
+#~ msgstr "जुलाई"
+
+#~ msgid "August"
+#~ msgstr "अगस्त"
+
+#~ msgid "September"
+#~ msgstr "सितंबर"
+
+#~ msgid "October"
+#~ msgstr "अक्टूबर"
+
+#~ msgid "November"
+#~ msgstr "नवंबर"
+
+#~ msgid "December"
+#~ msgstr "दिसंबर"
+
+#, fuzzy
+#~| msgid "Sun"
+#~ msgid "jan"
+#~ msgstr "रवि"
+
+#, fuzzy
+#~| msgid "Company"
+#~ msgid "mar"
+#~ msgstr "कंपनी"
+
+#, fuzzy
+#~| msgid "Company"
+#~ msgid "apr"
+#~ msgstr "कंपनी"
+
+#, fuzzy
+#~| msgid "Company"
+#~ msgid "may"
+#~ msgstr "कंपनी"
+
+#, fuzzy
+#~| msgid "Sun"
+#~ msgid "jun"
+#~ msgstr "रवि"
+
+#, fuzzy
+#~| msgid "Sun"
+#~ msgid "jul"
+#~ msgstr "रवि"
+
+#, fuzzy
+#~| msgid "Product"
+#~ msgid "oct"
+#~ msgstr "उत्पाद"
+
+#, fuzzy
+#~| msgid "Search"
+#~ msgctxt "abbrev. month"
+#~ msgid "March"
+#~ msgstr "खोजें"
+
+#~ msgctxt "abbrev. month"
+#~ msgid "April"
+#~ msgstr "अप्रैल"
+
+#, fuzzy
+#~| msgid "Company"
+#~ msgctxt "abbrev. month"
+#~ msgid "May"
+#~ msgstr "कंपनी"
+
+#~ msgctxt "abbrev. month"
+#~ msgid "June"
+#~ msgstr "जून"
+
+#~ msgctxt "abbrev. month"
+#~ msgid "July"
+#~ msgstr "जुलाई"
+
+#~ msgctxt "alt. month"
+#~ msgid "January"
+#~ msgstr "जनवरी"
+
+#~ msgctxt "alt. month"
+#~ msgid "February"
+#~ msgstr "फरवरी"
+
+#, fuzzy
+#~| msgid "Search"
+#~ msgctxt "alt. month"
+#~ msgid "March"
+#~ msgstr "खोजें"
+
+#~ msgctxt "alt. month"
+#~ msgid "April"
+#~ msgstr "अप्रैल"
+
+#, fuzzy
+#~| msgid "Company"
+#~ msgctxt "alt. month"
+#~ msgid "May"
+#~ msgstr "कंपनी"
+
+#~ msgctxt "alt. month"
+#~ msgid "June"
+#~ msgstr "जून"
+
+#~ msgctxt "alt. month"
+#~ msgid "July"
+#~ msgstr "जुलाई"
+
+#~ msgctxt "alt. month"
+#~ msgid "August"
+#~ msgstr "अगस्त"
+
+#~ msgctxt "alt. month"
+#~ msgid "September"
+#~ msgstr "सितंबर"
+
+#~ msgctxt "alt. month"
+#~ msgid "October"
+#~ msgstr "अक्टूबर"
+
+#~ msgctxt "alt. month"
+#~ msgid "November"
+#~ msgstr "नवंबर"
+
+#~ msgctxt "alt. month"
+#~ msgid "December"
+#~ msgstr "दिसंबर"

@@ -17,12 +17,13 @@ from django.db.models import Sum, Q
 from django.http import JsonResponse, HttpResponse
 import json
 from django.utils import timezone
+from django.utils.translation import gettext as _
 from datetime import datetime, date, timedelta
 import calendar
 
 from .models import Expense, Category, Income, RecurringTransaction, UserProfile, SubscriptionPlan, Notification
 from finance_tracker.ai_utils import predict_category_ai
-from .forms import ExpenseForm, IncomeForm, RecurringTransactionForm, ProfileUpdateForm, CustomSignupForm, ContactForm
+from .forms import ExpenseForm, IncomeForm, RecurringTransactionForm, ProfileUpdateForm, CustomSignupForm, ContactForm, LanguageUpdateForm
 from allauth.socialaccount.models import SocialAccount
 import openpyxl
 import requests
@@ -258,7 +259,7 @@ def home_view(request):
         selected_years = []
         selected_months = []
         
-        trend_title = "Expenses Trend (Custom Range)"
+        trend_title = _("Expenses Trend (Custom Range)")
     else:
         # Default to current month/year ONLY on initial land (no params)
         if not request.GET and not (selected_years or selected_months):
@@ -271,9 +272,9 @@ def home_view(request):
             expenses = expenses.filter(date__month__in=selected_months)
             
         if len(selected_months) == 1 and len(selected_years) == 1:
-            trend_title = f"Daily Expenses for {selected_months[0]}/{selected_years[0]}"
+            trend_title = _("Daily Expenses for %(month)s/%(year)s") % {'month': selected_months[0], 'year': selected_years[0]}
         else:
-            trend_title = "Monthly Expenses Trend"
+            trend_title = _("Monthly Expenses Trend")
 
     if selected_categories:
         expenses = expenses.filter(category__in=selected_categories)
@@ -522,7 +523,7 @@ def home_view(request):
     if len(selected_months) == 1:
         try:
             m_idx = int(selected_months[0])
-            display_month = calendar.month_name[m_idx]
+            display_month = _(calendar.month_name[m_idx])
         except (ValueError, IndexError):
             pass
 
@@ -1973,6 +1974,27 @@ class CurrencyUpdateView(LoginRequiredMixin, UpdateView):
     def form_valid(self, form):
         messages.success(self.request, 'Currency preference updated successfully.')
         return super().form_valid(form)
+
+class LanguageUpdateView(LoginRequiredMixin, UpdateView):
+    model = UserProfile
+    form_class = LanguageUpdateForm
+    template_name = 'expenses/language_settings.html'
+    success_url = reverse_lazy('language-settings')
+
+    def get_object(self, queryset=None):
+        profile, created = UserProfile.objects.get_or_create(user=self.request.user)
+        return profile
+
+    def form_valid(self, form):
+        from django.utils import translation
+        from django.conf import settings
+        lang = form.cleaned_data.get('language')
+        translation.activate(lang)
+        messages.success(self.request, 'Language preference updated successfully.')
+        
+        response = super().form_valid(form)
+        response.set_cookie(settings.LANGUAGE_COOKIE_NAME, lang)
+        return response
 
 class ProfileUpdateView(LoginRequiredMixin, UpdateView):
     model = User

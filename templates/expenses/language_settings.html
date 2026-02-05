@@ -4,18 +4,18 @@
 {% block settings_content %}
 <div class="fade-in">
     <div>
-        <h2 class="h4 mb-0 fw-bold">{% trans "Default Currency" %}</h2>
+        <h2 class="h4 mb-0 fw-bold">{% trans "Language Preference" %}</h2>
     </div>
     <div>
-        <p class="text-muted small mb-4">{% trans "Select your preferred currency symbol to be used across the application." %}</p>
+        <p class="text-muted small mb-4">{% trans "Select your preferred language to be used across the application." %}</p>
         <form method="post" class="needs-validation">
             {% csrf_token %}
             <div class="mb-4">
-                <label for="{{ form.currency.id_for_label }}" class="form-label fw-semibold">{% trans "Select Currency Symbol" %}</label>
-                {{ form.currency }}
-                {% if form.currency.errors %}
+                <label for="{{ form.language.id_for_label }}" class="form-label fw-semibold">{% trans "Select Language" %}</label>
+                {{ form.language }}
+                {% if form.language.errors %}
                     <div class="invalid-feedback d-block">
-                        {{ form.currency.errors }}
+                        {{ form.language.errors }}
                     </div>
                 {% endif %}
             </div>
@@ -24,7 +24,7 @@
                 <div class="d-flex">
                     <i class="bi bi-info-circle-fill me-2 fs-5"></i>
                     <div>
-                        <strong>{% trans "How this works:" %}</strong> {% trans "This symbol will be displayed next to all amount values (Income, Expenses, Budgets, and Charts)." %}
+                        <strong>{% trans "How this works:" %}</strong> {% trans "Updating this setting will change the language of the menus, labels, and messages in TrackMyRupee." %}
                     </div>
                 </div>
             </div>

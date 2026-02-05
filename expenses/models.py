@@ -170,8 +170,15 @@ class UserProfile(models.Model):
         ('₩', 'South Korean Won (₩)'),
     ]
 
+    LANGUAGE_CHOICES = [
+        ('en', 'English'),
+        ('hi', 'Hindi'),
+        ('mr', 'Marathi'),
+    ]
+
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
     currency = models.CharField(max_length=5, choices=CURRENCY_CHOICES, default='₹')
+    language = models.CharField(max_length=5, choices=LANGUAGE_CHOICES, default='en')
     has_seen_tutorial = models.BooleanField(default=False)
 
     # Subscription Fields

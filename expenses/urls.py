@@ -40,6 +40,7 @@ urlpatterns = [
     path('recurring/<int:pk>/edit/', views.RecurringTransactionUpdateView.as_view(), name='recurring-edit'),
     path('recurring/<int:pk>/delete/', views.RecurringTransactionDeleteView.as_view(), name='recurring-delete'),
     path('settings/currency/', views.CurrencyUpdateView.as_view(), name='currency-settings'),
+    path('settings/language/', views.LanguageUpdateView.as_view(), name='language-settings'),
     path('settings/profile/', views.ProfileUpdateView.as_view(), name='profile-settings'),
     path('settings/', views.SettingsHomeView.as_view(), name='settings-home'), # Settings Home
     path('account/delete/', views.AccountDeleteView.as_view(), name='account-delete'),

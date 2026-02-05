@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load i18n %}
 
 {% block content %}
 <style>
@@ -34,15 +35,15 @@
     <!-- Header Summary Section -->
         <div class="d-flex flex-column flex-sm-row justify-content-between align-items-stretch align-items-sm-center mb-3">
             <div class="mb-3 mb-sm-0">
-                <h2 class="h3 fw-bold mb-0">Subscriptions</h2>
-                <p class="text-muted small mb-0 mt-1">Manage your recurring payments and never miss a due date again.</p>
+                <h2 class="h3 fw-bold mb-0">{% trans "Subscriptions" %}</h2>
+                <p class="text-muted small mb-0 mt-1">{% trans "Manage your recurring payments and never miss a due date again." %}</p>
             </div>
             <div class="d-flex gap-2 justify-content-end">
                 <a href="{% url 'recurring-manage' %}" class="btn btn-sm btn-outline-secondary d-flex align-items-center shadow-sm flex-grow-1 flex-sm-grow-0 justify-content-center">
-                    <i class="bi bi-table me-2"></i> Manage
+                    <i class="bi bi-table me-2"></i> {% trans "Manage" %}
                 </a>
                 <a href="{% url 'recurring-create' %}" class="btn btn-sm btn-primary d-flex align-items-center shadow-sm flex-grow-1 flex-sm-grow-0 justify-content-center">
-                    <i class="bi bi-plus-lg me-2"></i> <span>Add <span class="d-none d-md-inline">Subscription</span></span>
+                    <i class="bi bi-plus-lg me-2"></i> <span>{% trans "Add" %} <span class="d-none d-md-inline">{% trans "Subscription" %}</span></span>
                 </a>
                 <button class="btn btn-sm btn-outline-secondary d-md-none shadow-sm" type="button" data-bs-toggle="collapse" data-bs-target="#subscriptionFilters" aria-expanded="false" aria-controls="subscriptionFilters">
                     <i class="bi bi-funnel"></i>
@@ -56,7 +57,7 @@
             <div class="row g-2 align-items-end">
                 <!-- Category -->
                 <div class="col-12 col-md-auto" style="min-width: 200px;">
-                    <label for="category-select" class="form-label small text-muted">Category</label>
+                    <label for="category-select" class="form-label small text-muted">{% trans "Category" %}</label>
                     <select name="category" id="category-select" class="form-control django-multi-select" multiple placeholder="Categories...">
                         {% for cat in categories %}
                             <option value="{{ cat }}" {% if cat in selected_categories %}selected{% endif %}>
@@ -69,13 +70,13 @@
                 <!-- Buttons -->
                 <div class="col-6 col-md-auto">
                     <button type="submit" class="btn btn-primary btn-sm w-100 w-md-auto">
-                        <i class="bi bi-filter me-1"></i> Apply
+                        <i class="bi bi-filter me-1"></i> {% trans "Apply" %}
                     </button>
                 </div>
                 <!-- Reset -->
                 <div class="col-6 col-md-auto">
                     <a href="{% url 'recurring-list' %}" class="btn btn-outline-secondary btn-sm w-100 w-md-auto">
-                        <i class="bi bi-arrow-counterclockwise me-1"></i> Reset
+                        <i class="bi bi-arrow-counterclockwise me-1"></i> {% trans "Reset" %}
                     </a>
                 </div>
             </div>
@@ -87,19 +88,19 @@
                 <div class="row align-items-start align-items-md-center">
                     <div class="col-6 col-md-6 border-end border-secondary border-opacity-10">
                         <div class="d-flex flex-column">
-                            <span class="text-uppercase text-muted summary-text-muted fw-bold small mb-1">Total Monthly Cost</span>
-                            <span class="h2 mb-0 fw-bold summary-text-muted text-nowrap">{{ currency_symbol }}{{ total_monthly_cost|floatformat:0 }} <span class="fs-6 text-muted summary-text-muted fw-normal">/ mo</span></span>
+                            <span class="text-uppercase text-muted summary-text-muted fw-bold small mb-1">{% trans "Total Monthly Cost" %}</span>
+                            <span class="h2 mb-0 fw-bold summary-text-muted text-nowrap">{{ currency_symbol }}{{ total_monthly_cost|floatformat:0 }} <span class="fs-6 text-muted summary-text-muted fw-normal">/ {% trans "mo" %}</span></span>
                         </div>
                     </div>
                     <div class="col-6 col-md-6 ps-3 ps-md-4">
                         <div class="d-flex flex-column">
-                            <span class="text-uppercase text-muted summary-text-muted fw-bold small mb-1">Yearly Projection</span>
-                            <span class="h3 mb-0 fw-bold summary-text-muted text-nowrap">{{ currency_symbol }}{{ total_yearly_cost|floatformat:0 }} <span class="fs-6 text-muted summary-text-muted fw-normal">/ yr</span></span>
+                            <span class="text-uppercase text-muted summary-text-muted fw-bold small mb-1">{% trans "Yearly Projection" %}</span>
+                            <span class="h3 mb-0 fw-bold summary-text-muted text-nowrap">{{ currency_symbol }}{{ total_yearly_cost|floatformat:0 }} <span class="fs-6 text-muted summary-text-muted fw-normal">/ {% trans "yr" %}</span></span>
                         </div>
                         {% if renewals_count > 0 %}
                         <div class="mt-2 d-none d-md-block">
                             <span class="badge bg-danger-subtle text-danger rounded-pill px-3 py-2 border border-danger-subtle">
-                                <i class="bi bi-exclamation-circle-fill me-1"></i> {{ renewals_count }} renewals due soon
+                                <i class="bi bi-exclamation-circle-fill me-1"></i> {{ renewals_count }} {% trans "renewals due soon" %}
                             </span>
                         </div>
                         {% endif %}
@@ -107,7 +108,7 @@
                     {% if renewals_count > 0 %}
                     <div class="col-12 mt-3 text-center d-md-none">
                         <span class="badge bg-danger-subtle text-danger rounded-pill px-3 py-2 border border-danger-subtle d-inline-block">
-                            <i class="bi bi-exclamation-circle-fill me-1"></i> {{ renewals_count }} renewals due soon
+                            <i class="bi bi-exclamation-circle-fill me-1"></i> {{ renewals_count }} {% trans "renewals due soon" %}
                         </span>
                     </div>
                     {% endif %}
@@ -118,18 +119,18 @@
         <ul class="nav nav-pills mb-4 gap-2 flex-nowrap overflow-auto" id="subscriptionTabs" role="tablist" style="scrollbar-width: none; -ms-overflow-style: none;">
             <li class="nav-item" role="presentation">
                 <button class="nav-link active px-4 rounded-pill text-nowrap" id="all-tab" data-bs-toggle="tab" data-bs-target="#all" type="button" role="tab" aria-selected="true">
-                    All
+                    {% trans "All" %}
                     <span class="badge bg-white text-primary ms-2 rounded-pill opacity-75">{{ active_subs|length }}</span>
                 </button>
             </li>
             <li class="nav-item" role="presentation">
                 <button class="nav-link px-4 rounded-pill text-nowrap" id="renewing-tab" data-bs-toggle="tab" data-bs-target="#renewing" type="button" role="tab" aria-selected="false">
-                    Renewing Soon 
+                    {% trans "Renewing Soon" %} 
                     {% if renewals_count > 0 %}<span class="badge bg-danger ms-2 rounded-circle">{{ renewals_count }}</span>{% endif %}
                 </button>
             </li>
             <li class="nav-item" role="presentation">
-                <button class="nav-link px-4 rounded-pill text-nowrap" id="cancelled-tab" data-bs-toggle="tab" data-bs-target="#cancelled" type="button" role="tab" aria-selected="false">Cancelled</button>
+                <button class="nav-link px-4 rounded-pill text-nowrap" id="cancelled-tab" data-bs-toggle="tab" data-bs-target="#cancelled" type="button" role="tab" aria-selected="false">{% trans "Cancelled" %}</button>
             </li>
         </ul>
 
@@ -156,15 +157,15 @@
                                             <!-- Urgency Text/Pill -->
                                             {% if sub.annotated_days_until <= 3 and sub.transaction_type == 'EXPENSE' %}
                                                 <span class="badge bg-danger text-white rounded-pill shadow-sm">
-                                                    In {{ sub.annotated_days_until }} day{{ sub.annotated_days_until|pluralize }}
+                                                    {% blocktrans %}In {{ sub.annotated_days_until }} day{% endblocktrans %}
                                                 </span>
                                             {% elif sub.annotated_days_until <= 7 and sub.transaction_type == 'EXPENSE' %}
                                                 <span class="text-warning fw-bold">
-                                                    In {{ sub.annotated_days_until }} day{{ sub.annotated_days_until|pluralize }}
+                                                    {% blocktrans %}In {{ sub.annotated_days_until }} day{% endblocktrans %}
                                                 </span>
                                             {% else %}
                                                 <span class="text-muted">
-                                                    In {{ sub.annotated_days_until }} days
+                                                    {% blocktrans %}In {{ sub.annotated_days_until }} days{% endblocktrans %}
                                                 </span>
                                             {% endif %}
                                         </div>
@@ -178,14 +179,14 @@
                                             <i class="bi bi-three-dots-vertical fs-5"></i>
                                         </button>
                                         <ul class="dropdown-menu dropdown-menu-end border-0 shadow">
-                                            <li><a class="dropdown-item" href="{% url 'recurring-edit' sub.pk %}?next={{ request.path }}"><i class="bi bi-pencil me-2"></i>Edit</a></li>
+                                            <li><a class="dropdown-item" href="{% url 'recurring-edit' sub.pk %}?next={{ request.path }}"><i class="bi bi-pencil me-2"></i>{% trans "Edit" %}</a></li>
                                             <li><hr class="dropdown-divider"></li>
                                             <li>
                                                 <button class="dropdown-item text-danger delete-btn" type="button" 
                                                     data-bs-toggle="modal" data-bs-target="#deleteModal"
                                                     data-url="{% url 'recurring-delete' sub.pk %}"
-                                                    data-message="Are you sure you want to delete subscription '{{ sub.description|escapejs }}'? This will stop all future tracking for this item.">
-                                                    <i class="bi bi-trash me-2"></i>Delete
+                                                    data-message="{% trans 'Are you sure you want to delete subscription' %} '{{ sub.description|escapejs }}'? {% trans 'This will stop all future tracking for this item.' %}">
+                                                    <i class="bi bi-trash me-2"></i>{% trans "Delete" %}
                                                 </button>
                                             </li>
                                         </ul>
@@ -202,10 +203,10 @@
                                 <i class="bi bi-bell-slash fs-1"></i>
                             </div>
                         </div>
-                        <h4 class="fw-bold">No active subscriptions</h4>
-                        <p class="text-muted mb-4 col-md-6 mx-auto">Most people forget at least one renewal every year. Add yours now so we can remind you before you pay.</p>
+                        <h4 class="fw-bold">{% trans "No active subscriptions" %}</h4>
+                        <p class="text-muted mb-4 col-md-6 mx-auto">{% trans "Most people forget at least one renewal every year. Add yours now so we can remind you before you pay." %}</p>
                         <a href="{% url 'recurring-create' %}" class="btn btn-primary px-4 py-2 rounded-pill fw-medium">
-                            <i class="bi bi-plus-lg me-2"></i>Add your first subscription
+                            <i class="bi bi-plus-lg me-2"></i>{% trans "Add your first subscription" %}
                         </a>
                     </div>
                 {% endif %}
@@ -224,14 +225,14 @@
                                     <div>
                                         <h5 class="mb-1 fw-bold">{{ sub.description }}</h5>
                                         <div class="text-muted small">
-                                            <span class="badge bg-danger text-white me-2">Renewing This Month</span>
+                                            <span class="badge bg-danger text-white me-2">{% trans "Renewing This Month" %}</span>
                                             <span>{{ sub.get_frequency_display }}</span>
                                         </div>
                                     </div>
                                 </div>
                                 <div class="text-end">
                                     <h4 class="fw-bold mb-1">{{ currency_symbol }}{{ sub.amount|floatformat:0 }}</h4>
-                                     <a href="{% url 'recurring-edit' sub.pk %}?next={{ request.path }}" class="btn btn-sm btn-outline-secondary mt-1 rounded-pill">Manage</a>
+                                     <a href="{% url 'recurring-edit' sub.pk %}?next={{ request.path }}" class="btn btn-sm btn-outline-secondary mt-1 rounded-pill">{% trans "Manage" %}</a>
                                 </div>
                             </div>
                         {% endfor %}
@@ -239,7 +240,7 @@
                 {% else %}
                     <div class="text-center py-5">
                         <i class="bi bi-check-circle display-4 text-success mb-3 d-block"></i>
-                        <p class="text-muted">No renewals coming up this month!</p>
+                        <p class="text-muted">{% trans "No renewals coming up this month!" %}</p>
                     </div>
                 {% endif %}
             </div>
@@ -257,21 +258,21 @@
                                     <div>
                                         <h5 class="mb-1 fw-bold text-decoration-line-through text-muted">{{ sub.description }}</h5>
                                         <div class="text-muted small">
-                                            <span class="badge bg-secondary me-2">Cancelled</span>
+                                            <span class="badge bg-secondary me-2">{% trans "Cancelled" %}</span>
                                             <span>{{ sub.get_frequency_display }}</span>
                                         </div>
                                     </div>
                                 </div>
                                 <div class="text-end">
                                     <h5 class="fw-bold mb-1 text-muted">{{ currency_symbol }}{{ sub.amount|floatformat:0 }}</h5>
-                                    <a href="{% url 'recurring-edit' sub.pk %}?next={{ request.path }}" class="btn btn-sm btn-outline-primary mt-1">Reactivate</a>
+                                    <a href="{% url 'recurring-edit' sub.pk %}?next={{ request.path }}" class="btn btn-sm btn-outline-primary mt-1">{% trans "Reactivate" %}</a>
                                 </div>
                             </div>
                         {% endfor %}
                     </div>
                 {% else %}
                     <div class="text-center py-5">
-                        <p class="text-muted">No cancelled subscriptions.</p>
+                        <p class="text-muted">{% trans "No cancelled subscriptions." %}</p>
                     </div>
                 {% endif %}
             </div>

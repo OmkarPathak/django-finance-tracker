@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load i18n %}
 
 {% block content %}
 <div class="container d-flex flex-column justify-content-center align-items-center min-vh-100 text-center" style="min-height: 80vh;">
@@ -7,12 +8,14 @@
         <i class="bi bi-compass-fill text-danger" style="font-size: 5rem;"></i>
     </div>
     <h1 class="display-1 fw-bold mb-0">404</h1>
-    <h2 class="h3 fw-bold mb-3">Page Not Found</h2>
+    <h2 class="h3 fw-bold mb-3">{% trans "Page Not Found" %}</h2>
     <p class="lead text-muted mb-5 mx-auto" style="max-width: 500px;">
+        {% blocktrans %}
         We couldn't find the page you're looking for. It might have been moved, deleted, or never existed in the first place.
+        {% endblocktrans %}
     </p>
     <a href="{% url 'home' %}" class="btn btn-primary btn-lg rounded-pill px-5 shadow-sm">
-        <i class="bi bi-house-door-fill me-2"></i> Take Me Home
+        <i class="bi bi-house-door-fill me-2"></i> {% trans "Take Me Home" %}
     </a>
 </div>
 {% endblock %}

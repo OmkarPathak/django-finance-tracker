@@ -1,11 +1,12 @@
 {% extends 'expenses/settings_base.html' %}
+{% load i18n %}
 
 {% block settings_content %}
 <div class="fade-in">
     <!-- Header -->
     <div class="py-3 mb-4">
         <div class="d-flex justify-content-between align-items-center">
-            <h2 class="h4 mb-0 fw-bold">Budget</h2>
+            <h2 class="h4 mb-0 fw-bold">{% trans "Budget" %}</h2>
             <div class="d-flex gap-2">
                 <form method="get" class="d-flex gap-2 align-items-center">
                     <select name="month" class="form-select form-select-sm" onchange="this.form.submit()">
@@ -25,7 +26,7 @@
                 </form>
             </div>
         </div>
-        <p class="text-muted small mb-0 mt-1">"A budget is telling your money where to go, instead of wondering where it went."</p>
+        <p class="text-muted small mb-0 mt-1">{% trans "A budget is telling your money where to go, instead of wondering where it went." %}</p>
     </div>
 
     <div>
@@ -35,11 +36,11 @@
                 <div class="card-body">
                     <div class="row align-items-center">
                         <div class="col-md-4">
-                            <h4 class="h6 text-muted text-uppercase fw-bold mb-1">Total Budget Goal</h4>
+                            <h4 class="h6 text-muted text-uppercase fw-bold mb-1">{% trans "Total Budget Goal" %}</h4>
                             <div class="d-flex align-items-center mb-0">
                                 <p class="h3 fw-bold mb-0">{{ currency_symbol }}{{ total_spent|floatformat:2 }}</p>
                                 {% if spent_mom_pct is not None %}
-                                    <span class="badge rounded-pill {% if spent_mom_pct > 0 %}bg-danger{% else %}bg-success{% endif %} ms-2" style="font-size: 0.8rem;" title="vs last month">
+                                    <span class="badge rounded-pill {% if spent_mom_pct > 0 %}bg-danger{% else %}bg-success{% endif %} ms-2" style="font-size: 0.8rem;" title="{% trans 'vs last month' %}">
                                         <i class="bi bi-arrow-{% if spent_mom_pct > 0 %}up{% else %}down{% endif %}"></i>
                                         {{ spent_mom_pct_abs|floatformat:1 }}%
                                     </span>
@@ -58,12 +59,12 @@
                                 </div>
                             </div>
                             <div class="d-flex justify-content-between mt-2">
-                                <span class="small text-muted">{{ total_percentage|floatformat:1 }}% Used</span>
+                                <span class="small text-muted">{% blocktrans with percent=total_percentage|floatformat:1 %}{{ percent }}% Used{% endblocktrans %}</span>
                                 <span class="small {% if total_spent > total_budget %}text-danger fw-bold{% else %}text-muted{% endif %}">
                                     {% if total_spent > total_budget %}
-                                        Over budget by {{ currency_symbol }}{{ over_budget_amount|floatformat:2 }}
+                                        {% blocktrans with amount=over_budget_amount|floatformat:2 currency=currency_symbol %}Over budget by {{ currency }}{{ amount }}{% endblocktrans %}
                                     {% else %}
-                                        {{ currency_symbol }}{{ total_remaining|floatformat:2 }} remaining
+                                        {% blocktrans with amount=total_remaining|floatformat:2 currency=currency_symbol %}{{ currency }}{{ amount }} remaining{% endblocktrans %}
                                     {% endif %}
                                 </span>
                             </div>
@@ -82,15 +83,15 @@
                         <div class="d-flex justify-content-between align-items-start mb-3">
                             <div>
                                 <div class="d-flex align-items-center gap-2">
-                                    <a href="{% url 'expense-list' %}?category={{ data.category.name|urlencode }}&month={{ current_month }}&year={{ current_year }}" class="d-flex align-items-center gap-1 text-decoration-none text-body category-link stretched-link" title="View Expenses">
+                                    <a href="{% url 'expense-list' %}?category={{ data.category.name|urlencode }}&month={{ current_month }}&year={{ current_year }}" class="d-flex align-items-center gap-1 text-decoration-none text-body category-link stretched-link" title="{% trans 'View Expenses' %}">
                                         <h5 class="h6 fw-bold mb-0">{{ data.category.name }}</h5>
                                         <i class="bi bi-box-arrow-up-right small text-muted opacity-0 link-arrow" style="font-size: 0.75rem;"></i>
                                     </a>
-                                    <a href="{% url 'category-edit' data.category.pk %}?next={{ request.path }}" class="text-secondary small text-decoration-none ms-1 position-relative z-3" title="Edit Limit" style="font-size: 0.9rem;">
+                                    <a href="{% url 'category-edit' data.category.pk %}?next={{ request.path }}" class="text-secondary small text-decoration-none ms-1 position-relative z-3" title="{% trans 'Edit Limit' %}" style="font-size: 0.9rem;">
                                         <i class="bi bi-pencil-square"></i>
                                     </a>
                                 </div>
-                                <small class="text-muted">Spent: {{ currency_symbol }}{{ data.spent|floatformat:0 }}</small>
+                                <small class="text-muted">{% blocktrans with amount=data.spent|floatformat:0 currency=currency_symbol %}Spent: {{ currency }}{{ amount }}{% endblocktrans %}</small>
                             </div>
                             {% if data.limit %}
                                 <div class="text-end">
@@ -112,29 +113,29 @@
                                 </div>
                             </div>
                             <div class="d-flex justify-content-between mt-2 small">
-                                <span class="text-muted">Limit: {{ currency_symbol }}{{ data.limit|floatformat:0 }}</span>
+                                <span class="text-muted">{% blocktrans with limit=data.limit|floatformat:0 currency=currency_symbol %}Limit: {{ currency }}{{ limit }}{% endblocktrans %}</span>
                                 <span class="{% if data.spent > data.limit %}text-danger fw-bold{% else %}text-muted{% endif %}">
                                     {% if data.spent > data.limit %}
                                         +{{ currency_symbol }}{{ data.over_budget|floatformat:0 }}
                                     {% else %}
-                                        {{ currency_symbol }}{{ data.remaining|floatformat:0 }} left
+                                        {% blocktrans with left=data.remaining|floatformat:0 currency=currency_symbol %}{{ currency }}{{ left }} left{% endblocktrans %}
                                     {% endif %}
                                 </span>
                             </div>
                             
                             {% if data.actual_percentage >= 100 %}
                                 <div class="mt-2 small text-danger">
-                                    <i class="bi bi-exclamation-triangle-fill me-1"></i> Limit reached — consider adjusting
+                                    <i class="bi bi-exclamation-triangle-fill me-1"></i> {% trans "Limit reached — consider adjusting" %}
                                 </div>
                             {% elif data.actual_percentage > 80 %}
                                 <div class="mt-2 small text-warning">
-                                    <i class="bi bi-exclamation-triangle me-1"></i> You’re close to your limit
+                                    <i class="bi bi-exclamation-triangle me-1"></i> {% trans "You’re close to your limit" %}
                                 </div>
                             {% endif %}
                         {% else %}
                             <div class="alert alert-light py-2 px-3 mb-0 small border-0 bg-body-tertiary">
-                                <i class="bi bi-info-circle me-1"></i> No limit set
-                                <a href="{% url 'category-edit' data.category.pk %}" class="btn-link ms-1">Set limit</a>
+                                <i class="bi bi-info-circle me-1"></i> {% trans "No limit set" %}
+                                <a href="{% url 'category-edit' data.category.pk %}" class="btn-link ms-1">{% trans "Set limit" %}</a>
                             </div>
                         {% endif %}
                     </div>
@@ -143,8 +144,8 @@
             {% empty %}
             <div class="col-12 text-center py-5">
                 <i class="bi bi-inbox text-muted display-4"></i>
-                <p class="text-muted mt-3">No categories found. Start by adding some categories to your settings.</p>
-                <a href="{% url 'category-create' %}" class="btn btn-primary">Add Category</a>
+                <p class="text-muted mt-3">{% trans "No categories found. Start by adding some categories to your settings." %}</p>
+                <a href="{% url 'category-create' %}" class="btn btn-primary">{% trans "Add Category" %}</a>
             </div>
             {% endfor %}
         </div>

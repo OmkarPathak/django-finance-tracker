@@ -124,6 +124,14 @@ Contributions are welcome — features, bug fixes, documentation, and UI improve
 
 ---
 
+## 🗺️ Roadmap
+
+- [ ] **WhatsApp Integration** – Chat directly to add expenses 💬
+- [ ] **Mobile Apps** – Native Android & iOS support 📱
+- [ ] **Budget Alerts** – Smart insights and overspending notifications 🚨
+
+---
+
 ## FAQ
 
 **What makes this different from other finance apps?**  

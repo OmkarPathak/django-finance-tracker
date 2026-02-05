@@ -1,20 +1,21 @@
 {% extends 'expenses/settings_base.html' %}
+{% load i18n %}
 
 {% block settings_content %}
 <div class="fade-in">
     <div class="py-3 mb-4">
         <div class="d-flex justify-content-between align-items-center mb-3">
-            <h2 class="h4 mb-0 fw-bold">Categories</h2>
+            <h2 class="h4 mb-0 fw-bold">{% trans "Categories" %}</h2>
             <a href="{% url 'category-create' %}" class="btn btn-primary btn-sm">
-                <i class="bi bi-plus-lg me-1"></i> Add Category
+                <i class="bi bi-plus-lg me-1"></i> {% trans "Add Category" %}
             </a>
         </div>
-        <p class="text-muted small mb-3">Categories help you understand your spending habits</p>
+        <p class="text-muted small mb-3">{% trans "Categories help you understand your spending habits" %}</p>
         <form method="get" class="d-flex" role="search">
-            <input class="form-control me-2" type="search" name="search" placeholder="Search categories..." aria-label="Search" value="{{ search_query }}">
-            <button class="btn btn-outline-primary" type="submit">Search</button>
+            <input class="form-control me-2" type="search" name="search" placeholder="{% trans 'Search categories...' %}" aria-label="Search" value="{{ search_query }}">
+            <button class="btn btn-outline-primary" type="submit">{% trans "Search" %}</button>
             {% if search_query %}
-                <a href="{% url 'category-list' %}" class="btn btn-outline-secondary ms-2">Reset</a>
+                <a href="{% url 'category-list' %}" class="btn btn-outline-secondary ms-2">{% trans "Reset" %}</a>
             {% endif %}
         </form>
     </div>
@@ -25,9 +26,9 @@
                 <table class="table table-hover table-striped mb-0 text-start align-middle">
                     <thead>
                         <tr>
-                            <th class="ps-4">Name</th>
-                            <th class="text-end">Monthly Limit</th>
-                            <th class="text-end pe-4">Actions</th>
+                            <th class="ps-4">{% trans "Name" %}</th>
+                            <th class="text-end">{% trans "Monthly Limit" %}</th>
+                            <th class="text-end pe-4">{% trans "Actions" %}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -42,13 +43,13 @@
                                             data-url="{% url 'category-edit' category.pk %}"
                                             data-name="{{ category.name }}"
                                             data-limit="{{ category.limit|default_if_none:'' }}"
-                                            title="Edit">
+                                            title="{% trans 'Edit' %}">
                                         <i class="bi bi-pencil-square text-primary fs-6"></i>
                                     </button>
                                     <button type="button" class="btn btn-sm btn-link text-decoration-none p-0 delete-btn d-inline-flex align-items-center" 
                                             data-bs-toggle="modal" data-bs-target="#deleteModal" 
                                             data-url="{% url 'category-delete' category.pk %}"
-                                            data-message="Are you sure you want to delete category '{{ category.name|escapejs }}'? This will NOT delete expenses in this category, but they will be unlinked or require update.">
+                                            data-message="{% blocktrans with name=category.name|escapejs %}Are you sure you want to delete category '{{ name }}'? This will NOT delete expenses in this category, but they will be unlinked or require update.{% endblocktrans %}">
                                         <i class="bi bi-trash text-danger fs-6"></i>
                                     </button>
                                 </div>
@@ -59,10 +60,10 @@
                             <td colspan="3" class="text-center py-5">
                                 <div class="py-4">
                                     <i class="bi bi-tags text-muted display-1 mb-3 d-block"></i>
-                                    <h4 class="fw-bold text-muted">No Categories Yet</h4>
-                                    <p class="text-muted mb-4">Organize your transactions by creating custom categories.</p>
+                                    <h4 class="fw-bold text-muted">{% trans "No Categories Yet" %}</h4>
+                                    <p class="text-muted mb-4">{% trans "Organize your transactions by creating custom categories." %}</p>
                                     <a href="{% url 'category-create' %}" class="btn btn-primary">
-                                        <i class="bi bi-plus-lg me-1"></i> Add Category
+                                        <i class="bi bi-plus-lg me-1"></i> {% trans "Add Category" %}
                                     </a>
                                 </div>
                             </td>
@@ -125,7 +126,7 @@
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header border-0 pb-0">
-                    <h5 class="modal-title fw-bold">Edit Category</h5>
+                    <h5 class="modal-title fw-bold">{% trans "Edit Category" %}</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
@@ -134,12 +135,12 @@
                         <input type="hidden" name="next" value="{{ request.path }}">
                         
                         <div class="mb-3">
-                            <label for="edit_name" class="form-label text-muted small text-uppercase">Name</label>
+                            <label for="edit_name" class="form-label text-muted small text-uppercase">{% trans "Name" %}</label>
                             <input type="text" class="form-control" id="edit_name" name="name" required>
                         </div>
                         
                         <div class="mb-4">
-                            <label for="edit_limit" class="form-label text-muted small text-uppercase">Monthly Limit (Optional)</label>
+                            <label for="edit_limit" class="form-label text-muted small text-uppercase">{% trans "Monthly Limit (Optional)" %}</label>
                             <div class="input-group">
                                 <span class="input-group-text bg-transparent border-end-0 text-muted">{{ currency_symbol }}</span>
                                 <input type="number" class="form-control border-start-0 ps-0" id="edit_limit" name="limit" step="0.01" placeholder="0.00">
@@ -147,7 +148,7 @@
                         </div>
                         
                         <div class="d-grid">
-                            <button type="submit" class="btn btn-primary">Save Changes</button>
+                            <button type="submit" class="btn btn-primary">{% trans "Save Changes" %}</button>
                         </div>
                     </form>
                 </div>

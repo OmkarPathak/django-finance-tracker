@@ -1,14 +1,15 @@
 {% extends 'base.html' %}
+{% load i18n %}
 
 {% block content %}
 <div class="container py-5 fade-in">
     <div class="row justify-content-center">
         <div class="col-lg-8">
-            <h1 class="display-4 fw-bold mb-4 text-center">Contact Us</h1>
-            <p class="text-muted text-center mb-5">We'd love to hear from you!</p>
+            <h1 class="display-4 fw-bold mb-4 text-center">{% trans "Contact Us" %}</h1>
+            <p class="text-muted text-center mb-5">{% trans "We'd love to hear from you!" %}</p>
 
             <div class="mb-5">
-                <h3 class="h4 fw-bold mb-4 text-center">Send us a message</h3>
+                <h3 class="h4 fw-bold mb-4 text-center">{% trans "Send us a message" %}</h3>
                 {{ form.media }}
                 <form method="post" action="{% url 'contact' %}">
                     {% csrf_token %}
@@ -26,14 +27,14 @@
                     {% endif %}
 
                     <div class="mb-3">
-                        <label for="{{ form.name.id_for_label }}" class="form-label">Name</label>
+                        <label for="{{ form.name.id_for_label }}" class="form-label">{% trans "Name" %}</label>
                         {{ form.name }}
                         {% if form.name.errors %}
                             <div class="text-danger small">{{ form.name.errors|join:", " }}</div>
                         {% endif %}
                     </div>
                     <div class="mb-3">
-                        <label for="{{ form.email.id_for_label }}" class="form-label">Email</label>
+                        <label for="{{ form.email.id_for_label }}" class="form-label">{% trans "Email" %}</label>
                         {{ form.email }}
                         {% if form.email.errors %}
                             <div class="text-danger small">{{ form.email.errors|join:", " }}</div>
@@ -41,14 +42,14 @@
                     </div>
                     
                     <div class="mb-3">
-                        <label for="{{ form.subject.id_for_label }}" class="form-label">Subject</label>
+                        <label for="{{ form.subject.id_for_label }}" class="form-label">{% trans "Subject" %}</label>
                         {{ form.subject }}
                         {% if form.subject.errors %}
                             <div class="text-danger small">{{ form.subject.errors|join:", " }}</div>
                         {% endif %}
                     </div>
                     <div class="mb-3">
-                        <label for="{{ form.message.id_for_label }}" class="form-label">Message</label>
+                        <label for="{{ form.message.id_for_label }}" class="form-label">{% trans "Message" %}</label>
                         {{ form.message }}
                         {% if form.message.errors %}
                             <div class="text-danger small">{{ form.message.errors|join:", " }}</div>
@@ -67,7 +68,7 @@
 
                     <div class="d-grid">
                         <button type="submit" class="btn btn-primary btn-lg">
-                            <i class="bi bi-send me-2"></i> Send Message
+                            <i class="bi bi-send me-2"></i> {% trans "Send Message" %}
                         </button>
                     </div>
                 </form>
@@ -77,20 +78,24 @@
                 <div class="col-md-6">
                     <div class="p-4 text-center bg-body-tertiary rounded h-100">
                         <i class="bi bi-github fs-1 text-primary mb-3"></i>
-                        <h4 class="h5 fw-bold">Open Source</h4>
-                        <p class="text-muted small">Check out our code, report bugs, or contribute feature requests on GitHub.</p>
+                        <h4 class="h5 fw-bold">{% trans "Open Source" %}</h4>
+                        <p class="text-muted small">
+                            {% blocktrans %}
+                            Check out our code, report bugs, or contribute feature requests on GitHub.
+                            {% endblocktrans %}
+                        </p>
                         <a href="https://github.com/OmkarPathak/django-finance-tracker" class="btn btn-outline-primary btn-sm" target="_blank">
-                            <i class="bi bi-github me-1"></i> Visit GitHub
+                            <i class="bi bi-github me-1"></i> {% trans "Visit GitHub" %}
                         </a>
                     </div>
                 </div>
                 <div class="col-md-6">
                     <div class="p-4 text-center bg-body-tertiary rounded h-100">
                         <i class="bi bi-twitter-x fs-1 text-primary mb-3"></i>
-                        <h4 class="h5 fw-bold">Social</h4>
-                        <p class="text-muted small">Follow us for the latest updates and finance tips.</p>
+                        <h4 class="h5 fw-bold">{% trans "Social" %}</h4>
+                        <p class="text-muted small">{% trans "Follow us for the latest updates and finance tips." %}</p>
                         <a href="#" class="btn btn-outline-primary btn-sm">
-                            <i class="bi bi-twitter-x me-1"></i> Follow @TrackMyRupee
+                            <i class="bi bi-twitter-x me-1"></i> {% trans "Follow @TrackMyRupee" %}
                         </a>
                     </div>
                 </div>
@@ -98,7 +103,7 @@
             
              <div class="text-center mt-5">
                 <a href="{% url 'home' %}" class="btn btn-outline-secondary">
-                    <i class="bi bi-arrow-left me-1"></i> Back to Home
+                    <i class="bi bi-arrow-left me-1"></i> {% trans "Back to Home" %}
                 </a>
             </div>
         </div>
