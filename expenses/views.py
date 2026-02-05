@@ -46,7 +46,7 @@ def create_category_ajax(request):
             name = data.get('name', '').strip()
             
             if not name:
-                return JsonResponse({'success': False, 'error': 'Category name cannot be empty.'}, status=400)
+                return JsonResponse({'success': False, 'error': _('Category name cannot be empty.')}, status=400)
             
             # Check Limits
             current_count = Category.objects.filter(user=request.user).count()
@@ -57,17 +57,17 @@ def create_category_ajax(request):
                 limit = float('inf')
 
             if current_count >= limit:
-                 return JsonResponse({'success': False, 'error': f'Category limit reached ({limit}). Please upgrade.'}, status=403)
+                 return JsonResponse({'success': False, 'error': _('Category limit reached (%(limit)s). Please upgrade.') % {'limit': limit}}, status=403)
 
             category = Category.objects.create(user=request.user, name=name)
             return JsonResponse({'success': True, 'id': category.id, 'name': category.name})
             
         except IntegrityError:
-            return JsonResponse({'success': False, 'error': 'This category already exists.'}, status=400)
+            return JsonResponse({'success': False, 'error': _('This category already exists.')}, status=400)
         except Exception as e:
             return JsonResponse({'success': False, 'error': str(e)}, status=500)
             
-    return JsonResponse({'success': False, 'error': 'Invalid request method.'}, status=405)
+    return JsonResponse({'success': False, 'error': _('Invalid request method.')}, status=405)
 
 
 def resend_verification_email(request):
@@ -1128,7 +1128,7 @@ class ExpenseCreateView(LoginRequiredMixin, generic.TemplateView):
                     return redirect(next_url)
                 return redirect('expense-list')
             except IntegrityError as e:
-                messages.error(request, f"Duplicate record found! You already have this expense recorded for this date.")
+                messages.error(request, _("Duplicate record found! You already have this expense recorded for this date."))
                 return render(request, self.template_name, {'formset': formset})
         return render(request, self.template_name, {'formset': formset})
 
@@ -1223,7 +1223,7 @@ class CategoryCreateView(LoginRequiredMixin, generic.CreateView):
             form.instance.user = self.request.user
             return super().form_valid(form)
         except IntegrityError:
-            messages.error(self.request, "This category already exists.")
+            messages.error(self.request, _("This category already exists."))
             return self.form_invalid(form)
 
 class CategoryUpdateView(LoginRequiredMixin, generic.UpdateView):
@@ -1416,7 +1416,7 @@ class IncomeCreateView(LoginRequiredMixin, generic.CreateView):
             form.instance.user = self.request.user
             return super().form_valid(form)
         except IntegrityError:
-            messages.error(self.request, "This income entry already exists.")
+            messages.error(self.request, _("This income entry already exists."))
             return self.form_invalid(form)
 
     def get_success_url(self):
@@ -1460,7 +1460,7 @@ class IncomeUpdateView(LoginRequiredMixin, generic.UpdateView):
         try:
             return super().form_valid(form)
         except IntegrityError:
-            messages.error(self.request, "This income entry already exists.")
+            messages.error(self.request, _("This income entry already exists."))
             return self.form_invalid(form)
 
 class IncomeDeleteView(LoginRequiredMixin, generic.DeleteView):
@@ -1836,11 +1836,11 @@ class RecurringTransactionCreateView(LoginRequiredMixin, CreateView):
             limit = float('inf')
 
         if current_count >= limit:
-             messages.error(self.request, f"Recurring Transaction limit reached ({limit}). Please upgrade.")
+             messages.error(self.request, _("Recurring Transaction limit reached (%(limit)s). Please upgrade.") % {'limit': limit})
              return redirect('pricing')
              
         form.instance.user = self.request.user
-        messages.success(self.request, 'Recurring transaction created successfully.')
+        messages.success(self.request, _('Recurring transaction created successfully.'))
         return super().form_valid(form)
 
     def get_success_url(self):
@@ -1914,9 +1914,9 @@ class RecurringTransactionUpdateView(LoginRequiredMixin, UpdateView):
             if hasattr(self.request.user, 'userprofile'):
                 currency = self.request.user.userprofile.currency
                 
-            messages.success(self.request, f"You just saved {currency}{yearly_saving:,.0f}/year 🎉")
+            messages.success(self.request, _("You just saved %(currency)s%(amount)s/year 🎉") % {'currency': currency, 'amount': f"{yearly_saving:,.0f}"})
         else:
-            messages.success(self.request, 'Recurring transaction updated successfully.')
+            messages.success(self.request, _('Recurring transaction updated successfully.'))
             
         return super().form_valid(form)
 
@@ -1945,7 +1945,7 @@ class RecurringTransactionDeleteView(LoginRequiredMixin, DeleteView):
         if hasattr(self.request.user, 'userprofile'):
             currency = self.request.user.userprofile.currency
             
-        messages.success(self.request, f"You just saved {currency}{yearly_saving:,.0f}/year 🎉")
+        messages.success(self.request, _("You just saved %(currency)s%(amount)s/year 🎉") % {'currency': currency, 'amount': f"{yearly_saving:,.0f}"})
         return super().form_valid(form)
 
 class AccountDeleteView(LoginRequiredMixin, DeleteView):

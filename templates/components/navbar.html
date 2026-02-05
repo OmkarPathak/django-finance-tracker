@@ -181,7 +181,7 @@
                             </li>
                             <li>
                                 <button class="dropdown-item rounded py-2 d-flex align-items-center gap-2 theme-toggle-btn" type="button">
-                                    <i class="bi bi-moon-stars-fill theme-icon-active"></i> Theme
+                                    <i class="bi bi-moon-stars-fill theme-icon-active"></i> {% trans "Theme" %}
                                 </button>
                             </li>
                             <li><hr class="dropdown-divider my-2"></li>
@@ -209,19 +209,19 @@
                     </li>
                     <li class="nav-item d-lg-none">
                         <a href="{% url 'settings-home' %}" class="nav-link" onclick="showLoader()">
-                           <i class="bi bi-gear me-2"></i> Settings
+                           <i class="bi bi-gear me-2"></i> {% trans "Settings" %}
                         </a>
                     </li>
                     <li class="nav-item d-lg-none">
                         <button class="nav-link btn btn-link text-decoration-none ps-0 ms-0 theme-toggle-btn w-100 text-start" type="button">
-                            <i class="bi bi-moon-stars-fill theme-icon-active me-2"></i> Theme
+                            <i class="bi bi-moon-stars-fill theme-icon-active me-2"></i> {% trans "Theme" %}
                         </button>
                     </li>
                     <li class="nav-item d-lg-none">
                         <form action="{% url 'account_logout' %}" method="post" class="d-inline">
                             {% csrf_token %}
                             <button type="submit" class="nav-link btn btn-link text-decoration-none text-danger ps-0 ms-0">
-                                <i class="bi bi-box-arrow-right me-2"></i> Logout
+                                <i class="bi bi-box-arrow-right me-2"></i> {% trans "Logout" %}
                             </button>
                         </form>
                     </li>
@@ -229,25 +229,25 @@
                 {% else %}
                     <!-- Guest / Landing Page Links -->
                     {% if is_landing %}
-                        <li class="nav-item"><a href="#features" class="nav-link fw-bold text-muted px-2">Features</a></li>
-                        <li class="nav-item"><a href="#pricing" class="nav-link fw-bold text-muted px-2">Pricing</a></li>
+                        <li class="nav-item"><a href="#features" class="nav-link fw-bold text-muted px-2">{% trans "Features" %}</a></li>
+                        <li class="nav-item"><a href="#pricing" class="nav-link fw-bold text-muted px-2">{% trans "Pricing" %}</a></li>
                     {% endif %}
                     
                     <li class="nav-item">
-                        <a href="{% url 'demo_login' %}" class="nav-link px-2 {% if is_landing %}fw-bold text-muted{% endif %}">Live Demo</a>
+                        <a href="{% url 'demo_login' %}" class="nav-link px-2 {% if is_landing %}fw-bold text-muted{% endif %}">{% trans "Live Demo" %}</a>
                     </li>
                     <li class="nav-item">
-                        <a href="{% url 'blog_list' %}" class="nav-link px-2 {% if is_landing %}fw-bold text-muted{% endif %}">Blog</a>
+                        <a href="{% url 'blog_list' %}" class="nav-link px-2 {% if is_landing %}fw-bold text-muted{% endif %}">{% trans "Blog" %}</a>
                     </li>
                     
                     <div class="vr d-none d-lg-block text-body opacity-25 mx-2"></div>
 
                     <li class="nav-item d-none d-lg-block">
-                        <a href="{% url 'account_login' %}" class="nav-link">Login</a>
+                        <a href="{% url 'account_login' %}" class="nav-link">{% trans "Login" %}</a>
                     </li>
                     <li class="nav-item mt-3 mt-lg-0">
                         {% if is_landing %}
-                            <a href="{% url 'signup' %}" class="cta-button btn-sm py-2 px-4 shadow-sm text-decoration-none d-block w-100 d-lg-inline-block w-lg-auto text-center" style="font-size: 0.9rem;">Join Now</a>
+                            <a href="{% url 'signup' %}" class="cta-button btn-sm py-2 px-4 shadow-sm text-decoration-none d-block w-100 d-lg-inline-block w-lg-auto text-center" style="font-size: 0.9rem;">{% trans "Join Now" %}</a>
                         {% else %}
                             <a href="{% url 'signup' %}" class="btn btn-primary d-block w-100 d-lg-inline-block w-lg-auto"><i class="bi bi-person-plus me-1"></i> Sign Up</a>
                         {% endif %}
@@ -260,7 +260,7 @@
                     </li>
                     <li class="nav-item d-lg-none mt-2 border-top pt-2">
                          <button class="nav-link btn btn-link text-decoration-none ps-0 ms-0 theme-toggle-btn w-100 text-start" type="button">
-                            <i class="bi bi-moon-stars-fill theme-icon-active me-2"></i> Theme
+                            <i class="bi bi-moon-stars-fill theme-icon-active me-2"></i> {% trans "Theme" %}
                         </button>
                     </li>
                 {% endif %}

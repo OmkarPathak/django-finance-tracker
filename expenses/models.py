@@ -2,22 +2,23 @@ from django.db import models
 from django.contrib.auth.models import User
 from datetime import timedelta
 from django.utils import timezone
+from django.utils.translation import gettext_lazy as _
 
 class Expense(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    date = models.DateField()
-    amount = models.DecimalField(max_digits=10, decimal_places=2)
-    description = models.TextField()
-    category = models.CharField(max_length=255)
+    date = models.DateField(verbose_name=_('Date'))
+    amount = models.DecimalField(max_digits=10, decimal_places=2, verbose_name=_('Amount'))
+    description = models.TextField(verbose_name=_('Description'))
+    category = models.CharField(max_length=255, verbose_name=_('Category'))
     
     PAYMENT_OPTIONS = [
-        ('Cash', 'Cash'),
-        ('Credit Card', 'Credit Card'),
-        ('Debit Card', 'Debit Card'),
-        ('UPI', 'UPI'),
-        ('NetBanking', 'NetBanking'),
+        ('Cash', _('Cash')),
+        ('Credit Card', _('Credit Card')),
+        ('Debit Card', _('Debit Card')),
+        ('UPI', _('UPI')),
+        ('NetBanking', _('NetBanking')),
     ]
-    payment_method = models.CharField(max_length=50, choices=PAYMENT_OPTIONS, default='Cash')
+    payment_method = models.CharField(max_length=50, choices=PAYMENT_OPTIONS, default='Cash', verbose_name=_('Payment Method'))
     
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -44,8 +45,8 @@ class Expense(models.Model):
 
 class Category(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    name = models.CharField(max_length=255)
-    limit = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    name = models.CharField(max_length=255, verbose_name=_('Category Name'))
+    limit = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, verbose_name=_('Monthly Limit'))
 
     def save(self, *args, **kwargs):
         if self.name:
@@ -66,10 +67,10 @@ class Category(models.Model):
 
 class Income(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    date = models.DateField()
-    amount = models.DecimalField(max_digits=10, decimal_places=2)
-    description = models.TextField(blank=True, null=True)
-    source = models.CharField(max_length=255) # e.g. Salary, Freelance, Dividend
+    date = models.DateField(verbose_name=_('Date'))
+    amount = models.DecimalField(max_digits=10, decimal_places=2, verbose_name=_('Amount'))
+    description = models.TextField(blank=True, null=True, verbose_name=_('Description'))
+    source = models.CharField(max_length=255, verbose_name=_('Source')) # e.g. Salary, Freelance, Dividend
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -94,32 +95,27 @@ class Income(models.Model):
 
 class RecurringTransaction(models.Model):
     FREQUENCY_CHOICES = [
-        ('DAILY', 'Daily'),
-        ('WEEKLY', 'Weekly'),
-        ('MONTHLY', 'Monthly'),
-        ('YEARLY', 'Yearly'),
+        ('DAILY', _('Daily')),
+        ('WEEKLY', _('Weekly')),
+        ('MONTHLY', _('Monthly')),
+        ('YEARLY', _('Yearly')),
     ]
     TRANSACTION_TYPE_CHOICES = [
-        ('EXPENSE', 'Expense'),
-        ('INCOME', 'Income'),
+        ('EXPENSE', _('Expense')),
+        ('INCOME', _('Income')),
     ]
 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    transaction_type = models.CharField(max_length=10, choices=TRANSACTION_TYPE_CHOICES)
-    amount = models.DecimalField(max_digits=10, decimal_places=2)
-    description = models.TextField()
-    category = models.CharField(max_length=255, blank=True, null=True) # For Expense
-    source = models.CharField(max_length=255, blank=True, null=True)   # For Income
+    transaction_type = models.CharField(max_length=10, choices=TRANSACTION_TYPE_CHOICES, verbose_name=_('Transaction Type'))
+    amount = models.DecimalField(max_digits=10, decimal_places=2, verbose_name=_('Amount'))
+    description = models.TextField(verbose_name=_('Description'))
+    category = models.CharField(max_length=255, blank=True, null=True, verbose_name=_('Category'))
+    source = models.CharField(max_length=255, blank=True, null=True, verbose_name=_('Source'))
     
-    # We can reuse the PAYMENT_OPTIONS from Expense, or duplicate them.
-    # Reusing is cleaner but requires referencing Expense.PAYMENT_OPTIONS or moving it to a constant.
-    # Given the context, I'll access it via Expense.PAYMENT_OPTIONS if possible, or just duplicate for safety/decoupling if cleaner.
-    # Let's duplicate to avoid circular dependency issues if models are rearranged, but actually they are in the same file.
-    # Accessing Expense.PAYMENT_OPTIONS is fine.
-    payment_method = models.CharField(max_length=50, choices=Expense.PAYMENT_OPTIONS, default='Cash')
+    payment_method = models.CharField(max_length=50, choices=Expense.PAYMENT_OPTIONS, default='Cash', verbose_name=_('Payment Method'))
     
-    frequency = models.CharField(max_length=10, choices=FREQUENCY_CHOICES)
-    start_date = models.DateField()
+    frequency = models.CharField(max_length=10, choices=FREQUENCY_CHOICES, verbose_name=_('Frequency'))
+    start_date = models.DateField(verbose_name=_('Start Date'))
     last_processed_date = models.DateField(null=True, blank=True)
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)

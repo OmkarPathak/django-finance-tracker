@@ -7,32 +7,70 @@ def update_po_file(filepath, translations, complex_replacements=None):
         return
 
     with open(filepath, 'r', encoding='utf-8') as f:
-        content = f.read()
+        lines = f.readlines()
 
-    # Simple strings
-    for msgid, msgstr in translations.items():
-        pattern = f'msgid "{re.escape(msgid)}"\nmsgstr ""'
-        replacement = f'msgid "{msgid}"\nmsgstr "{msgstr}"'
-        content = re.sub(pattern, replacement, content)
+    new_lines = []
+    i = 0
+    while i < len(lines):
+        line = lines[i]
         
+        # Check if this is a msgid we want to translate
+        match = re.match(r'^msgid "(.*)"$', line)
+        if match:
+            msgid = match.group(1)
+            if msgid in translations:
+                # We found a target msgid. 
+                # Backtrack to remove #, fuzzy if it exists
+                # We also remove #| lines which are previous msgid hints
+                while new_lines and (new_lines[-1].strip().startswith("#, fuzzy") or new_lines[-1].strip().startswith("#|")):
+                    new_lines.pop()
+                
+                # Add the msgid
+                new_lines.append(line)
+                
+                # Find the msgstr (it should be the next line)
+                i += 1
+                if i < len(lines) and lines[i].startswith('msgstr "'):
+                    new_lines.append(f'msgstr "{translations[msgid]}"\n')
+                else:
+                    # Handle case where msgstr is weirdly placed
+                    new_lines.append(f'msgstr "{translations[msgid]}"\n')
+                
+                i += 1
+                continue
+        
+        new_lines.append(line)
+        i += 1
+
+    content = "".join(new_lines)
+    
     # Complex replacements (exact match for multi-line msgid)
     if complex_replacements:
         for msgid_block, msgstr in complex_replacements.items():
-             # pattern matches the msgid block followed by empty msgstr
-             # We rely on exact string match of the msgid block from the file
-             pattern = msgid_block + '\nmsgstr ""'
-             replacement = msgid_block + f'\nmsgstr "{msgstr}"'
+             # Remove fuzzy flag for complex blocks too
+             # This is a bit harder with simple replace, but complex blocks are usually not fuzzy in this project
              if msgid_block in content:
-                 content = content.replace(pattern, replacement)
-             else:
-                 print(f"Complex pattern not found: {msgid_block[:50]}...")
+                 # Check if the line before msgid_block is fuzzy
+                 # (This is a bit crude but should work for this specific use case)
+                 pattern = r'#,\s*fuzzy\n' + re.escape(msgid_block)
+                 content = re.sub(pattern, msgid_block, content)
+                 
+                 pattern_with_hint = r'#,\s*fuzzy\n#\|.*?\n' + re.escape(msgid_block)
+                 content = re.sub(pattern_with_hint, msgid_block, content, flags=re.DOTALL)
+
+                 pattern_simple = msgid_block + r'\nmsgstr ""'
+                 replacement = msgid_block + f'\nmsgstr "{msgstr}"'
+                 content = content.replace(pattern_simple, replacement)
+                 
+                 # Also handle non-empty msgstr for complex blocks
+                 pattern_overwrite = msgid_block + r'\nmsgstr ".*?"'
+                 content = re.sub(pattern_overwrite, msgid_block + f'\nmsgstr "{msgstr}"', content)
 
     with open(filepath, 'w', encoding='utf-8') as f:
         f.write(content)
 
 # Common translations
 COMMON_HI = {
-    # Existing
     "Subscriptions": "सदस्यताएँ",
     "Manage": "प्रबंधित करें",
     "Add": "जोड़ें",
@@ -117,8 +155,6 @@ COMMON_HI = {
     "View All": "सभी देखें",
     "No data available": "कोई डेटा उपलब्ध नहीं",
     "No expense data available": "कोई व्यय डेटा उपलब्ध नहीं",
-    
-    # NEWEST DASHBOARD ITEMS
     "From": "से",
     "To": "तक",
     "Keep saving to see this!": "यह देखने के लिए बचत करते रहें!",
@@ -127,82 +163,70 @@ COMMON_HI = {
     "Year End": "वर्ष का अंत",
     "No Budgets Set": "कोई बजट सेट नहीं",
     "Set limits for your categories to track spending.": "खर्च पर नज़र रखने के लिए अपनी श्रेणियों के लिए सीमाएँ निर्धारित करें।",
-    "Set Budget": "बजट सेट करें",
+    "Set Budget": "बजेट सेट करें",
     "(Stacked by Category)": "(श्रेणी के अनुसार ढेरा)",
     "Payment Method Distribution": "भुगतान विधि वितरण",
     "Recent Transactions": "हाल के लेनदेन",
     "This Month's Insights": "इस महीने की अंतर्दृष्टि",
-    
-    # Income Page
-    "Filters": "फिल्टर",
-    "Date From": "दिनांक से",
-    "Date To": "दिनांक तक",
-    "Source": "स्रोत",
-    "Total Records": "कुल रिकॉर्ड",
-    "Total Amount": "कुल राशि",
-    "Description": "विवरण",
-    "Actions": "क्रियाएं",
-    "No Income Records": "कोई आय रिकॉर्ड नहीं",
-    "We couldn't find any income records matching your filters.": "हमें आपके फिल्टर से मेल खाने वाला कोई आय रिकॉर्ड नहीं मिला।",
-    "You haven't recorded any income yet. Start tracking your earnings!": "आपने अभी तक कोई आय दर्ज नहीं की है। अपनी कमाई को ट्रैक करना शुरू करें!",
-    "Clear Filters": "फिल्टर साफ करें",
+    "Save Income": "आय सहेजें",
+    "New Category": "नई श्रेणी",
+    "Save Category": "श्रेणी सहेजें",
+    "Edit Expense": "खर्च संपादित करें",
+    "New Expense": "नया खर्च",
+    "Date": "दिनांक",
+    "Payment": "भुगतान",
+    "Add New Category": "नई श्रेणी जोड़ें",
+    "Add Another Expense": "एक और खर्च जोड़ें",
+    "Save All Expenses": "सभी खर्च सहेजें",
+    "Category Name": "श्रेणी का नाम",
+    "Add Row": "पंक्ति जोड़ें",
+    "Category name cannot be empty.": "श्रेणी का नाम खाली नहीं हो सकता।",
+    "Saving...": "सहेज रहा है...",
+    "An error occurred.": "एक त्रुटि हुई।",
+    "A network error occurred.": "नेटवर्क त्रुटि हुई।",
+    "Update Subscription": "सदस्यता अपडेट करें",
+    "Save Subscription": "सदस्यता सहेजें",
+    "Type": "प्रकार",
+    "Start Date": "प्रारंभ तिथि",
+    "Category (For Expense)": "श्रेणी (खर्च के लिए)",
+    "Source (For Income)": "स्रोत (आय के लिए)",
+    "Payment Source Method": "भुगतान स्रोत विधि",
+    "Active": "सक्रिय",
+    "Save Task": "कार्य सहेजें",
+    "Subscription updated successfully.": "सदस्यता सफलतापूर्वक अपडेट की गई।",
+    "Recurring transaction updated successfully.": "आवर्ती लेनदेन सफलतापूर्वक अपडेट किया गया।",
+    "This income entry already exists.": "यह आय प्रविष्टि पहले से मौजूद है।",
+    "Duplicate record found!": "डुप्लिकेट रिकॉर्ड मिला!",
+    "Category is required for expenses.": "खर्च के लिए श्रेणी आवश्यक है।",
+    "Source is required for income.": "आय के लिए स्रोत आवश्यक है।",
+    "e.g. Salary, Freelance": "जैसे वेतन, फ्रीलांस",
+    "Monthly": "मासिक",
+    "Quarterly": "त्रैमासिक",
+    "Half-Yearly": "अर्धवार्षिक",
+    "Yearly": "वार्षिक",
+    "Cash": "नकद",
+    "Credit Card": "क्रेडिट कार्ड",
+    "Debit Card": "देबिट कार्ड",
+    "UPI": "यूपीआई",
+    "NetBanking": "नेटबैंकिंग",
+    "Cancel": "रद्द करें",
     "Edit Income": "आय संपादित करें",
     "Save Changes": "परिवर्तन सहेजें",
-    
-    # Budget Page
-    "Budget": "बजट",
-    "A budget is telling your money where to go, instead of wondering where it went.": "बजट आपके पैसे को यह बताना है कि कहाँ जाना है, बजाय इसके कि यह सोचना कि वह कहाँ गया।",
-    "Total Budget Goal": "कुल बजट लक्ष्य",
-    "vs last month": "बनाम पिछले महीने",
-    "% Used": "% उपयोग किया गया",
-    "Over budget by": "बजट से अधिक",
-    "remaining": "शेष",
-    "View Expenses": "खर्च देखें",
-    "Edit Limit": "सीमा संपादित करें",
-    "Spent:": "खर्च किया:",
-    "Limit:": "सीमा:",
-    "left": "बचा",
-    "Limit reached — consider adjusting": "सीमा समाप्त — समायोजन पर विचार करें",
-    "You’re close to your limit": "आप अपनी सीमा के करीब हैं",
-    "No limit set": "कोई सीमा निर्धारित नहीं",
-    "Set limit": "सीमा निर्धारित करें",
-    "No categories found. Start by adding some categories to your settings.": "कोई श्रेणियाँ नहीं मिलीं। अपनी सेटिंग्स में कुछ श्रेणियाँ जोड़कर शुरुआत करें।",
-    "Add Category": "श्रेणी जोड़ें",
-
-    # Categories Page
-    "Categories": "श्रेणियाँ",
-    "Categories help you understand your spending habits": "श्रेणियाँ आपको अपनी खर्च करने की आदतों को समझने में मदद करती हैं",
-    "Search categories...": "श्रेणियाँ खोजें...",
-    "Name": "नाम",
-    "Monthly Limit": "मासिक सीमा",
-    "Monthly Limit (Optional)": "मासिक सीमा (वैकल्पिक)",
-    "No Categories Yet": "अभी तक कोई श्रेणी नहीं",
-    "Organize your transactions by creating custom categories.": "कस्टम श्रेणियाँ बनाकर अपने लेनदेन को व्यवस्थित करें।",
-    "Edit Category": "श्रेणी संपादित करें",
-
-    # Dashboard - Dynamic Dates
-    "No Budgets Set": "कोई बजट निर्धारित नहीं",
-    "For %(month)s %(year)s": "%(month)s %(year)s के लिए",
-    "For %(year)s": "%(year)s के लिए",
-    "All Time": "पूरा समय",
-    
-    # Months
-    "January": "जनवरी", "February": "फरवरी", "March": "मार्च", "April": "अप्रैल",
-    "May": "मई", "June": "जून", "July": "जुलाई", "August": "अगस्त",
-    "September": "सितंबर", "October": "अक्टूबर", "November": "नवंबर", "December": "दिसंबर",
-
-    # Expense List Page
-    "Expenses": "खर्च",
-    "Tracking every penny is the first step to financial freedom.": "हर पैसे की ट्रैकिंग वित्तीय स्वतंत्रता का पहला कदम है।",
-    "Delete Selected": "चयनित हटाएं",
-    "Total Records": "कुल रिकॉर्ड",
-    "Total Amount": "कुल राशि",
-
-
+    "Amount": "मूल्य",
+    "Category": "श्रेणी",
+    "Description": "विवरण",
+    "Settings": "सेटिंग्स",
+    "Theme": "थीम",
+    "Login": "लॉगिन",
+    "Join Now": "अभी शामिल हों",
+    "Currency": "मुद्रा",
+    "Profile": "प्रोफाइल",
+    "Tutorial": "ट्यूटोरियल",
+    "Current Plan": "वर्तमान योजना",
+    "Upgrade": "अपग्रेड",
 }
 
 COMMON_MR = {
-    # Existing
     "Calendar": "कॅलेंडर",
     "Subscriptions": "सदस्यता",
     "Manage": "व्यवस्थापित करा",
@@ -271,7 +295,7 @@ COMMON_MR = {
     "- Selected": "- निवडलेले",
     "All Selected": "सर्व निवडलेले",
     "Support TrackMyRupee": "TrackMyRupee ला पाठिंबा द्या",
-    "If TrackMyRupee helped you understand your money better, consider supporting its development.": "जर TrackMyRupee ने तुम्हाला तुमचे पैसे अधिक चांगल्या प्रकारे समजून घेण्यास मदत केली असेल, तर त्याच्या विकासाला पाठिंबा देण्याचा विचार करा.",
+    "If TrackMyRupee helped you understand your money better, consider supporting its development.": "जवळजवळ सर्वच आर्थिक व्यवहार TrackMyRupee मुळे सुलभ झाले आहेत. त्याच्या विकासाला पाठिंबा देण्याचा विचार करा.",
     "Donate Now": "आता दान करा",
     "We use cookies to improve your experience and analyze site traffic.": "आम्ही तुमचा अनुभव सुधारण्यासाठी आणि साइट ट्रॅफिकचे विश्लेषण करण्यासाठी कुकीज वापरतो.",
     "By clicking \"Accept\", you verify that you are comfortable with us using tracking cookies.": "\"स्वीकार करा\" वर क्लिक करून, तुम्ही पुष्टी करता की तुम्ही आमच्या ट्रॅकिंग कुकीज वापरण्याबाबत समाधानी आहात.",
@@ -288,8 +312,6 @@ COMMON_MR = {
     "View All": "सर्व पहा",
     "No data available": "कोणताही डेटा उपलब्ध नाही",
     "No expense data available": "कोणताही खर्च डेटा उपलब्ध नाही",
-    
-    # NEWEST DASHBOARD ITEMS
     "From": "करून",
     "To": "पर्यंत",
     "Keep saving to see this!": "हे पाहण्यासाठी बचत करत राहा!",
@@ -303,73 +325,62 @@ COMMON_MR = {
     "Payment Method Distribution": "पेमेंट पद्धत वितरण",
     "Recent Transactions": "अलीकडील व्यवहार",
     "This Month's Insights": "या महिन्याची अंतर्दृष्टी",
-
-    # Income Page
-    "Filters": "फिल्टर",
-    "Date From": "या तारखेपासून",
-    "Date To": "या तारखेपर्यंत",
-    "Source": "स्रोत",
-    "Total Records": "एकूण रेकॉर्ड",
-    "Total Amount": "एकूण रक्कम",
-    "Description": "वर्णन",
-    "Actions": "क्रिया",
-    "No Income Records": "कोणतेही उत्पन्न रेकॉर्ड नाही",
-    "We couldn't find any income records matching your filters.": "आम्हाला तुमच्या फिल्टरशी जुळणारे कोणतेही उत्पन्न रेकॉर्ड सापडले नाही.",
-    "You haven't recorded any income yet. Start tracking your earnings!": "तुम्ही अद्याप कोणतेही उत्पन्न रेकॉर्ड केलेले नाही. तुमच्या कमाईचा मागोवा घेणे सुरू करा!",
-    "Clear Filters": "फिल्टर साफ करा",
+    "Save Income": "आय जतन करा",
+    "New Category": "नवीन श्रेणी",
+    "Save Category": "श्रेणी जतन करा",
+    "Edit Expense": "खर्च संपादित करा",
+    "New Expense": "नवीन खर्च",
+    "Date": "दिनांक",
+    "Payment": "देयक",
+    "Add New Category": "नवीन श्रेणी जोडा",
+    "Add Another Expense": "आणखी एक खर्च जोडा",
+    "Save All Expenses": "सर्व खर्च जतन करा",
+    "Category Name": "श्रेणीचे नाव",
+    "Add Row": "ओळ जोडा",
+    "Category name cannot be empty.": "श्रेणीचे नाव रिकामे असू शकत नाही.",
+    "Saving...": "जतन करत आहे...",
+    "An error occurred.": "एक त्रुटी आली.",
+    "A network error occurred.": "नेटवर्क त्रुटी आली.",
+    "Update Subscription": "सदस्यता अद्ययावत करा",
+    "Save Subscription": "सदस्यता जतन करा",
+    "Type": "प्रकार",
+    "Start Date": "प्रारंभ तारीख",
+    "Category (For Expense)": "श्रेणी (खर्चासाठी)",
+    "Source (For Income)": "स्रोत (उत्पन्नासाठी)",
+    "Payment Source Method": "पेमेंट सोर्स पद्धत",
+    "Active": "सक्रिय",
+    "Save Task": "कार्य जतन करा",
+    "Subscription updated successfully.": "सदस्यता यशस्वीरित्या अद्ययावत केली.",
+    "Recurring transaction updated successfully.": "आवर्ती व्यवहार यशस्वीरित्या अद्ययावत केला.",
+    "This income entry already exists.": "ही उत्पन्न नोंद आधीच अस्तित्वात आहे.",
+    "Duplicate record found!": "दुप्पट रेकॉर्ड सापडले!",
+    "Category is required for expenses.": "खर्चासाठी श्रेणी आवश्यक आहे.",
+    "Source is required for income.": "उत्पन्नासाठी स्रोत आवश्यक आहे.",
+    "e.g. Salary, Freelance": "उदा. पगार, फ्रीलान्स",
+    "Monthly": "मासिक",
+    "Quarterly": "त्रैमासिक",
+    "Half-Yearly": "अर्धवार्षिक",
+    "Yearly": "वार्षिक",
+    "Cash": "रोख",
+    "Credit Card": "क्रेडिट कार्ड",
+    "Debit Card": "डेबिट कार्ड",
+    "UPI": "यूपीआई",
+    "NetBanking": "नेटबँकिंग",
+    "Cancel": "रद्द करा",
     "Edit Income": "उत्पन्न संपादित करा",
     "Save Changes": "बदल जतन करा",
-
-    # Budget Page
-    "Budget": "बजेट",
-    "A budget is telling your money where to go, instead of wondering where it went.": "बजेट म्हणजे तुमच्या पैशाला कुठे जायचे हे सांगणे, ते कुठे गेले याचा विचार करण्याऐवजी.",
-    "Total Budget Goal": "एकूण बजेट ध्येय",
-    "vs last month": "वि मागील महिना",
-    "% Used": "% वापरले",
-    "Over budget by": "बजेटपेक्षा जास्त",
-    "remaining": "शिल्लक",
-    "View Expenses": "खर्च पहा",
-    "Edit Limit": "मर्यादा संपादित करा",
-    "Spent:": "खर्च:",
-    "Limit:": "मर्यादा:",
-    "left": "बाकी",
-    "Limit reached — consider adjusting": "मर्यादा गाठली — समायोजित करण्याचा विचार करा",
-    "You’re close to your limit": "तुम्ही तुमच्या मर्यादेच्या जवळ आहात",
-    "No limit set": "कोणतीही मर्यादा सेट केलेली नाही",
-    "Set limit": "मर्यादा सेट करा",
-    "No categories found. Start by adding some categories to your settings.": "कोणत्याही श्रेणी सापडल्या नाहीत. तुमच्या सेटिंग्जमध्ये काही श्रेणी जोडून सुरुवात करा.",
-    "Add Category": "श्रेणी जोडा",
-
-    # Categories Page
-    "Categories": "श्रेण्या",
-    "Categories help you understand your spending habits": "श्रेण्या तुम्हाला तुमच्या खर्चाच्या सवयी समजून घेण्यास मदत करतात",
-    "Search categories...": "श्रेण्या शोधा...",
-    "Name": "नाव",
-    "Monthly Limit": "मासिक मर्यादा",
-    "Monthly Limit (Optional)": "मासिक मर्यादा (पर्यायी)",
-    "No Categories Yet": "अद्याप कोणतीही श्रेणी नाही",
-    "Organize your transactions by creating custom categories.": "सानुकूल श्रेण्या तयार करून तुमचे व्यवहार व्यवस्थित करा.",
-    "Edit Category": "श्रेणी संपादित करा",
-
-    # Dashboard - Dynamic Dates
-    "No Budgets Set": "कोणतेही बजेट सेट नाही",
-    "For %(month)s %(year)s": "%(month)s %(year)s साठी",
-    "For %(year)s": "%(year)s साठी",
-    "All Time": "सर्व वेळ",
-
-    # Months
-    "January": "जानेवारी", "February": "फेब्रुवारी", "March": "मार्च", "April": "एप्रिल",
-    "May": "मे", "June": "जून", "July": "जुलै", "August": "ऑगस्ट",
-    "September": "सप्टेंबर", "October": "ऑक्टोबर", "November": "नोव्हेंबर", "December": "डिसेंबर",
-
-    # Expense List Page
-    "Expenses": "खर्च",
-    "Tracking every penny is the first step to financial freedom.": "प्रत्येक पैसा ट्रॅक करणे हे आर्थिक स्वातंत्र्याचे पहिले पाऊल आहे.",
-    "Delete Selected": "निवडलेले हटवा",
-    "Total Records": "एकूण रेकॉर्ड",
-    "Total Amount": "एकूण रक्कम",
-
-
+    "Amount": "रक्कम",
+    "Category": "श्रेणी",
+    "Description": "वर्णन",
+    "Settings": "सेटिंग्ज",
+    "Theme": "थीम",
+    "Login": "लॉगिन",
+    "Join Now": "आत्ताच सामील व्हा",
+    "Currency": "चलन",
+    "Profile": "प्रोफाइल",
+    "Tutorial": "ट्यूटोरियल",
+    "Current Plan": "सध्याचा प्लॅन",
+    "Upgrade": "अपग्रेड",
 }
 
 # Complex strings
