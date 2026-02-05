@@ -635,8 +635,8 @@ def home_view(request):
                     insights.append({
                         'type': 'warning',
                         'icon': 'graph-up-arrow',
-                        'title': 'Traffic Alert 🚦',
-                        'message': f"You're pacing {pct_higher}% higher than usual. Slow down to stay on track!",
+                        'title': _('Traffic Alert 🚦'),
+                        'message': _("You're pacing %(pct_higher)s%% higher than usual. Slow down to stay on track!") % {'pct_higher': pct_higher},
                         'allow_share': False
                     })
 
@@ -653,15 +653,15 @@ def home_view(request):
         
         if savings_rate >= 20:
             # Contextualized Warning for High Savers
-            msg = format_html("Even strong months have leaks. You crossed limits in {} — catching this keeps you on track.", cats_str)
+            msg = format_html(_("Even strong months have leaks. You crossed limits in {cats_str} — catching this keeps you on track."), cats_str=cats_str)
         else:
             # Standard Coaching Warning - "Warning" type (Yellow) instead of Danger (Red) for empathy
-            msg = format_html("⚠️ Budget crossed in {} — let’s rebalance to stay safe.", cats_str)
+            msg = format_html(_("⚠️ Budget crossed in {cats_str} — let’s rebalance to stay safe."), cats_str=cats_str)
 
         insights.append({
             'type': 'warning', # Changed from danger
             'icon': 'exclamation-octagon-fill',
-            'title': 'Budget Breached',
+            'title': _('Budget Breached'),
             'message': msg,
             'allow_share': False
         })
@@ -670,8 +670,8 @@ def home_view(request):
         insights.append({
             'type': 'warning',
             'icon': 'exclamation-triangle-fill',
-            'title': 'Approaching Limit',
-            'message': format_html("Heads up! You're close to overspending on {}.", cats_str),
+            'title': _('Approaching Limit'),
+            'message': format_html(_("Heads up! You're close to overspending on {cats_str}."), cats_str=cats_str),
             'allow_share': False
         })
 
@@ -696,19 +696,19 @@ def home_view(request):
         if total_income > 0 and savings > 0:
             savings_rate = (savings / total_income) * 100
             if savings_rate >= 20:
-                msg_text = f"You've saved {savings_rate:.0f}% of your income this month."
-                share_text = f"I saved {savings_rate:.0f}% of my income this month using TrackMyRupee! 🏆"
+                msg_text = _("You've saved %(savings_rate)s%% of your income this month.") % {'savings_rate': f"{savings_rate:.0f}"}
+                share_text = _("I saved %(savings_rate)s%% of my income this month using TrackMyRupee! 🏆") % {'savings_rate': f"{savings_rate:.0f}"}
                 
                 if top_savers:
                     cats_link = link_cats(top_savers)
-                    msg = format_html("{} You spent less on {} — that's where the magic happened.", msg_text, cats_link)
+                    msg = format_html(_("{msg_text} You spent less on {cats_link} — that's where the magic happened."), msg_text=msg_text, cats_link=cats_link)
                 else:
                     msg = msg_text
 
                 insights.append({
                     'type': 'success',
                     'icon': 'trophy-fill',
-                    'title': 'Super Saver Status! 🏆',
+                    'title': _('Super Saver Status! 🏆'),
                     'message': msg,
                     'allow_share': True,
                     'share_text': share_text
@@ -717,31 +717,31 @@ def home_view(request):
                  insights.append({
                     'type': 'success',
                     'icon': 'graph-up-arrow',
-                    'title': 'Momentum Building 🚀',
-                    'message': f"Your savings grew by {prev_month_data['savings_pct_abs']:.0f}% vs last month. You're getting better at this!",
+                    'title': _('Momentum Building 🚀'),
+                    'message': _("Your savings grew by %(savings_pct_abs)s%% vs last month. You're getting better at this!") % {'savings_pct_abs': f"{prev_month_data['savings_pct_abs']:.0f}"},
                     'allow_share': True,
-                    'share_text': f"My savings grew by {prev_month_data['savings_pct_abs']:.0f}% this month! 🚀 via TrackMyRupee"
+                    'share_text': _("My savings grew by %(savings_pct_abs)s%% this month! 🚀 via TrackMyRupee") % {'savings_pct_abs': f"{prev_month_data['savings_pct_abs']:.0f}"}
                 })
         
         # Expense Control Win (if we haven't already praised savings)
         if len(insights) == 0: 
             if prev_month_data['expense_pct'] and prev_month_data['expense_pct'] < -5:
-                 msg_text = f"You've cut spending by {prev_month_data['expense_pct_abs']:.0f}%."
-                 share_text = f"I cut my spending by {prev_month_data['expense_pct_abs']:.0f}% this month! 👍 via TrackMyRupee"
+                 msg_text = _("You've cut spending by %(expense_pct_abs)s%%.") % {'expense_pct_abs': f"{prev_month_data['expense_pct_abs']:.0f}"}
+                 share_text = _("I cut my spending by %(expense_pct_abs)s%% this month! 👍 via TrackMyRupee") % {'expense_pct_abs': f"{prev_month_data['expense_pct_abs']:.0f}"}
                  
                  if top_savers:
                      cats_link = link_cats(top_savers)
-                     msg = format_html("{} {} saw the biggest drops.", msg_text, cats_link)
+                     msg = format_html(_("{msg_text} {cats_link} saw the biggest drops."), msg_text=msg_text, cats_link=cats_link)
                  else:
                      msg = msg_text
                  
                  insights.append({
                     'type': 'success',
                     'icon': 'check-circle-fill',
-                    'title': 'You’re in Control 👍',
+                    'title': _('You’re in Control 👍'),
                     'message': msg,
                     'allow_share': True,
-                    'share_text': share_text
+                    'share_text': _("I cut my spending by %(expense_pct_abs)s%% this month! 👍 via TrackMyRupee") % {'expense_pct_abs': f"{prev_month_data['expense_pct_abs']:.0f}"}
                 })
 
     # 3. Streak & Identity (Reassuring / Habit Forming)
@@ -768,10 +768,10 @@ def home_view(request):
             insights.append({
                 'type': 'info', # Use Info for "Identity/Streak"
                 'icon': 'fire',
-                'title': 'On a Roll!',
-                'message': f"🔥 This is your {streak}th month in a row staying under budget.",
+                'title': _('On a Roll!'),
+                'message': _("🔥 This is your %(streak)s month in a row staying under budget.") % {'streak': streak},
                 'allow_share': True,
-                'share_text': f"🔥 I've stayed under budget for {streak} months in a row! via TrackMyRupee"
+                'share_text': _("🔥 I've stayed under budget for %(streak)s months in a row! via TrackMyRupee") % {'streak': streak}
             })
 
     # 4. Fallback
@@ -779,16 +779,16 @@ def home_view(request):
         insights.append({
             'type': 'info',
             'icon': 'piggy-bank-fill',
-            'title': 'In the Green',
-            'message': f"You've saved {savings} so far. Keep it up!",
+            'title': _('In the Green'),
+            'message': _("You've saved %(savings)s so far. Keep it up!") % {'savings': savings},
             'allow_share': False
         })
     elif not insights:
         insights.append({
             'type': 'secondary',
             'icon': 'stars',
-            'title': 'Fresh Start',
-            'message': "Small steps today lead to big results tomorrow. Let's track some expenses!",
+            'title': _('Fresh Start'),
+            'message': _("Small steps today lead to big results tomorrow. Let's track some expenses!"),
             'allow_share': False
         })
 
