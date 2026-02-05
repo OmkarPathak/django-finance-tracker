@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-02-05 19:52+0530\n"
+"POT-Creation-Date: 2026-02-05 21:12+0530\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -818,20 +818,16 @@ msgid "February"
 msgstr "फरवरी"
 
 #: env/lib/python3.9/site-packages/django/utils/dates.py:27
-#, fuzzy
-#| msgid "Search"
 msgid "March"
-msgstr "खोजें"
+msgstr "मार्च"
 
 #: env/lib/python3.9/site-packages/django/utils/dates.py:28
 msgid "April"
 msgstr "अप्रैल"
 
 #: env/lib/python3.9/site-packages/django/utils/dates.py:29
-#, fuzzy
-#| msgid "Company"
 msgid "May"
-msgstr "कंपनी"
+msgstr "मई"
 
 #: env/lib/python3.9/site-packages/django/utils/dates.py:30
 msgid "June"
@@ -862,66 +858,52 @@ msgid "December"
 msgstr "दिसंबर"
 
 #: env/lib/python3.9/site-packages/django/utils/dates.py:39
-#, fuzzy
-#| msgid "Sun"
 msgid "jan"
-msgstr "रवि"
+msgstr "जन."
 
 #: env/lib/python3.9/site-packages/django/utils/dates.py:40
 msgid "feb"
-msgstr ""
+msgstr "फ़र."
 
 #: env/lib/python3.9/site-packages/django/utils/dates.py:41
-#, fuzzy
-#| msgid "Company"
 msgid "mar"
-msgstr "कंपनी"
+msgstr "मार्च"
 
 #: env/lib/python3.9/site-packages/django/utils/dates.py:42
-#, fuzzy
-#| msgid "Company"
 msgid "apr"
-msgstr "कंपनी"
+msgstr "अप्रैल"
 
 #: env/lib/python3.9/site-packages/django/utils/dates.py:43
-#, fuzzy
-#| msgid "Company"
 msgid "may"
-msgstr "कंपनी"
+msgstr "मई"
 
 #: env/lib/python3.9/site-packages/django/utils/dates.py:44
-#, fuzzy
-#| msgid "Sun"
 msgid "jun"
-msgstr "रवि"
+msgstr "जून"
 
 #: env/lib/python3.9/site-packages/django/utils/dates.py:45
-#, fuzzy
-#| msgid "Sun"
 msgid "jul"
-msgstr "रवि"
+msgstr "जुलाई"
 
 #: env/lib/python3.9/site-packages/django/utils/dates.py:46
 msgid "aug"
-msgstr ""
+msgstr "अगस्त"
 
 #: env/lib/python3.9/site-packages/django/utils/dates.py:47
 msgid "sep"
-msgstr ""
+msgstr "सितं."
 
 #: env/lib/python3.9/site-packages/django/utils/dates.py:48
-#, fuzzy
-#| msgid "Product"
 msgid "oct"
-msgstr "उत्पाद"
+msgstr "अक्तू."
 
 #: env/lib/python3.9/site-packages/django/utils/dates.py:49
 msgid "nov"
-msgstr ""
+msgstr "नव."
 
 #: env/lib/python3.9/site-packages/django/utils/dates.py:50
 msgid "dec"
-msgstr ""
+msgstr "दिस."
 
 #: env/lib/python3.9/site-packages/django/utils/dates.py:53
 msgctxt "abbrev. month"
@@ -1285,16 +1267,16 @@ msgstr ""
 msgid "Error verifying reCAPTCHA, please try again."
 msgstr ""
 
-#: expenses/views.py:262
+#: expenses/views.py:264
 msgid "Expenses Trend (Custom Range)"
 msgstr "खर्च की प्रवृत्ति (कस्टम रेंज)"
 
-#: expenses/views.py:275
+#: expenses/views.py:277
 #, python-format
 msgid "Daily Expenses for %(month)s/%(year)s"
 msgstr "दैनिक खर्च %(month)s/%(year)s के लिए"
 
-#: expenses/views.py:277
+#: expenses/views.py:279
 #, fuzzy
 #| msgid "Total Expenses"
 msgid "Monthly Expenses Trend"
@@ -1992,16 +1974,12 @@ msgid "Last 12 Months"
 msgstr "पिछले 12 महीने"
 
 #: templates/expenses/analytics.html:33
-#, fuzzy
-#| msgid "Total Income"
 msgid "Total Income (YTD)"
-msgstr "कुल आय"
+msgstr "कुल आय (YTD)"
 
 #: templates/expenses/analytics.html:51
-#, fuzzy
-#| msgid "Total Expenses"
 msgid "Total Expenses (YTD)"
-msgstr "कुल खर्च"
+msgstr "कुल खर्च (YTD)"
 
 #: templates/expenses/analytics.html:69
 msgid "Avg. Balance Rate (YTD)"
@@ -2012,16 +1990,14 @@ msgid "Percentage of income kept as balance/savings"
 msgstr "शेष/बचत के रूप में रखी गई आय का प्रतिशत"
 
 #: templates/expenses/analytics.html:87
-#, fuzzy
-#| msgid "Income vs Expenses"
 msgid "Income vs Expenses Analysis"
-msgstr "आय बनाम खर्च"
+msgstr "आय बनाम खर्च विश्लेषण"
 
 #: templates/expenses/analytics.html:96
 msgid ""
 "Comparing what comes in (Green) vs. what goes out (Red). The gap is your "
 "potential savings."
-msgstr ""
+msgstr "आय (हरा) और व्यय (लाल) की तुलना। यह अंतर आपकी संभावित बचत है।"
 
 #: templates/expenses/analytics.html:107
 msgid "Spending by Category"
@@ -2034,7 +2010,7 @@ msgstr "देखें कि इस वर्ष आपके बजट का
 #: templates/expenses/analytics.html:129
 #, python-format
 msgid "Balance Rate Trend (%%)"
-msgstr ""
+msgstr "शेष दर रुझान (%%)"
 
 #: templates/expenses/analytics.html:138
 #, python-format
@@ -2042,6 +2018,8 @@ msgid ""
 "Shows what %% of your income is left after expenses. A higher positive "
 "percentage means you're growing your wealth."
 msgstr ""
+"दिखाता है कि खर्चों के बाद आपकी आय का कितना %% बचा है। एक उच्च सकारात्मक प्रतिशत का "
+"मतलब है कि आप अपनी संपत्ति बढ़ा रहे हैं।"
 
 #: templates/expenses/analytics.html:220 templates/expenses/calendar.html:50
 #: templates/expenses/calendar.html:85 templates/expenses/income_list.html:8
@@ -2058,15 +2036,13 @@ msgid "Expense"
 msgstr "खर्च"
 
 #: templates/expenses/analytics.html:239
-#, fuzzy
-#| msgid "Balance"
 msgid "Net Balance"
-msgstr "शेष राशि"
+msgstr "कुल शेष (Net Balance)"
 
 #: templates/expenses/analytics.html:367
 #, python-format
 msgid "Balance Rate (%%)"
-msgstr ""
+msgstr "शेष दर (%%)"
 
 #: templates/expenses/budget_dashboard.html:9
 #: templates/expenses/settings_base.html:32
@@ -2157,7 +2133,7 @@ msgstr "श्रेणी जोड़ें"
 #, fuzzy
 #| msgid "Search..."
 msgid "Search entries..."
-msgstr "खोजें..."
+msgstr "प्रविष्टियां खोजें..."
 
 #: templates/expenses/calendar.html:23 templates/expenses/category_list.html:16
 #: templates/expenses/expense_list.html:59
@@ -2171,30 +2147,21 @@ msgid "Clear search"
 msgstr "फ़िल्टर साफ़ करें"
 
 #: templates/expenses/calendar.html:35
-#, fuzzy
-#| msgid "Budget Dashboard"
 msgid "Back to Dashboard"
-msgstr "बजट डैशबोर्ड"
+msgstr "डैशबोर्ड पर वापस जाएं"
 
 #: templates/expenses/calendar.html:43
 #, python-format
-msgid "%(month_name)s net savings:"
-msgstr ""
-
-#: templates/expenses/calendar.html:84
-#, python-format
-msgid "%(month_name)s"
-msgstr ""
+msgid "%(month)s net savings:"
+msgstr "%(month)s कुल बचत:"
 
 #: templates/expenses/calendar.html:85
 msgid "No activity"
-msgstr "कोई गतिविधि नहीं"
+msgstr "कोई व्यवहार नहीं"
 
 #: templates/expenses/calendar.html:85
-#, fuzzy
-#| msgid "View All"
 msgid "View Details"
-msgstr "सभी देखें"
+msgstr "विवरण देखें"
 
 #: templates/expenses/calendar.html:92
 msgid "View expenses for this day"
@@ -2991,7 +2958,8 @@ msgid ""
 "                                "
 msgstr ""
 "\n"
-"                                डिवाइस की जानकारी, आईपी एड्रेस, ब्राउज़र प्रकार और इंटरैक्शन लॉग, जो हमें सेवा को बेहतर बनाने में मदद करते हैं।\n"
+"                                डिवाइस की जानकारी, आईपी एड्रेस, ब्राउज़र प्रकार "
+"और इंटरैक्शन लॉग, जो हमें सेवा को बेहतर बनाने में मदद करते हैं।\n"
 "                                "
 
 #: templates/privacy_policy.html:71
@@ -3002,7 +2970,8 @@ msgid ""
 "                            "
 msgstr ""
 "\n"
-"                            हम अपनी सेवाओं को प्रदान करने, बनाए रखने और बेहतर बनाने के लिए एकत्र की गई जानकारी का उपयोग करते हैं।\n"
+"                            हम अपनी सेवाओं को प्रदान करने, बनाए रखने और बेहतर बनाने "
+"के लिए एकत्र की गई जानकारी का उपयोग करते हैं।\n"
 "                            "
 
 #: templates/privacy_policy.html:77
@@ -3013,7 +2982,8 @@ msgid ""
 "                                "
 msgstr ""
 "\n"
-"                                TrackMyRupee डैशबोर्ड, खर्च ट्रैकिंग और वित्तीय रिपोर्ट प्रदान करना।\n"
+"                                TrackMyRupee डैशबोर्ड, खर्च ट्रैकिंग और वित्तीय "
+"रिपोर्ट प्रदान करना।\n"
 "                                "
 
 #: templates/privacy_policy.html:82
@@ -3034,7 +3004,8 @@ msgid ""
 "                                "
 msgstr ""
 "\n"
-"                                महत्वपूर्ण सूचनाएं भेजना, जैसे पासवर्ड रीसेट या खाता अलर्ट।\n"
+"                                महत्वपूर्ण सूचनाएं भेजना, जैसे पासवर्ड रीसेट या खाता "
+"अलर्ट।\n"
 "                                "
 
 #: templates/privacy_policy.html:92
@@ -3045,7 +3016,8 @@ msgid ""
 "                                "
 msgstr ""
 "\n"
-"                                बग को ठीक करने और प्रदर्शन में सुधार करने के लिए उपयोग पैटर्न का विश्लेषण करना।\n"
+"                                बग को ठीक करने और प्रदर्शन में सुधार करने के लिए "
+"उपयोग पैटर्न का विश्लेषण करना।\n"
 "                                "
 
 #: templates/privacy_policy.html:97
@@ -3056,7 +3028,8 @@ msgid ""
 "                                "
 msgstr ""
 "\n"
-"                                दुरुपयोग को रोकना और हमारी सेवा की शर्तों को लागू करना।\n"
+"                                दुरुपयोग को रोकना और हमारी सेवा की शर्तों को लागू "
+"करना।\n"
 "                                "
 
 #: templates/privacy_policy.html:105
@@ -3067,7 +3040,8 @@ msgid ""
 "                            "
 msgstr ""
 "\n"
-"                            हम अपनी सेवा पर गतिविधि को ट्रैक करने और कुछ जानकारी रखने के लिए कुकीज़ और इसी तरह की ट्रैकिंग तकनीकों का उपयोग करते हैं।\n"
+"                            हम अपनी सेवा पर गतिविधि को ट्रैक करने और कुछ जानकारी "
+"रखने के लिए कुकीज़ और इसी तरह की ट्रैकिंग तकनीकों का उपयोग करते हैं।\n"
 "                            "
 
 #: templates/privacy_policy.html:109
@@ -3084,7 +3058,11 @@ msgid ""
 "                            "
 msgstr ""
 "\n"
-"                            हम अपनी सेवा के उपयोग की निगरानी और विश्लेषण करने के लिए Google Analytics का उपयोग करते हैं। Google Analytics में आपकी आईपी एड्रेस, ब्राउज़र प्रकार और विज़िट किए गए पृष्ठों जैसी जानकारी एकत्र करने के लिए कुकीज़ का उपयोग शामिल है। यह हमें उपयोगकर्ता व्यवहार को समझने और हमारे प्लेटफ़ॉर्म को बेहतर बनाने में मदद करता है।\n"
+"                            हम अपनी सेवा के उपयोग की निगरानी और विश्लेषण करने के "
+"लिए Google Analytics का उपयोग करते हैं। Google Analytics में आपकी आईपी एड्रेस, "
+"ब्राउज़र प्रकार और विज़िट किए गए पृष्ठों जैसी जानकारी एकत्र करने के लिए कुकीज़ का उपयोग "
+"शामिल है। यह हमें उपयोगकर्ता व्यवहार को समझने और हमारे प्लेटफ़ॉर्म को बेहतर बनाने में मदद "
+"करता है।\n"
 "                            "
 
 #: templates/privacy_policy.html:116
@@ -3096,7 +3074,9 @@ msgid ""
 "                            "
 msgstr ""
 "\n"
-"                            आप गूगल एनालिटिक्स ऑप्ट-आउट ब्राउज़र एड-ऑन (Google Analytics Opt-out Browser Add-on) इंस्टॉल करके अपनी गतिविधि को गूगल एनालिटिक्स के लिए उपलब्ध होने से रोक सकते हैं।\n"
+"                            आप गूगल एनालिटिक्स ऑप्ट-आउट ब्राउज़र एड-ऑन (Google "
+"Analytics Opt-out Browser Add-on) इंस्टॉल करके अपनी गतिविधि को गूगल एनालिटिक्स के "
+"लिए उपलब्ध होने से रोक सकते हैं।\n"
 "                            "
 
 #: templates/privacy_policy.html:126
@@ -3125,7 +3105,8 @@ msgid ""
 "                                "
 msgstr ""
 "\n"
-"                                भरोसेमंद तीसरे पक्ष के विक्रेताओं (जैसे, होस्टिंग प्रदाता, ईमेल सेवाएं, एनालिटिक्स) के साथ जो हमारे संचालन में सहायता करते हैं।\n"
+"                                भरोसेमंद तीसरे पक्ष के विक्रेताओं (जैसे, होस्टिंग "
+"प्रदाता, ईमेल सेवाएं, एनालिटिक्स) के साथ जो हमारे संचालन में सहायता करते हैं।\n"
 "                                "
 
 #: templates/privacy_policy.html:139
@@ -3141,7 +3122,8 @@ msgid ""
 "                                "
 msgstr ""
 "\n"
-"                                यदि TrackMyRupee या अन्य के अधिकारों, संपत्ति या सुरक्षा की रक्षा के लिए कानून, विनियमन या कानूनी प्रक्रिया द्वारा आवश्यक हो।\n"
+"                                यदि TrackMyRupee या अन्य के अधिकारों, संपत्ति या "
+"सुरक्षा की रक्षा के लिए कानून, विनियमन या कानूनी प्रक्रिया द्वारा आवश्यक हो।\n"
 "                                "
 
 #: templates/privacy_policy.html:145
@@ -3157,7 +3139,9 @@ msgid ""
 "                                "
 msgstr ""
 "\n"
-"                                किसी भी विलय, कंपनी की संपत्ति की बिक्री, वित्तपोषण, या हमारे व्यवसाय के सभी या किसी हिस्से के अधिग्रहण के संबंध में, या बातचीत के दौरान।\n"
+"                                किसी भी विलय, कंपनी की संपत्ति की बिक्री, "
+"वित्तपोषण, या हमारे व्यवसाय के सभी या किसी हिस्से के अधिग्रहण के संबंध में, या बातचीत के "
+"दौरान।\n"
 "                                "
 
 #: templates/privacy_policy.html:156
@@ -3168,7 +3152,8 @@ msgid ""
 "                            "
 msgstr ""
 "\n"
-"                            हम आपकी जानकारी की सुरक्षा के लिए उचित तकनीकी और संगठनात्मक उपाय लागू करते हैं।\n"
+"                            हम आपकी जानकारी की सुरक्षा के लिए उचित तकनीकी और "
+"संगठनात्मक उपाय लागू करते हैं।\n"
 "                            "
 
 #: templates/privacy_policy.html:162
@@ -3190,7 +3175,8 @@ msgid ""
 "                                "
 msgstr ""
 "\n"
-"                                पारगमन में सभी डेटा के लिए सुरक्षित HTTPS (TLS/SSL)।\n"
+"                                पारगमन में सभी डेटा के लिए सुरक्षित HTTPS (TLS/"
+"SSL)।\n"
 "                                "
 
 #: templates/privacy_policy.html:172
@@ -3211,7 +3197,8 @@ msgid ""
 "                                "
 msgstr ""
 "\n"
-"                                व्यक्तिगत डेटा तक आंतरिक पहुंच को सीमित करने के लिए पहुंच नियंत्रण (Access controls)।\n"
+"                                व्यक्तिगत डेटा तक आंतरिक पहुंच को सीमित करने के लिए "
+"पहुंच नियंत्रण (Access controls)।\n"
 "                                "
 
 #: templates/privacy_policy.html:187
@@ -3237,7 +3224,8 @@ msgid ""
 "                                "
 msgstr ""
 "\n"
-"                                आप सीधे एप्लिकेशन के भीतर अपनी प्रोफ़ाइल और वित्तीय डेटा देख और संपादित कर सकते हैं।\n"
+"                                आप सीधे एप्लिकेशन के भीतर अपनी प्रोफ़ाइल और वित्तीय "
+"डेटा देख और संपादित कर सकते हैं।\n"
 "                                "
 
 #: templates/privacy_policy.html:199
@@ -3252,7 +3240,8 @@ msgid ""
 "                                "
 msgstr ""
 "\n"
-"                                आप किसी भी समय अपना डेटा (जैसे, CSV/Excel में) निर्यात कर सकते हैं।\n"
+"                                आप किसी भी समय अपना डेटा (जैसे, CSV/Excel में) "
+"निर्यात कर सकते हैं।\n"
 "                                "
 
 #: templates/privacy_policy.html:205
@@ -3267,7 +3256,8 @@ msgid ""
 "                                "
 msgstr ""
 "\n"
-"                                आप अपना खाता और उससे संबंधित सभी डेटा स्थायी रूप से हटाने का अनुरोध कर सकते हैं।\n"
+"                                आप अपना खाता और उससे संबंधित सभी डेटा स्थायी रूप से "
+"हटाने का अनुरोध कर सकते हैं।\n"
 "                                "
 
 #: templates/privacy_policy.html:211
@@ -3282,7 +3272,8 @@ msgid ""
 "                                "
 msgstr ""
 "\n"
-"                                आप अपनी ईमेल प्राथमिकताओं को प्रबंधित कर सकते हैं या अनावश्यक ईमेल से अनसब्सक्राइब कर सकते हैं।\n"
+"                                आप अपनी ईमेल प्राथमिकताओं को प्रबंधित कर सकते हैं या "
+"अनावश्यक ईमेल से अनसब्सक्राइब कर सकते हैं।\n"
 "                                "
 
 #: templates/privacy_policy.html:222
@@ -3293,7 +3284,8 @@ msgid ""
 "                            "
 msgstr ""
 "\n"
-"                            हम आपकी जानकारी को केवल तब तक सुरक्षित रखते हैं जब तक कि हमारी सेवाएं प्रदान करने और कानूनी दायित्वों का पालन करने के लिए आवश्यक हो।\n"
+"                            हम आपकी जानकारी को केवल तब तक सुरक्षित रखते हैं जब तक "
+"कि हमारी सेवाएं प्रदान करने और कानूनी दायित्वों का पालन करने के लिए आवश्यक हो।\n"
 "                            "
 
 #: templates/privacy_policy.html:228
@@ -3308,7 +3300,8 @@ msgid ""
 "                                "
 msgstr ""
 "\n"
-"                                जब तक आपका खाता सक्रिय रहता है, डेटा सुरक्षित रखा जाता है।\n"
+"                                जब तक आपका खाता सक्रिय रहता है, डेटा सुरक्षित रखा "
+"जाता है।\n"
 "                                "
 
 #: templates/privacy_policy.html:234
@@ -3324,7 +3317,9 @@ msgid ""
 "                                "
 msgstr ""
 "\n"
-"                                यदि आप अपना खाता हटाते हैं, तो आपकी व्यक्तिगत जानकारी हमारे सक्रिय डेटाबेस से तुरंत हटा दी जाती है और 30-90 दिनों के भीतर बैकअप से हटा दी जाती है।\n"
+"                                यदि आप अपना खाता हटाते हैं, तो आपकी व्यक्तिगत "
+"जानकारी हमारे सक्रिय डेटाबेस से तुरंत हटा दी जाती है और 30-90 दिनों के भीतर बैकअप से हटा "
+"दी जाती है।\n"
 "                                "
 
 #: templates/privacy_policy.html:245
@@ -3337,7 +3332,9 @@ msgid ""
 "                            "
 msgstr ""
 "\n"
-"                            TrackMyRupee 13 वर्ष से कम उम्र के बच्चों के लिए नहीं है। हम जानबूझकर बच्चों से जानकारी एकत्र नहीं करते हैं। यदि हमें पता चलता है कि हमने 13 वर्ष से कम उम्र के बच्चे से व्यक्तिगत जानकारी एकत्र की है, तो हम उसे हटा देंगे।\n"
+"                            TrackMyRupee 13 वर्ष से कम उम्र के बच्चों के लिए नहीं है। "
+"हम जानबूझकर बच्चों से जानकारी एकत्र नहीं करते हैं। यदि हमें पता चलता है कि हमने 13 वर्ष से "
+"कम उम्र के बच्चे से व्यक्तिगत जानकारी एकत्र की है, तो हम उसे हटा देंगे।\n"
 "                            "
 
 #: templates/privacy_policy.html:255
@@ -3351,7 +3348,9 @@ msgid ""
 "                            "
 msgstr ""
 "\n"
-"                            हम समय-समय पर इस गोपनीयता नीति को अपडेट कर सकते हैं। हम इस पृष्ठ पर नई नीति पोस्ट करके या आपको ईमेल भेजकर महत्वपूर्ण परिवर्तनों के बारे में सूचित करेंगे। सेवा का आपका निरंतर उपयोग परिवर्तनों की स्वीकृति माना जाएगा।\n"
+"                            हम समय-समय पर इस गोपनीयता नीति को अपडेट कर सकते हैं। "
+"हम इस पृष्ठ पर नई नीति पोस्ट करके या आपको ईमेल भेजकर महत्वपूर्ण परिवर्तनों के बारे में सूचित "
+"करेंगे। सेवा का आपका निरंतर उपयोग परिवर्तनों की स्वीकृति माना जाएगा।\n"
 "                            "
 
 #: templates/privacy_policy.html:265
@@ -3362,7 +3361,8 @@ msgid ""
 "                            "
 msgstr ""
 "\n"
-"                            यदि इस गोपनीयता नीति या हमारी प्रथाओं के बारे में आपके कोई प्रश्न हैं, तो कृपया हमसे यहाँ संपर्क करें:\n"
+"                            यदि इस गोपनीयता नीति या हमारी प्रथाओं के बारे में आपके "
+"कोई प्रश्न हैं, तो कृपया हमसे यहाँ संपर्क करें:\n"
 "                            "
 
 #: templates/refund_policy.html:8
@@ -3381,7 +3381,8 @@ msgid ""
 "                "
 msgstr ""
 "\n"
-"                TrackMyRupee में, हम अपनी सेवाओं से आपकी संतुष्टि सुनिश्चित करने का प्रयास करते हैं। यह नीति रद्दीकरण और धनवापसी के नियमों को रेखांकित करती है।\n"
+"                TrackMyRupee में, हम अपनी सेवाओं से आपकी संतुष्टि सुनिश्चित करने का "
+"प्रयास करते हैं। यह नीति रद्दीकरण और धनवापसी के नियमों को रेखांकित करती है।\n"
 "                "
 
 #: templates/refund_policy.html:20 templates/refund_policy.html:28
@@ -3416,7 +3417,8 @@ msgid ""
 "                        "
 msgstr ""
 "\n"
-"                        आप अपनी सदस्यता सीधे अपने खाता सेटिंग (account settings) पृष्ठ से या हमारी सहायता टीम से संपर्क करके रद्द कर सकते हैं।\n"
+"                        आप अपनी सदस्यता सीधे अपने खाता सेटिंग (account settings) "
+"पृष्ठ से या हमारी सहायता टीम से संपर्क करके रद्द कर सकते हैं।\n"
 "                        "
 
 #: templates/refund_policy.html:38
@@ -3432,7 +3434,8 @@ msgid ""
 "                        "
 msgstr ""
 "\n"
-"                        रद्दीकरण पर, आपकी सदस्यता वर्तमान बिलिंग चक्र के अंत तक सक्रिय रहेगी। आपसे अगले चक्र के लिए शुल्क नहीं लिया जाएगा।\n"
+"                        रद्दीकरण पर, आपकी सदस्यता वर्तमान बिलिंग चक्र के अंत तक "
+"सक्रिय रहेगी। आपसे अगले चक्र के लिए शुल्क नहीं लिया जाएगा।\n"
 "                        "
 
 #: templates/refund_policy.html:44
@@ -3448,7 +3451,9 @@ msgid ""
 "                        "
 msgstr ""
 "\n"
-"                        रद्दीकरण के बाद, आपका खाता 'फ्री प्लान' (यदि लागू हो) में वापस आ जाएगा या हमारी डेटा प्रतिधारण नीति के अनुसार सुलभ रहेगा। आप किसी भी समय खाता पूरी तरह से हटाने का अनुरोध कर सकते हैं।\n"
+"                        रद्दीकरण के बाद, आपका खाता 'फ्री प्लान' (यदि लागू हो) में "
+"वापस आ जाएगा या हमारी डेटा प्रतिधारण नीति के अनुसार सुलभ रहेगा। आप किसी भी समय "
+"खाता पूरी तरह से हटाने का अनुरोध कर सकते हैं।\n"
 "                        "
 
 #: templates/refund_policy.html:55
@@ -3459,7 +3464,8 @@ msgid ""
 "                    "
 msgstr ""
 "\n"
-"                    हम यह सुनिश्चित करने के लिए एक पारदर्शी धनवापसी नीति प्रदान करते हैं कि आप हमारी प्रीमियम सुविधाओं को आज़माने में आत्मविश्वास महसूस करें।\n"
+"                    हम यह सुनिश्चित करने के लिए एक पारदर्शी धनवापसी नीति प्रदान "
+"करते हैं कि आप हमारी प्रीमियम सुविधाओं को आज़माने में आत्मविश्वास महसूस करें।\n"
 "                    "
 
 #: templates/refund_policy.html:61
@@ -3475,7 +3481,8 @@ msgid ""
 "                        "
 msgstr ""
 "\n"
-"                        यदि आप अपनी प्रीमियम सदस्यता (Plus या Pro) से संतुष्ट नहीं हैं, तो आप अपनी प्रारंभिक खरीद के 14 दिनों के भीतर पूर्ण धनवापसी का अनुरोध कर सकते हैं।\n"
+"                        यदि आप अपनी प्रीमियम सदस्यता (Plus या Pro) से संतुष्ट नहीं "
+"हैं, तो आप अपनी प्रारंभिक खरीद के 14 दिनों के भीतर पूर्ण धनवापसी का अनुरोध कर सकते हैं।\n"
 "                        "
 
 #: templates/refund_policy.html:67
@@ -3491,7 +3498,9 @@ msgid ""
 "                        "
 msgstr ""
 "\n"
-"                        धनवापसी के पात्र होने के लिए, आपको 14-दिन की अवधि के भीतर अपना अनुरोध सबमिट करना होगा। प्रारंभिक 14-दिन की अवधि के बाद आंशिक महीनों के लिए आम तौर पर धनवापसी प्रदान नहीं की जाती है।\n"
+"                        धनवापसी के पात्र होने के लिए, आपको 14-दिन की अवधि के भीतर "
+"अपना अनुरोध सबमिट करना होगा। प्रारंभिक 14-दिन की अवधि के बाद आंशिक महीनों के लिए आम "
+"तौर पर धनवापसी प्रदान नहीं की जाती है।\n"
 "                        "
 
 #: templates/refund_policy.html:73
@@ -3506,7 +3515,8 @@ msgid ""
 "                        "
 msgstr ""
 "\n"
-"                        हम नीति के संदिग्ध दुरुपयोग या हमारी सेवा की शर्तों के उल्लंघन के मामलों में धनवापसी से इनकार करने का अधिकार सुरक्षित रखते हैं।\n"
+"                        हम नीति के संदिग्ध दुरुपयोग या हमारी सेवा की शर्तों के उल्लंघन "
+"के मामलों में धनवापसी से इनकार करने का अधिकार सुरक्षित रखते हैं।\n"
 "                        "
 
 #: templates/refund_policy.html:83
@@ -3521,7 +3531,8 @@ msgid ""
 "                        "
 msgstr ""
 "\n"
-"                        धनवापसी की राशि आपके मूल भुगतान माध्यम में वापस जमा कर दी जाएगी।\n"
+"                        धनवापसी की राशि आपके मूल भुगतान माध्यम में वापस जमा कर दी "
+"जाएगी।\n"
 "                        "
 
 #: templates/refund_policy.html:91
@@ -3532,7 +3543,8 @@ msgid ""
 "                        "
 msgstr ""
 "\n"
-"                        आपके बैंक या भुगतान प्रदाता के आधार पर, प्रसंस्करण (processing) समय आमतौर पर 5 से 10 कार्य दिवसों तक होता है।\n"
+"                        आपके बैंक या भुगतान प्रदाता के आधार पर, प्रसंस्करण "
+"(processing) समय आमतौर पर 5 से 10 कार्य दिवसों तक होता है।\n"
 "                        "
 
 #: templates/refund_policy.html:101
@@ -3543,7 +3555,8 @@ msgid ""
 "                    "
 msgstr ""
 "\n"
-"                    यदि आप धनवापसी का अनुरोध करना चाहते हैं या इस नीति के बारे में आपके कोई प्रश्न हैं, तो कृपया हमारी सहायता टीम से यहां संपर्क करें:\n"
+"                    यदि आप धनवापसी का अनुरोध करना चाहते हैं या इस नीति के बारे में "
+"आपके कोई प्रश्न हैं, तो कृपया हमारी सहायता टीम से यहां संपर्क करें:\n"
 "                    "
 
 #: templates/socialaccount/authentication_error.html:9
@@ -3624,7 +3637,9 @@ msgid ""
 "                        "
 msgstr ""
 "\n"
-"                        TrackMyRupee का उपयोग करके या उसमें प्रवेश करके, आप इन सेवा की शर्तों (Terms of Service) से बंधे होने के लिए सहमत हैं। यदि आप शर्तों के किसी भी भाग से असहमत हैं, तो आप सेवा का उपयोग नहीं कर सकते।\n"
+"                        TrackMyRupee का उपयोग करके या उसमें प्रवेश करके, आप इन सेवा "
+"की शर्तों (Terms of Service) से बंधे होने के लिए सहमत हैं। यदि आप शर्तों के किसी भी भाग "
+"से असहमत हैं, तो आप सेवा का उपयोग नहीं कर सकते।\n"
 "                        "
 
 #: templates/terms_of_service.html:19
@@ -3641,7 +3656,9 @@ msgid ""
 "                        "
 msgstr ""
 "\n"
-"                        आप अपने खाते और पासवर्ड की गोपनीयता बनाए रखने के लिए जिम्मेदार हैं। आप अपने खाते के तहत होने वाली सभी गतिविधियों की जिम्मेदारी स्वीकार करने के लिए सहमत हैं।\n"
+"                        आप अपने खाते और पासवर्ड की गोपनीयता बनाए रखने के लिए "
+"जिम्मेदार हैं। आप अपने खाते के तहत होने वाली सभी गतिविधियों की जिम्मेदारी स्वीकार करने के "
+"लिए सहमत हैं।\n"
 "                        "
 
 #: templates/terms_of_service.html:27
@@ -3657,7 +3674,9 @@ msgid ""
 "                        "
 msgstr ""
 "\n"
-"                        आपके द्वारा एप्लिकेशन में दर्ज किए गए डेटा का स्वामित्व आपके पास ही रहता है। हम आपके द्वारा सेवा को प्रदान की गई सामग्री पर किसी भी बौद्धिक संपदा अधिकार (intellectual property rights) का दावा नहीं करते हैं।\n"
+"                        आपके द्वारा एप्लिकेशन में दर्ज किए गए डेटा का स्वामित्व आपके "
+"पास ही रहता है। हम आपके द्वारा सेवा को प्रदान की गई सामग्री पर किसी भी बौद्धिक संपदा "
+"अधिकार (intellectual property rights) का दावा नहीं करते हैं।\n"
 "                        "
 
 #: templates/terms_of_service.html:35
@@ -3673,7 +3692,9 @@ msgid ""
 "                        "
 msgstr ""
 "\n"
-"                        सेवा \"जैसा है\" (AS IS) और \"जैसा उपलब्ध है\" (AS AVAILABLE) के आधार पर प्रदान की जाती है। TrackMyRupee सेवा की विश्वसनीयता, सटीकता या उपलब्धता के संबंध में कोई वारंटी नहीं देता है।\n"
+"                        सेवा \"जैसा है\" (AS IS) और \"जैसा उपलब्ध है\" (AS "
+"AVAILABLE) के आधार पर प्रदान की जाती है। TrackMyRupee सेवा की विश्वसनीयता, सटीकता "
+"या उपलब्धता के संबंध में कोई वारंटी नहीं देता है।\n"
 "                        "
 
 #: templates/terms_of_service.html:42
@@ -3685,7 +3706,9 @@ msgid ""
 "                            "
 msgstr ""
 "\n"
-"                            हम अपने एप्लिकेशन के उपयोग या उपयोग करने में असमर्थता के परिणामस्वरूप होने वाले किसी भी डेटा हानि, सेवा व्यवधान, या वित्तीय नुकसान के लिए उत्तरदायी नहीं हैं।\n"
+"                            हम अपने एप्लिकेशन के उपयोग या उपयोग करने में असमर्थता के "
+"परिणामस्वरूप होने वाले किसी भी डेटा हानि, सेवा व्यवधान, या वित्तीय नुकसान के लिए "
+"उत्तरदायी नहीं हैं।\n"
 "                            "
 
 #: templates/terms_of_service.html:46
@@ -3698,7 +3721,9 @@ msgid ""
 "                        "
 msgstr ""
 "\n"
-"                        किसी भी स्थिति में TrackMyRupee किसी भी अप्रत्यक्ष, आकस्मिक, विशेष, परिणामी या दंडात्मक नुकसान के लिए उत्तरदायी नहीं होगा, जिसमें लाभ, डेटा, उपयोग, सद्भावना (goodwill), या अन्य अमूर्त नुकसान शामिल हैं।\n"
+"                        किसी भी स्थिति में TrackMyRupee किसी भी अप्रत्यक्ष, "
+"आकस्मिक, विशेष, परिणामी या दंडात्मक नुकसान के लिए उत्तरदायी नहीं होगा, जिसमें लाभ, "
+"डेटा, उपयोग, सद्भावना (goodwill), या अन्य अमूर्त नुकसान शामिल हैं।\n"
 "                        "
 
 #: templates/terms_of_service.html:51
@@ -3715,7 +3740,9 @@ msgid ""
 "                        "
 msgstr ""
 "\n"
-"                        हम किसी भी समय इन शर्तों को संशोधित करने या बदलने का अधिकार सुरक्षित रखते हैं। हम किसी भी नई शर्तों के प्रभावी होने से कम से कम 30 दिन पहले नोटिस प्रदान करने का प्रयास करेंगे।\n"
+"                        हम किसी भी समय इन शर्तों को संशोधित करने या बदलने का "
+"अधिकार सुरक्षित रखते हैं। हम किसी भी नई शर्तों के प्रभावी होने से कम से कम 30 दिन पहले "
+"नोटिस प्रदान करने का प्रयास करेंगे।\n"
 "                        "
 
 #: templates/upload.html:7

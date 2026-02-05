@@ -1,5 +1,5 @@
 {% extends 'expenses/settings_base.html' %}
-{% load i18n %}
+{% load i18n digit_filters %}
 
 {% block settings_content %}
 <div class="fade-in">
@@ -19,7 +19,7 @@
                     <select name="year" class="form-select form-select-sm" onchange="this.form.submit()">
                         {% for y in years %}
                             <option value="{{ y }}" {% if y == current_year %}selected{% endif %}>
-                                {{ y }}
+                                {{ y|translate_digits }}
                             </option>
                         {% endfor %}
                     </select>
@@ -38,15 +38,15 @@
                         <div class="col-md-4">
                             <h4 class="h6 text-muted text-uppercase fw-bold mb-1">{% trans "Total Budget Goal" %}</h4>
                             <div class="d-flex align-items-center mb-0">
-                                <p class="h3 fw-bold mb-0">{{ currency_symbol }}{{ total_spent|floatformat:2 }}</p>
+                                <p class="h3 fw-bold mb-0">{{ currency_symbol }}{{ total_spent|floatformat:2|translate_digits }}</p>
                                 {% if spent_mom_pct is not None %}
                                     <span class="badge rounded-pill {% if spent_mom_pct > 0 %}bg-danger{% else %}bg-success{% endif %} ms-2" style="font-size: 0.8rem;" title="{% trans 'vs last month' %}">
                                         <i class="bi bi-arrow-{% if spent_mom_pct > 0 %}up{% else %}down{% endif %}"></i>
-                                        {{ spent_mom_pct_abs|floatformat:1 }}%
+                                        {{ spent_mom_pct_abs|floatformat:1|translate_digits }}%
                                     </span>
                                 {% endif %}
                             </div>
-                            <span class="text-muted h5">/ {{ currency_symbol }}{{ total_budget|floatformat:2 }}</span>
+                            <span class="text-muted h5">/ {{ currency_symbol }}{{ total_budget|floatformat:2|translate_digits }}</span>
                         </div>
                         <div class="col-md-8">
                             <div class="progress" style="height: 12px; border-radius: 6px;">
@@ -59,12 +59,12 @@
                                 </div>
                             </div>
                             <div class="d-flex justify-content-between mt-2">
-                                <span class="small text-muted">{% blocktrans with percent=total_percentage|floatformat:1 %}{{ percent }}% Used{% endblocktrans %}</span>
+                                <span class="small text-muted">{% blocktrans with percent=total_percentage|floatformat:1|translate_digits %}{{ percent }}% Used{% endblocktrans %}</span>
                                 <span class="small {% if total_spent > total_budget %}text-danger fw-bold{% else %}text-muted{% endif %}">
                                     {% if total_spent > total_budget %}
-                                        {% blocktrans with amount=over_budget_amount|floatformat:2 currency=currency_symbol %}Over budget by {{ currency }}{{ amount }}{% endblocktrans %}
+                                        {% blocktrans with amount=over_budget_amount|floatformat:2|translate_digits currency=currency_symbol %}Over budget by {{ currency }}{{ amount }}{% endblocktrans %}
                                     {% else %}
-                                        {% blocktrans with amount=total_remaining|floatformat:2 currency=currency_symbol %}{{ currency }}{{ amount }} remaining{% endblocktrans %}
+                                        {% blocktrans with amount=total_remaining|floatformat:2|translate_digits currency=currency_symbol %}{{ currency }}{{ amount }} remaining{% endblocktrans %}
                                     {% endif %}
                                 </span>
                             </div>
@@ -91,12 +91,12 @@
                                         <i class="bi bi-pencil-square"></i>
                                     </a>
                                 </div>
-                                <small class="text-muted">{% blocktrans with amount=data.spent|floatformat:0 currency=currency_symbol %}Spent: {{ currency }}{{ amount }}{% endblocktrans %}</small>
+                                <small class="text-muted">{% blocktrans with amount=data.spent|floatformat:0|translate_digits currency=currency_symbol %}Spent: {{ currency }}{{ amount }}{% endblocktrans %}</small>
                             </div>
                             {% if data.limit %}
                                 <div class="text-end">
                                     <span class="badge {% if data.actual_percentage > 100 %}bg-danger{% elif data.actual_percentage > 80 %}bg-warning{% else %}bg-success-subtle text-success{% endif %}">
-                                        {{ data.actual_percentage|floatformat:0 }}%
+                                        {{ data.actual_percentage|floatformat:0|translate_digits }}%
                                     </span>
                                 </div>
                             {% endif %}
@@ -113,12 +113,12 @@
                                 </div>
                             </div>
                             <div class="d-flex justify-content-between mt-2 small">
-                                <span class="text-muted">{% blocktrans with limit=data.limit|floatformat:0 currency=currency_symbol %}Limit: {{ currency }}{{ limit }}{% endblocktrans %}</span>
+                                <span class="text-muted">{% blocktrans with limit=data.limit|floatformat:0|translate_digits currency=currency_symbol %}Limit: {{ currency }}{{ limit }}{% endblocktrans %}</span>
                                 <span class="{% if data.spent > data.limit %}text-danger fw-bold{% else %}text-muted{% endif %}">
                                     {% if data.spent > data.limit %}
-                                        +{{ currency_symbol }}{{ data.over_budget|floatformat:0 }}
+                                        +{{ currency_symbol }}{{ data.over_budget|floatformat:0|translate_digits }}
                                     {% else %}
-                                        {% blocktrans with left=data.remaining|floatformat:0 currency=currency_symbol %}{{ currency }}{{ left }} left{% endblocktrans %}
+                                        {% blocktrans with left=data.remaining|floatformat:0|translate_digits currency=currency_symbol %}{{ currency }}{{ left }} left{% endblocktrans %}
                                     {% endif %}
                                 </span>
                             </div>

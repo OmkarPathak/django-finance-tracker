@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load i18n %}
+{% load i18n digit_filters %}
 
 {% block content %}
 <div class="fade-in">
@@ -9,7 +9,7 @@
             <a href="{% url 'calendar-month' prev_year prev_month %}{% if search_query %}?search={{ search_query }}{% endif %}" class="btn btn-sm">
                 <i class="bi bi-chevron-left"></i>
             </a>
-            <h2 class="h4 mb-0 fw-bold">{{ month_name }} {{ current_year }}</h2>
+            <h2 class="h4 mb-0 fw-bold">{{ month_name }} {{ current_year|translate_digits }}</h2>
             <a href="{% url 'calendar-month' next_year next_month %}{% if search_query %}?search={{ search_query }}{% endif %}" class="btn btn-sm">
                 <i class="bi bi-chevron-right"></i>
             </a>
@@ -40,9 +40,9 @@
     <!-- Legend & Net Savings -->
     <div class="px-3 py-3 d-flex flex-column flex-sm-row justify-content-between align-items-center gap-2 border-bottom">
         <div class="h5 mb-0">
-            {% blocktrans %}{{ month_name }} net savings:{% endblocktrans %} 
+            {% blocktrans with month=month_name %}{{ month }} net savings:{% endblocktrans %} 
             <span class="{% if month_net_savings >= 0 %}text-success{% else %}text-danger{% endif %} fw-bold">
-                {{ currency_symbol }}{{ month_net_savings|floatformat:2 }}
+                {{ currency_symbol }}{{ month_net_savings|floatformat:2|translate_digits }}
             </span>
         </div>
         <div class="d-flex gap-3 small">
@@ -81,12 +81,12 @@
                          data-bs-placement="top"
                          data-bs-html="true"
                          data-bs-custom-class="custom-popover"
-                         data-bs-title="<b>{{ day_data.day }} {% blocktrans %}{{ month_name }}{% endblocktrans %}</b>"
-                         data-bs-content="{% if day_data.income > 0 %}<div class='text-success mb-1'>{% trans 'Income' %}: <b>{{ currency_symbol }}{{ day_data.income|floatformat:0 }}</b></div>{% endif %}{% if day_data.expense > 0 %}<div class='text-danger mb-1'>{% trans 'Expense' %}: <b>{{ currency_symbol }}{{ day_data.expense|floatformat:0 }}</b></div>{% endif %}{% if day_data.income == 0 and day_data.expense == 0 %}<div class='text-muted mb-1'>{% trans 'No activity' %}</div>{% endif %}<a href='{% url 'expense-list' %}?start_date={{ current_year }}-{{ current_month|stringformat:'02d' }}-{{ day_data.day|stringformat:'02d' }}&end_date={{ current_year }}-{{ current_month|stringformat:'02d' }}-{{ day_data.day|stringformat:'02d' }}' class='btn btn-sm btn-outline-secondary w-100 mt-2'>{% trans 'View Details' %}</a>">
+                         data-bs-title="<b>{{ day_data.day|translate_digits }} {{ month_name }}</b>"
+                         data-bs-content="{% if day_data.income > 0 %}<div class='text-success mb-1'>{% trans 'Income' %}: <b>{{ currency_symbol }}{{ day_data.income|floatformat:0|translate_digits }}</b></div>{% endif %}{% if day_data.expense > 0 %}<div class='text-danger mb-1'>{% trans 'Expense' %}: <b>{{ currency_symbol }}{{ day_data.expense|floatformat:0|translate_digits }}</b></div>{% endif %}{% if day_data.income == 0 and day_data.expense == 0 %}<div class='text-muted mb-1'>{% trans 'No activity' %}</div>{% endif %}<a href='{% url 'expense-list' %}?start_date={{ current_year }}-{{ current_month|stringformat:'02d' }}-{{ day_data.day|stringformat:'02d' }}&end_date={{ current_year }}-{{ current_month|stringformat:'02d' }}-{{ day_data.day|stringformat:'02d' }}' class='btn btn-sm btn-outline-secondary w-100 mt-2'>{% trans 'View Details' %}</a>">
                         
                         <!-- Date Number & Link -->
                         <div class="d-flex justify-content-between w-100 px-1 mb-1 mb-md-2">
-                            <span class="small fw-bold">{{ day_data.day }}</span>
+                            <span class="small fw-bold">{{ day_data.day|translate_digits }}</span>
                             <a href="{% url 'expense-list' %}?start_date={{ current_year }}-{{ current_month|stringformat:'02d' }}-{{ day_data.day|stringformat:'02d' }}&end_date={{ current_year }}-{{ current_month|stringformat:'02d' }}-{{ day_data.day|stringformat:'02d' }}" 
                                class="text-decoration-none text-muted d-none d-md-inline" 
                                title="{% trans 'View expenses for this day' %}"
@@ -99,13 +99,13 @@
                         <div class="d-none d-md-flex flex-column gap-1">
                             {% if day_data.income > 0 %}
                             <div class="badge text-bg-success text-start w-100 fw-normal text-truncate">
-                                + {{ currency_symbol }}{{ day_data.income|floatformat:0 }}
+                                + {{ currency_symbol }}{{ day_data.income|floatformat:0|translate_digits }}
                             </div>
                             {% endif %}
                             
                             {% if day_data.expense > 0 %}
                             <div class="badge text-bg-danger text-start w-100 fw-normal text-truncate">
-                                - {{ currency_symbol }}{{ day_data.expense|floatformat:0 }}
+                                - {{ currency_symbol }}{{ day_data.expense|floatformat:0|translate_digits }}
                             </div>
                             {% endif %}
                         </div>

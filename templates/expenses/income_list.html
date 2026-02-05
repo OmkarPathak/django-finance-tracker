@@ -1,5 +1,5 @@
 {% extends 'expenses/settings_base.html' %}
-{% load i18n %}
+{% load i18n digit_filters %}
 
 {% block settings_content %}
     <!-- Mobile Header -->
@@ -67,13 +67,13 @@
             <div class="col-6 col-md-auto">
                 <div class="p-2 border rounded bg-body-tertiary shadow-sm text-center text-md-start">
                     <small class="text-muted d-block text-uppercase" style="font-size: 0.7rem; letter-spacing: 0.5px;">{% trans "Total Records" %}</small>
-                    <span class="fw-bold text-body-emphasis">{{ filtered_count }}</span>
+                    <span class="fw-bold text-body-emphasis">{{ filtered_count|translate_digits }}</span>
                 </div>
             </div>
              <div class="col-6 col-md-auto">
                 <div class="p-2 border rounded bg-body-tertiary shadow-sm text-center text-md-start">
                     <small class="text-muted d-block text-uppercase" style="font-size: 0.7rem; letter-spacing: 0.5px;">{% trans "Total Amount" %}</small>
-                    <span class="fw-bold text-info">₹{{ filtered_amount|floatformat:2 }}</span>
+                    <span class="fw-bold text-info">₹{{ filtered_amount|floatformat:2|translate_digits }}</span>
                 </div>
             </div>
         </div>
@@ -96,12 +96,12 @@
                 <tbody>
                     {% for income in incomes %}
                     <tr>
-                        <td class="ps-4 text-nowrap">{{ income.date|date:"d M Y" }}</td>
+                        <td class="ps-4 text-nowrap">{{ income.date|date:"d M Y"|translate_digits }}</td>
                         <td>
                             <span class="badge bg-success opacity-75">{{ income.source }}</span>
                         </td>
                         <td>{{ income.description|default:"-"|truncatechars:30 }}</td>
-                        <td class="fw-bold text-success">{{ income.amount|floatformat:2 }}</td>
+                        <td class="fw-bold text-success">{{ income.amount|floatformat:2|translate_digits }}</td>
                         <td class="text-end pe-4 text-nowrap">
                             <div class="hstack gap-3 justify-content-end">
                                     <button type="button" class="btn btn-sm btn-link text-decoration-none p-0 d-inline-flex align-items-center" 
@@ -172,7 +172,7 @@
 
                 <li class="page-item disabled">
                     <span class="page-link">
-                        {% trans "Page" %} {{ page_obj.number }} {% trans "of" %} {{ page_obj.paginator.num_pages }}
+                        {% trans "Page" %} {{ page_obj.number|translate_digits }} {% trans "of" %} {{ page_obj.paginator.num_pages|translate_digits }}
                     </span>
                 </li>
 

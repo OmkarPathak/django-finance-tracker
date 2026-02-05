@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load i18n %}
+{% load i18n digit_filters %}
 
 {% block content %}
 <style>
@@ -82,7 +82,7 @@
                 <select name="year" id="year-select" class="form-control django-multi-select" multiple placeholder="Years...">
                     {% for dt in years %}
                         <option value="{{ dt }}" {% if dt|stringformat:"s" in selected_years %}selected{% endif %}>
-                            {{ dt }}
+                            {{ dt|translate_digits }}
                         </option>
                     {% endfor %}
                 </select>
@@ -141,13 +141,13 @@
             <div class="col-6 col-md-auto">
                 <div class="p-2 border rounded bg-body-tertiary shadow-sm text-center text-md-start">
                     <small class="text-muted d-block text-uppercase" style="font-size: 0.7rem; letter-spacing: 0.5px;">{% trans "Total Records" %}</small>
-                    <span class="fw-bold">{{ filtered_count }}</span>
+                    <span class="fw-bold">{{ filtered_count|translate_digits }}</span>
                 </div>
             </div>
             <div class="col-6 col-md-auto">
                 <div class="p-2 border rounded bg-body-tertiary shadow-sm text-center text-md-start">
                     <small class="text-muted d-block text-uppercase" style="font-size: 0.7rem; letter-spacing: 0.5px;">{% trans "Total Amount" %}</small>
-                    <span class="fw-bold text-success">₹{{ filtered_amount|floatformat:2 }}</span>
+                    <span class="fw-bold text-success">₹{{ filtered_amount|floatformat:2|translate_digits }}</span>
                 </div>
             </div>
         </div>
@@ -277,13 +277,13 @@
                                     <input class="form-check-input expense-checkbox" type="checkbox" name="expense_ids" value="{{ expense.pk }}">
                                 </div>
                             </td>
-                            <td class="text-nowrap">{{ expense.date|date:"d M Y" }}</td>
+                            <td class="text-nowrap">{{ expense.date|date:"d M Y"|translate_digits }}</td>
                             <td>{{ expense.description }}</td>
                             <td>
                                 <span class="badge bg-secondary opacity-75">{{ expense.category }}</span>
                             </td>
                             <td>{{ expense.payment_method }}</td>
-                            <td class="fw-bold">{{ expense.amount }}</td>
+                            <td class="fw-bold">{{ expense.amount|translate_digits }}</td>
                             <td class="text-end pe-4 text-nowrap">
                                 <div class="hstack gap-3 justify-content-end">
                                     <a href="{% url 'expense-edit' expense.pk %}?next={{ request.get_full_path|urlencode }}" class="btn btn-sm btn-link text-decoration-none p-0 d-inline-flex align-items-center" title="Edit" onclick="setButtonLoading(this, '')">
@@ -342,7 +342,7 @@
                 {% endif %}
                 
                 <li class="page-item disabled">
-                    <span class="page-link">{% trans "Page" %} {{ page_obj.number }} {% trans "of" %} {{ page_obj.paginator.num_pages }}</span>
+                    <span class="page-link">{% trans "Page" %} {{ page_obj.number|translate_digits }} {% trans "of" %} {{ page_obj.paginator.num_pages|translate_digits }}</span>
                 </li>
 
                 {% if page_obj.has_next %}

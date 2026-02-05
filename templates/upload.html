@@ -1,5 +1,5 @@
 {% extends 'expenses/settings_base.html' %}
-{% load i18n %}
+{% load i18n digit_filters %}
 
 {% block settings_content %}
 <div class="fade-in">
@@ -42,7 +42,7 @@
                 <label for="year" class="form-label">{% trans "Select Year" %}</label>
                 <select name="year" id="year" class="form-select" required>
                     {% for y in years %}
-                        <option value="{{ y }}" {% if y == current_year %}selected{% endif %}>{{ y }}</option>
+                        <option value="{{ y }}" {% if y == current_year %}selected{% endif %}>{{ y|translate_digits }}</option>
                     {% endfor %}
                 </select>
                 <div class="form-text">This year will be applied to all uploaded records.</div>

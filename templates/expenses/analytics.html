@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 {% load static i18n %}
-{% load currency_filters %}
+{% load currency_filters digit_filters %}
 
 {% block title %}{% trans "Analytics" %} - TrackMyRupee{% endblock %}
 
@@ -34,7 +34,7 @@
                     </div>
                 </div>
                 <h3 class="fw-bold mb-0">
-                    {{ user.profile.currency }}{{ total_income_ytd|floatformat:0 }}
+                    {{ user.profile.currency }}{{ total_income_ytd|floatformat:0|translate_digits }}
                 </h3>
             </div>
         </div>
@@ -52,7 +52,7 @@
                     </div>
                 </div>
                 <h3 class="fw-bold mb-0">
-                    {{ user.profile.currency }}{{ total_expense_ytd|floatformat:0 }}
+                    {{ user.profile.currency }}{{ total_expense_ytd|floatformat:0|translate_digits }}
                 </h3>
             </div>
         </div>
@@ -70,7 +70,7 @@
                     </div>
                 </div>
                 <h3 class="fw-bold mb-0">
-                    {{ avg_balance_rate }}%
+                    {{ avg_balance_rate|translate_digits }}%
                 </h3>
                  <small class="text-muted">{% trans "Percentage of income kept as balance/savings" %}</small>
             </div>
@@ -191,6 +191,7 @@
                              // Currency for others (approx) - can just show number
                              text = value.toLocaleString(); 
                         }
+                        text = translateDigits(text);
 
                         ctx.font = 'bold 10px "Outfit", sans-serif';
                         ctx.fillStyle = isDark ? '#adb5bd' : '#6c757d';
@@ -284,7 +285,7 @@
         const donutLabelsWithValues = catLabels.map((label, i) => {
             const val = catData[i];
             const percent = totalSpending > 0 ? ((val / totalSpending) * 100).toFixed(1) + '%' : '0%';
-            return `${label} (${val.toLocaleString()} | ${percent})`;
+            return `${label} (${translateDigits(val.toLocaleString())} | ${translateDigits(percent)})`;
         });
         
         // --- Custom Plugin for Donut Percentages ---
@@ -308,7 +309,7 @@
                          // Only show text if slice is > 5% to avoid overlap
                          if (percentage < 0.05) return;
                          
-                         const text = (percentage * 100).toFixed(0) + '%';
+                         const text = translateDigits((percentage * 100).toFixed(0)) + '%';
                          
                          // Calculate position (centroid of arc)
                          const { x, y } = element.tooltipPosition();
@@ -384,7 +385,7 @@
                     tooltip: { 
                         callbacks: {
                             label: function(context) {
-                                return context.parsed.y + '%';
+                                 return translateDigits(context.parsed.y) + '%';
                             }
                         }
                     }

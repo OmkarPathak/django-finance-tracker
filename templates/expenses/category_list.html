@@ -1,5 +1,5 @@
 {% extends 'expenses/settings_base.html' %}
-{% load i18n %}
+{% load i18n digit_filters %}
 
 {% block settings_content %}
 <div class="fade-in">
@@ -35,7 +35,7 @@
                         {% for category in categories %}
                         <tr>
                             <td class="ps-4">{{ category.name }}</td>
-                            <td class="text-end">{% if category.limit %}{{ currency_symbol }}{{ category.limit|floatformat:2 }}{% else %}<span class="text-muted">-</span>{% endif %}</td>
+                             <td class="text-end">{% if category.limit %}{{ currency_symbol }}{{ category.limit|floatformat:2|translate_digits }}{% else %}<span class="text-muted">-</span>{% endif %}</td>
                             <td class="text-end pe-4 text-nowrap">
                                 <div class="hstack gap-3 justify-content-end">
                                     <button type="button" class="btn btn-sm btn-link text-decoration-none p-0 d-inline-flex align-items-center" 
@@ -92,10 +92,10 @@
     
                     {% for num in page_obj.paginator.page_range %}
                         {% if page_obj.number == num %}
-                            <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                             <li class="page-item active"><span class="page-link">{{ num|translate_digits }}</span></li>
                         {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
                             <li class="page-item">
-                                <a class="page-link" href="?page={{ num }}{% if search_query %}&search={{ search_query }}{% endif %}">{{ num }}</a>
+                                 <a class="page-link" href="?page={{ num }}{% if search_query %}&search={{ search_query }}{% endif %}">{{ num|translate_digits }}</a>
                             </li>
                         {% endif %}
                     {% endfor %}

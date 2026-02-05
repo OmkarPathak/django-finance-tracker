@@ -35,6 +35,8 @@ from django.conf import settings
 from django.core.cache import cache
 from django.db.models.functions import TruncMonth, TruncDay
 from django.utils.html import mark_safe, escape, format_html, format_html_join
+from django.utils.formats import date_format
+
 
 
 def create_category_ajax(request):
@@ -1554,7 +1556,7 @@ class CalendarView(LoginRequiredMixin, RecurringTransactionMixin, TemplateView):
         context['calendar_data'] = calendar_data
         context['current_year'] = year
         context['current_month'] = month
-        context['month_name'] = calendar.month_name[month]
+        context['month_name'] = date_format(date(year, month, 1), 'F')
         context['month_net_savings'] = month_net_savings
         context['prev_year'] = prev_month_date.year
         context['prev_month'] = prev_month_date.month
@@ -2348,7 +2350,7 @@ class AnalyticsView(LoginRequiredMixin, TemplateView):
         sorted_keys = sorted_keys[-12:]
         
         for k in sorted_keys:
-            labels.append(k.strftime('%b %Y'))
+            labels.append(date_format(k, 'M Y'))
             inc = data_map[k]['income']
             exp = data_map[k]['expense']
             income_data.append(inc)
@@ -2372,7 +2374,7 @@ class AnalyticsView(LoginRequiredMixin, TemplateView):
             user=user, date__year=current_year
         ).values('category').annotate(total=Sum('amount')).order_by('-total')
         
-        cat_labels = [x['category'] for x in category_stats]
+        cat_labels = [_(x['category']) for x in category_stats]
         cat_data = [float(x['total']) for x in category_stats]
         
         context['cat_labels'] = cat_labels

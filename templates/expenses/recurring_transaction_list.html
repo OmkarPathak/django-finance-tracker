@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load i18n %}
+{% load i18n digit_filters %}
 
 {% block content %}
 <style>
@@ -89,18 +89,18 @@
                     <div class="col-6 col-md-6 border-end border-secondary border-opacity-10">
                         <div class="d-flex flex-column">
                             <span class="text-uppercase text-muted summary-text-muted fw-bold small mb-1">{% trans "Total Monthly Cost" %}</span>
-                            <span class="h2 mb-0 fw-bold summary-text-muted text-nowrap">{{ currency_symbol }}{{ total_monthly_cost|floatformat:0 }} <span class="fs-6 text-muted summary-text-muted fw-normal">/ {% trans "mo" %}</span></span>
+                            <span class="h2 mb-0 fw-bold summary-text-muted text-nowrap">{{ currency_symbol }}{{ total_monthly_cost|floatformat:0|translate_digits }} <span class="fs-6 text-muted summary-text-muted fw-normal">/ {% trans "mo" %}</span></span>
                         </div>
                     </div>
                     <div class="col-6 col-md-6 ps-3 ps-md-4">
                         <div class="d-flex flex-column">
                             <span class="text-uppercase text-muted summary-text-muted fw-bold small mb-1">{% trans "Yearly Projection" %}</span>
-                            <span class="h3 mb-0 fw-bold summary-text-muted text-nowrap">{{ currency_symbol }}{{ total_yearly_cost|floatformat:0 }} <span class="fs-6 text-muted summary-text-muted fw-normal">/ {% trans "yr" %}</span></span>
+                            <span class="h3 mb-0 fw-bold summary-text-muted text-nowrap">{{ currency_symbol }}{{ total_yearly_cost|floatformat:0|translate_digits }} <span class="fs-6 text-muted summary-text-muted fw-normal">/ {% trans "yr" %}</span></span>
                         </div>
                         {% if renewals_count > 0 %}
                         <div class="mt-2 d-none d-md-block">
                             <span class="badge bg-danger-subtle text-danger rounded-pill px-3 py-2 border border-danger-subtle">
-                                <i class="bi bi-exclamation-circle-fill me-1"></i> {{ renewals_count }} {% trans "renewals due soon" %}
+                                <i class="bi bi-exclamation-circle-fill me-1"></i> {{ renewals_count|translate_digits }} {% trans "renewals due soon" %}
                             </span>
                         </div>
                         {% endif %}
@@ -108,7 +108,7 @@
                     {% if renewals_count > 0 %}
                     <div class="col-12 mt-3 text-center d-md-none">
                         <span class="badge bg-danger-subtle text-danger rounded-pill px-3 py-2 border border-danger-subtle d-inline-block">
-                            <i class="bi bi-exclamation-circle-fill me-1"></i> {{ renewals_count }} {% trans "renewals due soon" %}
+                            <i class="bi bi-exclamation-circle-fill me-1"></i> {{ renewals_count|translate_digits }} {% trans "renewals due soon" %}
                         </span>
                     </div>
                     {% endif %}
@@ -120,13 +120,13 @@
             <li class="nav-item" role="presentation">
                 <button class="nav-link active px-4 rounded-pill text-nowrap" id="all-tab" data-bs-toggle="tab" data-bs-target="#all" type="button" role="tab" aria-selected="true">
                     {% trans "All" %}
-                    <span class="badge bg-white text-primary ms-2 rounded-pill opacity-75">{{ active_subs|length }}</span>
+                    <span class="badge bg-white text-primary ms-2 rounded-pill opacity-75">{{ active_subs|length|translate_digits }}</span>
                 </button>
             </li>
             <li class="nav-item" role="presentation">
                 <button class="nav-link px-4 rounded-pill text-nowrap" id="renewing-tab" data-bs-toggle="tab" data-bs-target="#renewing" type="button" role="tab" aria-selected="false">
                     {% trans "Renewing Soon" %} 
-                    {% if renewals_count > 0 %}<span class="badge bg-danger ms-2 rounded-circle">{{ renewals_count }}</span>{% endif %}
+                    {% if renewals_count > 0 %}<span class="badge bg-danger ms-2 rounded-circle">{{ renewals_count|translate_digits }}</span>{% endif %}
                 </button>
             </li>
             <li class="nav-item" role="presentation">
@@ -157,15 +157,15 @@
                                             <!-- Urgency Text/Pill -->
                                             {% if sub.annotated_days_until <= 3 and sub.transaction_type == 'EXPENSE' %}
                                                 <span class="badge bg-danger text-white rounded-pill shadow-sm">
-                                                    {% blocktrans %}In {{ sub.annotated_days_until }} day{% endblocktrans %}
+                                                    {% blocktrans with days=sub.annotated_days_until|translate_digits %}In {{ days }} day{% endblocktrans %}
                                                 </span>
                                             {% elif sub.annotated_days_until <= 7 and sub.transaction_type == 'EXPENSE' %}
                                                 <span class="text-warning fw-bold">
-                                                    {% blocktrans %}In {{ sub.annotated_days_until }} day{% endblocktrans %}
+                                                    {% blocktrans with days=sub.annotated_days_until|translate_digits %}In {{ days }} day{% endblocktrans %}
                                                 </span>
                                             {% else %}
                                                 <span class="text-muted">
-                                                    {% blocktrans %}In {{ sub.annotated_days_until }} days{% endblocktrans %}
+                                                    {% blocktrans with days=sub.annotated_days_until|translate_digits %}In {{ days }} days{% endblocktrans %}
                                                 </span>
                                             {% endif %}
                                         </div>
@@ -173,7 +173,7 @@
                                 </div>
                                 <div class="d-flex align-items-center gap-3">
                                     <!-- Larger Amount -->
-                                    <h4 class="fw-bold mb-0">{{ currency_symbol }}{{ sub.amount|floatformat:0 }}</h4>
+                                    <h4 class="fw-bold mb-0">{{ currency_symbol }}{{ sub.amount|floatformat:0|translate_digits }}</h4>
                                     <div class="dropdown">
                                         <button class="btn btn-link text-muted p-0" type="button" data-bs-toggle="dropdown">
                                             <i class="bi bi-three-dots-vertical fs-5"></i>
@@ -231,7 +231,7 @@
                                     </div>
                                 </div>
                                 <div class="text-end">
-                                    <h4 class="fw-bold mb-1">{{ currency_symbol }}{{ sub.amount|floatformat:0 }}</h4>
+                                    <h4 class="fw-bold mb-1">{{ currency_symbol }}{{ sub.amount|floatformat:0|translate_digits }}</h4>
                                      <a href="{% url 'recurring-edit' sub.pk %}?next={{ request.path }}" class="btn btn-sm btn-outline-secondary mt-1 rounded-pill">{% trans "Manage" %}</a>
                                 </div>
                             </div>
@@ -264,7 +264,7 @@
                                     </div>
                                 </div>
                                 <div class="text-end">
-                                    <h5 class="fw-bold mb-1 text-muted">{{ currency_symbol }}{{ sub.amount|floatformat:0 }}</h5>
+                                    <h5 class="fw-bold mb-1 text-muted">{{ currency_symbol }}{{ sub.amount|floatformat:0|translate_digits }}</h5>
                                     <a href="{% url 'recurring-edit' sub.pk %}?next={{ request.path }}" class="btn btn-sm btn-outline-primary mt-1">{% trans "Reactivate" %}</a>
                                 </div>
                             </div>

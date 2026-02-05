@@ -1,6 +1,6 @@
-{% load static i18n %}
+{% load static i18n digit_filters %}
 <!DOCTYPE html>
-<html lang="en" data-bs-theme="dark">
+<html lang="{{ request.LANGUAGE_CODE|default:'en' }}" data-bs-theme="dark">
 
 <head>
     {% if GOOGLE_ANALYTICS_ID %}
@@ -38,6 +38,19 @@
     <script>
         const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
         document.cookie = "django_timezone=" + tz + "; path=/; SameSite=Lax";
+
+        // Global Digit Translation Utility
+        window.translateDigits = function(value) {
+            if (value === null || value === undefined) return value;
+            const lang = document.documentElement.lang || 'en';
+            if (!lang.startsWith('mr') && !lang.startsWith('hi')) return value;
+            
+            const arabicToDevanagari = {
+                '0': '०', '1': '१', '2': '२', '3': '३', '4': '४',
+                '5': '५', '6': '६', '7': '७', '8': '८', '9': '९'
+            };
+            return String(value).replace(/[0-9]/g, w => arabicToDevanagari[w]);
+        };
     </script>
     <title>{% block title %}TrackMyRupee - Know Exactly Where Every Rupee Goes{% endblock %}</title>
     <link rel="canonical" href="{{ request.scheme }}://{{ request.get_host }}{{ request.path }}">
