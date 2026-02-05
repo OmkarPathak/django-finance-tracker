@@ -84,3 +84,29 @@ To upload expenses via Excel, ensure your file follows this format:
 
 **Note**: When uploading, you will be asked to select a "Target Year". This year will override the year in the Excel dates to ensure data consistency.
 
+
+## Localization / Internationalization
+
+TrackMyRupee supports multi-language interfaces (currently English, Hindi, and Marathi).
+
+### Development setup
+To work with translations locally, you must have `gettext` installed:
+- **macOS**: `brew install gettext`
+- **Ubuntu/Debian**: `sudo apt-get install gettext`
+
+### Translation Workflow
+1. **Update strings**: Add `{% trans "String" %}` in templates or `gettext` in Python files.
+2. **Extract messages**:
+   ```bash
+   python manage.py makemessages -l mr -l hi
+   ```
+3. **Apply translations**:
+   Use our utility script to automatically apply translations for common financial terms:
+   ```bash
+   python update_translations.py
+   ```
+4. **Compile messages**:
+   ```bash
+   python manage.py compilemessages
+   ```
+

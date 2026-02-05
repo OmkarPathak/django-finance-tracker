@@ -56,7 +56,9 @@ TrackMyRupee includes all the essential features expected from a modern **expens
 ✔ Visual dashboards and charts  
 ✔ Subscription and recurring payment tracking  
 ✔ Category-based expense filtering  
+✔ Category-based expense filtering  
 ✔ Multi-currency support  
+✔ Multi-language support (English, Hindi, Marathi)  
 ✔ Export your financial data anytime  
 
 This makes TrackMyRupee ideal for:

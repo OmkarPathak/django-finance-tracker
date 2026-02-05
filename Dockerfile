@@ -13,6 +13,7 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc \
     libpq-dev \
+    gettext \
     && rm -rf /var/lib/apt/lists/*
 
 # Create virtual environment
@@ -26,6 +27,9 @@ RUN pip install --upgrade pip && pip install -r requirements.txt
 
 # Copy project
 COPY . /app/
+
+# Compile translation messages
+RUN python manage.py compilemessages
 
 # Set entrypoint
 ENTRYPOINT ["/app/entrypoint.sh"]
