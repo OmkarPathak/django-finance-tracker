@@ -1096,19 +1096,25 @@ class ExpenseCreateView(LoginRequiredMixin, generic.TemplateView):
     template_name = 'expenses/expense_form.html'
 
     def get(self, request, *args, **kwargs):
-        # We need to wrap the formset to pass 'user' to the form constructor
         ExpenseFormSet = modelformset_factory(Expense, form=ExpenseForm, extra=1, can_delete=True)
-        # Pass user to form kwargs using formset_factory's form_kwargs (requires Django 4.0+)
-        # For older Django or modelformset, we might need a custom formset or curry the form.
-        # Simpler approach: Use a lambda or partial, but modelformset_factory creates a class.
-        
-        # Actually, best way for modelformset with custom init args is to override BaseFormSet or manually iterate.
-        # But simpler hack: Set the widget choices in the view by iterating forms? No, new forms need it.
-        
-        # Let's use form_kwargs in the formset initialization if supported.
-        # Django 1.9+ supports form_kwargs in formset constructor.
-        
-        initial_data = [{'date': datetime.now().date()} for _ in range(1)]
+
+        initial_data = [{'date': datetime.now().date()}]
+
+        # Check if copying from existing expense
+        copy_from_id = request.GET.get('copy_from')
+        if copy_from_id:
+            try:
+                original = Expense.objects.get(id=copy_from_id, user=request.user)
+                initial_data = [{
+                    'date': datetime.now().date(),
+                    'amount': original.amount,
+                    'description': original.description,
+                    'category': original.category,
+                    'payment_method': original.payment_method,
+                }]
+            except Expense.DoesNotExist:
+                pass
+
         formset = ExpenseFormSet(queryset=Expense.objects.none(), initial=initial_data, form_kwargs={'user': request.user})
         next_url = request.GET.get('next', '')
         return render(request, self.template_name, {'formset': formset, 'next_url': next_url})
