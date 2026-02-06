@@ -138,6 +138,11 @@ COMMON_HI = {
     "- Selected": "- चयनित",
     "All Selected": "सभी चयनित",
     "Support TrackMyRupee": "TrackMyRupee का समर्थन करें",
+    "Calendar": "कैलेंडर",
+    "Notifications": "सूचनाएं",
+    "Enable Push": "पुश सक्षम करें",
+    "No new notifications": "कोई नई सूचना नहीं",
+    "View All": "सभी देखें",
     "If TrackMyRupee helped you understand your money better, consider supporting its development.": "यदि TrackMyRupee ने आपको अपने पैसे को बेहतर ढंग से समझने में मदद की है, तो इसके विकास का समर्थन करने पर विचार करें।",
     "Donate Now": "अभी दान करें",
     "We use cookies to improve your experience and analyze site traffic.": "हम आपके अनुभव को बेहतर बनाने और साइट ट्रैफ़िक का विश्लेषण करने के लिए कुकीज़ का उपयोग करते हैं।",
@@ -437,7 +442,16 @@ COMMON_MR = {
     "Turn financial chaos into clarity. TrackMyRupee gives you a precision dashboard to visualize your spending, spot trends, and master your monthly budget.": "आर्थिक गोंधळाचे स्पष्टतेमध्ये रूपांतर करा. तुमचा खर्च पाहण्यासाठी, ट्रेंड ओळखण्यासाठी आणि तुमच्या मासिक बजेटवर प्रभुत्व मिळवण्यासाठी TrackMyRupee तुम्हाला एक अचूक डॅशबोर्ड देते।",
 }
 
+COMPLEX_FOOTER_MSGID = 'msgid ""\n"Turn financial chaos into clarity. TrackMyRupee gives you a precision "\n"dashboard to visualize your spending, spot trends, and master your monthly "\n"budget."'
+
 if __name__ == "__main__":
-    update_po_file('locale/hi/LC_MESSAGES/django.po', COMMON_HI)
-    update_po_file('locale/mr/LC_MESSAGES/django.po', COMMON_MR)
+    COMPLEX_HI = {
+        COMPLEX_FOOTER_MSGID: "वित्तीय अराजकता को स्पष्टता में बदलें। TrackMyRupee आपको अपने खर्च की कल्पना करने, रुझानों को पहचानने और अपने मासिक बजट में महारत हासिल करने के लिए एक सटीक डैशबोर्ड देता है।"
+    }
+    COMPLEX_MR = {
+        COMPLEX_FOOTER_MSGID: "आर्थिक गोंधळाला स्पष्टतेमध्ये बदला. TrackMyRupee तुम्हाला तुमचे खर्च पाहण्यासाठी, कल ओळखण्यासाठी आणि तुमच्या मासिक बजेटवर प्रभुत्व मिळवण्यासाठी एक अचूक डॅशबोर्ड देते।"
+    }
+
+    update_po_file('locale/hi/LC_MESSAGES/django.po', COMMON_HI, COMPLEX_HI)
+    update_po_file('locale/mr/LC_MESSAGES/django.po', COMMON_MR, COMPLEX_MR)
     print("Translations updated successfully.")

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-02-05 22:40+0530\n"
+"POT-Creation-Date: 2026-02-06 08:32+0530\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -73,14 +73,11 @@ msgstr ""
 
 #. Translators: "letters" means latin letters: a-z and A-Z.
 #: env/lib/python3.9/site-packages/django/core/validators.py:259
-msgid ""
-"Enter a valid “slug” consisting of letters, numbers, underscores or hyphens."
+msgid "Enter a valid “slug” consisting of letters, numbers, underscores or hyphens."
 msgstr ""
 
 #: env/lib/python3.9/site-packages/django/core/validators.py:267
-msgid ""
-"Enter a valid “slug” consisting of Unicode letters, numbers, underscores, or "
-"hyphens."
+msgid "Enter a valid “slug” consisting of Unicode letters, numbers, underscores, or hyphens."
 msgstr ""
 
 #: env/lib/python3.9/site-packages/django/core/validators.py:281
@@ -125,23 +122,15 @@ msgstr ""
 
 #: env/lib/python3.9/site-packages/django/core/validators.py:422
 #, python-format
-msgid ""
-"Ensure this value has at least %(limit_value)d character (it has "
-"%(show_value)d)."
-msgid_plural ""
-"Ensure this value has at least %(limit_value)d characters (it has "
-"%(show_value)d)."
+msgid "Ensure this value has at least %(limit_value)d character (it has %(show_value)d)."
+msgid_plural "Ensure this value has at least %(limit_value)d characters (it has %(show_value)d)."
 msgstr[0] ""
 msgstr[1] ""
 
 #: env/lib/python3.9/site-packages/django/core/validators.py:440
 #, python-format
-msgid ""
-"Ensure this value has at most %(limit_value)d character (it has "
-"%(show_value)d)."
-msgid_plural ""
-"Ensure this value has at most %(limit_value)d characters (it has "
-"%(show_value)d)."
+msgid "Ensure this value has at most %(limit_value)d character (it has %(show_value)d)."
+msgid_plural "Ensure this value has at most %(limit_value)d characters (it has %(show_value)d)."
 msgstr[0] ""
 msgstr[1] ""
 
@@ -167,18 +156,14 @@ msgstr[1] ""
 
 #: env/lib/python3.9/site-packages/django/core/validators.py:475
 #, python-format
-msgid ""
-"Ensure that there are no more than %(max)s digit before the decimal point."
-msgid_plural ""
-"Ensure that there are no more than %(max)s digits before the decimal point."
+msgid "Ensure that there are no more than %(max)s digit before the decimal point."
+msgid_plural "Ensure that there are no more than %(max)s digits before the decimal point."
 msgstr[0] ""
 msgstr[1] ""
 
 #: env/lib/python3.9/site-packages/django/core/validators.py:546
 #, python-format
-msgid ""
-"File extension “%(extension)s” is not allowed. Allowed extensions are: "
-"%(allowed_extensions)s."
+msgid "File extension “%(extension)s” is not allowed. Allowed extensions are: %(allowed_extensions)s."
 msgstr ""
 
 #: env/lib/python3.9/site-packages/django/core/validators.py:607
@@ -222,8 +207,7 @@ msgstr ""
 #. 'month'. Eg: "Title must be unique for pub_date year"
 #: env/lib/python3.9/site-packages/django/db/models/fields/__init__.py:135
 #, python-format
-msgid ""
-"%(field_label)s must be unique for %(date_field_label)s %(lookup_type)s."
+msgid "%(field_label)s must be unique for %(date_field_label)s %(lookup_type)s."
 msgstr ""
 
 #: env/lib/python3.9/site-packages/django/db/models/fields/__init__.py:173
@@ -260,17 +244,13 @@ msgstr ""
 
 #: env/lib/python3.9/site-packages/django/db/models/fields/__init__.py:1354
 #, python-format
-msgid ""
-"“%(value)s” value has an invalid date format. It must be in YYYY-MM-DD "
-"format."
+msgid "“%(value)s” value has an invalid date format. It must be in YYYY-MM-DD format."
 msgstr ""
 
 #: env/lib/python3.9/site-packages/django/db/models/fields/__init__.py:1358
 #: env/lib/python3.9/site-packages/django/db/models/fields/__init__.py:1493
 #, python-format
-msgid ""
-"“%(value)s” value has the correct format (YYYY-MM-DD) but it is an invalid "
-"date."
+msgid "“%(value)s” value has the correct format (YYYY-MM-DD) but it is an invalid date."
 msgstr ""
 
 #: env/lib/python3.9/site-packages/django/db/models/fields/__init__.py:1362
@@ -279,16 +259,12 @@ msgstr ""
 
 #: env/lib/python3.9/site-packages/django/db/models/fields/__init__.py:1489
 #, python-format
-msgid ""
-"“%(value)s” value has an invalid format. It must be in YYYY-MM-DD "
-"HH:MM[:ss[.uuuuuu]][TZ] format."
+msgid "“%(value)s” value has an invalid format. It must be in YYYY-MM-DD HH:MM[:ss[.uuuuuu]][TZ] format."
 msgstr ""
 
 #: env/lib/python3.9/site-packages/django/db/models/fields/__init__.py:1497
 #, python-format
-msgid ""
-"“%(value)s” value has the correct format (YYYY-MM-DD HH:MM[:ss[.uuuuuu]]"
-"[TZ]) but it is an invalid date/time."
+msgid "“%(value)s” value has the correct format (YYYY-MM-DD HH:MM[:ss[.uuuuuu]][TZ]) but it is an invalid date/time."
 msgstr ""
 
 #: env/lib/python3.9/site-packages/django/db/models/fields/__init__.py:1502
@@ -306,9 +282,7 @@ msgstr ""
 
 #: env/lib/python3.9/site-packages/django/db/models/fields/__init__.py:1789
 #, python-format
-msgid ""
-"“%(value)s” value has an invalid format. It must be in [DD] "
-"[[HH:]MM:]ss[.uuuuuu] format."
+msgid "“%(value)s” value has an invalid format. It must be in [DD] [[HH:]MM:]ss[.uuuuuu] format."
 msgstr ""
 
 #: env/lib/python3.9/site-packages/django/db/models/fields/__init__.py:1793
@@ -396,16 +370,12 @@ msgstr ""
 
 #: env/lib/python3.9/site-packages/django/db/models/fields/__init__.py:2448
 #, python-format
-msgid ""
-"“%(value)s” value has an invalid format. It must be in HH:MM[:ss[.uuuuuu]] "
-"format."
+msgid "“%(value)s” value has an invalid format. It must be in HH:MM[:ss[.uuuuuu]] format."
 msgstr ""
 
 #: env/lib/python3.9/site-packages/django/db/models/fields/__init__.py:2452
 #, python-format
-msgid ""
-"“%(value)s” value has the correct format (HH:MM[:ss[.uuuuuu]]) but it is an "
-"invalid time."
+msgid "“%(value)s” value has the correct format (HH:MM[:ss[.uuuuuu]]) but it is an invalid time."
 msgstr ""
 
 #: env/lib/python3.9/site-packages/django/db/models/fields/__init__.py:2456
@@ -526,8 +496,7 @@ msgstr ""
 #: env/lib/python3.9/site-packages/django/forms/fields.py:625
 #, python-format
 msgid "Ensure this filename has at most %(max)d character (it has %(length)d)."
-msgid_plural ""
-"Ensure this filename has at most %(max)d characters (it has %(length)d)."
+msgid_plural "Ensure this filename has at most %(max)d characters (it has %(length)d)."
 msgstr[0] ""
 msgstr[1] ""
 
@@ -536,9 +505,7 @@ msgid "Please either submit a file or check the clear checkbox, not both."
 msgstr ""
 
 #: env/lib/python3.9/site-packages/django/forms/fields.py:694
-msgid ""
-"Upload a valid image. The file you uploaded was either not an image or a "
-"corrupted image."
+msgid "Upload a valid image. The file you uploaded was either not an image or a corrupted image."
 msgstr ""
 
 #: env/lib/python3.9/site-packages/django/forms/fields.py:857
@@ -579,9 +546,7 @@ msgstr ""
 
 #: env/lib/python3.9/site-packages/django/forms/formsets.py:63
 #, python-format
-msgid ""
-"ManagementForm data is missing or has been tampered with. Missing fields: "
-"%(field_names)s. You may need to file a bug report if the issue persists."
+msgid "ManagementForm data is missing or has been tampered with. Missing fields: %(field_names)s. You may need to file a bug report if the issue persists."
 msgstr ""
 
 #: env/lib/python3.9/site-packages/django/forms/formsets.py:67
@@ -621,9 +586,7 @@ msgstr ""
 
 #: env/lib/python3.9/site-packages/django/forms/models.py:898
 #, python-format
-msgid ""
-"Please correct the duplicate data for %(field_name)s which must be unique "
-"for the %(lookup)s in %(date_field)s."
+msgid "Please correct the duplicate data for %(field_name)s which must be unique for the %(lookup)s in %(date_field)s."
 msgstr ""
 
 #: env/lib/python3.9/site-packages/django/forms/models.py:907
@@ -645,9 +608,7 @@ msgstr ""
 
 #: env/lib/python3.9/site-packages/django/forms/utils.py:226
 #, python-format
-msgid ""
-"%(datetime)s couldn’t be interpreted in time zone %(current_timezone)s; it "
-"may be ambiguous or it may not exist."
+msgid "%(datetime)s couldn’t be interpreted in time zone %(current_timezone)s; it may be ambiguous or it may not exist."
 msgstr ""
 
 #: env/lib/python3.9/site-packages/django/forms/widgets.py:463
@@ -1102,40 +1063,23 @@ msgid "CSRF verification failed. Request aborted."
 msgstr ""
 
 #: env/lib/python3.9/site-packages/django/views/csrf.py:116
-msgid ""
-"You are seeing this message because this HTTPS site requires a “Referer "
-"header” to be sent by your web browser, but none was sent. This header is "
-"required for security reasons, to ensure that your browser is not being "
-"hijacked by third parties."
+msgid "You are seeing this message because this HTTPS site requires a “Referer header” to be sent by your web browser, but none was sent. This header is required for security reasons, to ensure that your browser is not being hijacked by third parties."
 msgstr ""
 
 #: env/lib/python3.9/site-packages/django/views/csrf.py:122
-msgid ""
-"If you have configured your browser to disable “Referer” headers, please re-"
-"enable them, at least for this site, or for HTTPS connections, or for “same-"
-"origin” requests."
+msgid "If you have configured your browser to disable “Referer” headers, please re-enable them, at least for this site, or for HTTPS connections, or for “same-origin” requests."
 msgstr ""
 
 #: env/lib/python3.9/site-packages/django/views/csrf.py:127
-msgid ""
-"If you are using the <meta name=\"referrer\" content=\"no-referrer\"> tag or "
-"including the “Referrer-Policy: no-referrer” header, please remove them. The "
-"CSRF protection requires the “Referer” header to do strict referer checking. "
-"If you’re concerned about privacy, use alternatives like <a "
-"rel=\"noreferrer\" …> for links to third-party sites."
+msgid "If you are using the <meta name=\"referrer\" content=\"no-referrer\"> tag or including the “Referrer-Policy: no-referrer” header, please remove them. The CSRF protection requires the “Referer” header to do strict referer checking. If you’re concerned about privacy, use alternatives like <a rel=\"noreferrer\" …> for links to third-party sites."
 msgstr ""
 
 #: env/lib/python3.9/site-packages/django/views/csrf.py:136
-msgid ""
-"You are seeing this message because this site requires a CSRF cookie when "
-"submitting forms. This cookie is required for security reasons, to ensure "
-"that your browser is not being hijacked by third parties."
+msgid "You are seeing this message because this site requires a CSRF cookie when submitting forms. This cookie is required for security reasons, to ensure that your browser is not being hijacked by third parties."
 msgstr ""
 
 #: env/lib/python3.9/site-packages/django/views/csrf.py:142
-msgid ""
-"If you have configured your browser to disable cookies, please re-enable "
-"them, at least for this site, or for “same-origin” requests."
+msgid "If you have configured your browser to disable cookies, please re-enable them, at least for this site, or for “same-origin” requests."
 msgstr ""
 
 #: env/lib/python3.9/site-packages/django/views/csrf.py:148
@@ -1172,9 +1116,7 @@ msgstr ""
 
 #: env/lib/python3.9/site-packages/django/views/generic/dates.py:652
 #, python-format
-msgid ""
-"Future %(verbose_name_plural)s not available because "
-"%(class_name)s.allow_future is False."
+msgid "Future %(verbose_name_plural)s not available because %(class_name)s.allow_future is False."
 msgstr ""
 
 #: env/lib/python3.9/site-packages/django/views/generic/dates.py:692
@@ -1222,18 +1164,12 @@ msgstr ""
 
 #: env/lib/python3.9/site-packages/django/views/templates/default_urlconf.html:206
 #, python-format
-msgid ""
-"View <a href=\"https://docs.djangoproject.com/en/%(version)s/releases/\" "
-"target=\"_blank\" rel=\"noopener\">release notes</a> for Django %(version)s"
+msgid "View <a href=\"https://docs.djangoproject.com/en/%(version)s/releases/\" target=\"_blank\" rel=\"noopener\">release notes</a> for Django %(version)s"
 msgstr ""
 
 #: env/lib/python3.9/site-packages/django/views/templates/default_urlconf.html:221
 #, python-format
-msgid ""
-"You are seeing this page because <a href=\"https://docs.djangoproject.com/en/"
-"%(version)s/ref/settings/#debug\" target=\"_blank\" "
-"rel=\"noopener\">DEBUG=True</a> is in your settings file and you have not "
-"configured any URLs."
+msgid "You are seeing this page because <a href=\"https://docs.djangoproject.com/en/%(version)s/ref/settings/#debug\" target=\"_blank\" rel=\"noopener\">DEBUG=True</a> is in your settings file and you have not configured any URLs."
 msgstr ""
 
 #: env/lib/python3.9/site-packages/django/views/templates/default_urlconf.html:229
@@ -1452,18 +1388,16 @@ msgstr "ट्रैफिक अलर्ट 🚦"
 
 #: expenses/views.py:639
 #, python-format
-msgid ""
-"You're pacing %(pct_higher)s%% higher than usual. Slow down to stay on track!"
-msgstr ""
+msgid "You're pacing %(pct_higher)s%% higher than usual. Slow down to stay on track!"
+msgstr "आप सामान्य से %(pct_higher)s%% अधिक खर्च कर रहे हैं। ट्रैक पर बने रहने के लिए गति कम करें!"
 
 #: expenses/views.py:656
 #, python-brace-format
-msgid ""
-"Even strong months have leaks. You crossed limits in {cats_str} — catching "
-"this keeps you on track."
-msgstr ""
+msgid "Even strong months have leaks. You crossed limits in {cats_str} — catching this keeps you on track."
+msgstr "अच्छे महीनों में भी फिजूलखर्ची हो सकती है। आपने {cats_str} में सीमा पार कर ली है — इस पर ध्यान देने से आप ट्रैक पर बने रहेंगे।"
 
 #: expenses/views.py:659
+#, python-brace-format
 msgid "⚠️ Budget crossed in {cats_str} — let’s rebalance to stay safe."
 msgstr "⚠️ {cats_str} में बजट पार हो गया — सुरक्षित रहने के लिए पुनर्संतुलन करें।"
 
@@ -1476,6 +1410,7 @@ msgid "Approaching Limit"
 msgstr "सीमा के करीब"
 
 #: expenses/views.py:674
+#, python-brace-format
 msgid "Heads up! You're close to overspending on {cats_str}."
 msgstr "सावधान! आप {cats_str} पर अधिक खर्च करने के करीब हैं।"
 
@@ -1486,15 +1421,13 @@ msgstr "आपने इस महीने अपनी आय का %(savings
 
 #: expenses/views.py:700
 #, python-format
-msgid ""
-"I saved %(savings_rate)s%% of my income this month using TrackMyRupee! 🏆"
-msgstr ""
+msgid "I saved %(savings_rate)s%% of my income this month using TrackMyRupee! 🏆"
+msgstr "मैंने इस महीने TrackMyRupee का उपयोग करके अपनी आय का %(savings_rate)s%% बचाया! 🏆"
 
 #: expenses/views.py:704
 #, python-brace-format
-msgid ""
-"{msg_text} You spent less on {cats_link} — that's where the magic happened."
-msgstr ""
+msgid "{msg_text} You spent less on {cats_link} — that's where the magic happened."
+msgstr "{msg_text} आपने {cats_link} पर कम खर्च किया — यहीं पर जादू हुआ।"
 
 #: expenses/views.py:711
 msgid "Super Saver Status! 🏆"
@@ -1506,16 +1439,13 @@ msgstr "गति बन रही है 🚀"
 
 #: expenses/views.py:721
 #, python-format
-msgid ""
-"Your savings grew by %(savings_pct_abs)s%% vs last month. You're getting "
-"better at this!"
-msgstr ""
+msgid "Your savings grew by %(savings_pct_abs)s%% vs last month. You're getting better at this!"
+msgstr "आपकी बचत पिछले महीने की तुलना में %(savings_pct_abs)s%% बढ़ी। आप इसमें बेहतर हो रहे हैं!"
 
 #: expenses/views.py:723
 #, python-format
-msgid ""
-"My savings grew by %(savings_pct_abs)s%% this month! 🚀 via TrackMyRupee"
-msgstr ""
+msgid "My savings grew by %(savings_pct_abs)s%% this month! 🚀 via TrackMyRupee"
+msgstr "TrackMyRupee के माध्यम से इस महीने मेरी बचत %(savings_pct_abs)s%% बढ़ी! 🚀"
 
 #: expenses/views.py:729
 #, python-format
@@ -1524,11 +1454,11 @@ msgstr "आपने खर्च में %(expense_pct_abs)s%% की कट�
 
 #: expenses/views.py:730 expenses/views.py:744
 #, python-format
-msgid ""
-"I cut my spending by %(expense_pct_abs)s%% this month! 👍 via TrackMyRupee"
-msgstr ""
+msgid "I cut my spending by %(expense_pct_abs)s%% this month! 👍 via TrackMyRupee"
+msgstr "मैंने इस महीने अपने खर्च में %(expense_pct_abs)s%% की कटौती की! 👍 TrackMyRupee के माध्यम से"
 
 #: expenses/views.py:734
+#, python-brace-format
 msgid "{msg_text} {cats_link} saw the biggest drops."
 msgstr "{msg_text} {cats_link} में सबसे बड़ी गिरावट देखी गई।"
 
@@ -1547,9 +1477,8 @@ msgstr "🔥 यह लगातार आपका %(streak)sवां मह�
 
 #: expenses/views.py:774
 #, python-format
-msgid ""
-"🔥 I've stayed under budget for %(streak)s months in a row! via TrackMyRupee"
-msgstr ""
+msgid "🔥 I've stayed under budget for %(streak)s months in a row! via TrackMyRupee"
+msgstr "🔥 मैंने लगातार %(streak)s महीनों तक बजट के अंदर रहा हूं! TrackMyRupee के माध्यम से"
 
 #: expenses/views.py:782
 msgid "In the Green"
@@ -1565,13 +1494,11 @@ msgid "Fresh Start"
 msgstr "नई शुरुआत"
 
 #: expenses/views.py:791
-msgid ""
-"Small steps today lead to big results tomorrow. Let's track some expenses!"
-msgstr ""
+msgid "Small steps today lead to big results tomorrow. Let's track some expenses!"
+msgstr "आज के छोटे कदम कल बड़े परिणाम लाते हैं। आइए कुछ खर्च ट्रैक करें!"
 
 #: expenses/views.py:1131
-msgid ""
-"Duplicate record found! You already have this expense recorded for this date."
+msgid "Duplicate record found! You already have this expense recorded for this date."
 msgstr ""
 
 #: expenses/views.py:1419 expenses/views.py:1463
@@ -1616,8 +1543,7 @@ msgstr ""
 #: templates/404.html:13
 msgid ""
 "\n"
-"        We couldn't find the page you're looking for. It might have been "
-"moved, deleted, or never existed in the first place.\n"
+"        We couldn't find the page you're looking for. It might have been moved, deleted, or never existed in the first place.\n"
 "        "
 msgstr ""
 
@@ -1637,19 +1563,15 @@ msgstr "के बारे में"
 #, fuzzy
 #| msgid ""
 #| "\n"
-#| "                        You can cancel your subscription directly from "
-#| "your account settings page or by contacting our support team.\n"
+#| "                        You can cancel your subscription directly from your account settings page or by contacting our support team.\n"
 #| "                        "
 msgid ""
 "\n"
-"                        We are on a mission to simplify personal finance for "
-"everyone. TrackMyRupee is built to give you clarity, control, and confidence "
-"over your money.\n"
+"                        We are on a mission to simplify personal finance for everyone. TrackMyRupee is built to give you clarity, control, and confidence over your money.\n"
 "                        "
 msgstr ""
 "\n"
-"                        आप अपनी सदस्यता सीधे अपने खाता सेटिंग (account settings) "
-"पृष्ठ से या हमारी सहायता टीम से संपर्क करके रद्द कर सकते हैं।\n"
+"                        आप अपनी सदस्यता सीधे अपने खाता सेटिंग (account settings) पृष्ठ से या हमारी सहायता टीम से संपर्क करके रद्द कर सकते हैं।\n"
 "                        "
 
 #: templates/about.html:19
@@ -1659,20 +1581,14 @@ msgstr ""
 #: templates/about.html:21
 msgid ""
 "\n"
-"                            TrackMyRupee started with a simple idea: "
-"understanding your finances shouldn't be complicated. We realized that many "
-"people struggle to keep track of their daily expenses, subscriptions, and "
-"budgets because existing tools were either too complex or too manual.\n"
+"                            TrackMyRupee started with a simple idea: understanding your finances shouldn't be complicated. We realized that many people struggle to keep track of their daily expenses, subscriptions, and budgets because existing tools were either too complex or too manual.\n"
 "                            "
 msgstr ""
 
 #: templates/about.html:26
 msgid ""
 "\n"
-"                            We built TrackMyRupee to be the intuitive, "
-"powerful, and privacy-focused solution we always wanted for ourselves. "
-"Today, we help thousands of users track their spending, spot trends, and "
-"make smarter financial decisions.\n"
+"                            We built TrackMyRupee to be the intuitive, powerful, and privacy-focused solution we always wanted for ourselves. Today, we help thousands of users track their spending, spot trends, and make smarter financial decisions.\n"
 "                            "
 msgstr ""
 
@@ -1688,18 +1604,15 @@ msgstr ""
 #, fuzzy
 #| msgid ""
 #| "\n"
-#| "                                Data is retained while your account "
-#| "remains active.\n"
+#| "                                Data is retained while your account remains active.\n"
 #| "                                "
 msgid ""
 "\n"
-"                                Finance is hard enough. Your tools shouldn't "
-"be. We prioritize clean design and ease of use.\n"
+"                                Finance is hard enough. Your tools shouldn't be. We prioritize clean design and ease of use.\n"
 "                                "
 msgstr ""
 "\n"
-"                                जब तक आपका खाता सक्रिय रहता है, डेटा सुरक्षित रखा "
-"जाता है।\n"
+"                                जब तक आपका खाता सक्रिय रहता है, डेटा सुरक्षित रखा जाता है।\n"
 "                                "
 
 #: templates/about.html:42
@@ -1710,18 +1623,15 @@ msgstr ""
 #, fuzzy
 #| msgid ""
 #| "\n"
-#| "                                You can manage your email preferences or "
-#| "unsubscribe from non-essential emails.\n"
+#| "                                You can manage your email preferences or unsubscribe from non-essential emails.\n"
 #| "                                "
 msgid ""
 "\n"
-"                                Your financial data is yours. We optimize "
-"for security and privacy in everything we build.\n"
+"                                Your financial data is yours. We optimize for security and privacy in everything we build.\n"
 "                                "
 msgstr ""
 "\n"
-"                                आप अपनी ईमेल प्राथमिकताओं को प्रबंधित कर सकते हैं या "
-"अनावश्यक ईमेल से अनसब्सक्राइब कर सकते हैं।\n"
+"                                आप अपनी ईमेल प्राथमिकताओं को प्रबंधित कर सकते हैं या अनावश्यक ईमेल से अनसब्सक्राइब कर सकते हैं।\n"
 "                                "
 
 #: templates/about.html:48
@@ -1732,18 +1642,15 @@ msgstr ""
 #, fuzzy
 #| msgid ""
 #| "\n"
-#| "                                Data is retained while your account "
-#| "remains active.\n"
+#| "                                Data is retained while your account remains active.\n"
 #| "                                "
 msgid ""
 "\n"
-"                                We believe that financial clarity leads to "
-"financial freedom. We give you the data you need to take charge.\n"
+"                                We believe that financial clarity leads to financial freedom. We give you the data you need to take charge.\n"
 "                                "
 msgstr ""
 "\n"
-"                                जब तक आपका खाता सक्रिय रहता है, डेटा सुरक्षित रखा "
-"जाता है।\n"
+"                                जब तक आपका खाता सक्रिय रहता है, डेटा सुरक्षित रखा जाता है।\n"
 "                                "
 
 #: templates/about.html:57
@@ -1754,19 +1661,15 @@ msgstr ""
 #, fuzzy
 #| msgid ""
 #| "\n"
-#| "                            We implement appropriate technical and "
-#| "organizational measures to protect your information.\n"
+#| "                            We implement appropriate technical and organizational measures to protect your information.\n"
 #| "                            "
 msgid ""
 "\n"
-"                            We love hearing from our users. Whether you have "
-"a feature request, feedback, or just want to say hi, feel free to reach out "
-"to us.\n"
+"                            We love hearing from our users. Whether you have a feature request, feedback, or just want to say hi, feel free to reach out to us.\n"
 "                            "
 msgstr ""
 "\n"
-"                            हम आपकी जानकारी की सुरक्षा के लिए उचित तकनीकी और "
-"संगठनात्मक उपाय लागू करते हैं।\n"
+"                            हम आपकी जानकारी की सुरक्षा के लिए उचित तकनीकी और संगठनात्मक उपाय लागू करते हैं।\n"
 "                            "
 
 #: templates/about.html:67 templates/contact.html:8
@@ -1790,9 +1693,7 @@ msgid "Hello <strong>%(username)s</strong>,"
 msgstr ""
 
 #: templates/account/email/email_confirmation_message.html:11
-msgid ""
-"You or someone else has requested that this email address be added to your "
-"account on TrackMyRupee."
+msgid "You or someone else has requested that this email address be added to your account on TrackMyRupee."
 msgstr ""
 
 #: templates/account/email/email_confirmation_message.html:12
@@ -1823,9 +1724,7 @@ msgstr ""
 
 #: templates/account/email/email_confirmation_signup_message.html:9
 #, python-format
-msgid ""
-"Hi <strong>%(username)s</strong>,<br>Thank you for joining. We're excited to "
-"help you take control of your finances!"
+msgid "Hi <strong>%(username)s</strong>,<br>Thank you for joining. We're excited to help you take control of your finances!"
 msgstr ""
 
 #: templates/account/email/email_confirmation_signup_message.html:11
@@ -1838,14 +1737,11 @@ msgid "Hi %(username)s,"
 msgstr ""
 
 #: templates/account/email/email_confirmation_signup_message.txt:6
-msgid ""
-"Thank you for joining. We're excited to help you take control of your "
-"finances!"
+msgid "Thank you for joining. We're excited to help you take control of your finances!"
 msgstr ""
 
 #: templates/account/email/email_confirmation_signup_message.txt:8
-msgid ""
-"To get started, please confirm your email address by visiting the link below:"
+msgid "To get started, please confirm your email address by visiting the link below:"
 msgstr ""
 
 #: templates/account/email/email_confirmation_signup_message.txt:12
@@ -1864,9 +1760,7 @@ msgstr ""
 
 #: templates/account/email/password_reset_key_message.html:11
 #: templates/account/email/password_reset_key_message.txt:6
-msgid ""
-"You're receiving this email because you requested a password reset for your "
-"user account at TrackMyRupee."
+msgid "You're receiving this email because you requested a password reset for your user account at TrackMyRupee."
 msgstr ""
 
 #: templates/account/email/password_reset_key_message.html:13
@@ -1885,9 +1779,7 @@ msgstr ""
 
 #: templates/account/email/password_reset_key_message.html:28
 #: templates/account/email/password_reset_key_message.txt:14
-msgid ""
-"If you didn't request this, please ignore this email. Your password will "
-"remain unchanged."
+msgid "If you didn't request this, please ignore this email. Your password will remain unchanged."
 msgstr ""
 
 #: templates/account/email/password_reset_key_message.txt:4
@@ -1912,9 +1804,7 @@ msgstr ""
 
 #: templates/account/login.html:68
 #, python-format
-msgid ""
-"Don't have an account? <a href=\"%(signup_url)s\" class=\"text-decoration-"
-"none fw-bold\">Sign Up</a>"
+msgid "Don't have an account? <a href=\"%(signup_url)s\" class=\"text-decoration-none fw-bold\">Sign Up</a>"
 msgstr ""
 
 #: templates/account/login.html:70
@@ -1990,9 +1880,7 @@ msgid "Email Sent"
 msgstr "ईमेल पता"
 
 #: templates/account/password_reset_done.html:11
-msgid ""
-"We have sent you an e-mail. Please contact us if you do not receive it "
-"within a few minutes."
+msgid "We have sent you an e-mail. Please contact us if you do not receive it within a few minutes."
 msgstr ""
 
 #: templates/account/password_reset_from_key.html:8
@@ -2000,9 +1888,7 @@ msgid "Bad Token"
 msgstr ""
 
 #: templates/account/password_reset_from_key.html:10
-msgid ""
-"The password reset link was invalid, possibly because it has already been "
-"used.  Please request a new password reset."
+msgid "The password reset link was invalid, possibly because it has already been used.  Please request a new password reset."
 msgstr ""
 
 #: templates/account/password_reset_from_key.html:12
@@ -2029,9 +1915,7 @@ msgstr ""
 
 #: templates/account/signup.html:54
 #, python-format
-msgid ""
-"Already have an account? <a href=\"%(login_url)s\" class=\"text-decoration-"
-"none fw-bold\">Sign In</a>"
+msgid "Already have an account? <a href=\"%(login_url)s\" class=\"text-decoration-none fw-bold\">Sign In</a>"
 msgstr ""
 
 #: templates/account/verification_sent.html:6
@@ -2040,118 +1924,110 @@ msgstr ""
 msgid "Verify Your E-mail Address"
 msgstr "ईमेल पता"
 
-#: templates/base.html:548
-msgid ""
-"Turn financial chaos into clarity. TrackMyRupee gives you a precision "
-"dashboard to visualize\n"
-"                        your spending, spot trends, and master your monthly "
-"budget."
-msgstr ""
+#: templates/base.html:548 templates/landing.html:969
+msgid "Turn financial chaos into clarity. TrackMyRupee gives you a precision dashboard to visualize your spending, spot trends, and master your monthly budget."
+msgstr "वित्तीय अराजकता को स्पष्टता में बदलें। TrackMyRupee आपको अपने खर्च की कल्पना करने, रुझानों को पहचानने और अपने मासिक बजट में महारत हासिल करने के लिए एक सटीक डैशबोर्ड देता है।"
 
-#: templates/base.html:553 templates/landing.html:973
+#: templates/base.html:552 templates/landing.html:973
 msgid "Support Us"
 msgstr "हमारा समर्थन करें"
 
-#: templates/base.html:563 templates/landing.html:983
+#: templates/base.html:562 templates/landing.html:983
 msgid "Product"
 msgstr "उत्पाद"
 
-#: templates/base.html:566 templates/components/navbar.html:232
+#: templates/base.html:565 templates/components/navbar.html:232
 #: templates/landing.html:986
 msgid "Features"
 msgstr "सुविधाएँ"
 
-#: templates/base.html:568 templates/components/navbar.html:233
+#: templates/base.html:567 templates/components/navbar.html:233
 #: templates/landing.html:988
 msgid "Pricing"
 msgstr "मूल्य निर्धारण"
 
-#: templates/base.html:570 templates/blog/blog_detail.html:68
+#: templates/base.html:569 templates/blog/blog_detail.html:68
 #: templates/components/navbar.html:240 templates/landing.html:990
 msgid "Blog"
 msgstr "ब्लॉग"
 
-#: templates/base.html:572 templates/components/navbar.html:237
+#: templates/base.html:571 templates/components/navbar.html:237
 #: templates/landing.html:992
 msgid "Live Demo"
 msgstr "लाइव डेमो"
 
-#: templates/base.html:578 templates/landing.html:998
+#: templates/base.html:577 templates/landing.html:998
 msgid "Company"
 msgstr "कंपनी"
 
-#: templates/base.html:581 templates/landing.html:1001
+#: templates/base.html:580 templates/landing.html:1001
 msgid "About"
 msgstr "के बारे में"
 
-#: templates/base.html:583 templates/landing.html:1003
+#: templates/base.html:582 templates/landing.html:1003
 msgid "Contact"
 msgstr "संपर्क"
 
-#: templates/base.html:590 templates/landing.html:1009
+#: templates/base.html:589 templates/landing.html:1009
 msgid "Legal"
 msgstr "कानूनी"
 
-#: templates/base.html:593 templates/components/cookie_consent.html:8
+#: templates/base.html:592 templates/components/cookie_consent.html:8
 #: templates/landing.html:1012 templates/privacy_policy.html:8
 msgid "Privacy Policy"
 msgstr "गोपनीयता नीति"
 
-#: templates/base.html:596 templates/landing.html:1015
+#: templates/base.html:595 templates/landing.html:1015
 #: templates/terms_of_service.html:8
 msgid "Terms of Service"
 msgstr "सेवा की शर्तें"
 
-#: templates/base.html:599 templates/landing.html:1018
+#: templates/base.html:598 templates/landing.html:1018
 msgid "Refund & Cancellation"
 msgstr "धनवापसी और रद्दीकरण"
 
-#: templates/base.html:610 templates/landing.html:1029
+#: templates/base.html:609 templates/landing.html:1029
 msgid "All rights reserved."
 msgstr "सर्वाधिकार सुरक्षित।"
 
-#: templates/base.html:912 templates/components/navbar.html:108
+#: templates/base.html:911 templates/components/navbar.html:108
 #: templates/expenses/expense_list.html:41
 #: templates/expenses/expense_list.html:316 templates/home.html:40
 msgid "Add Expense"
 msgstr "खर्च जोड़ें"
 
-#: templates/base.html:917 templates/components/navbar.html:110
+#: templates/base.html:916 templates/components/navbar.html:110
 #: templates/expenses/income_form.html:10
 #: templates/expenses/income_list.html:27
 #: templates/expenses/income_list.html:141
 msgid "Add Income"
 msgstr "आय जोड़ें"
 
-#: templates/base.html:972
+#: templates/base.html:971
 msgid "Select..."
 msgstr "चुनें..."
 
-#: templates/base.html:973
+#: templates/base.html:972
 msgid "- Selected"
 msgstr "- चयनित"
 
-#: templates/base.html:974
+#: templates/base.html:973
 msgid "All Selected"
 msgstr "सभी चयनित"
 
-#: templates/base.html:979 templates/expenses/expense_list.html:60
+#: templates/base.html:978 templates/expenses/expense_list.html:60
 msgid "Search..."
 msgstr "खोजें..."
 
-#: templates/base.html:1000
+#: templates/base.html:999
 msgid "Support TrackMyRupee"
 msgstr "TrackMyRupee का समर्थन करें"
 
-#: templates/base.html:1005
-msgid ""
-"If TrackMyRupee helped you understand your money better, consider supporting "
-"its development."
-msgstr ""
-"यदि TrackMyRupee ने आपको अपने पैसे को बेहतर ढंग से समझने में मदद की है, तो इसके विकास का "
-"समर्थन करने पर विचार करें।"
+#: templates/base.html:1004
+msgid "If TrackMyRupee helped you understand your money better, consider supporting its development."
+msgstr "यदि TrackMyRupee ने आपको अपने पैसे को बेहतर ढंग से समझने में मदद की है, तो इसके विकास का समर्थन करने पर विचार करें।"
 
-#: templates/base.html:1007
+#: templates/base.html:1006
 msgid "Donate Now"
 msgstr "अभी दान करें"
 
@@ -2178,10 +2054,6 @@ msgstr ""
 #: templates/components/cookie_consent.html:6
 msgid "We use cookies to improve your experience and analyze site traffic."
 msgstr "हम आपके अनुभव को बेहतर बनाने और साइट ट्रैफ़िक का विश्लेषण करने के लिए कुकीज़ का उपयोग करते हैं।"
-"हम आपके अनुभव को बेहतर बनाने और साइट ट्रैफ़िक का विश्लेषण करने के लिए कुकीज़ का उपयोग करते "
-"हैं।हम आपके अनुभव को बेहतर बनाने और साइट ट्रैफ़िक का विश्लेषण करने के लिए कुकीज़ का उपयोग "
-"करते हैं।हम आपके अनुभव को बेहतर बनाने और साइट ट्रैफ़िक का विश्लेषण करने के लिए कुकीज़ का "
-"उपयोग करते हैं।"
 
 #: templates/components/cookie_consent.html:7
 msgid "By clicking \\"
@@ -2199,6 +2071,23 @@ msgstr "स्वीकार करें"
 msgid "Login"
 msgstr "लॉगिन"
 
+#: templates/components/navbar.html:29 templates/components/navbar.html:128
+msgid "Notifications"
+msgstr "सूचनाएं"
+
+#: templates/components/navbar.html:31 templates/components/navbar.html:130
+msgid "Enable Push"
+msgstr "पुश सक्षम करें"
+
+#: templates/components/navbar.html:52 templates/components/navbar.html:151
+msgid "No new notifications"
+msgstr "कोई नई सूचना नहीं"
+
+#: templates/components/navbar.html:56 templates/components/navbar.html:155
+#: templates/home.html:519 templates/home.html:582
+msgid "View All"
+msgstr "सभी देखें"
+
 #: templates/components/navbar.html:72 templates/home.html:67
 msgid "Dashboard"
 msgstr "डैशबोर्ड"
@@ -2215,7 +2104,7 @@ msgstr "सदस्यताएँ"
 
 #: templates/components/navbar.html:87
 msgid "Calendar"
-msgstr ""
+msgstr "कैलेंडर"
 
 #: templates/components/navbar.html:92 templates/expenses/analytics.html:5
 msgid "Analytics"
@@ -2288,8 +2177,7 @@ msgstr ""
 #: templates/contact.html:83
 msgid ""
 "\n"
-"                            Check out our code, report bugs, or contribute "
-"feature requests on GitHub.\n"
+"                            Check out our code, report bugs, or contribute feature requests on GitHub.\n"
 "                            "
 msgstr ""
 
@@ -2349,11 +2237,8 @@ msgid "Income vs Expenses Analysis"
 msgstr "आय बनाम खर्च विश्लेषण"
 
 #: templates/expenses/analytics.html:96
-msgid ""
-"Comparing what comes in (Green) vs. what goes out (Red). The gap is your "
-"potential savings."
-msgstr ""
-"जो आता है (हरा) बनाम जो जाता है (लाल) की तुलना करना। अंतर आपकी संभावित बचत है।"
+msgid "Comparing what comes in (Green) vs. what goes out (Red). The gap is your potential savings."
+msgstr "जो आता है (हरा) बनाम जो जाता है (लाल) की तुलना करना। अंतर आपकी संभावित बचत है।"
 
 #: templates/expenses/analytics.html:107
 msgid "Spending by Category"
@@ -2370,12 +2255,8 @@ msgstr "शेष दर रुझान (%%)"
 
 #: templates/expenses/analytics.html:138
 #, python-format
-msgid ""
-"Shows what %% of your income is left after expenses. A higher positive "
-"percentage means you're growing your wealth."
-msgstr ""
-"दिखाता है कि खर्चों के बाद आपकी आय का कितना %% बचा है। एक उच्च सकारात्मक प्रतिशत का "
-"मतलब है कि आप अपनी संपत्ति बढ़ा रहे हैं।"
+msgid "Shows what %% of your income is left after expenses. A higher positive percentage means you're growing your wealth."
+msgstr "दिखाता है कि खर्चों के बाद आपकी आय का कितना %% बचा है। एक उच्च सकारात्मक प्रतिशत का मतलब है कि आप अपनी संपत्ति बढ़ा रहे हैं।"
 
 #: templates/expenses/analytics.html:240
 msgid "Net Balance"
@@ -2392,11 +2273,8 @@ msgid "Budget"
 msgstr "बजट"
 
 #: templates/expenses/budget_dashboard.html:29
-msgid ""
-"A budget is telling your money where to go, instead of wondering where it "
-"went."
-msgstr ""
-"बजट आपके पैसे को यह बताना है कि कहाँ जाना है, बजाय इसके कि यह सोचना कि वह कहाँ गया।"
+msgid "A budget is telling your money where to go, instead of wondering where it went."
+msgstr "बजट आपके पैसे को यह बताना है कि कहाँ जाना है, बजाय इसके कि यह सोचना कि वह कहाँ गया।"
 
 #: templates/expenses/budget_dashboard.html:39
 msgid "Total Budget Goal"
@@ -2576,9 +2454,7 @@ msgstr "संपादित करें"
 
 #: templates/expenses/category_list.html:52
 #, python-format
-msgid ""
-"Are you sure you want to delete category '%(name)s'? This will NOT delete "
-"expenses in this category, but they will be unlinked or require update."
+msgid "Are you sure you want to delete category '%(name)s'? This will NOT delete expenses in this category, but they will be unlinked or require update."
 msgstr ""
 
 #: templates/expenses/category_list.html:63
@@ -2606,8 +2482,7 @@ msgid "Default Currency"
 msgstr "डिफॉल्ट मुद्रा"
 
 #: templates/expenses/currency_settings.html:10
-msgid ""
-"Select your preferred currency symbol to be used across the application."
+msgid "Select your preferred currency symbol to be used across the application."
 msgstr "एप्लिकेशन में उपयोग किए जाने वाले अपने पसंदीदा मुद्रा चिह्न का चयन करें।"
 
 #: templates/expenses/currency_settings.html:14
@@ -2620,9 +2495,7 @@ msgid "How this works:"
 msgstr "यह कैसे काम करता है:"
 
 #: templates/expenses/currency_settings.html:27
-msgid ""
-"This symbol will be displayed next to all amount values (Income, Expenses, "
-"Budgets, and Charts)."
+msgid "This symbol will be displayed next to all amount values (Income, Expenses, Budgets, and Charts)."
 msgstr "यह चिह्न सभी राशि मूल्यों (आय, खर्च, बजट और चार्ट) के पास प्रदर्शित होगा।"
 
 #: templates/expenses/currency_settings.html:34
@@ -2777,9 +2650,7 @@ msgid "Confirm Bulk Delete"
 msgstr "बल्क डिलीट की पुष्टि करें"
 
 #: templates/expenses/expense_list.html:370
-msgid ""
-"Are you sure you want to delete the selected expenses? This action cannot be "
-"undone."
+msgid "Are you sure you want to delete the selected expenses? This action cannot be undone."
 msgstr ""
 
 #: templates/expenses/expense_list.html:374
@@ -2855,9 +2726,7 @@ msgid "Select Language"
 msgstr "भाषा चुनें"
 
 #: templates/expenses/language_settings.html:27
-msgid ""
-"Updating this setting will change the language of the menus, labels, and "
-"messages in TrackMyRupee."
+msgid "Updating this setting will change the language of the menus, labels, and messages in TrackMyRupee."
 msgstr ""
 
 #: templates/expenses/pricing.html:26
@@ -2994,12 +2863,8 @@ msgid "No active subscriptions"
 msgstr "कोई सक्रिय सदस्यता नहीं"
 
 #: templates/expenses/recurring_transaction_list.html:207
-msgid ""
-"Most people forget at least one renewal every year. Add yours now so we can "
-"remind you before you pay."
-msgstr ""
-"ज्यादातर लोग हर साल कम से कम एक नवीनीकरण भूल जाते हैं। अपना अभी जोड़ें ताकि हम आपको "
-"भुगतान करने से पहले याद दिला सकें।"
+msgid "Most people forget at least one renewal every year. Add yours now so we can remind you before you pay."
+msgstr "ज्यादातर लोग हर साल कम से कम एक नवीनीकरण भूल जाते हैं। अपना अभी जोड़ें ताकि हम आपको भुगतान करने से पहले याद दिला सकें।"
 
 #: templates/expenses/recurring_transaction_list.html:209
 msgid "Add your first subscription"
@@ -3095,9 +2960,7 @@ msgid "Welcome to TrackMyRupee!"
 msgstr "TrackMyRupee में आपका स्वागत है!"
 
 #: templates/home.html:33
-msgid ""
-"Your journey to financial freedom starts here. Let's record your first "
-"transaction to get the dashboard moving."
+msgid "Your journey to financial freedom starts here. Let's record your first transaction to get the dashboard moving."
 msgstr ""
 
 #: templates/home.html:37
@@ -3193,10 +3056,6 @@ msgstr "(श्रेणी के अनुसार ढेरा)"
 msgid "Recent Transactions"
 msgstr "हाल के लेनदेन"
 
-#: templates/home.html:519 templates/home.html:582
-msgid "View All"
-msgstr "सभी देखें"
-
 #: templates/home.html:549
 msgid "No recent transactions"
 msgstr "कोई हाल का लेन-देन नहीं"
@@ -3212,13 +3071,6 @@ msgstr "शीर्ष श्रेणियाँ"
 #: templates/home.html:627
 msgid "No expense data available"
 msgstr "कोई व्यय डेटा उपलब्ध नहीं"
-
-#: templates/landing.html:969
-msgid ""
-"Turn financial chaos into clarity. TrackMyRupee gives you a precision "
-"dashboard to visualize your spending, spot trends, and master your monthly "
-"budget."
-msgstr ""
 
 #: templates/offline.html:5
 msgid "You are offline"
@@ -3251,8 +3103,7 @@ msgstr ""
 #: templates/privacy_policy.html:12
 msgid ""
 "\n"
-"                        Your privacy matters to us. This policy explains how "
-"TrackMyRupee collects, uses, and protects your information.\n"
+"                        Your privacy matters to us. This policy explains how TrackMyRupee collects, uses, and protects your information.\n"
 "                        "
 msgstr ""
 
@@ -3307,9 +3158,7 @@ msgstr "सहायता से संपर्क करें"
 #: templates/privacy_policy.html:36
 msgid ""
 "\n"
-"                            We collect information you provide directly to "
-"us when you create an account, input financial data, or interact with our "
-"platform.\n"
+"                            We collect information you provide directly to us when you create an account, input financial data, or interact with our platform.\n"
 "                            "
 msgstr ""
 
@@ -3320,8 +3169,7 @@ msgstr ""
 #: templates/privacy_policy.html:43
 msgid ""
 "\n"
-"                                Your username, email address, and password "
-"(encrypted).\n"
+"                                Your username, email address, and password (encrypted).\n"
 "                                "
 msgstr ""
 
@@ -3332,8 +3180,7 @@ msgstr ""
 #: templates/privacy_policy.html:49
 msgid ""
 "\n"
-"                                Incomes, expenses, categories, budgets, and "
-"subscriptions you manually enter.\n"
+"                                Incomes, expenses, categories, budgets, and subscriptions you manually enter.\n"
 "                                "
 msgstr ""
 
@@ -3344,8 +3191,7 @@ msgstr "प्रोफ़ाइल प्राथमिकताएं"
 #: templates/privacy_policy.html:55
 msgid ""
 "\n"
-"                                Currency settings, theme preferences (light/"
-"dark mode).\n"
+"                                Currency settings, theme preferences (light/dark mode).\n"
 "                                "
 msgstr ""
 "\n"
@@ -3359,37 +3205,31 @@ msgstr "उपयोग डेटा"
 #: templates/privacy_policy.html:61
 msgid ""
 "\n"
-"                                Device information, IP address, browser "
-"type, and interaction logs to help us improve the service.\n"
+"                                Device information, IP address, browser type, and interaction logs to help us improve the service.\n"
 "                                "
 msgstr ""
 "\n"
-"                                डिवाइस की जानकारी, आईपी एड्रेस, ब्राउज़र प्रकार "
-"और इंटरैक्शन लॉग, जो हमें सेवा को बेहतर बनाने में मदद करते हैं।\n"
+"                                डिवाइस की जानकारी, आईपी एड्रेस, ब्राउज़र प्रकार और इंटरैक्शन लॉग, जो हमें सेवा को बेहतर बनाने में मदद करते हैं।\n"
 "                                "
 
 #: templates/privacy_policy.html:71
 msgid ""
 "\n"
-"                            We use the information we collect to provide, "
-"maintain, and improve our services.\n"
+"                            We use the information we collect to provide, maintain, and improve our services.\n"
 "                            "
 msgstr ""
 "\n"
-"                            हम अपनी सेवाओं को प्रदान करने, बनाए रखने और बेहतर बनाने "
-"के लिए एकत्र की गई जानकारी का उपयोग करते हैं।\n"
+"                            हम अपनी सेवाओं को प्रदान करने, बनाए रखने और बेहतर बनाने के लिए एकत्र की गई जानकारी का उपयोग करते हैं।\n"
 "                            "
 
 #: templates/privacy_policy.html:77
 msgid ""
 "\n"
-"                                Provide the TrackMyRupee dashboard, expense "
-"tracking, and financial reports.\n"
+"                                Provide the TrackMyRupee dashboard, expense tracking, and financial reports.\n"
 "                                "
 msgstr ""
 "\n"
-"                                TrackMyRupee डैशबोर्ड, खर्च ट्रैकिंग और वित्तीय "
-"रिपोर्ट प्रदान करना।\n"
+"                                TrackMyRupee डैशबोर्ड, खर्च ट्रैकिंग और वित्तीय रिपोर्ट प्रदान करना।\n"
 "                                "
 
 #: templates/privacy_policy.html:82
@@ -3405,49 +3245,41 @@ msgstr ""
 #: templates/privacy_policy.html:87
 msgid ""
 "\n"
-"                                Send important notifications, such as "
-"password resets or account alerts.\n"
+"                                Send important notifications, such as password resets or account alerts.\n"
 "                                "
 msgstr ""
 "\n"
-"                                महत्वपूर्ण सूचनाएं भेजना, जैसे पासवर्ड रीसेट या खाता "
-"अलर्ट।\n"
+"                                महत्वपूर्ण सूचनाएं भेजना, जैसे पासवर्ड रीसेट या खाता अलर्ट।\n"
 "                                "
 
 #: templates/privacy_policy.html:92
 msgid ""
 "\n"
-"                                Analyze usage patterns to fix bugs and "
-"improve performance.\n"
+"                                Analyze usage patterns to fix bugs and improve performance.\n"
 "                                "
 msgstr ""
 "\n"
-"                                बग को ठीक करने और प्रदर्शन में सुधार करने के लिए "
-"उपयोग पैटर्न का विश्लेषण करना।\n"
+"                                बग को ठीक करने और प्रदर्शन में सुधार करने के लिए उपयोग पैटर्न का विश्लेषण करना।\n"
 "                                "
 
 #: templates/privacy_policy.html:97
 msgid ""
 "\n"
-"                                Prevent abuse and enforce our Terms of "
-"Service.\n"
+"                                Prevent abuse and enforce our Terms of Service.\n"
 "                                "
 msgstr ""
 "\n"
-"                                दुरुपयोग को रोकना और हमारी सेवा की शर्तों को लागू "
-"करना।\n"
+"                                दुरुपयोग को रोकना और हमारी सेवा की शर्तों को लागू करना।\n"
 "                                "
 
 #: templates/privacy_policy.html:105
 msgid ""
 "\n"
-"                            We use cookies and similar tracking technologies "
-"to track the activity on our Service and hold certain information.\n"
+"                            We use cookies and similar tracking technologies to track the activity on our Service and hold certain information.\n"
 "                            "
 msgstr ""
 "\n"
-"                            हम अपनी सेवा पर गतिविधि को ट्रैक करने और कुछ जानकारी "
-"रखने के लिए कुकीज़ और इसी तरह की ट्रैकिंग तकनीकों का उपयोग करते हैं।\n"
+"                            हम अपनी सेवा पर गतिविधि को ट्रैक करने और कुछ जानकारी रखने के लिए कुकीज़ और इसी तरह की ट्रैकिंग तकनीकों का उपयोग करते हैं।\n"
 "                            "
 
 #: templates/privacy_policy.html:109
@@ -3457,32 +3289,21 @@ msgstr "गूगल एनालिटिक्स (Google Analytics)"
 #: templates/privacy_policy.html:111
 msgid ""
 "\n"
-"                            We use Google Analytics to monitor and analyze "
-"the use of our Service. Google Analytics involves the use of cookies to "
-"collect information such as your IP address, browser type, and pages "
-"visited. This helps us understand user behavior and improve our platform.\n"
+"                            We use Google Analytics to monitor and analyze the use of our Service. Google Analytics involves the use of cookies to collect information such as your IP address, browser type, and pages visited. This helps us understand user behavior and improve our platform.\n"
 "                            "
 msgstr ""
 "\n"
-"                            हम अपनी सेवा के उपयोग की निगरानी और विश्लेषण करने के "
-"लिए Google Analytics का उपयोग करते हैं। Google Analytics में आपकी आईपी एड्रेस, "
-"ब्राउज़र प्रकार और विज़िट किए गए पृष्ठों जैसी जानकारी एकत्र करने के लिए कुकीज़ का उपयोग "
-"शामिल है। यह हमें उपयोगकर्ता व्यवहार को समझने और हमारे प्लेटफ़ॉर्म को बेहतर बनाने में मदद "
-"करता है।\n"
+"                            हम अपनी सेवा के उपयोग की निगरानी और विश्लेषण करने के लिए Google Analytics का उपयोग करते हैं। Google Analytics में आपकी आईपी एड्रेस, ब्राउज़र प्रकार और विज़िट किए गए पृष्ठों जैसी जानकारी एकत्र करने के लिए कुकीज़ का उपयोग शामिल है। यह हमें उपयोगकर्ता व्यवहार को समझने और हमारे प्लेटफ़ॉर्म को बेहतर बनाने में मदद करता है।\n"
 "                            "
 
 #: templates/privacy_policy.html:116
 msgid ""
 "\n"
-"                            You can opt-out of having your activity "
-"available to Google Analytics by installing the Google Analytics Opt-out "
-"Browser Add-on.\n"
+"                            You can opt-out of having your activity available to Google Analytics by installing the Google Analytics Opt-out Browser Add-on.\n"
 "                            "
 msgstr ""
 "\n"
-"                            आप गूगल एनालिटिक्स ऑप्ट-आउट ब्राउज़र एड-ऑन (Google "
-"Analytics Opt-out Browser Add-on) इंस्टॉल करके अपनी गतिविधि को गूगल एनालिटिक्स के "
-"लिए उपलब्ध होने से रोक सकते हैं।\n"
+"                            आप गूगल एनालिटिक्स ऑप्ट-आउट ब्राउज़र एड-ऑन (Google Analytics Opt-out Browser Add-on) इंस्टॉल करके अपनी गतिविधि को गूगल एनालिटिक्स के लिए उपलब्ध होने से रोक सकते हैं।\n"
 "                            "
 
 #: templates/privacy_policy.html:126
@@ -3506,13 +3327,11 @@ msgstr "सेवा प्रदाता (Service Providers)"
 #: templates/privacy_policy.html:134
 msgid ""
 "\n"
-"                                With trusted third-party vendors (e.g., "
-"hosting providers, email services, analytics) who assist our operations.\n"
+"                                With trusted third-party vendors (e.g., hosting providers, email services, analytics) who assist our operations.\n"
 "                                "
 msgstr ""
 "\n"
-"                                भरोसेमंद तीसरे पक्ष के विक्रेताओं (जैसे, होस्टिंग "
-"प्रदाता, ईमेल सेवाएं, एनालिटिक्स) के साथ जो हमारे संचालन में सहायता करते हैं।\n"
+"                                भरोसेमंद तीसरे पक्ष के विक्रेताओं (जैसे, होस्टिंग प्रदाता, ईमेल सेवाएं, एनालिटिक्स) के साथ जो हमारे संचालन में सहायता करते हैं।\n"
 "                                "
 
 #: templates/privacy_policy.html:139
@@ -3522,14 +3341,11 @@ msgstr "कानूनी अनुपालन (Legal Compliance)"
 #: templates/privacy_policy.html:140
 msgid ""
 "\n"
-"                                If required by law, regulation, or legal "
-"process to protect the rights, property, or safety of TrackMyRupee or "
-"others.\n"
+"                                If required by law, regulation, or legal process to protect the rights, property, or safety of TrackMyRupee or others.\n"
 "                                "
 msgstr ""
 "\n"
-"                                यदि TrackMyRupee या अन्य के अधिकारों, संपत्ति या "
-"सुरक्षा की रक्षा के लिए कानून, विनियमन या कानूनी प्रक्रिया द्वारा आवश्यक हो।\n"
+"                                यदि TrackMyRupee या अन्य के अधिकारों, संपत्ति या सुरक्षा की रक्षा के लिए कानून, विनियमन या कानूनी प्रक्रिया द्वारा आवश्यक हो।\n"
 "                                "
 
 #: templates/privacy_policy.html:145
@@ -3539,34 +3355,27 @@ msgstr "व्यवसाय स्थानांतरण (Business Transfers
 #: templates/privacy_policy.html:146
 msgid ""
 "\n"
-"                                In connection with, or during negotiations "
-"of, any merger, sale of company assets, financing, or acquisition of all or "
-"a portion of our business.\n"
+"                                In connection with, or during negotiations of, any merger, sale of company assets, financing, or acquisition of all or a portion of our business.\n"
 "                                "
 msgstr ""
 "\n"
-"                                किसी भी विलय, कंपनी की संपत्ति की बिक्री, "
-"वित्तपोषण, या हमारे व्यवसाय के सभी या किसी हिस्से के अधिग्रहण के संबंध में, या बातचीत के "
-"दौरान।\n"
+"                                किसी भी विलय, कंपनी की संपत्ति की बिक्री, वित्तपोषण, या हमारे व्यवसाय के सभी या किसी हिस्से के अधिग्रहण के संबंध में, या बातचीत के दौरान।\n"
 "                                "
 
 #: templates/privacy_policy.html:156
 msgid ""
 "\n"
-"                            We implement appropriate technical and "
-"organizational measures to protect your information.\n"
+"                            We implement appropriate technical and organizational measures to protect your information.\n"
 "                            "
 msgstr ""
 "\n"
-"                            हम आपकी जानकारी की सुरक्षा के लिए उचित तकनीकी और "
-"संगठनात्मक उपाय लागू करते हैं।\n"
+"                            हम आपकी जानकारी की सुरक्षा के लिए उचित तकनीकी और संगठनात्मक उपाय लागू करते हैं।\n"
 "                            "
 
 #: templates/privacy_policy.html:162
 msgid ""
 "\n"
-"                                Encryption of sensitive data (like "
-"passwords) at rest.\n"
+"                                Encryption of sensitive data (like passwords) at rest.\n"
 "                                "
 msgstr ""
 "\n"
@@ -3576,13 +3385,11 @@ msgstr ""
 #: templates/privacy_policy.html:167
 msgid ""
 "\n"
-"                                Secure HTTPS (TLS/SSL) for all data in "
-"transit.\n"
+"                                Secure HTTPS (TLS/SSL) for all data in transit.\n"
 "                                "
 msgstr ""
 "\n"
-"                                पारगमन में सभी डेटा के लिए सुरक्षित HTTPS (TLS/"
-"SSL)।\n"
+"                                पारगमन में सभी डेटा के लिए सुरक्षित HTTPS (TLS/SSL)।\n"
 "                                "
 
 #: templates/privacy_policy.html:172
@@ -3598,20 +3405,17 @@ msgstr ""
 #: templates/privacy_policy.html:177
 msgid ""
 "\n"
-"                                Access controls to limit internal access to "
-"personal data.\n"
+"                                Access controls to limit internal access to personal data.\n"
 "                                "
 msgstr ""
 "\n"
-"                                व्यक्तिगत डेटा तक आंतरिक पहुंच को सीमित करने के लिए "
-"पहुंच नियंत्रण (Access controls)।\n"
+"                                व्यक्तिगत डेटा तक आंतरिक पहुंच को सीमित करने के लिए पहुंच नियंत्रण (Access controls)।\n"
 "                                "
 
 #: templates/privacy_policy.html:187
 msgid ""
 "\n"
-"                            You have control over your personal "
-"information.\n"
+"                            You have control over your personal information.\n"
 "                            "
 msgstr ""
 "\n"
@@ -3625,13 +3429,11 @@ msgstr "पहुंच और सुधार"
 #: templates/privacy_policy.html:194
 msgid ""
 "\n"
-"                                You can view and edit your profile and "
-"financial data directly within the application.\n"
+"                                You can view and edit your profile and financial data directly within the application.\n"
 "                                "
 msgstr ""
 "\n"
-"                                आप सीधे एप्लिकेशन के भीतर अपनी प्रोफ़ाइल और वित्तीय "
-"डेटा देख और संपादित कर सकते हैं।\n"
+"                                आप सीधे एप्लिकेशन के भीतर अपनी प्रोफ़ाइल और वित्तीय डेटा देख और संपादित कर सकते हैं।\n"
 "                                "
 
 #: templates/privacy_policy.html:199
@@ -3641,13 +3443,11 @@ msgstr "डेटा निर्यात (Export)"
 #: templates/privacy_policy.html:200
 msgid ""
 "\n"
-"                                You can export your data (e.g., to CSV/"
-"Excel) at any time.\n"
+"                                You can export your data (e.g., to CSV/Excel) at any time.\n"
 "                                "
 msgstr ""
 "\n"
-"                                आप किसी भी समय अपना डेटा (जैसे, CSV/Excel में) "
-"निर्यात कर सकते हैं।\n"
+"                                आप किसी भी समय अपना डेटा (जैसे, CSV/Excel में) निर्यात कर सकते हैं।\n"
 "                                "
 
 #: templates/privacy_policy.html:205
@@ -3657,13 +3457,11 @@ msgstr "खाता हटाना"
 #: templates/privacy_policy.html:206
 msgid ""
 "\n"
-"                                You can request to delete your account and "
-"all associated data permanently.\n"
+"                                You can request to delete your account and all associated data permanently.\n"
 "                                "
 msgstr ""
 "\n"
-"                                आप अपना खाता और उससे संबंधित सभी डेटा स्थायी रूप से "
-"हटाने का अनुरोध कर सकते हैं।\n"
+"                                आप अपना खाता और उससे संबंधित सभी डेटा स्थायी रूप से हटाने का अनुरोध कर सकते हैं।\n"
 "                                "
 
 #: templates/privacy_policy.html:211
@@ -3673,25 +3471,21 @@ msgstr "संचार (Communications)"
 #: templates/privacy_policy.html:212
 msgid ""
 "\n"
-"                                You can manage your email preferences or "
-"unsubscribe from non-essential emails.\n"
+"                                You can manage your email preferences or unsubscribe from non-essential emails.\n"
 "                                "
 msgstr ""
 "\n"
-"                                आप अपनी ईमेल प्राथमिकताओं को प्रबंधित कर सकते हैं या "
-"अनावश्यक ईमेल से अनसब्सक्राइब कर सकते हैं।\n"
+"                                आप अपनी ईमेल प्राथमिकताओं को प्रबंधित कर सकते हैं या अनावश्यक ईमेल से अनसब्सक्राइब कर सकते हैं।\n"
 "                                "
 
 #: templates/privacy_policy.html:222
 msgid ""
 "\n"
-"                            We retain your information only as long as "
-"necessary to provide our services and comply with legal obligations.\n"
+"                            We retain your information only as long as necessary to provide our services and comply with legal obligations.\n"
 "                            "
 msgstr ""
 "\n"
-"                            हम आपकी जानकारी को केवल तब तक सुरक्षित रखते हैं जब तक "
-"कि हमारी सेवाएं प्रदान करने और कानूनी दायित्वों का पालन करने के लिए आवश्यक हो।\n"
+"                            हम आपकी जानकारी को केवल तब तक सुरक्षित रखते हैं जब तक कि हमारी सेवाएं प्रदान करने और कानूनी दायित्वों का पालन करने के लिए आवश्यक हो।\n"
 "                            "
 
 #: templates/privacy_policy.html:228
@@ -3701,13 +3495,11 @@ msgstr "सक्रिय खाते"
 #: templates/privacy_policy.html:229
 msgid ""
 "\n"
-"                                Data is retained while your account remains "
-"active.\n"
+"                                Data is retained while your account remains active.\n"
 "                                "
 msgstr ""
 "\n"
-"                                जब तक आपका खाता सक्रिय रहता है, डेटा सुरक्षित रखा "
-"जाता है।\n"
+"                                जब तक आपका खाता सक्रिय रहता है, डेटा सुरक्षित रखा जाता है।\n"
 "                                "
 
 #: templates/privacy_policy.html:234
@@ -3717,58 +3509,43 @@ msgstr "हटाए गए खाते"
 #: templates/privacy_policy.html:235
 msgid ""
 "\n"
-"                                If you delete your account, your personal "
-"data is removed from our live databases immediately and from backups within "
-"30-90 days.\n"
+"                                If you delete your account, your personal data is removed from our live databases immediately and from backups within 30-90 days.\n"
 "                                "
 msgstr ""
 "\n"
-"                                यदि आप अपना खाता हटाते हैं, तो आपकी व्यक्तिगत "
-"जानकारी हमारे सक्रिय डेटाबेस से तुरंत हटा दी जाती है और 30-90 दिनों के भीतर बैकअप से हटा "
-"दी जाती है।\n"
+"                                यदि आप अपना खाता हटाते हैं, तो आपकी व्यक्तिगत जानकारी हमारे सक्रिय डेटाबेस से तुरंत हटा दी जाती है और 30-90 दिनों के भीतर बैकअप से हटा दी जाती है।\n"
 "                                "
 
 #: templates/privacy_policy.html:245
 msgid ""
 "\n"
-"                            TrackMyRupee is not intended for children under "
-"13. We do not knowingly collect information from children. \n"
-"                            If we learn we have collected personal "
-"information from a child under 13, we will delete it.\n"
+"                            TrackMyRupee is not intended for children under 13. We do not knowingly collect information from children. \n"
+"                            If we learn we have collected personal information from a child under 13, we will delete it.\n"
 "                            "
 msgstr ""
 "\n"
-"                            TrackMyRupee 13 वर्ष से कम उम्र के बच्चों के लिए नहीं है। "
-"हम जानबूझकर बच्चों से जानकारी एकत्र नहीं करते हैं। यदि हमें पता चलता है कि हमने 13 वर्ष से "
-"कम उम्र के बच्चे से व्यक्तिगत जानकारी एकत्र की है, तो हम उसे हटा देंगे।\n"
+"                            TrackMyRupee 13 वर्ष से कम उम्र के बच्चों के लिए नहीं है। हम जानबूझकर बच्चों से जानकारी एकत्र नहीं करते हैं। यदि हमें पता चलता है कि हमने 13 वर्ष से कम उम्र के बच्चे से व्यक्तिगत जानकारी एकत्र की है, तो हम उसे हटा देंगे।\n"
 "                            "
 
 #: templates/privacy_policy.html:255
 msgid ""
 "\n"
-"                            We may update this privacy policy from time to "
-"time. We will notify you of significant changes by posting the new policy on "
-"this page \n"
-"                            or sending you an email. Your continued use of "
-"the Service constitutes acceptance of the changes.\n"
+"                            We may update this privacy policy from time to time. We will notify you of significant changes by posting the new policy on this page \n"
+"                            or sending you an email. Your continued use of the Service constitutes acceptance of the changes.\n"
 "                            "
 msgstr ""
 "\n"
-"                            हम समय-समय पर इस गोपनीयता नीति को अपडेट कर सकते हैं। "
-"हम इस पृष्ठ पर नई नीति पोस्ट करके या आपको ईमेल भेजकर महत्वपूर्ण परिवर्तनों के बारे में सूचित "
-"करेंगे। सेवा का आपका निरंतर उपयोग परिवर्तनों की स्वीकृति माना जाएगा।\n"
+"                            हम समय-समय पर इस गोपनीयता नीति को अपडेट कर सकते हैं। हम इस पृष्ठ पर नई नीति पोस्ट करके या आपको ईमेल भेजकर महत्वपूर्ण परिवर्तनों के बारे में सूचित करेंगे। सेवा का आपका निरंतर उपयोग परिवर्तनों की स्वीकृति माना जाएगा।\n"
 "                            "
 
 #: templates/privacy_policy.html:265
 msgid ""
 "\n"
-"                            If you have questions about this privacy policy "
-"or our practices, please contact us at:\n"
+"                            If you have questions about this privacy policy or our practices, please contact us at:\n"
 "                            "
 msgstr ""
 "\n"
-"                            यदि इस गोपनीयता नीति या हमारी प्रथाओं के बारे में आपके "
-"कोई प्रश्न हैं, तो कृपया हमसे यहाँ संपर्क करें:\n"
+"                            यदि इस गोपनीयता नीति या हमारी प्रथाओं के बारे में आपके कोई प्रश्न हैं, तो कृपया हमसे यहाँ संपर्क करें:\n"
 "                            "
 
 #: templates/refund_policy.html:8
@@ -3782,13 +3559,11 @@ msgstr "अंतिम अपडेट: 24 जनवरी, 2026"
 #: templates/refund_policy.html:12
 msgid ""
 "\n"
-"                At TrackMyRupee, we strive to ensure your satisfaction with "
-"our services. This policy outlines the terms for cancellations and refunds.\n"
+"                At TrackMyRupee, we strive to ensure your satisfaction with our services. This policy outlines the terms for cancellations and refunds.\n"
 "                "
 msgstr ""
 "\n"
-"                TrackMyRupee में, हम अपनी सेवाओं से आपकी संतुष्टि सुनिश्चित करने का "
-"प्रयास करते हैं। यह नीति रद्दीकरण और धनवापसी के नियमों को रेखांकित करती है।\n"
+"                TrackMyRupee में, हम अपनी सेवाओं से आपकी संतुष्टि सुनिश्चित करने का प्रयास करते हैं। यह नीति रद्दीकरण और धनवापसी के नियमों को रेखांकित करती है।\n"
 "                "
 
 #: templates/refund_policy.html:20 templates/refund_policy.html:28
@@ -3818,13 +3593,11 @@ msgstr "रद्द कैसे करें"
 #: templates/refund_policy.html:33
 msgid ""
 "\n"
-"                        You can cancel your subscription directly from your "
-"account settings page or by contacting our support team.\n"
+"                        You can cancel your subscription directly from your account settings page or by contacting our support team.\n"
 "                        "
 msgstr ""
 "\n"
-"                        आप अपनी सदस्यता सीधे अपने खाता सेटिंग (account settings) "
-"पृष्ठ से या हमारी सहायता टीम से संपर्क करके रद्द कर सकते हैं।\n"
+"                        आप अपनी सदस्यता सीधे अपने खाता सेटिंग (account settings) पृष्ठ से या हमारी सहायता टीम से संपर्क करके रद्द कर सकते हैं।\n"
 "                        "
 
 #: templates/refund_policy.html:38
@@ -3834,14 +3607,11 @@ msgstr "रद्दीकरण का प्रभाव"
 #: templates/refund_policy.html:39
 msgid ""
 "\n"
-"                        Upon cancellation, your subscription will remain "
-"active until the end of the current billing cycle. You will not be charged "
-"for the next cycle.\n"
+"                        Upon cancellation, your subscription will remain active until the end of the current billing cycle. You will not be charged for the next cycle.\n"
 "                        "
 msgstr ""
 "\n"
-"                        रद्दीकरण पर, आपकी सदस्यता वर्तमान बिलिंग चक्र के अंत तक "
-"सक्रिय रहेगी। आपसे अगले चक्र के लिए शुल्क नहीं लिया जाएगा।\n"
+"                        रद्दीकरण पर, आपकी सदस्यता वर्तमान बिलिंग चक्र के अंत तक सक्रिय रहेगी। आपसे अगले चक्र के लिए शुल्क नहीं लिया जाएगा।\n"
 "                        "
 
 #: templates/refund_policy.html:44
@@ -3851,27 +3621,21 @@ msgstr "डेटा प्रतिधारण (Data Retention)"
 #: templates/refund_policy.html:45
 msgid ""
 "\n"
-"                        After cancellation, your account will revert to the "
-"Free plan (if applicable) or remain accessible as per our data retention "
-"policy. You may request full account deletion at any time.\n"
+"                        After cancellation, your account will revert to the Free plan (if applicable) or remain accessible as per our data retention policy. You may request full account deletion at any time.\n"
 "                        "
 msgstr ""
 "\n"
-"                        रद्दीकरण के बाद, आपका खाता 'फ्री प्लान' (यदि लागू हो) में "
-"वापस आ जाएगा या हमारी डेटा प्रतिधारण नीति के अनुसार सुलभ रहेगा। आप किसी भी समय "
-"खाता पूरी तरह से हटाने का अनुरोध कर सकते हैं।\n"
+"                        रद्दीकरण के बाद, आपका खाता 'फ्री प्लान' (यदि लागू हो) में वापस आ जाएगा या हमारी डेटा प्रतिधारण नीति के अनुसार सुलभ रहेगा। आप किसी भी समय खाता पूरी तरह से हटाने का अनुरोध कर सकते हैं।\n"
 "                        "
 
 #: templates/refund_policy.html:55
 msgid ""
 "\n"
-"                    We offer a transparent refund policy to ensure you feel "
-"confident in trying our premium features.\n"
+"                    We offer a transparent refund policy to ensure you feel confident in trying our premium features.\n"
 "                    "
 msgstr ""
 "\n"
-"                    हम यह सुनिश्चित करने के लिए एक पारदर्शी धनवापसी नीति प्रदान "
-"करते हैं कि आप हमारी प्रीमियम सुविधाओं को आज़माने में आत्मविश्वास महसूस करें।\n"
+"                    हम यह सुनिश्चित करने के लिए एक पारदर्शी धनवापसी नीति प्रदान करते हैं कि आप हमारी प्रीमियम सुविधाओं को आज़माने में आत्मविश्वास महसूस करें।\n"
 "                    "
 
 #: templates/refund_policy.html:61
@@ -3881,14 +3645,11 @@ msgstr "14-दिन की मनी-बैक गारंटी"
 #: templates/refund_policy.html:62
 msgid ""
 "\n"
-"                        If you are not satisfied with your premium "
-"subscription (Plus or Pro), you may request a full refund within 14 days of "
-"your initial purchase.\n"
+"                        If you are not satisfied with your premium subscription (Plus or Pro), you may request a full refund within 14 days of your initial purchase.\n"
 "                        "
 msgstr ""
 "\n"
-"                        यदि आप अपनी प्रीमियम सदस्यता (Plus या Pro) से संतुष्ट नहीं "
-"हैं, तो आप अपनी प्रारंभिक खरीद के 14 दिनों के भीतर पूर्ण धनवापसी का अनुरोध कर सकते हैं।\n"
+"                        यदि आप अपनी प्रीमियम सदस्यता (Plus या Pro) से संतुष्ट नहीं हैं, तो आप अपनी प्रारंभिक खरीद के 14 दिनों के भीतर पूर्ण धनवापसी का अनुरोध कर सकते हैं।\n"
 "                        "
 
 #: templates/refund_policy.html:67
@@ -3898,15 +3659,11 @@ msgstr "पात्रता (Eligibility)"
 #: templates/refund_policy.html:68
 msgid ""
 "\n"
-"                        To be eligible for a refund, you must submit your "
-"request within the 14-day window. Refunds are generally not provided for "
-"partial months after the initial 14-day period.\n"
+"                        To be eligible for a refund, you must submit your request within the 14-day window. Refunds are generally not provided for partial months after the initial 14-day period.\n"
 "                        "
 msgstr ""
 "\n"
-"                        धनवापसी के पात्र होने के लिए, आपको 14-दिन की अवधि के भीतर "
-"अपना अनुरोध सबमिट करना होगा। प्रारंभिक 14-दिन की अवधि के बाद आंशिक महीनों के लिए आम "
-"तौर पर धनवापसी प्रदान नहीं की जाती है।\n"
+"                        धनवापसी के पात्र होने के लिए, आपको 14-दिन की अवधि के भीतर अपना अनुरोध सबमिट करना होगा। प्रारंभिक 14-दिन की अवधि के बाद आंशिक महीनों के लिए आम तौर पर धनवापसी प्रदान नहीं की जाती है।\n"
 "                        "
 
 #: templates/refund_policy.html:73
@@ -3916,13 +3673,11 @@ msgstr "अपवाद"
 #: templates/refund_policy.html:74
 msgid ""
 "\n"
-"                        We reserve the right to deny refunds in cases of "
-"suspected abuse of the policy or violation of our Terms of Service.\n"
+"                        We reserve the right to deny refunds in cases of suspected abuse of the policy or violation of our Terms of Service.\n"
 "                        "
 msgstr ""
 "\n"
-"                        हम नीति के संदिग्ध दुरुपयोग या हमारी सेवा की शर्तों के उल्लंघन "
-"के मामलों में धनवापसी से इनकार करने का अधिकार सुरक्षित रखते हैं।\n"
+"                        हम नीति के संदिग्ध दुरुपयोग या हमारी सेवा की शर्तों के उल्लंघन के मामलों में धनवापसी से इनकार करने का अधिकार सुरक्षित रखते हैं।\n"
 "                        "
 
 #: templates/refund_policy.html:83
@@ -3932,37 +3687,31 @@ msgstr "धनवापसी स्वीकृत होने के बा�
 #: templates/refund_policy.html:86
 msgid ""
 "\n"
-"                        The refund amount will be credited back to your "
-"original payment method.\n"
+"                        The refund amount will be credited back to your original payment method.\n"
 "                        "
 msgstr ""
 "\n"
-"                        धनवापसी की राशि आपके मूल भुगतान माध्यम में वापस जमा कर दी "
-"जाएगी।\n"
+"                        धनवापसी की राशि आपके मूल भुगतान माध्यम में वापस जमा कर दी जाएगी।\n"
 "                        "
 
 #: templates/refund_policy.html:91
 msgid ""
 "\n"
-"                        Processing times typically range from 5 to 10 "
-"business days, depending on your bank or payment provider.\n"
+"                        Processing times typically range from 5 to 10 business days, depending on your bank or payment provider.\n"
 "                        "
 msgstr ""
 "\n"
-"                        आपके बैंक या भुगतान प्रदाता के आधार पर, प्रसंस्करण "
-"(processing) समय आमतौर पर 5 से 10 कार्य दिवसों तक होता है।\n"
+"                        आपके बैंक या भुगतान प्रदाता के आधार पर, प्रसंस्करण (processing) समय आमतौर पर 5 से 10 कार्य दिवसों तक होता है।\n"
 "                        "
 
 #: templates/refund_policy.html:101
 msgid ""
 "\n"
-"                    If you wish to request a refund or have any questions "
-"about this policy, please contact our support team at:\n"
+"                    If you wish to request a refund or have any questions about this policy, please contact our support team at:\n"
 "                    "
 msgstr ""
 "\n"
-"                    यदि आप धनवापसी का अनुरोध करना चाहते हैं या इस नीति के बारे में "
-"आपके कोई प्रश्न हैं, तो कृपया हमारी सहायता टीम से यहां संपर्क करें:\n"
+"                    यदि आप धनवापसी का अनुरोध करना चाहते हैं या इस नीति के बारे में आपके कोई प्रश्न हैं, तो कृपया हमारी सहायता टीम से यहां संपर्क करें:\n"
 "                    "
 
 #: templates/socialaccount/authentication_error.html:9
@@ -3970,8 +3719,7 @@ msgid "Social Network Login Failure"
 msgstr ""
 
 #: templates/socialaccount/authentication_error.html:11
-msgid ""
-"An error occurred while attempting to login via your social network account."
+msgid "An error occurred while attempting to login via your social network account."
 msgstr ""
 
 #: templates/socialaccount/connections.html:6
@@ -3983,9 +3731,7 @@ msgid "Manage your linked social accounts"
 msgstr ""
 
 #: templates/socialaccount/connections.html:11
-msgid ""
-"You can sign in to your account using any of the following third party "
-"accounts:"
+msgid "You can sign in to your account using any of the following third party accounts:"
 msgstr ""
 
 #: templates/socialaccount/connections.html:32
@@ -4006,8 +3752,7 @@ msgstr ""
 
 #: templates/socialaccount/login.html:11
 #, python-format
-msgid ""
-"You are about to sign in using a third-party account from %(provider_name)s."
+msgid "You are about to sign in using a third-party account from %(provider_name)s."
 msgstr ""
 
 #: templates/socialaccount/login.html:19
@@ -4016,9 +3761,7 @@ msgstr ""
 
 #: templates/socialaccount/signup.html:11
 #, python-format
-msgid ""
-"You are about to use your %(provider_name)s account to login to "
-"%(site_name)s. As a final step, please complete the following form:"
+msgid "You are about to use your %(provider_name)s account to login to %(site_name)s. As a final step, please complete the following form:"
 msgstr ""
 
 #: templates/socialaccount/signup.html:48
@@ -4036,16 +3779,12 @@ msgstr "1. शर्तों की स्वीकृति"
 #: templates/terms_of_service.html:13
 msgid ""
 "\n"
-"                        By accessing or using TrackMyRupee, you agree to be "
-"bound by these Terms of Service. If you disagree with any part of the "
-"terms, \n"
+"                        By accessing or using TrackMyRupee, you agree to be bound by these Terms of Service. If you disagree with any part of the terms, \n"
 "                        you may not access the service.\n"
 "                        "
 msgstr ""
 "\n"
-"                        TrackMyRupee का उपयोग करके या उसमें प्रवेश करके, आप इन सेवा "
-"की शर्तों (Terms of Service) से बंधे होने के लिए सहमत हैं। यदि आप शर्तों के किसी भी भाग "
-"से असहमत हैं, तो आप सेवा का उपयोग नहीं कर सकते।\n"
+"                        TrackMyRupee का उपयोग करके या उसमें प्रवेश करके, आप इन सेवा की शर्तों (Terms of Service) से बंधे होने के लिए सहमत हैं। यदि आप शर्तों के किसी भी भाग से असहमत हैं, तो आप सेवा का उपयोग नहीं कर सकते।\n"
 "                        "
 
 #: templates/terms_of_service.html:19
@@ -4055,16 +3794,12 @@ msgstr "2. सेवा का उपयोग"
 #: templates/terms_of_service.html:21
 msgid ""
 "\n"
-"                        You are responsible for maintaining the "
-"confidentiality of your account and password. You agree to accept "
-"responsibility for all \n"
+"                        You are responsible for maintaining the confidentiality of your account and password. You agree to accept responsibility for all \n"
 "                        activities that occur under your account.\n"
 "                        "
 msgstr ""
 "\n"
-"                        आप अपने खाते और पासवर्ड की गोपनीयता बनाए रखने के लिए "
-"जिम्मेदार हैं। आप अपने खाते के तहत होने वाली सभी गतिविधियों की जिम्मेदारी स्वीकार करने के "
-"लिए सहमत हैं।\n"
+"                        आप अपने खाते और पासवर्ड की गोपनीयता बनाए रखने के लिए जिम्मेदार हैं। आप अपने खाते के तहत होने वाली सभी गतिविधियों की जिम्मेदारी स्वीकार करने के लिए सहमत हैं।\n"
 "                        "
 
 #: templates/terms_of_service.html:27
@@ -4074,15 +3809,12 @@ msgstr "3. उपयोगकर्ता सामग्री (User Content)"
 #: templates/terms_of_service.html:29
 msgid ""
 "\n"
-"                        You retain ownership of the data you enter into the "
-"application. We claim no intellectual property rights over the material \n"
+"                        You retain ownership of the data you enter into the application. We claim no intellectual property rights over the material \n"
 "                        you provide to the service.\n"
 "                        "
 msgstr ""
 "\n"
-"                        आपके द्वारा एप्लिकेशन में दर्ज किए गए डेटा का स्वामित्व आपके "
-"पास ही रहता है। हम आपके द्वारा सेवा को प्रदान की गई सामग्री पर किसी भी बौद्धिक संपदा "
-"अधिकार (intellectual property rights) का दावा नहीं करते हैं।\n"
+"                        आपके द्वारा एप्लिकेशन में दर्ज किए गए डेटा का स्वामित्व आपके पास ही रहता है। हम आपके द्वारा सेवा को प्रदान की गई सामग्री पर किसी भी बौद्धिक संपदा अधिकार (intellectual property rights) का दावा नहीं करते हैं।\n"
 "                        "
 
 #: templates/terms_of_service.html:35
@@ -4092,44 +3824,31 @@ msgstr "4. दायित्व की सीमा और अस्वीक�
 #: templates/terms_of_service.html:37
 msgid ""
 "\n"
-"                        The service is provided on an \"AS IS\" and \"AS "
-"AVAILABLE\" basis. TrackMyRupee makes no seeking to warranties regarding the "
-"reliability, accuracy, or availability of the service. \n"
+"                        The service is provided on an \"AS IS\" and \"AS AVAILABLE\" basis. TrackMyRupee makes no seeking to warranties regarding the reliability, accuracy, or availability of the service. \n"
 "                        "
 msgstr ""
 "\n"
-"                        सेवा \"जैसा है\" (AS IS) और \"जैसा उपलब्ध है\" (AS "
-"AVAILABLE) के आधार पर प्रदान की जाती है। TrackMyRupee सेवा की विश्वसनीयता, सटीकता "
-"या उपलब्धता के संबंध में कोई वारंटी नहीं देता है।\n"
+"                        सेवा \"जैसा है\" (AS IS) और \"जैसा उपलब्ध है\" (AS AVAILABLE) के आधार पर प्रदान की जाती है। TrackMyRupee सेवा की विश्वसनीयता, सटीकता या उपलब्धता के संबंध में कोई वारंटी नहीं देता है।\n"
 "                        "
 
 #: templates/terms_of_service.html:42
 msgid ""
 "\n"
-"                            We are not liable for any data loss, service "
-"interruptions, or financial damages resulting from the use or inability to "
-"use our application.\n"
+"                            We are not liable for any data loss, service interruptions, or financial damages resulting from the use or inability to use our application.\n"
 "                            "
 msgstr ""
 "\n"
-"                            हम अपने एप्लिकेशन के उपयोग या उपयोग करने में असमर्थता के "
-"परिणामस्वरूप होने वाले किसी भी डेटा हानि, सेवा व्यवधान, या वित्तीय नुकसान के लिए "
-"उत्तरदायी नहीं हैं।\n"
+"                            हम अपने एप्लिकेशन के उपयोग या उपयोग करने में असमर्थता के परिणामस्वरूप होने वाले किसी भी डेटा हानि, सेवा व्यवधान, या वित्तीय नुकसान के लिए उत्तरदायी नहीं हैं।\n"
 "                            "
 
 #: templates/terms_of_service.html:46
 msgid ""
 "\n"
-"                        In no event shall TrackMyRupee be liable for any "
-"indirect, incidental, special, consequential, or punitive damages, including "
-"without limitation, loss of profits, data, use, goodwill, or other "
-"intangible losses.\n"
+"                        In no event shall TrackMyRupee be liable for any indirect, incidental, special, consequential, or punitive damages, including without limitation, loss of profits, data, use, goodwill, or other intangible losses.\n"
 "                        "
 msgstr ""
 "\n"
-"                        किसी भी स्थिति में TrackMyRupee किसी भी अप्रत्यक्ष, "
-"आकस्मिक, विशेष, परिणामी या दंडात्मक नुकसान के लिए उत्तरदायी नहीं होगा, जिसमें लाभ, "
-"डेटा, उपयोग, सद्भावना (goodwill), या अन्य अमूर्त नुकसान शामिल हैं।\n"
+"                        किसी भी स्थिति में TrackMyRupee किसी भी अप्रत्यक्ष, आकस्मिक, विशेष, परिणामी या दंडात्मक नुकसान के लिए उत्तरदायी नहीं होगा, जिसमें लाभ, डेटा, उपयोग, सद्भावना (goodwill), या अन्य अमूर्त नुकसान शामिल हैं।\n"
 "                        "
 
 #: templates/terms_of_service.html:51
@@ -4139,16 +3858,12 @@ msgstr "5. शर्तों में परिवर्तन"
 #: templates/terms_of_service.html:53
 msgid ""
 "\n"
-"                        We reserve the right to modify or replace these "
-"Terms at any time. We will try to provide at least 30 days' notice prior to "
-"any \n"
+"                        We reserve the right to modify or replace these Terms at any time. We will try to provide at least 30 days' notice prior to any \n"
 "                        new terms taking effect.\n"
 "                        "
 msgstr ""
 "\n"
-"                        हम किसी भी समय इन शर्तों को संशोधित करने या बदलने का "
-"अधिकार सुरक्षित रखते हैं। हम किसी भी नई शर्तों के प्रभावी होने से कम से कम 30 दिन पहले "
-"नोटिस प्रदान करने का प्रयास करेंगे।\n"
+"                        हम किसी भी समय इन शर्तों को संशोधित करने या बदलने का अधिकार सुरक्षित रखते हैं। हम किसी भी नई शर्तों के प्रभावी होने से कम से कम 30 दिन पहले नोटिस प्रदान करने का प्रयास करेंगे।\n"
 "                        "
 
 #: templates/upload.html:7
@@ -4158,13 +3873,11 @@ msgstr "खर्च अपलोड करें"
 #: templates/upload.html:11
 msgid ""
 "\n"
-"            Upload your Excel file to update your expense records. Each "
-"sheet corresponds to a month.\n"
+"            Upload your Excel file to update your expense records. Each sheet corresponds to a month.\n"
 "            "
 msgstr ""
 "\n"
-"अपने खर्च रेकॉर्ड अपडेट करने के लिए अपनी एक्सेल फाइल अपलोड करें। प्रत्येक शीट एक महीने से मेल "
-"खाती है।\n"
+"अपने खर्च रेकॉर्ड अपडेट करने के लिए अपनी एक्सेल फाइल अपलोड करें। प्रत्येक शीट एक महीने से मेल खाती है।\n"
 "            "
 
 #: templates/upload.html:18
@@ -4174,8 +3887,7 @@ msgstr "आवश्यक फॉर्मेट"
 #: templates/upload.html:20
 msgid ""
 "\n"
-"                Your Excel file must contain the following columns (headers "
-"are Case-Sensitive):\n"
+"                Your Excel file must contain the following columns (headers are Case-Sensitive):\n"
 "                "
 msgstr ""
 "\n"
@@ -4205,13 +3917,11 @@ msgstr "नोट"
 #: templates/upload.html:32
 msgid ""
 "\n"
-"                The \"Select Year\" below will override the year in your "
-"excel dates to ensure consistency.\n"
+"                The \"Select Year\" below will override the year in your excel dates to ensure consistency.\n"
 "                "
 msgstr ""
 "\n"
-"नीचे \"वर्ष चुनें\" आपकी एक्सेल तारीखों में वर्ष को ओवरराइड करेगा संगति सुनिश्चित करने के "
-"लिए।\n"
+"नीचे \"वर्ष चुनें\" आपकी एक्सेल तारीखों में वर्ष को ओवरराइड करेगा संगति सुनिश्चित करने के लिए।\n"
 "                "
 
 #: templates/upload.html:42
