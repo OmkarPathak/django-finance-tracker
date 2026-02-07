@@ -11,9 +11,8 @@ You manually track expenses, analyze spending, manage budgets, and stay in contr
 
 <div align="center">
 
-![Stars](https://img.shields.io/github/stars/omkarpthak/django-finance-tracker?labelColor=F0F0E8&style=for-the-badge&color=1d4ed8)
-![Forks](https://img.shields.io/github/forks/omkarpthak/django-finance-tracker?labelColor=F0F0E8&style=for-the-badge&color=1d4ed8)
-![Version](https://img.shields.io/badge/Version-1.0%20Aerodynamic%20-FFF?labelColor=F0F0E8&style=for-the-badge&color=1d4ed8)
+![Stars](https://img.shields.io/github/stars/omkarpathak/django-finance-tracker?labelColor=F0F0E8&style=for-the-badge&color=1d4ed8)
+![Forks](https://img.shields.io/github/forks/omkarpathak/django-finance-tracker?labelColor=F0F0E8&style=for-the-badge&color=1d4ed8)
 
 ![Django](https://img.shields.io/badge/Django-4.x-green?labelColor=F0F0E8&style=for-the-badge&color=1d4ed8)
 ![License](https://img.shields.io/badge/license-MIT-blue?labelColor=F0F0E8&style=for-the-badge&color=1d4ed8)
