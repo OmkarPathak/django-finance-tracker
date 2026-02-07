@@ -9,11 +9,18 @@ You manually track expenses, analyze spending, manage budgets, and stay in contr
 **🌐 Try Live App:** https://trackmyrupee.com  
 **⭐ Star on GitHub:** https://github.com/OmkarPathak/django-finance-tracker
 
-![Django](https://img.shields.io/badge/Django-4.x-green)
-![License](https://img.shields.io/badge/license-MIT-blue)
-![Privacy First](https://img.shields.io/badge/Privacy-First-brightgreen)
-![Coverage](https://img.shields.io/badge/Coverage-74%25-green)
+<div align="center">
 
+![Stars](https://img.shields.io/github/stars/omkarpthak/django-finance-tracker?labelColor=F0F0E8&style=for-the-badge&color=1d4ed8)
+![Forks](https://img.shields.io/github/forks/omkarpthak/django-finance-tracker?labelColor=F0F0E8&style=for-the-badge&color=1d4ed8)
+![Version](https://img.shields.io/badge/Version-1.0%20Aerodynamic%20-FFF?labelColor=F0F0E8&style=for-the-badge&color=1d4ed8)
+
+![Django](https://img.shields.io/badge/Django-4.x-green?labelColor=F0F0E8&style=for-the-badge&color=1d4ed8)
+![License](https://img.shields.io/badge/license-MIT-blue?labelColor=F0F0E8&style=for-the-badge&color=1d4ed8)
+![Privacy First](https://img.shields.io/badge/Privacy-First-brightgreen?labelColor=F0F0E8&style=for-the-badge&color=1d4ed8)
+![Coverage](https://img.shields.io/badge/Coverage-74%25-green?labelColor=F0F0E8&style=for-the-badge&color=1d4ed8)
+
+</div>
 ---
 
 ## Why TrackMyRupee?
@@ -55,7 +62,6 @@ TrackMyRupee includes all the essential features expected from a modern **expens
 ✔ Budget vs actual spending analysis  
 ✔ Visual dashboards and charts  
 ✔ Subscription and recurring payment tracking  
-✔ Category-based expense filtering  
 ✔ Category-based expense filtering  
 ✔ Multi-currency support  
 ✔ Multi-language support (English, Hindi, Marathi)  
