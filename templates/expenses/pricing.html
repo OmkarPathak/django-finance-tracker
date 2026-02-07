@@ -1,14 +1,14 @@
 {% extends 'base.html' %}
-{% load static digit_filters %}
+{% load static digit_filters i18n %}
 
 {% block content %}
 <div class="row justify-content-center text-center mb-5 fade-in">
     <div class="col-lg-8">
         <span class="badge rounded-pill bg-primary bg-opacity-10 text-primary px-3 py-2 mb-3 fw-bold">
-            <i class="bi bi-stars me-1"></i> Simple, Transparent Pricing
+            <i class="bi bi-stars me-1"></i> {% trans "Simple, Transparent Pricing" %}
         </span>
-        <h1 class="display-4 fw-bold mb-3">Choose the plan that fits your financial goals</h1>
-        <p class="lead text-muted">Start for free, upgrade when you need more power. No hidden fees.</p>
+        <h1 class="display-4 fw-bold mb-3">{% trans "Choose the plan that fits your financial goals" %}</h1>
+        <p class="lead text-muted">{% trans "Start for free, upgrade when you need more power. No hidden fees." %}</p>
     </div>
 </div>
 
@@ -17,21 +17,21 @@
     <div class="col">
         <div class="card mb-4 rounded-4 shadow-sm border-0 h-100 position-relative hover-lift">
             <div class="card-header py-3 bg-transparent border-0">
-                <h4 class="my-0 fw-normal">Free</h4>
+                <h4 class="my-0 fw-normal">{% trans "Free" %}</h4>
             </div>
             <div class="card-body d-flex flex-column">
-                <h1 class="card-title pricing-card-title display-5 fw-bold">₹{{ 0|translate_digits }}<small class="text-muted fw-light fs-4">/yr</small></h1>
+                <h1 class="card-title pricing-card-title display-5 fw-bold">₹{{ 0 }}<small class="text-muted fw-light fs-4">/yr</small></h1>
                 <ul class="list-unstyled mt-3 mb-4 text-start small mx-auto">
-                    <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Unlimited Expenses/Income</li>
-                    <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>{% blocktrans with count=5|translate_digits %}{{ count }} Categories{% endblocktrans %}</li>
-                    <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Basic Reports</li>
-                    <li class="mb-2 text-muted"><i class="bi bi-dash-circle me-2"></i>Email Reminders</li>
-                    <li class="mb-2 text-muted"><i class="bi bi-dash-circle me-2"></i>Recurring Transactions</li>
+                    <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>{% trans "Unlimited Expenses/Income" %}</li>
+                    <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>{% blocktrans with count=5 %}{{ count }} Categories{% endblocktrans %}</li>
+                    <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>{% trans "Basic Reports" %}</li>
+                    <li class="mb-2 text-muted"><i class="bi bi-dash-circle me-2"></i>{% trans "Email Reminders" %}</li>
+                    <li class="mb-2 text-muted"><i class="bi bi-dash-circle me-2"></i>{% trans "Recurring Transactions" %}</li>
                 </ul>
                 {% if user.profile.tier == 'FREE' %}
-                    <button type="button" class="w-100 btn btn-lg btn-outline-primary mt-auto rounded-pill fw-bold" disabled>Current Plan</button>
+                    <button type="button" class="w-100 btn btn-lg btn-outline-primary mt-auto rounded-pill fw-bold" disabled>{% trans "Current Plan" %}</button>
                 {% else %}
-                    <a href="#" class="w-100 btn btn-lg btn-outline-secondary mt-auto rounded-pill fw-bold disabled">Included</a>
+                    <a href="#" class="w-100 btn btn-lg btn-outline-secondary mt-auto rounded-pill fw-bold disabled">{% trans "Included" %}</a>
                 {% endif %}
             </div>
         </div>
@@ -41,26 +41,26 @@
     <div class="col">
         <div class="card mb-4 rounded-4 shadow border-primary h-100 position-relative transform-scale-sm">
             <div class="position-absolute top-0 start-50 translate-middle">
-                <span class="badge rounded-pill text-bg-primary px-3 py-2 shadow-sm">MOST POPULAR</span>
+                <span class="badge rounded-pill text-bg-primary px-3 py-2 shadow-sm">{% trans "MOST POPULAR" %}</span>
             </div>
             <div class="card-header py-3 bg-primary bg-opacity-10 border-0">
-                <h4 class="my-0 fw-bold text-primary">Plus <span class="badge bg-danger ms-2 rounded-pill" style="font-size: 0.6em;">LIMITED OFFER</span></h4>
+                <h4 class="my-0 fw-bold text-primary">{% trans "Plus" %} <span class="badge bg-danger ms-2 rounded-pill" style="font-size: 0.6em;">{% trans "LIMITED OFFER" %}</span></h4>
             </div>
             <div class="card-body d-flex flex-column">
-                <h1 class="card-title pricing-card-title display-5 fw-bold">₹{{ plans.PLUS.price|floatformat:0|translate_digits }}<small class="text-muted fw-light fs-4">/yr</small></h1>
+                <h1 class="card-title pricing-card-title display-5 fw-bold">₹{{ plans.PLUS.price|floatformat:0 }}<small class="text-muted fw-light fs-4">/yr</small></h1>
                 <ul class="list-unstyled mt-3 mb-4 text-start small mx-auto">
-                    <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i><strong>Everything in Free</strong></li>
-                    <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>{% blocktrans with count=10|translate_digits %}{{ count }} Budget Categories{% endblocktrans %}</li>
-                    <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>{% blocktrans with count=3|translate_digits %}{{ count }} Recurring Transactions{% endblocktrans %}</li>
-                    <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Email Reminders</li>
-                    <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Export to CSV/Excel</li>
+                    <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i><strong>{% trans "Everything in Free" %}</strong></li>
+                    <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>{% blocktrans with count=10 %}{{ count }} Budget Categories{% endblocktrans %}</li>
+                    <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>{% blocktrans with count=3 %}{{ count }} Recurring Transactions{% endblocktrans %}</li>
+                    <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>{% trans "Email Reminders" %}</li>
+                    <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>{% trans "Export to CSV/Excel" %}</li>
                 </ul>
                 {% if user.profile.tier == 'PLUS' and user.profile.is_plus %}
-                     <button type="button" class="w-100 btn btn-lg btn-outline-primary mt-auto rounded-pill fw-bold" disabled>Current Plan</button>
+                     <button type="button" class="w-100 btn btn-lg btn-outline-primary mt-auto rounded-pill fw-bold" disabled>{% trans "Current Plan" %}</button>
                 {% elif user.profile.is_pro %}
-                     <button type="button" class="w-100 btn btn-lg btn-outline-primary mt-auto rounded-pill fw-bold" disabled>Included</button>
+                     <button type="button" class="w-100 btn btn-lg btn-outline-primary mt-auto rounded-pill fw-bold" disabled>{% trans "Included" %}</button>
                 {% else %}
-                    <button onclick="startPayment('PLUS')" class="w-100 btn btn-lg btn-primary mt-auto rounded-pill fw-bold shadow-lg">Upgrade to Plus</button>
+                    <button onclick="startPayment('PLUS')" class="w-100 btn btn-lg btn-primary mt-auto rounded-pill fw-bold shadow-lg">{% trans "Upgrade to Plus" %}</button>
                 {% endif %}
             </div>
         </div>
@@ -70,22 +70,22 @@
     <div class="col">
         <div class="card mb-4 rounded-4 shadow-sm border-0 h-100 position-relative hover-lift">
             <div class="card-header py-3 bg-transparent border-0">
-                <h4 class="my-0 fw-normal">Pro <span class="badge bg-danger ms-2 rounded-pill" style="font-size: 0.6em;">LIMITED OFFER</span></h4>
+                <h4 class="my-0 fw-normal">{% trans "Pro" %} <span class="badge bg-danger ms-2 rounded-pill" style="font-size: 0.6em;">{% trans "LIMITED OFFER" %}</span></h4>
             </div>
             <div class="card-body d-flex flex-column">
-                <h1 class="card-title pricing-card-title display-5 fw-bold">₹{{ plans.PRO.price|floatformat:0|translate_digits }}<small class="text-muted fw-light fs-4">/yr</small></h1>
+                <h1 class="card-title pricing-card-title display-5 fw-bold">₹{{ plans.PRO.price|floatformat:0 }}<small class="text-muted fw-light fs-4">/yr</small></h1>
                 <ul class="list-unstyled mt-3 mb-4 text-start small mx-auto">
-                    <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i><strong>Everything in Plus</strong></li>
-                    <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Unlimited Categories</li>
-                    <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Unlimited Recurring Txs</li>
-                    <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Email Reminders</li>
-                    <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Priority Support</li>
-                    <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>AI Insights (Coming Soon)</li>
+                    <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i><strong>{% trans "Everything in Plus" %}</strong></li>
+                    <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>{% trans "Unlimited Categories" %}</li>
+                    <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>{% trans "Unlimited Recurring Txs" %}</li>
+                    <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>{% trans "Email Reminders" %}</li>
+                    <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>{% trans "Priority Support" %}</li>
+                    <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>{% trans "AI Insights (Coming Soon)" %}</li>
                 </ul>
                  {% if user.profile.is_pro %}
-                    <button type="button" class="w-100 btn btn-lg btn-outline-primary mt-auto rounded-pill fw-bold" disabled>Current Plan</button>
+                    <button type="button" class="w-100 btn btn-lg btn-outline-primary mt-auto rounded-pill fw-bold" disabled>{% trans "Current Plan" %}</button>
                 {% else %}
-                     <button onclick="startPayment('PRO')" class="w-100 btn btn-lg btn-outline-primary mt-auto rounded-pill fw-bold">Go Pro</button>
+                     <button onclick="startPayment('PRO')" class="w-100 btn btn-lg btn-outline-primary mt-auto rounded-pill fw-bold">{% trans "Go Pro" %}</button>
                 {% endif %}
             </div>
         </div>
@@ -95,27 +95,27 @@
 <!-- FAQ Section -->
 <div class="row justify-content-center mt-5 fade-in" style="animation-delay: 0.2s;">
     <div class="col-lg-8">
-        <h3 class="text-center fw-bold mb-4">Frequently Asked Questions</h3>
+        <h3 class="text-center fw-bold mb-4">{% trans "Frequently Asked Questions" %}</h3>
         <div class="accordion accordion-flush" id="pricingFAQ">
              <!-- ... FAQs ... -->
              <div class="accordion-item bg-transparent">
                 <h2 class="accordion-header">
                     <button class="accordion-button collapsed bg-transparent" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">
-                        Can I switch plans later?
+                        {% trans "Can I switch plans later?" %}
                     </button>
                 </h2>
                 <div id="faq1" class="accordion-collapse collapse" data-bs-parent="#pricingFAQ">
-                    <div class="accordion-body text-muted">A: Absolutely! You can upgrade your plan at any time.</div>
+                    <div class="accordion-body text-muted">{% trans "A: Absolutely! You can upgrade your plan at any time." %}</div>
                 </div>
             </div>
              <div class="accordion-item bg-transparent">
                 <h2 class="accordion-header">
                     <button class="accordion-button collapsed bg-transparent" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">
-                         What payment methods are accepted?
+                         {% trans "What payment methods are accepted?" %}
                     </button>
                 </h2>
                 <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#pricingFAQ">
-                    <div class="accordion-body text-muted">A: We accept all major Credit/Debit Cards, UPI, and Netbanking via Razorpay.</div>
+                    <div class="accordion-body text-muted">{% trans "A: We accept all major Credit/Debit Cards, UPI, and Netbanking via Razorpay." %}</div>
                 </div>
             </div>
         </div>

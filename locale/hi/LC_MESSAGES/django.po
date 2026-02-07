@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-02-06 08:32+0530\n"
+"POT-Creation-Date: 2026-02-07 06:48+0530\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -2729,11 +2729,74 @@ msgstr "भाषा चुनें"
 msgid "Updating this setting will change the language of the menus, labels, and messages in TrackMyRupee."
 msgstr ""
 
+#: templates/expenses/pricing.html:8
+msgid "Simple, Transparent Pricing"
+msgstr "सरल, पारदर्शी मूल्य निर्धारण"
+
+#: templates/expenses/pricing.html:10
+msgid "Choose the plan that fits your financial goals"
+msgstr "वह योजना चुनें जो आपके वित्तीय लक्ष्यों के अनुकूल हो"
+
+#: templates/expenses/pricing.html:11
+msgid "Start for free, upgrade when you need more power. No hidden fees."
+msgstr "मुफ्त में शुरू करें, अधिक शक्ति की आवश्यकता होने पर अपग्रेड करें। कोई छुपा हुआ शुल्क नहीं।"
+
+#: templates/expenses/pricing.html:20
+msgid "Free"
+msgstr "मुफ्त"
+
+#: templates/expenses/pricing.html:25
+msgid "Unlimited Expenses/Income"
+msgstr "असीमित खर्च/आय"
+
 #: templates/expenses/pricing.html:26
 #, fuzzy, python-format
 #| msgid "Top Categories"
 msgid "%(count)s Categories"
 msgstr "शीर्ष श्रेणियां"
+
+#: templates/expenses/pricing.html:27
+msgid "Basic Reports"
+msgstr "बुनियादी रिपोर्ट"
+
+#: templates/expenses/pricing.html:28 templates/expenses/pricing.html:55
+#: templates/expenses/pricing.html:81
+#, fuzzy
+#| msgid "Email Address"
+msgid "Email Reminders"
+msgstr "ईमेल पता"
+
+#: templates/expenses/pricing.html:29
+#, fuzzy
+#| msgid "Recent Transactions"
+msgid "Recurring Transactions"
+msgstr "हाल के लेनदेन"
+
+#: templates/expenses/pricing.html:32 templates/expenses/pricing.html:59
+#: templates/expenses/pricing.html:86 templates/expenses/settings_base.html:14
+#: templates/expenses/settings_home.html:16
+msgid "Current Plan"
+msgstr "वर्तमान योजना"
+
+#: templates/expenses/pricing.html:34 templates/expenses/pricing.html:61
+msgid "Included"
+msgstr "शामिल"
+
+#: templates/expenses/pricing.html:44
+msgid "MOST POPULAR"
+msgstr "सबसे लोकप्रिय"
+
+#: templates/expenses/pricing.html:47
+msgid "Plus"
+msgstr "प्लस"
+
+#: templates/expenses/pricing.html:47 templates/expenses/pricing.html:73
+msgid "LIMITED OFFER"
+msgstr "सीमित समय का ऑफर"
+
+#: templates/expenses/pricing.html:52
+msgid "Everything in Free"
+msgstr "मुफ्त योजना में सब कुछ"
 
 #: templates/expenses/pricing.html:53
 #, python-format
@@ -2745,6 +2808,62 @@ msgstr ""
 #| msgid "Recent Transactions"
 msgid "%(count)s Recurring Transactions"
 msgstr "हाल के लेन-देन"
+
+#: templates/expenses/pricing.html:56
+msgid "Export to CSV/Excel"
+msgstr "CSV/Excel में निर्यात करें"
+
+#: templates/expenses/pricing.html:63
+msgid "Upgrade to Plus"
+msgstr "प्लस में अपग्रेड करें"
+
+#: templates/expenses/pricing.html:73
+msgid "Pro"
+msgstr "प्रो"
+
+#: templates/expenses/pricing.html:78
+msgid "Everything in Plus"
+msgstr "प्लस योजना में सब कुछ"
+
+#: templates/expenses/pricing.html:79
+msgid "Unlimited Categories"
+msgstr "असीमित श्रेणियाँ"
+
+#: templates/expenses/pricing.html:80
+msgid "Unlimited Recurring Txs"
+msgstr "असीमित आवर्ती लेनदेन"
+
+#: templates/expenses/pricing.html:82
+msgid "Priority Support"
+msgstr "प्राथमिकता सहायता"
+
+#: templates/expenses/pricing.html:83
+msgid "AI Insights (Coming Soon)"
+msgstr "AI अंतर्दृष्टि (जल्द आ रहा है)"
+
+#: templates/expenses/pricing.html:88
+msgid "Go Pro"
+msgstr "प्रो बनें"
+
+#: templates/expenses/pricing.html:98
+msgid "Frequently Asked Questions"
+msgstr "अक्सर पूछे जाने वाले प्रश्न"
+
+#: templates/expenses/pricing.html:104
+msgid "Can I switch plans later?"
+msgstr "क्या मैं बाद में योजना बदल सकता हूँ?"
+
+#: templates/expenses/pricing.html:108
+msgid "A: Absolutely! You can upgrade your plan at any time."
+msgstr "A: बिल्कुल! आप किसी भी समय अपनी योजना को अपग्रेड कर सकते हैं।"
+
+#: templates/expenses/pricing.html:114
+msgid "What payment methods are accepted?"
+msgstr "कौन से भुगतान तरीके स्वीकार किए जाते हैं?"
+
+#: templates/expenses/pricing.html:118
+msgid "A: We accept all major Credit/Debit Cards, UPI, and Netbanking via Razorpay."
+msgstr "A: हम Razorpay के माध्यम से सभी प्रमुख क्रेडिट/डेबिट कार्ड, UPI और नेटबैंकिंग स्वीकार करते हैं।"
 
 #: templates/expenses/profile_settings.html:8
 msgid "Profile Settings"
@@ -2885,11 +3004,6 @@ msgstr "फिर से सक्रिय करें"
 #: templates/expenses/recurring_transaction_list.html:275
 msgid "No cancelled subscriptions."
 msgstr "कोई रद्द की गई सदस्यता नहीं।"
-
-#: templates/expenses/settings_base.html:14
-#: templates/expenses/settings_home.html:16
-msgid "Current Plan"
-msgstr "वर्तमान योजना"
 
 #: templates/expenses/settings_base.html:21
 #: templates/expenses/settings_home.html:24
