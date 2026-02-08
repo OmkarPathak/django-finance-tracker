@@ -1,6 +1,6 @@
 {% load static i18n digit_filters %}
 <!DOCTYPE html>
-<html lang="{{ request.LANGUAGE_CODE|default:'en' }}" data-bs-theme="dark">
+<html lang="{{ request.LANGUAGE_CODE|default:'en' }}">
 
 <head>
     {% if GOOGLE_ANALYTICS_ID %}
@@ -38,6 +38,22 @@
     <script>
         const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
         document.cookie = "django_timezone=" + tz + "; path=/; SameSite=Lax";
+        
+        // Immediate Theme Detection (Prevents Flickering)
+        (function() {
+            const getStoredTheme = () => localStorage.getItem('theme');
+            const getPreferredTheme = () => {
+                const storedTheme = getStoredTheme();
+                if (storedTheme) return storedTheme;
+                return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+            };
+            const theme = getPreferredTheme();
+            if (theme === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                document.documentElement.setAttribute('data-bs-theme', 'dark');
+            } else {
+                document.documentElement.setAttribute('data-bs-theme', theme);
+            }
+        })();
 
         // Global Digit Translation Utility
         window.translateDigits = function(value) {
@@ -846,14 +862,6 @@
             const getStoredTheme = () => localStorage.getItem('theme')
             const setStoredTheme = theme => localStorage.setItem('theme', theme)
 
-            const getPreferredTheme = () => {
-                const storedTheme = getStoredTheme()
-                if (storedTheme) {
-                    return storedTheme
-                }
-                return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
-            }
-
             const setTheme = theme => {
                 if (theme === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches) {
                     document.documentElement.setAttribute('data-bs-theme', 'dark')
@@ -875,16 +883,13 @@
                 });
             }
 
-            // Init
-            const initialTheme = getPreferredTheme();
-            setTheme(initialTheme);
-
             window.addEventListener('DOMContentLoaded', () => {
-                updateIcon(getPreferredTheme());
+                const currentTheme = document.documentElement.getAttribute('data-bs-theme');
+                updateIcon(currentTheme);
 
                 document.querySelectorAll('.theme-toggle-btn').forEach(toggle => {
                     toggle.addEventListener('click', (e) => {
-                        e.preventDefault(); // Prevent link navigation if it's an anchor
+                        e.preventDefault();
                         const currentTheme = document.documentElement.getAttribute('data-bs-theme');
                         const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
 

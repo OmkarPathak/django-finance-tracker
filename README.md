@@ -20,6 +20,7 @@ You manually track expenses, analyze spending, manage budgets, and stay in contr
 ![Coverage](https://img.shields.io/badge/Coverage-74%25-green?labelColor=F0F0E8&style=for-the-badge&color=1d4ed8)
 
 </div>
+
 ---
 
 ## Why TrackMyRupee?
