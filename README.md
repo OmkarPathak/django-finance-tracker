@@ -9,10 +9,17 @@ You manually track expenses, analyze spending, manage budgets, and stay in contr
 **🌐 Try Live App:** https://trackmyrupee.com  
 **⭐ Star on GitHub:** https://github.com/OmkarPathak/django-finance-tracker
 
-![Django](https://img.shields.io/badge/Django-4.x-green)
-![License](https://img.shields.io/badge/license-MIT-blue)
-![Privacy First](https://img.shields.io/badge/Privacy-First-brightgreen)
-![Coverage](https://img.shields.io/badge/Coverage-74%25-green)
+<div align="center">
+
+![Stars](https://img.shields.io/github/stars/omkarpathak/django-finance-tracker?labelColor=F0F0E8&style=for-the-badge&color=1d4ed8)
+![Forks](https://img.shields.io/github/forks/omkarpathak/django-finance-tracker?labelColor=F0F0E8&style=for-the-badge&color=1d4ed8)
+
+![Django](https://img.shields.io/badge/Django-4.x-green?labelColor=F0F0E8&style=for-the-badge&color=1d4ed8)
+![License](https://img.shields.io/badge/license-MIT-blue?labelColor=F0F0E8&style=for-the-badge&color=1d4ed8)
+![Privacy First](https://img.shields.io/badge/Privacy-First-brightgreen?labelColor=F0F0E8&style=for-the-badge&color=1d4ed8)
+![Coverage](https://img.shields.io/badge/Coverage-74%25-green?labelColor=F0F0E8&style=for-the-badge&color=1d4ed8)
+
+</div>
 
 ---
 
@@ -56,9 +63,9 @@ TrackMyRupee includes all the essential features expected from a modern **expens
 ✔ Visual dashboards and charts  
 ✔ Subscription and recurring payment tracking  
 ✔ Category-based expense filtering  
-✔ Category-based expense filtering  
-✔ Multi-currency support  
-✔ Multi-language support (English, Hindi, Marathi)  
+✔ Multi-currency support with real-time base currency conversion  
+✔ Full multi-language support (English, Hindi, Marathi) including all settings pages  
+✔ Automatic subscription tracking with currency normalization  
 ✔ Export your financial data anytime  
 
 This makes TrackMyRupee ideal for:
@@ -131,6 +138,15 @@ Contributions are welcome — features, bug fixes, documentation, and UI improve
 - [ ] **WhatsApp Integration** – Chat directly to add expenses 💬
 - [ ] **Mobile Apps** – Native Android & iOS support 📱
 - [ ] **Budget Alerts** – Smart insights and overspending notifications 🚨
+
+---
+
+## 🆕 Recent Updates
+
+- **Enhanced Multi-Currency Subscriptions**: Subscriptions now dynamically convert to your base currency, providing accurate monthly and yearly projections even when tracking foreign services (Netflix, AWS, etc.).
+- **Full Settings Localization**: The entire settings interface, including Currency and Language preferences, is now fully translated into **Hindi** and **Marathi**.
+- **Performance & Stability**: Refactored theme engine to eliminate flickering during page loads and standardized URL routing across all modules.
+- **Improved Bulk Entry**: Smarter currency persistence when adding multiple records simultaneously.
 
 ---
 

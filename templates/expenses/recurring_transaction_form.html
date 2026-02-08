@@ -36,11 +36,18 @@
                         <div class="text-danger small">{{ form.frequency.errors|first }}</div>
                     {% endif %}
                 </div>
-                <div class="col-md-6">
+                <div class="col-md-3">
                     <label class="form-label">{% trans "Amount" %}</label>
                     {{ form.amount }}
                     {% if form.amount.errors %}
                         <div class="text-danger small">{{ form.amount.errors|first }}</div>
+                    {% endif %}
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">{% trans "Currency" %}</label>
+                    {{ form.currency }}
+                    {% if form.currency.errors %}
+                        <div class="text-danger small">{{ form.currency.errors|first }}</div>
                     {% endif %}
                 </div>
                 <div class="col-md-6">
@@ -92,7 +99,7 @@
                 </button>
                 
                 <input type="hidden" name="next" value="{{ next_url }}">
-                <a href="{{ next_url|default:'/recurring/' }}" class="btn btn-outline-secondary px-4 ms-2">{% trans "Cancel" %}</a>
+                <a href="{% if next_url %}{{ next_url }}{% else %}{% url 'recurring-list' %}{% endif %}" class="btn btn-outline-secondary px-4 ms-2">{% trans "Cancel" %}</a>
             </div>
         </form>
     </div>

@@ -1,12 +1,26 @@
 {% load static i18n %}
 <!DOCTYPE html>
-<html lang="en" data-bs-theme="light">
+<html lang="en">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/svg+xml" href="{% static 'icon.svg' %}">
     <link rel="icon" type="image/png" href="{% static 'img/pwa-icon-512.png' %}">
+    
+    <script>
+        // Immediate Theme Detection (Prevents Flickering)
+        (function() {
+            const getStoredTheme = () => localStorage.getItem('theme');
+            const getPreferredTheme = () => {
+                const storedTheme = getStoredTheme();
+                if (storedTheme) return storedTheme;
+                return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+            };
+            const theme = getPreferredTheme();
+            document.documentElement.setAttribute('data-bs-theme', theme);
+        })();
+    </script>
     <title>TrackMyRupee - Know Exactly Where Every Rupee Goes</title>
 
     <!-- SEO Meta Tags -->
@@ -1044,9 +1058,9 @@
         document.addEventListener('DOMContentLoaded', () => {
             const html = document.documentElement;
 
-            // Check saved theme or default to light
-            const savedTheme = localStorage.getItem('theme') || 'light';
-            setTheme(savedTheme);
+            // Sync Icons on Load
+            const currentTheme = html.getAttribute('data-bs-theme');
+            updateIcons(currentTheme);
 
             // Bind click events to ALL toggle buttons (desktop & mobile)
             const toggleBtns = document.querySelectorAll('.theme-toggle-btn');
@@ -1061,8 +1075,10 @@
             function setTheme(theme) {
                 html.setAttribute('data-bs-theme', theme);
                 localStorage.setItem('theme', theme);
+                updateIcons(theme);
+            }
 
-                // Update ALL Icons
+            function updateIcons(theme) {
                 const icons = document.querySelectorAll('.theme-icon-active');
                 icons.forEach(icon => {
                     if (theme === 'dark') {

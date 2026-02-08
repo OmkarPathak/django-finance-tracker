@@ -11,10 +11,11 @@ from datetime import date
 class ExpenseForm(forms.ModelForm):
     class Meta:
         model = Expense
-        fields = ['date', 'amount', 'description', 'category', 'payment_method']
+        fields = ['date', 'amount', 'currency', 'description', 'category', 'payment_method']
         widgets = {
             'date': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
             'amount': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
+            'currency': forms.Select(attrs={'class': 'form-select'}),
             'description': forms.TextInput(attrs={'class': 'form-control'}),
             'payment_method': forms.Select(attrs={'class': 'form-select'}),
         }
@@ -26,6 +27,7 @@ class ExpenseForm(forms.ModelForm):
         
         # If user is provided, populate category choices
         if user:
+            self.fields['currency'].initial = user.profile.currency
             categories = Category.objects.filter(user=user).order_by('name')
             # Create choices list: [(name, name), ...]
             choices = [(cat.name, cat.name) for cat in categories]
@@ -42,10 +44,11 @@ class ExpenseForm(forms.ModelForm):
 class IncomeForm(forms.ModelForm):
     class Meta:
         model = Income
-        fields = ['date', 'amount', 'source', 'description']
+        fields = ['date', 'amount', 'currency', 'source', 'description']
         widgets = {
             'date': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
             'amount': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
+            'currency': forms.Select(attrs={'class': 'form-select'}),
             'source': forms.TextInput(attrs={'class': 'form-control', 'placeholder': _('e.g. Salary, Freelance')}),
             'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 2}),
         }
@@ -54,6 +57,8 @@ class IncomeForm(forms.ModelForm):
         self.user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
         self.fields['date'].initial = date.today
+        if self.user:
+            self.fields['currency'].initial = self.user.profile.currency
         
     def clean_source(self):
         source = self.cleaned_data.get('source')
@@ -64,10 +69,11 @@ class IncomeForm(forms.ModelForm):
 class RecurringTransactionForm(forms.ModelForm):
     class Meta:
         model = RecurringTransaction
-        fields = ['transaction_type', 'amount', 'category', 'source', 'frequency', 'start_date', 'description', 'is_active', 'payment_method']
+        fields = ['transaction_type', 'amount', 'currency', 'category', 'source', 'frequency', 'start_date', 'description', 'is_active', 'payment_method']
         widgets = {
             'transaction_type': forms.Select(attrs={'class': 'form-select', 'onchange': 'toggleFields()'}),
             'amount': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
+            'currency': forms.Select(attrs={'class': 'form-select'}),
             'category': forms.Select(attrs={'class': 'form-select'}),
             'source': forms.TextInput(attrs={'class': 'form-control', 'placeholder': _('e.g. Salary, Rent')}),
             'frequency': forms.Select(attrs={'class': 'form-select'}),
@@ -80,6 +86,8 @@ class RecurringTransactionForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
+        if user:
+            self.fields['currency'].initial = user.profile.currency
         
         # Category field as Select for Expenses
         if user:

@@ -173,7 +173,14 @@
                                 </div>
                                 <div class="d-flex align-items-center gap-3">
                                     <!-- Larger Amount -->
-                                    <h4 class="fw-bold mb-0">{{ currency_symbol }}{{ sub.amount|floatformat:0|translate_digits }}</h4>
+                                    <h4 class="fw-bold mb-0">
+                                        {{ currency_symbol }}{{ sub.base_amount|floatformat:0|translate_digits }}
+                                        {% if sub.currency != profile.currency %}
+                                        <div class="text-muted small fw-normal text-end" style="font-size: 0.75rem;">
+                                            ({{ sub.currency }}{{ sub.amount|floatformat:0|translate_digits }})
+                                        </div>
+                                        {% endif %}
+                                    </h4>
                                     <div class="dropdown">
                                         <button class="btn btn-link text-muted p-0" type="button" data-bs-toggle="dropdown">
                                             <i class="bi bi-three-dots-vertical fs-5"></i>
@@ -231,7 +238,14 @@
                                     </div>
                                 </div>
                                 <div class="text-end">
-                                    <h4 class="fw-bold mb-1">{{ currency_symbol }}{{ sub.amount|floatformat:0|translate_digits }}</h4>
+                                    <h4 class="fw-bold mb-1">
+                                        {{ currency_symbol }}{{ sub.base_amount|floatformat:0|translate_digits }}
+                                        {% if sub.currency != profile.currency %}
+                                        <div class="text-muted small fw-normal" style="font-size: 0.75rem;">
+                                            ({{ sub.currency }}{{ sub.amount|floatformat:0|translate_digits }})
+                                        </div>
+                                        {% endif %}
+                                    </h4>
                                      <a href="{% url 'recurring-edit' sub.pk %}?next={{ request.path }}" class="btn btn-sm btn-outline-secondary mt-1 rounded-pill">{% trans "Manage" %}</a>
                                 </div>
                             </div>
@@ -264,7 +278,14 @@
                                     </div>
                                 </div>
                                 <div class="text-end">
-                                    <h5 class="fw-bold mb-1 text-muted">{{ currency_symbol }}{{ sub.amount|floatformat:0|translate_digits }}</h5>
+                                    <h5 class="fw-bold mb-1 text-muted">
+                                        {{ currency_symbol }}{{ sub.base_amount|floatformat:0|translate_digits }}
+                                        {% if sub.currency != profile.currency %}
+                                        <div class="text-muted small fw-normal" style="font-size: 0.75rem;">
+                                            ({{ sub.currency }}{{ sub.amount|floatformat:0|translate_digits }})
+                                        </div>
+                                        {% endif %}
+                                    </h5>
                                     <a href="{% url 'recurring-edit' sub.pk %}?next={{ request.path }}" class="btn btn-sm btn-outline-primary mt-1">{% trans "Reactivate" %}</a>
                                 </div>
                             </div>

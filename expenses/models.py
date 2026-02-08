@@ -1,8 +1,23 @@
+from decimal import Decimal
 from django.db import models
 from django.contrib.auth.models import User
 from datetime import timedelta
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
+from .utils import get_exchange_rate
+
+CURRENCY_CHOICES = [
+    ('₹', _('Indian Rupee (₹)')),
+    ('$', _('US Dollar ($)')),
+    ('€', _('Euro (€)')),
+    ('£', _('Pound Sterling (£)')),
+    ('¥', _('Japanese Yen (¥)')),
+    ('A$', _('Australian Dollar (A$)')),
+    ('C$', _('Canadian Dollar (C$)')),
+    ('CHF', _('Swiss Franc (CHF)')),
+    ('元', _('Chinese Yuan (元)')),
+    ('₩', _('South Korean Won (₩)')),
+]
 
 class Expense(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -20,18 +35,32 @@ class Expense(models.Model):
     ]
     payment_method = models.CharField(max_length=50, choices=PAYMENT_OPTIONS, default='Cash', verbose_name=_('Payment Method'))
     
+    currency = models.CharField(max_length=5, choices=CURRENCY_CHOICES, default='₹', verbose_name=_('Currency'))
+    exchange_rate = models.DecimalField(max_digits=15, decimal_places=6, default=1.0, verbose_name=_('Exchange Rate'))
+    base_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0.0, verbose_name=_('Amount in Base Currency'))
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     def save(self, *args, **kwargs):
         if self.category:
             self.category = self.category.strip()
+        
+        # Multi-currency normalization
+        base_currency = self.user.profile.currency
+        if self.currency == base_currency:
+            self.exchange_rate = Decimal('1.0')
+            self.base_amount = self.amount
+        else:
+            self.exchange_rate = get_exchange_rate(self.currency, base_currency)
+            self.base_amount = (self.amount * self.exchange_rate).quantize(Decimal('0.01'))
+            
         super().save(*args, **kwargs)
 
     class Meta:
         constraints = [
             models.UniqueConstraint(
-                fields=['user', 'date', 'amount', 'description', 'category'],
+                fields=['user', 'date', 'amount', 'currency', 'description', 'category'],
                 name='unique_expense'
             )
         ]
@@ -71,18 +100,33 @@ class Income(models.Model):
     amount = models.DecimalField(max_digits=10, decimal_places=2, verbose_name=_('Amount'))
     description = models.TextField(blank=True, null=True, verbose_name=_('Description'))
     source = models.CharField(max_length=255, verbose_name=_('Source')) # e.g. Salary, Freelance, Dividend
+    
+    currency = models.CharField(max_length=5, choices=CURRENCY_CHOICES, default='₹', verbose_name=_('Currency'))
+    exchange_rate = models.DecimalField(max_digits=15, decimal_places=6, default=1.0, verbose_name=_('Exchange Rate'))
+    base_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0.0, verbose_name=_('Amount in Base Currency'))
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     def save(self, *args, **kwargs):
         if self.source:
             self.source = self.source.strip()
+            
+        # Multi-currency normalization
+        base_currency = self.user.profile.currency
+        if self.currency == base_currency:
+            self.exchange_rate = Decimal('1.0')
+            self.base_amount = self.amount
+        else:
+            self.exchange_rate = get_exchange_rate(self.currency, base_currency)
+            self.base_amount = (self.amount * self.exchange_rate).quantize(Decimal('0.01'))
+
         super().save(*args, **kwargs)
 
     class Meta:
         constraints = [
             models.UniqueConstraint(
-                fields=['user', 'date', 'amount', 'source'],
+                fields=['user', 'date', 'amount', 'currency', 'source'],
                 name='unique_income'
             )
         ]
@@ -114,6 +158,10 @@ class RecurringTransaction(models.Model):
     
     payment_method = models.CharField(max_length=50, choices=Expense.PAYMENT_OPTIONS, default='Cash', verbose_name=_('Payment Method'))
     
+    currency = models.CharField(max_length=5, choices=CURRENCY_CHOICES, default='₹', verbose_name=_('Currency'))
+    exchange_rate = models.DecimalField(max_digits=15, decimal_places=6, default=1.0, verbose_name=_('Exchange Rate'))
+    base_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0.0, verbose_name=_('Amount in Base Currency'))
+
     frequency = models.CharField(max_length=10, choices=FREQUENCY_CHOICES, verbose_name=_('Frequency'))
     start_date = models.DateField(verbose_name=_('Start Date'))
     last_processed_date = models.DateField(null=True, blank=True)
@@ -149,23 +197,22 @@ class RecurringTransaction(models.Model):
             return self.start_date
         return self.get_next_date(self.last_processed_date, self.frequency)
 
+    def save(self, *args, **kwargs):
+        # Multi-currency normalization
+        base_currency = self.user.profile.currency
+        if self.currency == base_currency:
+            self.exchange_rate = Decimal('1.0')
+            self.base_amount = self.amount
+        else:
+            self.exchange_rate = get_exchange_rate(self.currency, base_currency)
+            self.base_amount = (self.amount * self.exchange_rate).quantize(Decimal('0.01'))
+            
+        super().save(*args, **kwargs)
+
     def __str__(self):
         return f"{self.transaction_type} - {self.description} ({self.frequency})"
         
 class UserProfile(models.Model):
-    CURRENCY_CHOICES = [
-        ('₹', 'Indian Rupee (₹)'),
-        ('$', 'US Dollar ($)'),
-        ('€', 'Euro (€)'),
-        ('£', 'Pound Sterling (£)'),
-        ('¥', 'Japanese Yen (¥)'),
-        ('A$', 'Australian Dollar (A$)'),
-        ('C$', 'Canadian Dollar (C$)'),
-        ('CHF', 'Swiss Franc (CHF)'),
-        ('元', 'Chinese Yuan (元)'),
-        ('₩', 'South Korean Won (₩)'),
-    ]
-
     LANGUAGE_CHOICES = [
         ('en', 'English'),
         ('hi', 'Hindi'),

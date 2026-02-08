@@ -283,7 +283,14 @@
                                 <span class="badge bg-secondary opacity-75">{{ expense.category }}</span>
                             </td>
                             <td>{{ expense.payment_method }}</td>
-                            <td class="fw-bold">{{ expense.amount|translate_digits }}</td>
+                            <td class="fw-bold">
+                                {{ profile.currency }}{{ expense.base_amount|translate_digits }}
+                                {% if expense.currency != profile.currency %}
+                                <div class="text-muted small fw-normal" style="font-size: 0.75rem;">
+                                    ({{ expense.currency }}{{ expense.amount|translate_digits }})
+                                </div>
+                                {% endif %}
+                            </td>
                             <td class="text-end pe-4 text-nowrap">
                                 <div class="hstack gap-3 justify-content-end">
                                     <a href="{% url 'expense-edit' expense.pk %}?next={{ request.get_full_path|urlencode }}" class="btn btn-sm btn-link text-decoration-none p-0 d-inline-flex align-items-center" title="Edit" onclick="setButtonLoading(this, '')">
