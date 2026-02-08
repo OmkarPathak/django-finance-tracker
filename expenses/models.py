@@ -60,7 +60,7 @@ class Expense(models.Model):
     class Meta:
         constraints = [
             models.UniqueConstraint(
-                fields=['user', 'date', 'amount', 'description', 'category'],
+                fields=['user', 'date', 'amount', 'currency', 'description', 'category'],
                 name='unique_expense'
             )
         ]
@@ -126,7 +126,7 @@ class Income(models.Model):
     class Meta:
         constraints = [
             models.UniqueConstraint(
-                fields=['user', 'date', 'amount', 'source'],
+                fields=['user', 'date', 'amount', 'currency', 'source'],
                 name='unique_income'
             )
         ]

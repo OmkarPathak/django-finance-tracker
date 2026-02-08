@@ -47,7 +47,14 @@
                                     <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill">Income</span>
                                 {% endif %}
                             </td>
-                            <td class="fw-bold">{{ currency_symbol }}{{ sub.amount|floatformat:2|translate_digits }}</td>
+                            <td class="fw-bold">
+                                {{ currency_symbol }}{{ sub.base_amount|floatformat:2|translate_digits }}
+                                {% if sub.currency != profile.currency %}
+                                <div class="text-muted small fw-normal" style="font-size: 0.75rem;">
+                                    ({{ sub.currency }}{{ sub.amount|floatformat:2|translate_digits }})
+                                </div>
+                                {% endif %}
+                            </td>
                             <td>{{ sub.get_frequency_display }}</td>
                             <td>
                                 <div>{{ sub.annotated_next_date|date:"M d, Y"|translate_digits }}</div>
@@ -88,7 +95,14 @@
                                     <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle rounded-pill">Income</span>
                                 {% endif %}
                             </td>
-                            <td class="fw-bold text-muted">{{ currency_symbol }}{{ sub.amount|floatformat:2|translate_digits }}</td>
+                            <td class="fw-bold text-muted">
+                                {{ currency_symbol }}{{ sub.base_amount|floatformat:2|translate_digits }}
+                                {% if sub.currency != profile.currency %}
+                                <div class="text-muted small fw-normal" style="font-size: 0.75rem;">
+                                    ({{ sub.currency }}{{ sub.amount|floatformat:2|translate_digits }})
+                                </div>
+                                {% endif %}
+                            </td>
                             <td>{{ sub.get_frequency_display }}</td>
                             <td>-</td>
                             <td>

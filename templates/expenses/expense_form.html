@@ -25,7 +25,7 @@
                     {% if formset %}
                         {{ formset.management_form }}
                         <div class="table-responsive">
-                            <table class="table table-borderless align-top" id="formset-table">
+                            <table class="table table-borderless align-top" id="formset-table" data-user-currency="{{ request.user.profile.currency }}">
                                 <thead>
                             <tr>
                                 <th style="width: 12%;">{% trans "Date" %}</th>
@@ -147,7 +147,7 @@
                     </button>
                     
                     <input type="hidden" name="next" value="{{ next_url }}">
-                    <a href="{{ next_url|default:'/expense/list/' }}" class="btn btn-outline-secondary px-4">{% trans "Cancel" %}</a>
+                    <a href="{% if next_url %}{{ next_url }}{% else %}{% url 'expense-list' %}{% endif %}" class="btn btn-outline-secondary px-4">{% trans "Cancel" %}</a>
                 </div>
                 </form>
             </div>
@@ -208,10 +208,13 @@
                 const regex = new RegExp(`form-(\\d+)-`, 'g');
                 newForm.innerHTML = newForm.innerHTML.replace(regex, `form-${currentFormCount}-`);
                 
+                const userCurrency = document.getElementById('formset-table').dataset.userCurrency;
                 const inputs = newForm.querySelectorAll('input, select');
                 inputs.forEach(input => {
                     if (input.name.includes('date')) {
                         input.value = new Date().toISOString().split('T')[0];
+                    } else if (input.name.includes('currency')) {
+                        input.value = userCurrency;
                     } else {
                         input.value = '';
                     }

@@ -187,6 +187,7 @@ class RecurringTransactionMixin:
                         user=user,
                         date=current_date,
                         amount=rt.amount,
+                        currency=rt.currency,
                         category=rt.category or 'Uncategorized',
                         defaults={
                             'description': description,
@@ -198,6 +199,7 @@ class RecurringTransactionMixin:
                         user=user,
                         date=current_date,
                         amount=rt.amount,
+                        currency=rt.currency,
                         source=rt.source or 'Other',
                         defaults={'description': description}
                     )
@@ -1108,7 +1110,7 @@ class ExpenseCreateView(LoginRequiredMixin, generic.TemplateView):
         # Let's use form_kwargs in the formset initialization if supported.
         # Django 1.9+ supports form_kwargs in formset constructor.
         
-        initial_data = [{'date': datetime.now().date()} for _ in range(1)]
+        initial_data = [{'date': datetime.now().date(), 'currency': request.user.profile.currency} for _ in range(1)]
         formset = ExpenseFormSet(queryset=Expense.objects.none(), initial=initial_data, form_kwargs={'user': request.user})
         next_url = request.GET.get('next', '')
         return render(request, self.template_name, {'formset': formset, 'next_url': next_url})
@@ -1710,7 +1712,7 @@ class RecurringTransactionListView(LoginRequiredMixin, ListView):
         total_yearly = 0
         
         for sub in active_subs:
-            amount = sub.amount
+            amount = sub.base_amount
             if sub.frequency == 'DAILY':
                 total_monthly += amount * 30
                 total_yearly += amount * 365
@@ -1978,18 +1980,30 @@ class CurrencyUpdateView(LoginRequiredMixin, UpdateView):
     def form_valid(self, form):
         old_currency = self.get_object().currency
         new_currency = form.cleaned_data.get('currency')
+        from django.db import IntegrityError
         
         response = super().form_valid(form)
         
         if old_currency != new_currency:
             # Re-normalize all transactions
             user = self.request.user
+            skipped_count = 0
             for model in [Expense, Income, RecurringTransaction]:
                 transactions = model.objects.filter(user=user)
                 for tx in transactions:
-                    tx.save() # This will trigger the new save() logic with the new base_currency
-                    
-        messages.success(self.request, 'Currency preference updated successfully.')
+                    try:
+                        tx.save() # This will trigger the new save() logic with the new base_currency
+                    except IntegrityError:
+                        skipped_count += 1
+                        continue
+            
+            if skipped_count > 0:
+                messages.warning(self.request, f'Currency preference updated. {skipped_count} transactions were skipped due to potential duplication.')
+            else:
+                messages.success(self.request, 'Currency preference updated successfully.')
+        else:
+            messages.success(self.request, 'Currency preference updated successfully.')
+            
         return response
 
 class LanguageUpdateView(LoginRequiredMixin, UpdateView):

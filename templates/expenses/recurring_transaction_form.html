@@ -99,7 +99,7 @@
                 </button>
                 
                 <input type="hidden" name="next" value="{{ next_url }}">
-                <a href="{{ next_url|default:'/recurring/' }}" class="btn btn-outline-secondary px-4 ms-2">{% trans "Cancel" %}</a>
+                <a href="{% if next_url %}{{ next_url }}{% else %}{% url 'recurring-list' %}{% endif %}" class="btn btn-outline-secondary px-4 ms-2">{% trans "Cancel" %}</a>
             </div>
         </form>
     </div>
