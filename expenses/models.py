@@ -1,3 +1,4 @@
+from decimal import Decimal
 from django.db import models
 from django.contrib.auth.models import User
 from datetime import timedelta
@@ -48,11 +49,11 @@ class Expense(models.Model):
         # Multi-currency normalization
         base_currency = self.user.profile.currency
         if self.currency == base_currency:
-            self.exchange_rate = 1.0
+            self.exchange_rate = Decimal('1.0')
             self.base_amount = self.amount
         else:
             self.exchange_rate = get_exchange_rate(self.currency, base_currency)
-            self.base_amount = self.amount * self.exchange_rate
+            self.base_amount = (self.amount * self.exchange_rate).quantize(Decimal('0.01'))
             
         super().save(*args, **kwargs)
 
@@ -114,11 +115,11 @@ class Income(models.Model):
         # Multi-currency normalization
         base_currency = self.user.profile.currency
         if self.currency == base_currency:
-            self.exchange_rate = 1.0
+            self.exchange_rate = Decimal('1.0')
             self.base_amount = self.amount
         else:
             self.exchange_rate = get_exchange_rate(self.currency, base_currency)
-            self.base_amount = self.amount * self.exchange_rate
+            self.base_amount = (self.amount * self.exchange_rate).quantize(Decimal('0.01'))
 
         super().save(*args, **kwargs)
 
@@ -200,11 +201,11 @@ class RecurringTransaction(models.Model):
         # Multi-currency normalization
         base_currency = self.user.profile.currency
         if self.currency == base_currency:
-            self.exchange_rate = 1.0
+            self.exchange_rate = Decimal('1.0')
             self.base_amount = self.amount
         else:
             self.exchange_rate = get_exchange_rate(self.currency, base_currency)
-            self.base_amount = self.amount * self.exchange_rate
+            self.base_amount = (self.amount * self.exchange_rate).quantize(Decimal('0.01'))
             
         super().save(*args, **kwargs)
 
