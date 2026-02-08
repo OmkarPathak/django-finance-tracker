@@ -535,9 +535,13 @@
                             </small>
                         </div>
                         
-                        <!-- Right: Amount -->
                         <div class="text-end flex-shrink-0">
-                            <span class="d-block fw-bold fs-6">{{ currency_symbol }}{{ expense.amount|translate_digits }}</span>
+                            <span class="d-block fw-bold fs-6">{{ currency_symbol }}{{ expense.base_amount|translate_digits }}</span>
+                            {% if expense.currency != currency_symbol %}
+                            <small class="text-muted d-block" style="font-size: 0.7rem;">
+                                ({{ expense.currency }}{{ expense.amount|translate_digits }})
+                            </small>
+                            {% endif %}
                         </div>
                         
                         <!-- Clickable Stretched Link -->

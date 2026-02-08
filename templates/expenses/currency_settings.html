@@ -24,7 +24,17 @@
                 <div class="d-flex">
                     <i class="bi bi-info-circle-fill me-2 fs-5"></i>
                     <div>
-                        <strong>{% trans "How this works:" %}</strong> {% trans "This symbol will be displayed next to all amount values (Income, Expenses, Budgets, and Charts)." %}
+                        <strong>{% trans "Display Currency:" %}</strong> {% trans "This symbol will be displayed next to all amount values across the application (Income, Expenses, Budgets, and Charts)." %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="alert alert-warning border-0 shadow-sm mb-4">
+                <div class="d-flex">
+                    <i class="bi bi-exclamation-triangle-fill me-2 fs-5"></i>
+                    <div>
+                        <p class="mb-1 fw-bold">{% trans "Impact of Changing Base Currency:" %}</p>
+                        <p class="mb-0 small text-muted">{% trans "Changing your base currency will trigger a re-normalization of all your historical records. The system will re-calculate the 'Base Amount' for every transaction using current exchange rates relative to your new base currency. Your original amounts and currencies remain unchanged." %}</p>
                     </div>
                 </div>
             </div>

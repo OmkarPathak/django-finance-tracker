@@ -46,7 +46,8 @@ class ExpenseCRUDTest(BaseViewTest):
             'form-0-amount': 250,
             'form-0-category': 'Food',
             'form-0-description': 'Lunch',
-            'form-0-payment_method': 'Cash'
+            'form-0-payment_method': 'Cash',
+            'form-0-currency': '₹'
         }
         response = self.client.post(url, data)
         # Should redirect to expense list
@@ -57,14 +58,15 @@ class ExpenseCRUDTest(BaseViewTest):
     def test_update_expense(self):
         # ... existing code ...
 
-        expense = Expense.objects.create(user=self.user, date=date.today(), amount=100, category='Food', description='Old')
+        expense = Expense.objects.create(user=self.user, date=date.today(), amount=100, category='Food', description='Old', currency='₹')
         url = reverse('expense-edit', kwargs={'pk': expense.pk})
         data = {
             'date': date.today(),
             'amount': 200,
             'category': 'Food',
             'description': 'New',
-            'payment_method': 'Cash'
+            'payment_method': 'Cash',
+            'currency': '₹'
         }
         response = self.client.post(url, data)
         self.assertEqual(response.status_code, 302)
@@ -73,7 +75,7 @@ class ExpenseCRUDTest(BaseViewTest):
         self.assertEqual(expense.description, 'New')
 
     def test_delete_expense(self):
-        expense = Expense.objects.create(user=self.user, date=date.today(), amount=100, category='Food', description='Del')
+        expense = Expense.objects.create(user=self.user, date=date.today(), amount=100, category='Food', description='Del', currency='₹')
         url = reverse('expense-delete', kwargs={'pk': expense.pk})
         response = self.client.post(url)
         self.assertEqual(response.status_code, 302)
@@ -86,7 +88,8 @@ class IncomeCRUDTest(BaseViewTest):
             'date': date.today(),
             'amount': 5000,
             'source': 'Salary',
-            'description': 'Jan Salary'
+            'description': 'Jan Salary',
+            'currency': '₹'
         }
         response = self.client.post(url, data)
         # Debug helper
@@ -97,13 +100,14 @@ class IncomeCRUDTest(BaseViewTest):
         self.assertEqual(Income.objects.first().amount, 5000)
 
     def test_update_income(self):
-        income = Income.objects.create(user=self.user, date=date.today(), amount=1000, source='Bonus', description='Old')
+        income = Income.objects.create(user=self.user, date=date.today(), amount=1000, source='Bonus', description='Old', currency='₹')
         url = reverse('income-edit', kwargs={'pk': income.pk})
         data = {
             'date': date.today(),
             'amount': 2000,
             'source': 'Bonus',
-            'description': 'New'
+            'description': 'New',
+            'currency': '₹'
         }
         response = self.client.post(url, data)
         self.assertEqual(response.status_code, 302)
@@ -112,7 +116,7 @@ class IncomeCRUDTest(BaseViewTest):
         self.assertEqual(income.description, 'New')
 
     def test_delete_income(self):
-        income = Income.objects.create(user=self.user, date=date.today(), amount=1000, source='Bonus')
+        income = Income.objects.create(user=self.user, date=date.today(), amount=1000, source='Bonus', currency='₹')
         url = reverse('income-delete', kwargs={'pk': income.pk})
         # Delete view usually expects POST to confirm
         response = self.client.post(url)
@@ -122,11 +126,11 @@ class IncomeCRUDTest(BaseViewTest):
 class BulkActionTest(BaseViewTest):
     def test_bulk_delete_expenses(self):
         # Create multiple expenses associated with user
-        e1 = Expense.objects.create(user=self.user, date=date.today(), amount=100, category='Food', description='e1')
-        e2 = Expense.objects.create(user=self.user, date=date.today(), amount=200, category='Food', description='e2')
+        e1 = Expense.objects.create(user=self.user, date=date.today(), amount=100, category='Food', description='e1', currency='₹')
+        e2 = Expense.objects.create(user=self.user, date=date.today(), amount=200, category='Food', description='e2', currency='₹')
         # Expense for another user to verify isolation
         other_user = User.objects.create_user(username='other', password='pw')
-        e3 = Expense.objects.create(user=other_user, date=date.today(), amount=300, category='Food', description='e3')
+        e3 = Expense.objects.create(user=other_user, date=date.today(), amount=300, category='Food', description='e3', currency='₹')
 
         url = reverse('expense-bulk-delete')
         data = {'expense_ids': [e1.pk, e2.pk, e3.pk]}
@@ -162,7 +166,8 @@ class RecurringTransactionMixinTest(BaseViewTest):
             frequency='MONTHLY',
             start_date=start_date,
             category='Subscription',
-            last_processed_date=None
+            last_processed_date=None,
+            currency='₹'
         )
         
         # Hitting expense list (which uses the Mixin) should trigger processing
@@ -185,7 +190,8 @@ class RecurringTransactionMixinTest(BaseViewTest):
             frequency='MONTHLY',
             start_date=start_date,
             source='Job',
-            last_processed_date=None
+            last_processed_date=None,
+            currency='₹'
         )
         
         # Trigger

@@ -55,7 +55,7 @@ class FeatureViewTest(BaseFeatureTest):
         
         # Create some data
         Category.objects.get_or_create(user=self.user, name='Food')
-        Expense.objects.create(user=self.user, date=date.today(), amount=100, category='Food', description='Test')
+        Expense.objects.create(user=self.user, date=date.today(), amount=100, category='Food', description='Test', currency='₹')
         
         url = reverse('export-expenses')
         response = self.client.get(url)
@@ -85,7 +85,8 @@ class RecurringCRUDTest(BaseFeatureTest):
             'frequency': 'MONTHLY',
             'start_date': date.today(),
             'category': 'Entertainment',
-            'payment_method': 'Cash'
+            'payment_method': 'Cash',
+            'currency': '₹'
         }
         response = self.client.post(url, data)
         if response.status_code == 200:
@@ -97,7 +98,7 @@ class RecurringCRUDTest(BaseFeatureTest):
         Category.objects.get_or_create(user=self.user, name='Entertainment')
         rt = RecurringTransaction.objects.create(
             user=self.user, transaction_type='EXPENSE', amount=500, description='Netflix',
-            frequency='MONTHLY', start_date=date.today(), category='Entertainment'
+            frequency='MONTHLY', start_date=date.today(), category='Entertainment', currency='₹'
         )
         url = reverse('recurring-edit', kwargs={'pk': rt.pk})
         data = {
@@ -107,7 +108,8 @@ class RecurringCRUDTest(BaseFeatureTest):
             'frequency': 'MONTHLY',
             'start_date': date.today(),
             'category': 'Entertainment',
-            'payment_method': 'Credit Card'
+            'payment_method': 'Credit Card',
+            'currency': '₹'
         }
         response = self.client.post(url, data)
         if response.status_code == 200:
@@ -119,7 +121,7 @@ class RecurringCRUDTest(BaseFeatureTest):
     def test_delete_recurring(self):
         rt = RecurringTransaction.objects.create(
             user=self.user, transaction_type='EXPENSE', amount=500, description='Netflix',
-            frequency='MONTHLY', start_date=date.today()
+            frequency='MONTHLY', start_date=date.today(), currency='₹'
         )
         url = reverse('recurring-delete', kwargs={'pk': rt.pk})
         response = self.client.post(url)

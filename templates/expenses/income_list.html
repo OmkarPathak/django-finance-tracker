@@ -73,7 +73,7 @@
              <div class="col-6 col-md-auto">
                 <div class="p-2 border rounded bg-body-tertiary shadow-sm text-center text-md-start">
                     <small class="text-muted d-block text-uppercase" style="font-size: 0.7rem; letter-spacing: 0.5px;">{% trans "Total Amount" %}</small>
-                    <span class="fw-bold text-info">₹{{ filtered_amount|floatformat:2|translate_digits }}</span>
+                    <span class="fw-bold text-info">{{ profile.currency }}{{ filtered_amount|floatformat:2|translate_digits }}</span>
                 </div>
             </div>
         </div>
@@ -101,7 +101,14 @@
                             <span class="badge bg-success opacity-75">{{ income.source }}</span>
                         </td>
                         <td>{{ income.description|default:"-"|truncatechars:30 }}</td>
-                        <td class="fw-bold text-success">{{ income.amount|floatformat:2|translate_digits }}</td>
+                        <td class="fw-bold text-success">
+                            {{ profile.currency }}{{ income.base_amount|floatformat:2|translate_digits }}
+                            {% if income.currency != profile.currency %}
+                            <div class="text-muted small fw-normal" style="font-size: 0.75rem;">
+                                ({{ income.currency }}{{ income.amount|floatformat:2|translate_digits }})
+                            </div>
+                            {% endif %}
+                        </td>
                         <td class="text-end pe-4 text-nowrap">
                             <div class="hstack gap-3 justify-content-end">
                                     <button type="button" class="btn btn-sm btn-link text-decoration-none p-0 d-inline-flex align-items-center" 
@@ -111,6 +118,7 @@
                                             data-source="{{ income.source }}"
                                             data-description="{{ income.description|default_if_none:'' }}"
                                             data-amount="{{ income.amount }}"
+                                            data-currency="{{ income.currency }}"
                                             title="{% trans 'Edit' %}">
                                         <i class="bi bi-pencil-square text-primary fs-6"></i>
                                     </button>
@@ -219,11 +227,25 @@
                             <textarea class="form-control" id="edit_description" name="description" rows="2"></textarea>
                         </div>
                         
-                        <div class="mb-4">
-                            <label for="edit_amount" class="form-label text-muted small text-uppercase">{% trans "Amount" %}</label>
-                            <div class="input-group">
-                                <span class="input-group-text bg-transparent border-end-0 text-muted">{{ currency_symbol }}</span>
-                                <input type="number" class="form-control border-start-0 ps-0" id="edit_amount" name="amount" step="0.01" required>
+                        <div class="row">
+                            <div class="col-md-8">
+                                <div class="mb-4">
+                                    <label for="edit_amount" class="form-label text-muted small text-uppercase">{% trans "Amount" %}</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-transparent border-end-0 text-muted">{{ profile.currency }}</span>
+                                        <input type="number" class="form-control border-start-0 ps-0" id="edit_amount" name="amount" step="0.01" required>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-4">
+                                    <label for="edit_currency" class="form-label text-muted small text-uppercase">{% trans "Currency" %}</label>
+                                    <select class="form-select" id="edit_currency" name="currency" required>
+                                        {% for code, name in currency_choices %}
+                                            <option value="{{ code }}">{{ code }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
                             </div>
                         </div>
                         
@@ -247,12 +269,14 @@
                     var source = button.getAttribute('data-source');
                     var description = button.getAttribute('data-description');
                     var amount = button.getAttribute('data-amount');
+                    var currency = button.getAttribute('data-currency');
                     
                     var form = editModal.querySelector('#editIncomeForm');
                     var dateInput = editModal.querySelector('#edit_date');
                     var sourceInput = editModal.querySelector('#edit_source');
                     var descInput = editModal.querySelector('#edit_description');
                     var amountInput = editModal.querySelector('#edit_amount');
+                    var currencyInput = editModal.querySelector('#edit_currency');
                     
                     form.action = url;
                     
@@ -274,6 +298,7 @@
                     sourceInput.value = source;
                     descInput.value = description !== 'None' ? description : '';
                     amountInput.value = amount;
+                    currencyInput.value = currency;
                 });
             }
         });
