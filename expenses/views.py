@@ -294,14 +294,14 @@ def home_view(request):
         if selected_months:
             incomes = incomes.filter(date__month__in=selected_months)
     
-    total_income = incomes.aggregate(Sum('amount'))['amount__sum'] or 0
+    total_income = incomes.aggregate(Sum('base_amount'))['base_amount__sum'] or 0
     all_dates = Expense.objects.filter(user=request.user).dates('date', 'year', order='DESC')
     years = sorted(list(set([d.year for d in all_dates] + [datetime.now().year])), reverse=True)
     all_categories = Expense.objects.filter(user=request.user).values_list('category', flat=True).distinct().order_by('category')
 
     # 1. Category Chart Data (Distribution) & Summary Table
     # We need to fetch raw values and merge them in Python to handle whitespace duplicates
-    raw_category_data = expenses.values('category').annotate(total=Sum('amount'))
+    raw_category_data = expenses.values('category').annotate(total=Sum('base_amount'))
     
     # Process and merge duplicates
     merged_category_map = {}
@@ -366,7 +366,7 @@ def home_view(request):
         date_format = '%b %Y'
 
     # Aggregate by Period AND Category for Stacking
-    stacked_data = trend_qs.values('period', 'category').annotate(total=Sum('amount')).order_by('period')
+    stacked_data = trend_qs.values('period', 'category').annotate(total=Sum('base_amount')).order_by('period')
     
     # Process into Chart.js Datasets
     # 1. Get unique sorted periods
@@ -401,9 +401,9 @@ def home_view(request):
              })
 
     # 3. Top 5 Expenses
-    top_expenses_qs = expenses.order_by('-amount')[:5]
+    top_expenses_qs = expenses.order_by('-base_amount')[:5]
     top_labels = [e.description[:20] + '...' if len(e.description) > 20 else e.description for e in top_expenses_qs]
-    top_amounts = [float(e.amount) for e in top_expenses_qs]
+    top_amounts = [float(e.base_amount) for e in top_expenses_qs]
 
     # --- NEW: Income vs Expenses Trend Data ---
     # Re-use the truncation logic determined above
@@ -412,8 +412,8 @@ def home_view(request):
     else:
         trunc_func = TruncMonth
         
-    inc_trend = incomes.annotate(period=trunc_func('date')).values('period').annotate(total=Sum('amount')).order_by('period')
-    exp_trend = expenses.annotate(period=trunc_func('date')).values('period').annotate(total=Sum('amount')).order_by('period')
+    inc_trend = incomes.annotate(period=trunc_func('date')).values('period').annotate(total=Sum('base_amount')).order_by('period')
+    exp_trend = expenses.annotate(period=trunc_func('date')).values('period').annotate(total=Sum('base_amount')).order_by('period')
     
     # Merge periods
     inc_periods = set(i['period'] for i in inc_trend)
@@ -431,7 +431,7 @@ def home_view(request):
     ie_savings_data = [inc_map.get(p, 0.0) - exp_map.get(p, 0.0) for p in all_periods_sorted]
 
     # --- NEW: Payment Method Distribution ---
-    raw_payment_data = expenses.values('payment_method').annotate(total=Sum('amount')).order_by('payment_method')
+    raw_payment_data = expenses.values('payment_method').annotate(total=Sum('base_amount')).order_by('payment_method')
     payment_map = {}
     for item in raw_payment_data:
         pm_name = item['payment_method'] or 'Unknown'
@@ -444,7 +444,7 @@ def home_view(request):
 
 
     # 4. Summary Stats
-    total_expenses = expenses.aggregate(Sum('amount'))['amount__sum'] or 0
+    total_expenses = expenses.aggregate(Sum('base_amount'))['base_amount__sum'] or 0
     transaction_count = expenses.count()
     top_category = category_data[0] if category_data else None
     
@@ -456,8 +456,8 @@ def home_view(request):
     current_month = current_date.month 
 
     # 1. Calculate YTD Savings (Strictly for current year, regardless of filters)
-    ytd_income = Income.objects.filter(user=request.user, date__year=current_year, date__month__lte=current_month).aggregate(Sum('amount'))['amount__sum'] or 0
-    ytd_expenses = Expense.objects.filter(user=request.user, date__year=current_year, date__month__lte=current_month).aggregate(Sum('amount'))['amount__sum'] or 0
+    ytd_income = Income.objects.filter(user=request.user, date__year=current_year, date__month__lte=current_month).aggregate(Sum('base_amount'))['base_amount__sum'] or 0
+    ytd_expenses = Expense.objects.filter(user=request.user, date__year=current_year, date__month__lte=current_month).aggregate(Sum('base_amount'))['base_amount__sum'] or 0
     ytd_savings = ytd_income - ytd_expenses
     
     projected_savings = 0
@@ -493,8 +493,8 @@ def home_view(request):
                 prev_month = sel_month - 1
                 prev_year = sel_year
 
-            prev_expenses = Expense.objects.filter(user=request.user, date__year=prev_year, date__month=prev_month).aggregate(Sum('amount'))['amount__sum'] or 0
-            prev_income = Income.objects.filter(user=request.user, date__year=prev_year, date__month=prev_month).aggregate(Sum('amount'))['amount__sum'] or 0
+            prev_expenses = Expense.objects.filter(user=request.user, date__year=prev_year, date__month=prev_month).aggregate(Sum('base_amount'))['base_amount__sum'] or 0
+            prev_income = Income.objects.filter(user=request.user, date__year=prev_year, date__month=prev_month).aggregate(Sum('base_amount'))['base_amount__sum'] or 0
             prev_savings = prev_income - prev_expenses
 
             def calc_pct(current, previous):
@@ -574,8 +574,8 @@ def home_view(request):
     
     # helper for streaks
     def get_monthly_savings_status(u, y, m):
-        inc = Income.objects.filter(user=u, date__year=y, date__month=m).aggregate(Sum('amount'))['amount__sum'] or 0
-        exp = Expense.objects.filter(user=u, date__year=y, date__month=m).aggregate(Sum('amount'))['amount__sum'] or 0
+        inc = Income.objects.filter(user=u, date__year=y, date__month=m).aggregate(Sum('base_amount'))['base_amount__sum'] or 0
+        exp = Expense.objects.filter(user=u, date__year=y, date__month=m).aggregate(Sum('base_amount'))['base_amount__sum'] or 0
         return inc > exp
 
     # Construct date params for deep linking
@@ -615,7 +615,7 @@ def home_view(request):
                 m += 12
                 y -= 1
             
-            m_total = Expense.objects.filter(user=request.user, date__year=y, date__month=m).aggregate(Sum('amount'))['amount__sum'] or 0
+            m_total = Expense.objects.filter(user=request.user, date__year=y, date__month=m).aggregate(Sum('base_amount'))['base_amount__sum'] or 0
             if m_total > 0:
                 last_3_months_total += m_total
                 months_counted += 1
@@ -679,7 +679,7 @@ def home_view(request):
     if prev_month_data:
         # Calculate Category Savings (Cause of the win)
         # We need prev month category breakdown
-        prev_cat_qs = Expense.objects.filter(user=request.user, date__year=prev_year, date__month=prev_month).values('category').annotate(total=Sum('amount'))
+        prev_cat_qs = Expense.objects.filter(user=request.user, date__year=prev_year, date__month=prev_month).values('category').annotate(total=Sum('base_amount'))
         prev_cat_map = {item['category'].strip(): float(item['total']) for item in prev_cat_qs}
         
         savings_contributors = []
@@ -1035,7 +1035,7 @@ class ExpenseListView(LoginRequiredMixin, RecurringTransactionMixin, ListView):
         # Calculate stats for the filtered queryset
         filtered_queryset = self.object_list
         context['filtered_count'] = filtered_queryset.count()
-        context['filtered_amount'] = filtered_queryset.aggregate(Sum('amount'))['amount__sum'] or 0
+        context['filtered_amount'] = filtered_queryset.aggregate(Sum('base_amount'))['base_amount__sum'] or 0
 
         # Get unique years and categories for validation
         user_expenses = Expense.objects.filter(user=self.request.user)
@@ -1387,11 +1387,13 @@ class IncomeListView(LoginRequiredMixin, RecurringTransactionMixin, ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        from .models import CURRENCY_CHOICES
+        context['currency_choices'] = CURRENCY_CHOICES
         
         # Calculate stats for the filtered queryset
         filtered_queryset = self.object_list
         context['filtered_count'] = filtered_queryset.count()
-        context['filtered_amount'] = filtered_queryset.aggregate(Sum('amount'))['amount__sum'] or 0
+        context['filtered_amount'] = filtered_queryset.aggregate(Sum('base_amount'))['base_amount__sum'] or 0
         
         context['filter_form'] = {
             'date_from': getattr(self, 'date_from', ''),
@@ -1519,9 +1521,9 @@ class CalendarView(LoginRequiredMixin, RecurringTransactionMixin, TemplateView):
             income_filters &= (Q(source__icontains=search_query) | Q(description__icontains=search_query))
 
         # Get Expense and Income Data for the month
-        expenses = Expense.objects.filter(expense_filters).values('date').annotate(total=Sum('amount'))
+        expenses = Expense.objects.filter(expense_filters).values('date').annotate(total=Sum('base_amount'))
         
-        incomes = Income.objects.filter(income_filters).values('date').annotate(total=Sum('amount'))
+        incomes = Income.objects.filter(income_filters).values('date').annotate(total=Sum('base_amount'))
         
         # Map data for easy lookup by day
         # Keys are integers (day of month)
@@ -1596,7 +1598,7 @@ class BudgetDashboardView(LoginRequiredMixin, RecurringTransactionMixin, Templat
             user=user,
             date__year=year,
             date__month=month
-        ).aggregate(Total=Sum('amount'))['Total'] or 0
+        ).aggregate(Total=Sum('base_amount'))['Total'] or 0
 
         for category in categories:
             spent = Expense.objects.filter(
@@ -1604,7 +1606,7 @@ class BudgetDashboardView(LoginRequiredMixin, RecurringTransactionMixin, Templat
                 category=category.name,
                 date__year=year,
                 date__month=month
-            ).aggregate(Total=Sum('amount'))['Total'] or 0
+            ).aggregate(Total=Sum('base_amount'))['Total'] or 0
             
             percentage = (spent / category.limit * 100) if category.limit and category.limit > 0 else 0
             
@@ -1645,7 +1647,7 @@ class BudgetDashboardView(LoginRequiredMixin, RecurringTransactionMixin, Templat
             user=user,
             date__year=prev_year,
             date__month=prev_month
-        ).aggregate(Total=Sum('amount'))['Total'] or 0
+        ).aggregate(Total=Sum('base_amount'))['Total'] or 0
 
         if prev_spent > 0:
             context['spent_mom_pct'] = ((grand_total_spent - prev_spent) / prev_spent) * 100
@@ -1974,8 +1976,21 @@ class CurrencyUpdateView(LoginRequiredMixin, UpdateView):
         return profile
 
     def form_valid(self, form):
+        old_currency = self.get_object().currency
+        new_currency = form.cleaned_data.get('currency')
+        
+        response = super().form_valid(form)
+        
+        if old_currency != new_currency:
+            # Re-normalize all transactions
+            user = self.request.user
+            for model in [Expense, Income, RecurringTransaction]:
+                transactions = model.objects.filter(user=user)
+                for tx in transactions:
+                    tx.save() # This will trigger the new save() logic with the new base_currency
+                    
         messages.success(self.request, 'Currency preference updated successfully.')
-        return super().form_valid(form)
+        return response
 
 class LanguageUpdateView(LoginRequiredMixin, UpdateView):
     model = UserProfile
@@ -2300,11 +2315,11 @@ class AnalyticsView(LoginRequiredMixin, TemplateView):
         # Fetch data grouped by Month
         monthly_income = Income.objects.filter(
             user=user, date__gte=start_date
-        ).annotate(month=TruncMonth('date')).values('month').annotate(total=Sum('amount')).order_by('month')
+        ).annotate(month=TruncMonth('date')).values('month').annotate(total=Sum('base_amount')).order_by('month')
         
         monthly_expenses = Expense.objects.filter(
             user=user, date__gte=start_date
-        ).annotate(month=TruncMonth('date')).values('month').annotate(total=Sum('amount')).order_by('month')
+        ).annotate(month=TruncMonth('date')).values('month').annotate(total=Sum('base_amount')).order_by('month')
         
         # Merge data into a map {date: {income: 0, expense: 0}}
         data_map = {}
@@ -2372,7 +2387,7 @@ class AnalyticsView(LoginRequiredMixin, TemplateView):
         current_year = today.year
         category_stats = Expense.objects.filter(
             user=user, date__year=current_year
-        ).values('category').annotate(total=Sum('amount')).order_by('-total')
+        ).values('category').annotate(total=Sum('base_amount')).order_by('-total')
         
         cat_labels = [_(x['category']) for x in category_stats]
         cat_data = [float(x['total']) for x in category_stats]
@@ -2383,8 +2398,8 @@ class AnalyticsView(LoginRequiredMixin, TemplateView):
         # 3. Key Metrics (YTD)
         # Recalculate based on DB (more accurate than summing chart data if chart is limited)
         # Use date__lte=today to ensure we don't include future recurring entries or future dates
-        ytd_income_agg = Income.objects.filter(user=user, date__year=current_year, date__lte=today).aggregate(Sum('amount'))['amount__sum'] or 0
-        ytd_expense_agg = Expense.objects.filter(user=user, date__year=current_year, date__lte=today).aggregate(Sum('amount'))['amount__sum'] or 0
+        ytd_income_agg = Income.objects.filter(user=user, date__year=current_year, date__lte=today).aggregate(Sum('base_amount'))['base_amount__sum'] or 0
+        ytd_expense_agg = Expense.objects.filter(user=user, date__year=current_year, date__lte=today).aggregate(Sum('base_amount'))['base_amount__sum'] or 0
         
         context['total_income_ytd'] = ytd_income_agg
         context['total_expense_ytd'] = ytd_expense_agg
