@@ -6,9 +6,15 @@
     <div class="col-md-10">
         <div class="card shadow-lg border-0">
             <div class="card-header fw-bold py-3">
-                <h4 class="card-title mb-0 h5">
-                {% if object %}{% trans "Edit Expense" %}{% else %}{% trans "New Expense" %}{% endif %}
-                </h4>
+                <div class="d-flex align-items-center">
+                    <h4 class="card-title mb-0 h5">
+                        {% if object %}{% trans "Edit Expense" %}{% else %}{% trans "New Expense" %}{% endif %}
+                    </h4>
+                    <button type="button" class="btn btn-outline-primary btn-sm ms-auto" id="header-add-category-btn"
+                            title="{% trans 'Add New Category' %}" data-bs-toggle="modal" data-bs-target="#addCategoryModal">
+                        <i class="bi bi-plus-lg me-1"></i> {% trans "New Category" %}
+                    </button>
+                </div>
             </div>
             <div class="card-body p-4">
                 <form method="post">
@@ -28,55 +34,49 @@
                             <table class="table table-borderless align-top" id="formset-table" data-user-currency="{{ request.user.profile.currency }}">
                                 <thead>
                             <tr>
-                                <th style="width: 12%;">{% trans "Date" %}</th>
-                                <th style="width: 10%;">{% trans "Amount" %}</th>
-                                <th style="width: 10%;">{% trans "Currency" %}</th>
-                                <th style="width: 20%;">{% trans "Description" %}</th>
-                                <th style="width: 13%;">{% trans "Payment" %}</th>
-                                <th style="width: 30%;">{% trans "Category" %}</th>
-                                <th style="width: 5%;"></th>
+                                <th style="width: 16%;">{% trans "Date" %}</th>
+                                <th style="width: 16%;">{% trans "Amount" %}</th>
+                                <th style="width: 16%;">{% trans "Currency" %}</th>
+                                <th style="width: 16%;">{% trans "Description" %}</th>
+                                <th style="width: 16%;">{% trans "Category" %}</th>
+                                <th style="width: 16%;">{% trans "Payment method" %}</th>
+                                <th style="width: 4%;"></th>
                             </tr>
                         </thead>
                                 <tbody id="formset-container">
                                     {% for form in formset %}
                                     <tr class="form-row">
-                                        {% for field in form %}
-                                            {% if field.name in 'date,amount,currency,description,category,payment_method' %}
-                                            <td class="p-1">
-                                                {% if forloop.first %}
-                                                    {% for hidden in form.hidden_fields %}{{ hidden }}{% endfor %}
-                                                {% endif %}
-                                                
-                                                {% if field.name == 'category' %}
-                                                    <div class="input-group">
-                                                        {{ field }}
-                                                        <button type="button" class="btn btn-outline-secondary add-category-btn"
-                                                                title="{% trans 'Add New Category' %}">
-                                                            <i class="bi bi-plus-lg"></i>
-                                                        </button>
-                                                    </div>
-                                                {% elif field.name == 'payment_method' or field.name == 'currency' %}
-                                                    {{ field }}
-                                                {% else %}
-                                                    <input type="{% if field.name == 'date' %}date{% else %}{{ field.field.widget.input_type|default:'text' }}{% endif %}" 
-                                                        name="{{ field.html_name }}" 
-                                                        class="form-control"
-                                                        {% if field.value %}value="{{ field.value|date:'Y-m-d'|default:field.value }}"{% endif %} 
-                                                        {% if field.field.required %}required{% endif %}
-                                                        id="{{ field.id_for_label }}"
-                                                        placeholder="{{ field.label }}"
-                                                        {% if field.field.widget.input_type == "number" %}step="0.01"{% endif %}>
-                                                {% endif %}
-
-                                                {% if field.errors %}
-                                                    <div class="text-danger small" style="font-size: 0.7rem;">{{ field.errors.0 }}</div>
-                                                {% endif %}
-                                            </td>
-                                            {% endif %}
-                                        {% endfor %}
+                                        <td class="p-1">
+                                            {% for hidden in form.hidden_fields %}{{ hidden }}{% endfor %}
+                                            <input type="date" name="{{ form.date.html_name }}" class="form-control" 
+                                                value="{{ form.date.value|date:'Y-m-d'|default:form.date.value }}" required id="{{ form.date.id_for_label }}">
+                                            {% if form.date.errors %}<div class="text-danger small" style="font-size: 0.7rem;">{{ form.date.errors.0 }}</div>{% endif %}
+                                        </td>
+                                        <td class="p-1">
+                                            <input type="number" name="{{ form.amount.html_name }}" class="form-control" 
+                                                value="{{ form.amount.value|default:'' }}" required id="{{ form.amount.id_for_label }}" step="0.01" placeholder="{% trans 'Amount' %}">
+                                            {% if form.amount.errors %}<div class="text-danger small" style="font-size: 0.7rem;">{{ form.amount.errors.0 }}</div>{% endif %}
+                                        </td>
+                                        <td class="p-1">
+                                            {{ form.currency }}
+                                            {% if form.currency.errors %}<div class="text-danger small" style="font-size: 0.7rem;">{{ form.currency.errors.0 }}</div>{% endif %}
+                                        </td>
+                                        <td class="p-1">
+                                            <input type="text" name="{{ form.description.html_name }}" class="form-control" 
+                                                value="{{ form.description.value|default:'' }}" id="{{ form.description.id_for_label }}" placeholder="{% trans 'Description' %}">
+                                            {% if form.description.errors %}<div class="text-danger small" style="font-size: 0.7rem;">{{ form.description.errors.0 }}</div>{% endif %}
+                                        </td>
+                                        <td class="p-1">
+                                            {{ form.category }}
+                                            {% if form.category.errors %}<div class="text-danger small" style="font-size: 0.7rem;">{{ form.category.errors.0 }}</div>{% endif %}
+                                        </td>
+                                        <td class="p-1">
+                                            {{ form.payment_method }}
+                                            {% if form.payment_method.errors %}<div class="text-danger small" style="font-size: 0.7rem;">{{ form.payment_method.errors.0 }}</div>{% endif %}
+                                        </td>
                                         <td class="text-center">
                                             {% if form.instance.pk %}
-                                                <div class="d-none">{{ form.DELETE }}</div> <!-- Hidden actual checkbox -->
+                                                <div class="d-none">{{ form.DELETE }}</div>
                                                 <button type="button" class="btn btn-sm btn-link text-danger p-0 delete-row" 
                                                         title="Delete existing expense">
                                                     <i class="bi bi-trash"></i>
@@ -99,46 +99,42 @@
                     
                     {% else %}
                     
-                        {% for field in form %}
                         <div class="mb-3">
-                            <label class="form-label text-muted">{{ field.label }}</label>
-                            {% if field.field.widget.input_type == "checkbox" %}
-                                <div class="form-check">
-                                    {{ field }}
-                                    <label class="form-check-label" for="{{ field.id_for_label }}">
-                                        {{ field.help_text }}
-                                    </label>
-
-                                </div>
-                            {% elif field.name == 'category' %}
-                                <div class="input-group">
-                                    {{ field }}
-                                    <button type="button" class="btn btn-outline-primary btn-sm rounded-circle add-category-btn" 
-                                            title="{% trans 'Add New Category' %}" data-bs-toggle="modal" data-bs-target="#addCategoryModal">
-                                        <i class="bi bi-plus"></i>
-                                    </button>
-                                </div>
-                            {% elif field.name == 'payment_method' or field.name == 'currency' %}
-                                {{ field }}
-                            {% else %}
-                                <input type="{% if field.name == 'date' %}date{% else %}{{ field.field.widget.input_type|default:'text' }}{% endif %}" 
-                                    name="{{ field.name }}" 
-                                    class="form-control"
-                                    {% if field.value %}value="{{ field.value|date:'Y-m-d'|default:field.value }}"{% endif %} 
-                                    {% if field.field.required %}required{% endif %}
-                                    {% if field.field.widget.input_type == "number" %}step="0.01"{% endif %}>
-                            {% endif %}
-                            
-                            {% if field.errors %}
-                            <div class="text-danger small mt-1">{{ field.errors.0 }}</div>
-                            {% endif %}
+                            <label class="form-label text-muted">{{ form.date.label }}</label>
+                            <input type="date" name="{{ form.date.name }}" class="form-control" 
+                                value="{{ form.date.value|date:'Y-m-d'|default:form.date.value }}" required>
+                            {% if form.date.errors %}<div class="text-danger small mt-1">{{ form.date.errors.0 }}</div>{% endif %}
                         </div>
-                        {% endfor %}
+                        <div class="mb-3">
+                            <label class="form-label text-muted">{{ form.amount.label }}</label>
+                            <input type="number" name="{{ form.amount.name }}" class="form-control" 
+                                value="{{ form.amount.value|default:'' }}" required step="0.01">
+                            {% if form.amount.errors %}<div class="text-danger small mt-1">{{ form.amount.errors.0 }}</div>{% endif %}
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label text-muted">{{ form.currency.label }}</label>
+                            {{ form.currency }}
+                            {% if form.currency.errors %}<div class="text-danger small mt-1">{{ form.currency.errors.0 }}</div>{% endif %}
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label text-muted">{{ form.description.label }}</label>
+                            <input type="text" name="{{ form.description.name }}" class="form-control" 
+                                value="{{ form.description.value|default:'' }}">
+                            {% if form.description.errors %}<div class="text-danger small mt-1">{{ form.description.errors.0 }}</div>{% endif %}
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label text-muted">{{ form.category.label }}</label>
+                            {{ form.category }}
+                            {% if form.category.errors %}<div class="text-danger small mt-1">{{ form.category.errors.0 }}</div>{% endif %}
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label text-muted">{{ form.payment_method.label }}</label>
+                            {{ form.payment_method }}
+                            {% if form.payment_method.errors %}<div class="text-danger small mt-1">{{ form.payment_method.errors.0 }}</div>{% endif %}
+                        </div>
 
                     {% endif %}
 
-                    <!-- <button type="button" class="btn btn-outline-primary btn-sm mt-2" id="add-item">
-                    <i class="bi bi-plus-lg me-1"></i> {% trans "Add Another Expense" %} -->
                 </button>
 
                 <div class="d-flex justify-content-start gap-2 mt-4">
@@ -168,6 +164,7 @@
                         <label for="id_new_category_name" class="form-label">{% trans "Category Name" %}</label>
                         <input type="text" class="form-control" id="id_new_category_name" required>
                     </div>
+                    <div id="categoryError" class="alert alert-danger d-none mt-2"></div>
                 </form>
             </div>
             <div class="modal-footer">
@@ -309,26 +306,26 @@
         // Check if modal exists (might not be rendered if not authenticated or other reasons, though unlikely here)
         if (modalEl) {
             const modal = new bootstrap.Modal(modalEl);
-            const saveBtn = document.getElementById('saveCategoryBtn');
+            const saveBtn = document.getElementById('saveQuickCategory');
             const errorAlert = document.getElementById('categoryError');
             let activeSelectId = null; 
 
             // Delegation for + buttons (covers both formset and single form)
             // We attach to document.body to ensure we catch everything, or a common wrapper if available.
-            document.body.addEventListener('click', function(e) {
-                const btn = e.target.closest('.add-category-btn');
-                if (btn) {
-                    const select = btn.previousElementSibling;
-                    activeSelectId = select.id;
-                    document.getElementById('addCategoryForm').reset();
+            // Header Add Category Button logic
+            const headerAddBtn = document.getElementById('header-add-category-btn');
+            if (headerAddBtn) {
+                headerAddBtn.addEventListener('click', function() {
+                    activeSelectId = null; // No specific select focused
+                    document.getElementById('quickAddCategoryForm').reset();
                     errorAlert.classList.add('d-none');
                     modal.show();
-                    setTimeout(() => document.getElementById('newCategoryName').focus(), 500);
-                }
-            });
+                    setTimeout(() => document.getElementById('id_new_category_name').focus(), 500);
+                });
+            }
 
             saveBtn.addEventListener('click', function() {
-                const nameInput = document.getElementById('newCategoryName');
+                const nameInput = document.getElementById('id_new_category_name');
                 const name = nameInput.value.trim();
                 
                 if (!name) {
@@ -389,7 +386,7 @@
                 });
             });
             
-             document.getElementById('newCategoryName').addEventListener('keypress', function(e) {
+             document.getElementById('id_new_category_name').addEventListener('keypress', function(e) {
                 if (e.key === 'Enter') {
                     e.preventDefault();
                     saveBtn.click();
