@@ -1330,10 +1330,17 @@ def export_expenses(request):
     response['Content-Disposition'] = 'attachment; filename="expenses.csv"'
 
     writer = csv.writer(response)
-    writer.writerow(['Date', 'Category', 'Description', 'Amount'])
+    writer.writerow([_('Date'), _('Category'), _('Description'), _('Currency'), _('Amount'), _('Amount (Base)')])
 
     for expense in expenses:
-        writer.writerow([expense.date, expense.category, expense.description, expense.amount])
+        writer.writerow([
+            expense.date, 
+            expense.category, 
+            expense.description, 
+            expense.currency, 
+            expense.amount, 
+            expense.base_amount
+        ])
 
     return response
 
