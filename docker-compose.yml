@@ -13,7 +13,6 @@ services:
     environment:
       - DEBUG=False
       - DJANGO_SETTINGS_MODULE=finance_tracker.settings
-      - DATABASE_URL=postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-finance}
     depends_on:
       db:
         condition: service_healthy
