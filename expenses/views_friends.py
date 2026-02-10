@@ -7,7 +7,7 @@ from django.urls import reverse_lazy, reverse
 from django.views import generic
 from datetime import date
 
-from .models import Friend, SharedExpense, Share, Settlement
+from .models import Friend, SharedExpense, Share, Settlement, PaymentSource
 
 
 class FriendForm(forms.ModelForm):
@@ -39,7 +39,7 @@ class SettlementForm(forms.ModelForm):
 
     class Meta:
         model = Settlement
-        fields = ["amount", "date", "payer_is_user", "notes"]
+        fields = ["amount", "date", "payer_is_user", "payment_source", "notes"]
         widgets = {
             "amount": forms.NumberInput(
                 attrs={"class": "form-control", "placeholder": "0.00", "step": "0.01", "min": "0.01"}
@@ -50,17 +50,28 @@ class SettlementForm(forms.ModelForm):
             "payer_is_user": forms.RadioSelect(
                 choices=[(True, "I paid my friend"), (False, "My friend paid me")]
             ),
+            "payment_source": forms.Select(
+                attrs={"class": "form-select"}
+            ),
             "notes": forms.Textarea(
                 attrs={"class": "form-control", "rows": 2, "placeholder": "Optional notes..."}
             ),
         }
         labels = {
             "payer_is_user": "Who paid?",
+            "payment_source": "Account",
         }
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, user=None, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["date"].initial = date.today()
+        # Filter payment sources to only show user's active accounts
+        if user:
+            self.fields["payment_source"].queryset = PaymentSource.objects.filter(
+                user=user, is_active=True
+            ).order_by("name")
+        self.fields["payment_source"].required = False
+        self.fields["payment_source"].help_text = "Optional. Account where money is transferred from/to."
 
 
 class FriendListView(LoginRequiredMixin, generic.ListView):
@@ -184,7 +195,7 @@ class FriendDetailView(LoginRequiredMixin, generic.DetailView):
         context['settlements'] = Settlement.objects.filter(friend=friend).order_by('-date')[:20]
 
         # Settlement form for quick entry
-        context['settlement_form'] = SettlementForm()
+        context['settlement_form'] = SettlementForm(user=self.request.user)
 
         return context
 
@@ -195,6 +206,11 @@ class SettlementCreateView(LoginRequiredMixin, generic.CreateView):
     model = Settlement
     form_class = SettlementForm
     template_name = "expenses/settlement_form.html"
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['user'] = self.request.user
+        return kwargs
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

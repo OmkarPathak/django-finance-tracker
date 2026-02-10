@@ -30,7 +30,7 @@ sitemaps = {
     'blog': BlogSitemap,
 }
 
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.views.decorators.http import require_GET
 
 @require_GET
@@ -46,7 +46,20 @@ def robots_txt(request):
     ]
     return HttpResponse("\n".join(lines), content_type="text/plain")
 
+@require_GET
+def health_check(request):
+    """Health check endpoint for Docker/Kubernetes probes."""
+    from django.db import connection
+    try:
+        # Check database connectivity
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT 1")
+        return JsonResponse({"status": "healthy", "database": "connected"}, status=200)
+    except Exception as e:
+        return JsonResponse({"status": "unhealthy", "error": str(e)}, status=503)
+
 urlpatterns = [
+    path('health/', health_check, name='health_check'),
     path('admin/', admin.site.urls),
     path('auth/login/', RedirectView.as_view(pattern_name='account_login', permanent=True)), # Redirect legacy login
     path('accounts/', include('allauth.urls')),

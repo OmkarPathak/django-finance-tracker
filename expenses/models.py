@@ -665,6 +665,7 @@ class Settlement(models.Model):
     """
     Records settlement transactions between user and friends.
     When a friend pays back or you pay a friend, record it here.
+    The payment source balance is automatically updated.
     """
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='settlements')
     friend = models.ForeignKey(Friend, on_delete=models.CASCADE, related_name='settlements')
@@ -675,10 +676,33 @@ class Settlement(models.Model):
     payer_is_user = models.BooleanField(
         help_text="True if you paid the friend, False if friend paid you"
     )
+    # Payment source - where the money comes from/goes to
+    payment_source = models.ForeignKey(
+        PaymentSource,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='settlements',
+        help_text="Bank account/wallet where money is transferred from/to"
+    )
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         ordering = ['-date', '-created_at']
+
+    def save(self, *args, **kwargs):
+        is_new = self.pk is None
+        super().save(*args, **kwargs)
+        
+        # Update payment source balance for new settlements
+        if is_new and self.payment_source:
+            if self.payer_is_user:
+                # User paid friend -> money goes out of account
+                self.payment_source.balance -= self.amount
+            else:
+                # Friend paid user -> money comes into account
+                self.payment_source.balance += self.amount
+            self.payment_source.save(update_fields=['balance'])
 
     def __str__(self):
         if self.payer_is_user:
