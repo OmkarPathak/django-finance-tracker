@@ -68,27 +68,27 @@
                 <!-- Authenticated User Links -->
                 {% if user.is_authenticated %}
                     <li class="nav-item">
-                        <a href="{% url 'home' %}" class="nav-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}" onclick="showLoader()">
+                        <a href="{% url 'home' %}" class="nav-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}">
                             {% trans "Dashboard" %}
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a href="{% url 'expense-list' %}" class="nav-link {% if 'expense' in request.resolver_match.url_name %}active{% endif %}" onclick="showLoader()">
+                        <a href="{% url 'expense-list' %}" class="nav-link {% if 'expense' in request.resolver_match.url_name %}active{% endif %}">
                             {% trans "Expenses" %}
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a href="{% url 'recurring-list' %}" class="nav-link {% if 'recurring' in request.resolver_match.url_name %}active{% endif %}" onclick="showLoader()">
+                        <a href="{% url 'recurring-list' %}" class="nav-link {% if 'recurring' in request.resolver_match.url_name %}active{% endif %}">
                             {% trans "Subscriptions" %}
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a href="{% url 'calendar' %}" class="nav-link {% if 'calendar' in request.resolver_match.url_name %}active{% endif %}" onclick="showLoader()">
+                        <a href="{% url 'calendar' %}" class="nav-link {% if 'calendar' in request.resolver_match.url_name %}active{% endif %}">
                             {% trans "Calendar" %}
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a href="{% url 'analytics' %}" class="nav-link {% if 'analytics' in request.resolver_match.url_name %}active{% endif %}" onclick="showLoader()">
+                        <a href="{% url 'analytics' %}" class="nav-link {% if 'analytics' in request.resolver_match.url_name %}active{% endif %}">
                             {% trans "Analytics" %}
                         </a>
                     </li>
@@ -105,9 +105,9 @@
                             <span class="text-gradient-primary">{% trans "Add" %}</span>
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2">
-                            <li><a class="dropdown-item py-2" href="{% url 'expense-create' %}?next={{ request.path }}" onclick="showLoader()"><i class="bi bi-dash-circle text-danger me-2"></i> {% trans "Add Expense" %}</a></li>
-                            <li><a class="dropdown-item py-2" href="{% url 'recurring-create' %}?next={{ request.path }}" onclick="showLoader()"><i class="bi bi-arrow-repeat text-primary me-2"></i> {% trans "Add Subscription" %}</a></li>
-                            <li><a class="dropdown-item py-2" href="{% url 'income-create' %}?next={{ request.path }}" onclick="showLoader()"><i class="bi bi-plus-circle text-success me-2"></i> {% trans "Add Income" %}</a></li>
+                            <li><a class="dropdown-item py-2" href="{% url 'expense-create' %}?next={{ request.path }}"><i class="bi bi-dash-circle text-danger me-2"></i> {% trans "Add Expense" %}</a></li>
+                            <li><a class="dropdown-item py-2" href="{% url 'recurring-create' %}?next={{ request.path }}"><i class="bi bi-arrow-repeat text-primary me-2"></i> {% trans "Add Subscription" %}</a></li>
+                            <li><a class="dropdown-item py-2" href="{% url 'income-create' %}?next={{ request.path }}"><i class="bi bi-plus-circle text-success me-2"></i> {% trans "Add Income" %}</a></li>
                         </ul>
                     </li>
 
@@ -175,7 +175,7 @@
                                 </div>
                             </li>
                             <li>
-                                <a class="dropdown-item rounded py-2 d-flex align-items-center gap-2" href="{% url 'settings-home' %}" onclick="showLoader()">
+                                <a class="dropdown-item rounded py-2 d-flex align-items-center gap-2" href="{% url 'settings-home' %}">
                                     <i class="bi bi-gear"></i> {% trans "Settings" %}
                                 </a>
                             </li>
@@ -208,7 +208,7 @@
                         </div>
                     </li>
                     <li class="nav-item d-lg-none">
-                        <a href="{% url 'settings-home' %}" class="nav-link" onclick="showLoader()">
+                        <a href="{% url 'settings-home' %}" class="nav-link">
                            <i class="bi bi-gear me-2"></i> {% trans "Settings" %}
                         </a>
                     </li>
