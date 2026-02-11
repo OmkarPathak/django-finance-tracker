@@ -826,12 +826,11 @@
             }
 
             // Check if it's a full URL processing to the same page with a hash
-            // e.g. /path/to/page#section vs /path/to/page
             try {
-                const url = new URL(link.href);
+                const url = new URL(link.href, location.origin);
                 const isSamePage = (url.origin === location.origin) &&
-                    (url.pathname === location.pathname) &&
-                    (url.search === location.search);
+                                 (url.pathname === location.pathname) &&
+                                 (url.search === location.search);
 
                 if (isSamePage && url.hash) {
                     return;
@@ -840,8 +839,12 @@
                 // If URL parsing fails, assume it's just a path and proceed
             }
 
-            // Show loader for all valid navigations
-            showLoader();
+            // Small delay to allow other handlers (like preventDefault) to run
+            setTimeout(() => {
+                if (!e.defaultPrevented) {
+                    showLoader();
+                }
+            }, 0);
         });
 
         // Hide on Back Button (bfcache)
@@ -912,12 +915,12 @@
             </button>
             <ul class="dropdown-menu dropdown-menu-end shadow border-0 mb-2">
                 <li>
-                    <a class="dropdown-item py-2 d-flex align-items-center" href="{% url 'expense-create' %}" onclick="showLoader()">
+                    <a class="dropdown-item py-2 d-flex align-items-center" href="{% url 'expense-create' %}">
                         <i class="bi bi-dash-circle text-primary me-2"></i> {% trans "Add Expense" %}
                     </a>
                 </li>
                 <li>
-                    <a class="dropdown-item py-2 d-flex align-items-center" href="{% url 'income-create' %}" onclick="showLoader()">
+                    <a class="dropdown-item py-2 d-flex align-items-center" href="{% url 'income-create' %}">
                         <i class="bi bi-plus-circle text-success me-2"></i> {% trans "Add Income" %}
                     </a>
                 </li>
