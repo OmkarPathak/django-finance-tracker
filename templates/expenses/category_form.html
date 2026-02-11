@@ -11,7 +11,7 @@
                 </h4>
             </div>
             <div class="card-body p-4">
-                <form method="post">
+                <form method="post" {% if reached_limit %}class="opacity-50 pointer-events-none"{% endif %}>
                     {% csrf_token %}
                     
                     {% for field in form %}
@@ -22,7 +22,8 @@
                                class="form-control" 
                                {% if field.value %}value="{{ field.value }}"{% endif %} 
                                {% if field.name == 'limit' %}step="0.01" placeholder="{% trans 'Optional monthly limit' %}"{% endif %}
-                               {% if field.field.required %}required{% endif %}>
+                               {% if field.field.required %}required{% endif %}
+                               {% if reached_limit %}disabled{% endif %}>
                         {% if field.errors %}
                         <div class="text-danger small mt-1">{{ field.errors.0 }}</div>
                         {% endif %}
@@ -30,9 +31,15 @@
                     {% endfor %}
 
                     <div class="d-flex justify-content-start gap-2 mt-4">
-                        <button type="submit" class="btn btn-primary px-4">
-                            <i class="bi bi-check-lg me-1"></i> {% trans "Save Category" %}
-                        </button>
+                        {% if reached_limit %}
+                            <button type="button" class="btn btn-primary px-4" data-bs-toggle="modal" data-bs-target="#comparePlansModal">
+                                <i class="bi bi-rocket-takeoff-fill me-1"></i> {% trans "Unlock More" %}
+                            </button>
+                        {% else %}
+                            <button type="submit" class="btn btn-primary px-4">
+                                <i class="bi bi-check-lg me-1"></i> {% trans "Save Category" %}
+                            </button>
+                        {% endif %}
                         
                         <input type="hidden" name="next" value="{{ next_url }}">
                         <a href="{{ next_url|default:'/category/list/' }}" class="btn btn-outline-secondary px-4">{% trans "Cancel" %}</a>
@@ -42,4 +49,21 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block modals %}
+    {% if reached_limit %}
+        {% include 'components/compare_plans_modal.html' %}
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                var nudgeModal = new bootstrap.Modal(document.getElementById('comparePlansModal'));
+                nudgeModal.show();
+            });
+        </script>
+        <style>
+            .pointer-events-none {
+                pointer-events: none;
+            }
+        </style>
+    {% endif %}
 {% endblock %}

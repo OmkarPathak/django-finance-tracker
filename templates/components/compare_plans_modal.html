@@ -1,0 +1,55 @@
+{% load i18n %}
+<div class="modal fade" id="comparePlansModal" tabindex="-1" aria-labelledby="comparePlansModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0 shadow-lg rounded-4">
+            <div class="modal-header border-0 pb-0">
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-5 pt-0 text-center">
+                <div class="feature-icon-box bg-primary bg-opacity-10 text-primary mx-auto mb-4" style="width: 80px; height: 80px; font-size: 2.5rem; display: flex; align-items: center; justify-content: center; border-radius: 20px;">
+                    <i class="bi bi-rocket-takeoff-fill"></i>
+                </div>
+                
+                <h2 class="fw-bold mb-3">{% trans "Ready to Level Up?" %}</h2>
+                <p class="text-muted lead mb-4">
+                    {% trans "You've reached the limit for budget categories on the Free plan." %}<br>
+                    <span class="text-primary fw-bold">{% trans "Unlock Premium features and Export for just ₹25/month" %}</span>
+                </p>
+
+                <div class="row g-4 mb-4 text-start">
+                    <div class="col-md-6">
+                        <div class="p-3 rounded-3 bg-body-tertiary h-100">
+                            <h5 class="fw-bold mb-3 small text-uppercase text-muted">{% trans "Free Plan" %}</h5>
+                            <ul class="list-unstyled mb-0">
+                                <li class="mb-2 small text-muted"><i class="bi bi-check2 text-success me-2"></i> {% trans "6 Budget Categories" %}</li>
+                                <li class="mb-2 small text-muted"><i class="bi bi-check2 text-success me-2"></i> {% trans "Basic Analytics" %}</li>
+                                <li class="mb-2 small text-muted opacity-50"><i class="bi bi-x text-danger me-2"></i> {% trans "No AI Insights" %}</li>
+                                <li class="mb-0 small text-muted opacity-50"><i class="bi bi-x text-danger me-2"></i> {% trans "No CSV/Excel Export" %}</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="p-3 rounded-3 bg-primary bg-opacity-10 border border-primary border-opacity-25 h-100">
+                            <h5 class="fw-bold mb-3 small text-uppercase text-primary">{% trans "Pro Plan" %}</h5>
+                            <ul class="list-unstyled mb-0">
+                                <li class="mb-2 small"><i class="bi bi-check2-all text-primary me-2"></i> <strong>{% trans "Unlimited Categories" %}</strong></li>
+                                <li class="mb-2 small"><i class="bi bi-check2-all text-primary me-2"></i> <strong>{% trans "Premium Features" %}</strong></li>
+                                <li class="mb-2 small"><i class="bi bi-check2-all text-primary me-2"></i> <strong>{% trans "Unlimited Exports" %}</strong></li>
+                                <li class="mb-0 small"><i class="bi bi-check2-all text-primary me-2"></i> {% trans "Email Reminders" %}</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-grid gap-3">
+                    <a href="{% url 'pricing' %}" class="btn btn-primary btn-lg rounded-pill fw-bold py-3 shadow">
+                        {% trans "Compare Plans & Upgrade" %}
+                    </a>
+                    <button type="button" class="btn btn-link text-muted text-decoration-none small" data-bs-dismiss="modal">
+                        {% trans "Maybe Later" %}
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
