@@ -387,8 +387,7 @@
                         <span class="text-gradient">Rupee Goes.</span>
                     </h1>
                     <p class="lead text-muted mb-5 pe-lg-5">
-                        Turn financial chaos into clarity. TrackMyRupee gives you a precision dashboard to visualize
-                        your spending, spot trends, and master your monthly budget—all in one place.
+                        Master your finances with clarity. TrackMyRupee helps you visualize spending, spot trends, and control your budget—all in one simple dashboard.
                     </p>
                     <div class="d-flex flex-column flex-sm-row gap-3 justify-content-center justify-content-lg-start">
                         <a href="{% url 'signup' %}" class="cta-button text-decoration-none">Start Your Journey</a>
@@ -413,144 +412,48 @@
         </div>
     </section>
 
-    <!-- Feature alternating sections -->
-    <section id="features">
-        <!-- Showcase 1: Analytics -->
-        <div class="feature-showcase">
-            <div class="container">
-                <div class="row align-items-center">
-                    <div class="col-lg-5 mb-5 mb-lg-0" data-aos="fade-up">
-                        <div class="feature-icon-box">
+    <!-- Core Features Grid -->
+    <section id="features" class="py-5">
+        <div class="container py-5">
+            <div class="text-center mb-5" data-aos="fade-up">
+                <h2 class="display-4 fw-bold">Everything You Need to <span class="text-gradient">Master Your Money</span></h2>
+                <p class="text-muted fs-5">Powerful tools designed for financial clarity and growth.</p>
+            </div>
+            <div class="row g-4">
+                <div class="col-md-6 col-lg-3" data-aos="fade-up" data-aos-delay="100">
+                    <div class="card h-100 border-0 bg-body-tertiary rounded-4 p-4 text-center">
+                        <div class="feature-icon-box mx-auto mb-3">
                             <i class="bi bi-pie-chart-fill"></i>
                         </div>
-                        <h2 class="display-5 fw-bold mb-4">Deep Insights into <span class="text-gradient">Every
-                                Expense</span></h2>
-                        <p class="text-muted fs-5 mb-4">
-                            Stop wondering where your money went. Our granular category breakdown and trend analysis
-                            tell you the complete story of your financial month.
-                        </p>
-                        <ul class="list-unstyled d-grid gap-3 mb-0 text-muted">
-                            <li><i class="bi bi-check-circle-fill text-success me-2"></i> Automatic budget variance
-                                calculation</li>
-                            <li><i class="bi bi-check-circle-fill text-success me-2"></i> Spending distribution heatmaps
-                            </li>
-                            <li><i class="bi bi-check-circle-fill text-success me-2"></i> Month-over-month growth
-                                metrics</li>
-                        </ul>
-                    </div>
-                    <div class="col-lg-7" data-aos="fade-left">
-                        <div class="mockup-container">
-                            <img src="{% static 'img/analytics_modern.svg' %}" alt="Analytics View" class="img-dark">
-                            <img src="{% static 'img/analytics_modern_light.svg' %}" alt="Analytics View"
-                                class="img-light">
-                        </div>
+                        <h4 class="fw-bold mb-3">Deep Analytics</h4>
+                        <p class="text-muted small mb-0">Granular category breakdowns and spending trend analysis at your fingertips.</p>
                     </div>
                 </div>
-            </div>
-        </div>
-
-        <!-- Showcase 2: Calendar -->
-        <div class="feature-showcase bg-dark bg-opacity-10">
-            <div class="container text-lg-end">
-                <div class="row align-items-center flex-column-reverse flex-lg-row">
-                    <div class="col-lg-7" data-aos="fade-right">
-                        <div class="mockup-container">
-                            <img src="{% static 'img/calendar_modern.svg' %}" alt="Calendar View" class="img-dark">
-                            <img src="{% static 'img/calendar_modern_light.svg' %}" alt="Calendar View"
-                                class="img-light">
-                        </div>
-                    </div>
-                    <div class="col-lg-5 mb-5 mb-lg-0 text-lg-start ps-lg-5" data-aos="fade-up">
-                        <div class="feature-icon-box">
+                <div class="col-md-6 col-lg-3" data-aos="fade-up" data-aos-delay="200">
+                    <div class="card h-100 border-0 bg-body-tertiary rounded-4 p-4 text-center">
+                        <div class="feature-icon-box mx-auto mb-3">
                             <i class="bi bi-calendar-heart-fill"></i>
                         </div>
-                        <h2 class="display-5 fw-bold mb-4">Your Financial <span class="text-gradient">Flow in
-                                Time</span></h2>
-                        <p class="text-muted fs-5 mb-4">
-                            See your income and expenses mapped across time. Our signature calendar interface helps you
-                            anticipate bills and celebrate deposit days.
-                        </p>
-                        <div class="row g-4 mb-4">
-                            <div class="col-6">
-                                <h4 class="fw-bold mb-1">Interactive Cells</h4>
-                                <p class="small text-muted mb-0">Tap any date for full details</p>
-                            </div>
-                            <div class="col-6">
-                                <h4 class="fw-bold mb-1">Visual Cues</h4>
-                                <p class="small text-muted mb-0">Color-coded transaction types</p>
-                            </div>
-                        </div>
+                        <h4 class="fw-bold mb-3">Financial Flow</h4>
+                        <p class="text-muted small mb-0">Visualize your income and expenses mapped across a signature calendar view.</p>
                     </div>
                 </div>
-            </div>
-        </div>
-
-        <!-- Showcase 3: Subscriptions -->
-        <div class="feature-showcase">
-            <div class="container">
-                <div class="row align-items-center">
-                    <div class="col-lg-5 mb-5 mb-lg-0" data-aos="fade-up">
-                        <div class="feature-icon-box"
-                            style="background: linear-gradient(135deg, #ff4d6d 0%, #ff8c42 100%); box-shadow: 0 10px 20px rgba(255, 77, 109, 0.2);">
+                <div class="col-md-6 col-lg-3" data-aos="fade-up" data-aos-delay="300">
+                    <div class="card h-100 border-0 bg-body-tertiary rounded-4 p-4 text-center">
+                        <div class="feature-icon-box mx-auto mb-3" style="background: linear-gradient(135deg, #ff4d6d 0%, #ff8c42 100%);">
                             <i class="bi bi-credit-card-2-front-fill"></i>
                         </div>
-                        <h2 class="display-5 fw-bold mb-4">Never Miss a <span class="text-gradient"
-                                style="background: linear-gradient(135deg, #ff4d6d 0%, #ff8c42 100%); -webkit-background-clip: text; background-clip: text;">Bill
-                                Again</span></h2>
-                        <p class="text-muted fs-5 mb-4">
-                            Consolidate all your subscriptions in one dashboard. Get timely renewal alerts, spot rising
-                            costs, and identify unused services instantly.
-                        </p>
-                        <div class="d-flex gap-3 text-muted mb-4">
-                            <div class="d-flex align-items-center">
-                                <i class="bi bi-bell-fill text-danger me-2"></i> Renewal Alerts
-                            </div>
-                            <div class="d-flex align-items-center">
-                                <i class="bi bi-graph-down-arrow text-success me-2"></i> Cost Tracking
-                            </div>
-                        </div>
-                        <div class="p-3 bg-body-tertiary rounded-4 border border-danger border-opacity-10 mb-4">
-                            <p class="small text-muted mb-0">"Saved me ₹4,500/year just by cancelling forgotten
-                                subscriptions!"</p>
-                        </div>
-                    </div>
-                    <div class="col-lg-7" data-aos="fade-left">
-                        <div class="mockup-container">
-                            <img src="{% static 'img/subscriptions_modern.svg' %}" alt="Subscriptions Dashboard"
-                                class="img-dark">
-                            <img src="{% static 'img/subscriptions_modern_light.svg' %}" alt="Subscriptions Dashboard"
-                                class="img-light">
-                        </div>
+                        <h4 class="fw-bold mb-3">Bill Tracking</h4>
+                        <p class="text-muted small mb-0">Consolidate subscriptions and get timely renewal alerts to never miss a due date.</p>
                     </div>
                 </div>
-            </div>
-        </div>
-
-        <!-- Showcase 4: Lists & Management -->
-        <div class="feature-showcase">
-            <div class="container">
-                <div class="row align-items-center">
-                    <div class="col-lg-5 mb-5 mb-lg-0" data-aos="fade-up">
-                        <div class="feature-icon-box">
+                <div class="col-md-6 col-lg-3" data-aos="fade-up" data-aos-delay="400">
+                    <div class="card h-100 border-0 bg-body-tertiary rounded-4 p-4 text-center">
+                        <div class="feature-icon-box mx-auto mb-3">
                             <i class="bi bi-list-task"></i>
                         </div>
-                        <h2 class="display-5 fw-bold mb-4">Power Tools for <span
-                                class="text-gradient">Organization</span></h2>
-                        <p class="text-muted fs-5 mb-4">
-                            Manage thousands of records with ease. Advanced filtering, fast search, and powerful bulk
-                            export capabilities put you in the driver's seat.
-                        </p>
-                        <div class="p-3 bg-body-tertiary rounded-4 border border-secondary border-opacity-10 mb-4">
-                            <p class="small text-muted mb-0">"The fastest way to clean up your finances. Export to Excel
-                                in one click."</p>
-                        </div>
-                    </div>
-                    <div class="col-lg-7" data-aos="fade-left">
-                        <div class="mockup-container">
-                            <img src="{% static 'img/expenses_modern.svg' %}" alt="Expenses View" class="img-dark">
-                            <img src="{% static 'img/expenses_modern_light.svg' %}" alt="Expenses View"
-                                class="img-light">
-                        </div>
+                        <h4 class="fw-bold mb-3">Smart Management</h4>
+                        <p class="text-muted small mb-0">Advanced filtering, fast search, and bulk export capabilities for total organization.</p>
                     </div>
                 </div>
             </div>
@@ -595,77 +498,6 @@
         </div>
     </section>
 
-    <!-- The Maker's Method (New Section) -->
-    <section class="py-5 overflow-hidden"
-        style="background: linear-gradient(180deg, var(--bg-color) 0%, rgba(5, 117, 230, 0.03) 100%);">
-        <div class="container py-4">
-            <div class="row align-items-center">
-                <div class="col-lg-5 mb-5 mb-lg-0" data-aos="fade-right">
-                    <span
-                        class="badge rounded-pill bg-primary bg-opacity-10 text-primary px-3 py-2 mb-3 fw-bold border border-primary border-opacity-10">
-                        <i class="bi bi-lightbulb-fill me-1"></i> Use Case Spotlight
-                    </span>
-                    <h2 class="display-4 fw-bold mb-4">The "Pay Yourself First" <span
-                            class="text-gradient">Method</span></h2>
-                    <p class="lead text-muted mb-4">
-                        Many users, including the creator of TrackMyRupee, follow a simple rule: <strong>Treat Savings
-                            as an Expense.</strong>
-                    </p>
-                    <div class="d-flex flex-column gap-3">
-                        <div class="d-flex gap-3">
-                            <div class="flex-shrink-0">
-                                <div class="rounded-circle bg-success bg-opacity-10 p-2 text-success">
-                                    <i class="bi bi-1-circle-fill fs-4"></i>
-                                </div>
-                            </div>
-                            <div>
-                                <h5 class="fw-bold mb-1">Income Arrives</h5>
-                                <p class="text-muted small mb-0">Your monthly salary hits your account.</p>
-                            </div>
-                        </div>
-                        <div class="d-flex gap-3">
-                            <div class="flex-shrink-0">
-                                <div class="rounded-circle bg-primary bg-opacity-10 p-2 text-primary">
-                                    <i class="bi bi-2-circle-fill fs-4"></i>
-                                </div>
-                            </div>
-                            <div>
-                                <h5 class="fw-bold mb-1">Savings are Deducted</h5>
-                                <p class="text-muted small mb-0">SIPs, RDs, and Investments are recorded as an
-                                    <strong>Expense Category</strong> named "Savings".
-                                </p>
-                            </div>
-                        </div>
-                        <div class="d-flex gap-3">
-                            <div class="flex-shrink-0">
-                                <div class="rounded-circle bg-info bg-opacity-10 p-2 text-info">
-                                    <i class="bi bi-3-circle-fill fs-4"></i>
-                                </div>
-                            </div>
-                            <div>
-                                <h5 class="fw-bold mb-1">True Balance</h5>
-                                <p class="text-muted small mb-0">Income - Expenses (incl. Savings) = Your
-                                    <strong>Guilt-Free Spending Money</strong>.
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-lg-7" data-aos="fade-left">
-                    <div class="mockup-container" style="max-width: 100%;">
-                        <img src="{% static 'img/savings_method_dark.svg' %}" alt="Savings as Expense Method"
-                            class="w-100 hover-scale transition-transform img-dark">
-                        <img src="{% static 'img/savings_method.svg' %}" alt="Savings as Expense Method"
-                            class="w-100 hover-scale transition-transform img-light">
-                        <div class="text-center mt-3">
-                            <small class="text-muted fst-italic">"This simple shift in perspective ensures I never miss
-                                my investment goals." — Omkar</small>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
 
     <!-- Pricing Section -->
     <section id="pricing" class="py-5 position-relative">
