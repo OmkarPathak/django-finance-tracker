@@ -223,10 +223,16 @@ class OnboardingView(LoginRequiredMixin, TemplateView):
     template_name = 'onboarding.html'
 
     def dispatch(self, request, *args, **kwargs):
-        # Redirect if user already has data OR marked as having seen the tutorial
-        has_any_data = Expense.objects.filter(user=request.user).exists() or Income.objects.filter(user=request.user).exists()
-        if has_any_data or request.user.profile.has_seen_tutorial:
+        # Redirect if user has already marked seen tutorial
+        if request.user.profile.has_seen_tutorial:
             return redirect('home')
+        
+        # Also redirect if they already have BOTH income and expenses (not just one, to allow the flow to continue)
+        has_income = Income.objects.filter(user=request.user).exists()
+        has_expense = Expense.objects.filter(user=request.user).exists()
+        if has_income and has_expense:
+            return redirect('home')
+            
         return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
@@ -351,8 +357,47 @@ def home_view(request):
                 return redirect('onboarding')
     except UserProfile.DoesNotExist:
         # Ensure profile exists, then redirect
-        UserProfile.objects.get_or_create(user=request.user)
+        UserProfile.objects.get_or_create(user=self.request.user if hasattr(self, 'request') else request.user)
         return redirect('onboarding')
+
+    # Process recurring transactions
+    from expenses.models import RecurringTransaction
+    recurring_txs = RecurringTransaction.objects.filter(user=request.user, is_active=True)
+    today = date.today()
+    for rt in recurring_txs:
+        if not rt.last_processed_date:
+            current_date = rt.start_date
+        else:
+            current_date = rt.get_next_date(rt.last_processed_date, rt.frequency)
+
+        while current_date <= today:
+            description = f"{rt.description} (Recurring)"
+            if rt.transaction_type == 'EXPENSE':
+                Expense.objects.get_or_create(
+                    user=request.user,
+                    date=current_date,
+                    amount=rt.amount,
+                    currency=rt.currency,
+                    category=rt.category or 'Uncategorized',
+                    defaults={
+                        'description': description,
+                        'payment_method': rt.payment_method
+                    }
+                )
+            elif rt.transaction_type == 'INCOME':
+                Income.objects.get_or_create(
+                    user=request.user,
+                    date=current_date,
+                    amount=rt.amount,
+                    currency=rt.currency,
+                    source=rt.source or 'Uncategorized',
+                    defaults={
+                        'description': description
+                    }
+                )
+            rt.last_processed_date = current_date
+            rt.save()
+            current_date = rt.get_next_date(current_date, rt.frequency)
 
     # Base QuerySet
     expenses = Expense.objects.filter(user=request.user).order_by('-date')
@@ -967,7 +1012,7 @@ def complete_tutorial(request):
         profile, created = UserProfile.objects.get_or_create(user=request.user)
         profile.has_seen_tutorial = True
         profile.save()
-        return JsonResponse({'status': 'success'})
+        return JsonResponse({'success': True})
     return JsonResponse({'status': 'error'}, status=400)
 
 @login_required

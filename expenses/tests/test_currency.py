@@ -4,6 +4,7 @@ from django.core.cache import cache
 from decimal import Decimal
 from unittest.mock import patch, MagicMock
 import requests
+from datetime import date
 from expenses.models import Expense, Income, UserProfile
 from expenses.utils import get_exchange_rate
 
@@ -125,6 +126,39 @@ class CurrencyConversionTest(TestCase):
         # 'XYZ' is not in our mapping
         rate = get_exchange_rate('XYZ', 'INR')
         self.assertEqual(rate, Decimal('1.0')) # Should fallback gracefully
+
+    @patch('expenses.utils.get_exchange_rate')
+    def test_historical_normalization_on_currency_change(self, mock_get_rate):
+        """Verify that changing user currency re-calculates base_amount for existing records."""
+        # Mock rate: 1 USD -> INR = 80, 1 USD -> USD = 1.0
+        def side_effect(frm, to):
+            if frm == '$' and to == '₹': return Decimal('80.0')
+            if frm == '$' and to == '$': return Decimal('1.0')
+            return Decimal('1.0')
+        mock_get_rate.side_effect = side_effect
+        
+        # Patch models AND view logic to be absolutely sure
+        with patch('expenses.models.get_exchange_rate', side_effect=side_effect):
+            expense = Expense.objects.create(
+                user=self.user,
+                date=date.today(),
+                amount=Decimal('10.00'),
+                currency='$',
+                description='Normalization Test'
+            )
+            # Initial base_amount = 10 * 80 = 800
+            self.assertEqual(expense.base_amount, Decimal('800.00'))
+            
+            # Action: Change user base currency to USD ($)
+            self.user.profile.currency = '$'
+            self.user.profile.save()
+            
+            # Trigger re-normalization
+            expense.save() 
+            
+            expense.refresh_from_db()
+            # New base_amount should be 10.00
+            self.assertEqual(expense.base_amount, Decimal('10.00'))
 
 class CurrencySettingsCollisionTest(TestCase):
     def setUp(self):

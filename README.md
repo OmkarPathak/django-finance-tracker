@@ -17,7 +17,7 @@ You manually track expenses, analyze spending, manage budgets, and stay in contr
 ![Django](https://img.shields.io/badge/Django-4.x-green?labelColor=F0F0E8&style=for-the-badge&color=1d4ed8)
 ![License](https://img.shields.io/badge/license-MIT-blue?labelColor=F0F0E8&style=for-the-badge&color=1d4ed8)
 ![Privacy First](https://img.shields.io/badge/Privacy-First-brightgreen?labelColor=F0F0E8&style=for-the-badge&color=1d4ed8)
-![Coverage](https://img.shields.io/badge/Coverage-74%25-green?labelColor=F0F0E8&style=for-the-badge&color=1d4ed8)
+![Coverage](https://img.shields.io/badge/Coverage-77%25-green?labelColor=F0F0E8&style=for-the-badge&color=1d4ed8)
 
 </div>
 

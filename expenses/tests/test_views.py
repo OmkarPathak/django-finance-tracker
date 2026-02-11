@@ -4,6 +4,7 @@ from django.contrib.auth.models import User
 from expenses.models import Expense, Income, RecurringTransaction, Category
 from datetime import date, timedelta
 from django.utils import timezone
+import json
 
 class BaseViewTest(TestCase):
     def setUp(self):
@@ -12,6 +13,10 @@ class BaseViewTest(TestCase):
         self.client.login(username='testuser', password='password')
         # Create a category because ExpenseForm restricts choices to existing categories
         Category.objects.get_or_create(user=self.user, name='Food')
+        # Mark tutorial as seen to avoid onboarding redirect in general view tests
+        profile = self.user.profile
+        profile.has_seen_tutorial = True
+        profile.save()
 
 class DashboardViewTest(BaseViewTest):
     def test_dashboard_access(self):
@@ -33,6 +38,38 @@ class DashboardViewTest(BaseViewTest):
         target_expenses = response.context['recent_transactions']
         self.assertEqual(len(target_expenses), 1)
         self.assertEqual(target_expenses[0].description, 'Visible')
+
+    def test_dashboard_filters(self):
+        """Test year, month, and date range filters on dashboard."""
+        today = date.today()
+        last_year = today.year - 1
+        
+        # 1. Year Filter
+        Expense.objects.create(user=self.user, date=date(last_year, 1, 1), amount=100, category='Food', description='Last Year', currency='₹')
+        Expense.objects.create(user=self.user, date=today, amount=200, category='Food', description='This Year', currency='₹')
+        
+        response = self.client.get(reverse('home'), {'year': [str(today.year)]})
+        self.assertEqual(len(response.context['recent_transactions']), 1)
+        self.assertEqual(response.context['recent_transactions'][0].description, 'This Year')
+        
+        # 2. Date Range Filter
+        response = self.client.get(reverse('home'), {
+            'start_date': (today - timedelta(days=1)).strftime('%Y-%m-%d'),
+            'end_date': (today + timedelta(days=1)).strftime('%Y-%m-%d')
+        })
+        self.assertEqual(len(response.context['recent_transactions']), 1)
+        self.assertEqual(response.context['recent_transactions'][0].description, 'This Year')
+
+    def test_dashboard_category_merging(self):
+        """Test that categories with leading/trailing whitespace are merged."""
+        Expense.objects.create(user=self.user, date=date.today(), amount=100, category='Food', description='Cat1', currency='₹')
+        Expense.objects.create(user=self.user, date=date.today(), amount=100, category=' Food ', description='Cat2', currency='₹')
+        
+        response = self.client.get(reverse('home'))
+        # category_data should have 'Food' as a single entry with total 200
+        category_data = response.context['category_data']
+        food_entry = next(item for item in category_data if item['category'] == 'Food')
+        self.assertEqual(food_entry['total'], 200)
 
 class ExpenseCRUDTest(BaseViewTest):
     def test_create_expense(self):
@@ -200,3 +237,69 @@ class RecurringTransactionMixinTest(BaseViewTest):
         self.assertTrue(Income.objects.filter(description='Salary (Recurring)').exists())
         rt.refresh_from_db()
         self.assertEqual(rt.last_processed_date, date.today())
+
+class SettingsViewTest(BaseViewTest):
+    def test_language_update(self):
+        url = reverse('language-settings')
+        response = self.client.post(url, {'language': 'mr'})
+        self.assertEqual(response.status_code, 302)
+        self.user.profile.refresh_from_db()
+        self.assertEqual(self.user.profile.language, 'mr')
+
+    def test_complete_tutorial_view(self):
+        # Reset tutorial status
+        profile = self.user.profile
+        profile.has_seen_tutorial = False
+        profile.save()
+        
+        url = reverse('complete-tutorial')
+        response = self.client.post(url)
+        self.assertEqual(response.status_code, 200)
+        data = json.loads(response.content)
+        self.assertTrue(data['success'])
+        profile.refresh_from_db()
+        self.assertTrue(profile.has_seen_tutorial)
+
+class RecurringExpenseTest(BaseViewTest):
+    def test_recurring_expense_on_dashboard(self):
+        """Test that recurring expenses are processed when accessing dashboard."""
+        RecurringTransaction.objects.create(
+            user=self.user,
+            transaction_type='EXPENSE',
+            amount=100,
+            description='Monthly Sub',
+            frequency='MONTHLY',
+            start_date=date.today() - timedelta(days=1),
+            last_processed_date=None,
+            category='Food',
+            currency='₹'
+        )
+        # Hitting home view should trigger processing via RecurringTransactionMixin
+        self.client.get(reverse('home'))
+        self.assertTrue(Expense.objects.filter(description='Monthly Sub (Recurring)').exists())
+
+class DashboardAggregationTest(BaseViewTest):
+    def test_category_limits_on_dashboard(self):
+        """Test that category limits and usage percentages are calculated correctly."""
+        cat = Category.objects.get(user=self.user, name='Food')
+        cat.limit = 1000
+        cat.save()
+        
+        Expense.objects.create(user=self.user, date=date.today(), amount=250, category='Food', description='Lunch', currency='₹')
+        
+        response = self.client.get(reverse('home'))
+        category_limits = response.context['category_limits']
+        food_limit = next(item for item in category_limits if item['name'] == 'Food')
+        
+        self.assertEqual(food_limit['limit'], 1000.0)
+        self.assertEqual(food_limit['total'], 250.0)
+        self.assertEqual(food_limit['used_percent'], 25.0)
+
+    def test_dashboard_no_data_graceful(self):
+        """Test dashboard renders even with no financial data (after tutorial seen)."""
+        Expense.objects.filter(user=self.user).delete()
+        Income.objects.filter(user=self.user).delete()
+        
+        response = self.client.get(reverse('home'))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.context['recent_transactions']), 0)
