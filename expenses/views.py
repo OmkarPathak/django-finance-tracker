@@ -20,8 +20,9 @@ from django.utils import timezone
 from django.utils.translation import gettext as _
 from datetime import datetime, date, timedelta
 import calendar
+from decimal import Decimal
 
-from .models import Expense, Category, Income, RecurringTransaction, UserProfile, SubscriptionPlan, Notification
+from .models import Expense, Category, Income, RecurringTransaction, UserProfile, SubscriptionPlan, Notification, CURRENCY_CHOICES
 from finance_tracker.ai_utils import predict_category_ai
 from .forms import ExpenseForm, IncomeForm, RecurringTransactionForm, ProfileUpdateForm, CustomSignupForm, ContactForm, LanguageUpdateForm
 from allauth.socialaccount.models import SocialAccount
@@ -57,7 +58,10 @@ def create_category_ajax(request):
                 limit = float('inf')
 
             if current_count >= limit:
-                 return JsonResponse({'success': False, 'error': _('Category limit reached (%(limit)s). Please upgrade.') % {'limit': limit}}, status=403)
+                 return JsonResponse({
+                     'success': False, 
+                     'error': _('Category limit reached for your plan (%(limit)s). Upgrade to Pro to unlock unlimited categories, AI insights, and more.') % {'limit': limit}
+                 }, status=403)
 
             category = Category.objects.create(user=request.user, name=name)
             return JsonResponse({'success': True, 'id': category.id, 'name': category.name})
@@ -212,8 +216,116 @@ class RecurringTransactionMixin:
 # Custom signup view to log user in immediately
 class SignUpView(generic.CreateView):
     form_class = CustomSignupForm
-    success_url = reverse_lazy('account_login')
+    success_url = reverse_lazy('onboarding')  # Redirect to onboarding after signup
     template_name = 'registration/signup.html'
+
+class OnboardingView(LoginRequiredMixin, TemplateView):
+    template_name = 'onboarding.html'
+
+    def dispatch(self, request, *args, **kwargs):
+        # Redirect if user has already marked seen tutorial
+        if request.user.profile.has_seen_tutorial:
+            return redirect('home')
+        
+        # Also redirect if they already have BOTH income and expenses (not just one, to allow the flow to continue)
+        has_income = Income.objects.filter(user=request.user).exists()
+        has_expense = Expense.objects.filter(user=request.user).exists()
+        if has_income and has_expense:
+            return redirect('home')
+            
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['currency_choices'] = CURRENCY_CHOICES
+        context['language_choices'] = UserProfile.LANGUAGE_CHOICES
+        return context
+
+    def post(self, request, *args, **kwargs):
+        try:
+            data = json.loads(request.body)
+            step = data.get('step')
+            
+            if step == 'setup':
+                profile = request.user.profile
+                profile.currency = data.get('currency', profile.currency)
+                profile.language = data.get('language', profile.language)
+                profile.save()
+                return JsonResponse({'success': True})
+            
+            elif step == 'income':
+                # Manually handle idempotency to avoid MultipleObjectsReturned if duplicates exist
+                income_qs = Income.objects.filter(
+                    user=request.user,
+                    date=date.today(),
+                    source=data.get('source', 'Initial Income')
+                )
+                if income_qs.exists():
+                    income = income_qs.first()
+                    income.amount = Decimal(data.get('amount', 0))
+                    income.currency = request.user.profile.currency
+                    income.save()
+                else:
+                    Income.objects.create(
+                        user=request.user,
+                        date=date.today(),
+                        source=data.get('source', 'Initial Income'),
+                        amount=Decimal(data.get('amount', 0)),
+                        currency=request.user.profile.currency
+                    )
+                return JsonResponse({'success': True})
+            
+            elif step == 'budget':
+                categories = data.get('categories', [])
+                for cat_data in categories:
+                    name = cat_data.get('name')
+                    limit = cat_data.get('limit')
+                    if name:
+                        Category.objects.update_or_create(
+                            user=request.user,
+                            name=name,
+                            defaults={'limit': Decimal(limit) if limit else None}
+                        )
+                return JsonResponse({'success': True})
+            
+            elif step == 'expense':
+                # Manually handle idempotency to avoid MultipleObjectsReturned if duplicates exist
+                expense_qs = Expense.objects.filter(
+                    user=request.user,
+                    date=date.today(),
+                    description=data.get('description', 'Initial Expense'),
+                    category=data.get('category', 'Miscellaneous')
+                )
+                if expense_qs.exists():
+                    expense = expense_qs.first()
+                    expense.amount = Decimal(data.get('amount', 0))
+                    expense.currency = request.user.profile.currency
+                    expense.save()
+                else:
+                    Expense.objects.create(
+                        user=request.user,
+                        date=date.today(),
+                        description=data.get('description', 'Initial Expense'),
+                        category=data.get('category', 'Miscellaneous'),
+                        amount=Decimal(data.get('amount', 0)),
+                        currency=request.user.profile.currency
+                    )
+                # Mark onboarding as complete
+                profile = request.user.profile
+                profile.has_seen_tutorial = True
+                profile.save()
+                return JsonResponse({'success': True})
+
+            elif step == 'skip':
+                profile = request.user.profile
+                profile.has_seen_tutorial = True
+                profile.save()
+                return JsonResponse({'success': True})
+                
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)}, status=400)
+        
+        return JsonResponse({'success': False, 'error': 'Invalid step'}, status=400)
 
 class LandingPageView(TemplateView):
     template_name = 'landing.html'
@@ -237,6 +349,56 @@ def home_view(request):
     """
     Dashboard view with filters and multiple charts.
     """
+    # Defensive check: Redirect to onboarding if user has NO data AND hasn't finished the flow
+    try:
+        if not request.user.profile.has_seen_tutorial:
+            has_any_data = Expense.objects.filter(user=request.user).exists() or Income.objects.filter(user=request.user).exists()
+            if not has_any_data:
+                return redirect('onboarding')
+    except UserProfile.DoesNotExist:
+        # Ensure profile exists, then redirect
+        UserProfile.objects.get_or_create(user=self.request.user if hasattr(self, 'request') else request.user)
+        return redirect('onboarding')
+
+    # Process recurring transactions
+    from expenses.models import RecurringTransaction
+    recurring_txs = RecurringTransaction.objects.filter(user=request.user, is_active=True)
+    today = date.today()
+    for rt in recurring_txs:
+        if not rt.last_processed_date:
+            current_date = rt.start_date
+        else:
+            current_date = rt.get_next_date(rt.last_processed_date, rt.frequency)
+
+        while current_date <= today:
+            description = f"{rt.description} (Recurring)"
+            if rt.transaction_type == 'EXPENSE':
+                Expense.objects.get_or_create(
+                    user=request.user,
+                    date=current_date,
+                    amount=rt.amount,
+                    currency=rt.currency,
+                    category=rt.category or 'Uncategorized',
+                    defaults={
+                        'description': description,
+                        'payment_method': rt.payment_method
+                    }
+                )
+            elif rt.transaction_type == 'INCOME':
+                Income.objects.get_or_create(
+                    user=request.user,
+                    date=current_date,
+                    amount=rt.amount,
+                    currency=rt.currency,
+                    source=rt.source or 'Uncategorized',
+                    defaults={
+                        'description': description
+                    }
+                )
+            rt.last_processed_date = current_date
+            rt.save()
+            current_date = rt.get_next_date(current_date, rt.frequency)
+
     # Base QuerySet
     expenses = Expense.objects.filter(user=request.user).order_by('-date')
     
@@ -850,7 +1012,7 @@ def complete_tutorial(request):
         profile, created = UserProfile.objects.get_or_create(user=request.user)
         profile.has_seen_tutorial = True
         profile.save()
-        return JsonResponse({'status': 'success'})
+        return JsonResponse({'success': True})
     return JsonResponse({'status': 'error'}, status=400)
 
 @login_required
@@ -1220,7 +1382,33 @@ class CategoryCreateView(LoginRequiredMixin, generic.CreateView):
     template_name = 'expenses/category_form.html'
     success_url = reverse_lazy('category-list')
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # Check Limits
+        current_count = Category.objects.filter(user=self.request.user).count()
+        limit = 5 # Free
+        if self.request.user.profile.is_plus:
+            limit = 10
+        if self.request.user.profile.is_pro:
+            limit = float('inf')
+
+        context['reached_limit'] = current_count >= limit
+        context['category_limit'] = limit
+        return context
+
     def form_valid(self, form):
+        # Double check limit on POST
+        current_count = Category.objects.filter(user=self.request.user).count()
+        limit = 5
+        if self.request.user.profile.is_plus:
+            limit = 10
+        if self.request.user.profile.is_pro:
+            limit = float('inf')
+        
+        if current_count >= limit:
+            messages.error(self.request, _("Category limit reached. Please upgrade to add more."))
+            return redirect('category-create')
+
         try:
             form.instance.user = self.request.user
             return super().form_valid(form)

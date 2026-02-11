@@ -19,36 +19,6 @@
         transition: background-color 0.2s ease;
     }
 </style>
-{% if is_new_user %}
-<div class="row align-items-center justify-content-center text-center fade-in" style="min-height: 80vh;">
-    <div class="col-md-8 col-lg-6">
-            <div class="card border-0 shadow-lg bg-body-tertiary p-5 rounded-4" id="hero-card">
-                <div class="mb-4">
-                    <div class="d-inline-flex p-4 rounded-circle bg-primary bg-opacity-10 mb-3 text-primary">
-                        <i class="bi bi-rocket-takeoff-fill display-1"></i>
-                    </div>
-                </div>
-                <script>window.isOnboarding = true;</script>
-                <h2 class="fw-bold mb-3 display-6">{% trans "Welcome to TrackMyRupee!" %}</h2>
-                <p class="h5 text-muted mb-5 fw-normal">{% trans "Your journey to financial freedom starts here. Let's record your first transaction to get the dashboard moving." %}</p>
-                
-                <div class="d-flex flex-column flex-sm-row justify-content-center gap-3">
-                    <a href="{% url 'income-create' %}" id="hero-income-btn" class="btn btn-success btn-lg px-4 py-3 rounded-pill fw-bold hover-scale shadow-sm">
-                        <i class="bi bi-wallet2 me-2"></i> {% trans "Record Income" %}
-                    </a>
-                    <a href="{% url 'expense-create' %}" id="hero-expense-btn" class="btn btn-danger btn-lg px-4 py-3 rounded-pill fw-bold hover-scale shadow-sm">
-                        <i class="bi bi-cart-plus me-2"></i> {% trans "Add Expense" %}
-                    </a>
-                </div>
-            
-            <p class="mt-4 small text-muted opacity-75">
-                <i class="bi bi-info-circle me-1"></i> 
-                Tip: Start with your monthly salary or a recent purchase.
-            </p>
-        </div>
-    </div>
-</div>
-{% else %}
 <div class="d-flex flex-column flex-md-row justify-content-between align-items-center mb-4 gap-3 fade-in" style="position: relative; z-index: 100;">
     <!-- Mobile Header (One Line) -->
     <div class="d-flex d-md-none justify-content-between align-items-center w-100">
@@ -638,7 +608,8 @@
 </div>
 {% include 'partials/savings_modal.html' %}
 
-{% endif %}
+
+
 
 {{ categories|json_script:"categories-data" }}
 {{ category_amounts|json_script:"category-amounts-data" }}

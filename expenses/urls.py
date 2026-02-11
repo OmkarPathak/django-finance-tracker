@@ -36,6 +36,7 @@ urlpatterns = [
     path('recurring/', views.RecurringTransactionListView.as_view(), name='recurring-list'),
     path('recurring/manage/', views.RecurringTransactionManageView.as_view(), name='recurring-manage'),
     path('pricing/', views.PricingView.as_view(), name='pricing'),
+    path('onboarding/', views.OnboardingView.as_view(), name='onboarding'),
     path('recurring/create/', views.RecurringTransactionCreateView.as_view(), name='recurring-create'),
     path('recurring/<int:pk>/edit/', views.RecurringTransactionUpdateView.as_view(), name='recurring-edit'),
     path('recurring/<int:pk>/delete/', views.RecurringTransactionDeleteView.as_view(), name='recurring-delete'),

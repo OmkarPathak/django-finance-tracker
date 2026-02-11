@@ -225,9 +225,6 @@ AUTHENTICATION_BACKENDS = [
 
 SITE_ID = int(os.environ.get('SITE_ID', 1))
 
-# Account Settings
-ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
-
 # Google Analytics
 GOOGLE_ANALYTICS_ID = os.environ.get('GOOGLE_ANALYTICS_ID')
 ACCOUNT_EMAIL_REQUIRED = True
@@ -295,6 +292,11 @@ if not DEBUG:
 
     # Ensure Allauth builds HTTPS links
     ACCOUNT_DEFAULT_HTTP_PROTOCOL = 'https'
+
+    # Account Settings
+    ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
+else:
+    ACCOUNT_EMAIL_VERIFICATION = 'none'
 
 # Google reCAPTCHA v3 Settings
 RECAPTCHA_PUBLIC_KEY = os.environ.get('RECAPTCHA_PUBLIC_KEY', '')

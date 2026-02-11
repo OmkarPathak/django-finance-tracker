@@ -8,7 +8,7 @@
     </div>
     <div>
         <p class="text-muted small mb-4">{% trans "Select your preferred currency symbol to be used across the application." %}</p>
-        <form method="post" class="needs-validation">
+        <form id="currencyForm" method="post" class="needs-validation">
             {% csrf_token %}
             <div class="mb-4">
                 <label for="{{ form.currency.id_for_label }}" class="form-label fw-semibold">{% trans "Select Currency Symbol" %}</label>
@@ -18,15 +18,6 @@
                         {{ form.currency.errors }}
                     </div>
                 {% endif %}
-            </div>
-            
-            <div class="alert alert-info border-0 shadow-sm mb-4">
-                <div class="d-flex">
-                    <i class="bi bi-info-circle-fill me-2 fs-5"></i>
-                    <div>
-                        <strong>{% trans "Display Currency:" %}</strong> {% trans "This symbol will be displayed next to all amount values across the application (Income, Expenses, Budgets, and Charts)." %}
-                    </div>
-                </div>
             </div>
 
             <div class="alert alert-warning border-0 shadow-sm mb-4">
@@ -40,21 +31,69 @@
             </div>
 
             <div class="d-grid d-md-flex justify-content-md-end">
-                <button type="submit" class="btn btn-primary px-4">
+                <button type="button" id="submitBtn" class="btn btn-primary px-4">
                     <i class="bi bi-check2-circle me-1"></i> {% trans "Save Preference" %}
                 </button>
             </div>
         </form>
     </div>
 </div>
+{% endblock %}
 
+{% block extra_body %}
+<!-- Confirmation Modal -->
+<div class="modal fade" id="currencyConfirmModal" tabindex="-1" aria-labelledby="currencyConfirmModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-4">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold text-danger" id="currencyConfirmModalLabel">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>{% trans "Confirm Currency Change" %}
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body py-4">
+                <p class="mb-3">{% trans "You are about to change your base currency. This is a significant action that will:" %}</p>
+                <ul class="mb-0">
+                    <li class="mb-2"><strong>{% trans "Re-normalize Historical Data:" %}</strong> {% trans "All your past income and expense records will be re-calculated based on current exchange rates." %}</li>
+                    <li><strong>{% trans "Change Dashboard Display:" %}</strong> {% trans "Every amount on your dashboard and reports will now use the new currency symbol." %}</li>
+                </ul>
+            </div>
+            <div class="modal-footer border-0 pt-0">
+                <button type="button" class="btn btn-link text-muted text-decoration-none" data-bs-dismiss="modal">{% trans "Cancel" %}</button>
+                <button type="button" id="confirmSubmit" class="btn btn-danger rounded-pill px-4 fw-bold">{% trans "Yes, Update Everything" %}</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
 <script>
-    // Style the select input
     document.addEventListener('DOMContentLoaded', function() {
         const select = document.querySelector('select');
+        const form = document.getElementById('currencyForm');
+        const submitBtn = document.getElementById('submitBtn');
+        const confirmSubmit = document.getElementById('confirmSubmit');
+        const initialCurrency = select.value;
+        const confirmModal = new bootstrap.Modal(document.getElementById('currencyConfirmModal'));
+
+        // Style the select input
         if (select) {
             select.classList.add('form-select');
         }
+
+        submitBtn.addEventListener('click', function() {
+            // Only show modal if currency actually changed
+            if (select.value !== initialCurrency) {
+                confirmModal.show();
+            } else {
+                form.submit();
+            }
+        });
+
+        confirmSubmit.addEventListener('click', function() {
+            form.submit();
+        });
     });
 </script>
 {% endblock %}
