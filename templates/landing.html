@@ -383,11 +383,11 @@
                         <span>Stop Guessing. Start Growing.</span>
                     </div>
                     <h1 class="display-3 fw-bold mb-4">
-                        Know Exactly Where Every<br>
-                        <span class="text-gradient">Rupee Goes.</span>
+                        Know Where Every Rupee Goes &<br>
+                        <span class="text-gradient">Predict Where It Will Be.</span>
                     </h1>
                     <p class="lead text-muted mb-5 pe-lg-5">
-                        Master your finances with clarity. TrackMyRupee helps you visualize spending, spot trends, and control your budget—all in one simple dashboard.
+                        Master your finances with clarity. Track spending, spot trends, and <strong>forecast your cashflow</strong> months in advance—all in one dashboard.
                     </p>
                     <div class="d-flex flex-column flex-sm-row gap-3 justify-content-center justify-content-lg-start">
                         <a href="{% url 'signup' %}" class="cta-button text-decoration-none">Start Your Journey</a>
@@ -477,8 +477,85 @@
             </div>
         </div>
     </section>
-
-    <!-- The Process Section -->
+    <!-- Financial Foresight Section (New) -->
+    <section class="py-5 overflow-hidden">
+        <div class="container py-5">
+            <div class="row align-items-center">
+                <div class="col-lg-6 order-lg-2 mb-5 mb-lg-0" data-aos="fade-left">
+                    <div class="position-relative">
+                        <div class="card border-0 shadow-lg rounded-4 overflow-hidden bg-body-tertiary">
+                             <div class="card-header bg-transparent border-bottom py-3 d-flex justify-content-between align-items-center">
+                                <span class="fw-bold small text-uppercase text-muted">{% trans "Cashflow Forecast" %}</span>
+                                <span class="badge bg-success bg-opacity-10 text-success rounded-pill">+₹24,500 {% trans "Projected" %}</span>
+                            </div>
+                            <div class="card-body p-4 position-relative" style="height: 300px;">
+                                <!-- CSS-only Mock Chart -->
+                                <div class="d-flex align-items-end justify-content-between h-100 px-2 gap-2">
+                                    <div class="w-100 bg-primary bg-opacity-10 rounded-top" style="height: 40%;"></div>
+                                    <div class="w-100 bg-primary bg-opacity-25 rounded-top" style="height: 55%;"></div>
+                                    <div class="w-100 bg-primary bg-opacity-50 rounded-top" style="height: 45%;"></div>
+                                    <div class="w-100 bg-primary bg-opacity-75 rounded-top" style="height: 65%;"></div>
+                                    <div class="w-100 bg-primary rounded-top" style="height: 80%;"></div>
+                                    <div class="w-100 bg-success rounded-top position-relative" style="height: 90%;">
+                                        <div class="position-absolute top-0 start-50 translate-middle-x mt-2 text-white small fw-bold">✓</div>
+                                    </div>
+                                </div>
+                                <!-- Trend Line (SVG) -->
+                                <svg class="position-absolute top-0 start-0 w-100 h-100" style="pointer-events: none;">
+                                    <path d="M 20 200 Q 150 180 250 120 T 480 80" fill="none" stroke="#00f260" stroke-width="3" stroke-linecap="round" stroke-dasharray="1000" style="opacity: 0.8;"></path>
+                                </svg>
+                            </div>
+                        </div>
+                         <!-- Floating Badge -->
+                         <div class="position-absolute bottom-0 start-0 translate-middle-x mb-4 ms-4 bg-white dark-shadow p-3 rounded-4 shadow-lg border border-light d-flex align-items-center gap-3 floating-ui" style="background: var(--surface-color);">
+                            <div class="icon-shape-sm bg-danger bg-opacity-10 text-danger rounded-circle p-2">
+                                <i class="bi bi-exclamation-triangle-fill"></i>
+                            </div>
+                            <div>
+                                <small class="d-block text-muted fw-bold" style="font-size: 0.7rem;">{% trans "ALERT" %}</small>
+                                <span class="fw-bold text-danger">{% trans "High Expenses in July" %}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6 order-lg-1" data-aos="fade-right">
+                    <span class="badge rounded-pill bg-info bg-opacity-10 text-info px-3 py-2 mb-3 fw-bold">
+                        <i class="bi bi-graph-up-arrow me-1"></i> {% trans "Financial Foresight" %}
+                    </span>
+                    <h2 class="display-4 fw-bold mb-4">Stop Reacting. <br><span class="text-gradient">Start Predicting.</span></h2>
+                    <p class="lead text-muted mb-4">
+                        Most apps tell you where your money went. <strong>TrackMyRupee tells you where it's going.</strong>
+                    </p>
+                    <ul class="list-unstyled mb-5">
+                        <li class="mb-3 d-flex align-items-start">
+                            <i class="bi bi-check-circle-fill text-success fs-5 me-3 mt-1"></i>
+                            <div>
+                                <h5 class="fw-bold mb-1">{% trans "6-Month Cashflow Forecasts" %}</h5>
+                                <p class="text-muted small mb-0">See exactly how your savings will grow based on your recurring habits.</p>
+                            </div>
+                        </li>
+                        <li class="mb-3 d-flex align-items-start">
+                            <i class="bi bi-check-circle-fill text-success fs-5 me-3 mt-1"></i>
+                            <div>
+                                <h5 class="fw-bold mb-1">{% trans "Spike Detection" %}</h5>
+                                <p class="text-muted small mb-0">Get alerted about that annual insurance payment <i>before</i> it drains your account.</p>
+                            </div>
+                        </li>
+                         <li class="d-flex align-items-start">
+                            <i class="bi bi-check-circle-fill text-success fs-5 me-3 mt-1"></i>
+                            <div>
+                                <h5 class="fw-bold mb-1">{% trans "Smart Trends" %}</h5>
+                                <p class="text-muted small mb-0">Understand your Balance Rate and improve your financial health score.</p>
+                            </div>
+                        </li>
+                    </ul>
+                    <a href="{% url 'signup' %}" class="btn btn-outline-primary rounded-pill px-4 py-3 fw-bold">
+                        {% trans "Get Pro Insights" %} <i class="bi bi-arrow-right ms-2"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
     <section class="process-section overflow-hidden">
         <div class="container py-4">
             <div class="text-center mb-5" data-aos="fade-down">

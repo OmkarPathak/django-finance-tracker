@@ -55,6 +55,29 @@ body {
   vertical-align: -0.125em;
 }
 
+/* Icon Shapes for dashboard/analytics */
+.icon-shape {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  vertical-align: middle;
+}
+
+.icon-shape-sm {
+  width: 48px;
+  height: 48px;
+}
+
+.icon-shape-md {
+  width: 64px;
+  height: 64px;
+}
+
+.icon-shape-lg {
+  width: 80px;
+  height: 80px;
+}
+
 /* --- Global Dashboard Theme Overrides --- */
 
 :root {

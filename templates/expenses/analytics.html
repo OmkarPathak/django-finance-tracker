@@ -21,6 +21,44 @@
     </div>
 </div>
 
+<!-- Financial Health Score Section -->
+<div class="row mb-4 animate__animated animate__fadeInUp">
+    <div class="col-12">
+        <div class="card border-0 shadow-sm bg-{{ health_color }} bg-opacity-10">
+            <div class="card-body p-4">
+                <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+                    <div class="d-flex align-items-center">
+                        <div class="icon-shape icon-shape-md bg-white text-{{ health_color }} rounded-circle me-3 shadow-sm" style="width: 60px; height: 60px; display: flex; align-items: center; justify-content: center;">
+                            <i class="bi bi-heart-pulse-fill fs-3"></i>
+                        </div>
+                        <div>
+                            <h5 class="fw-bold mb-1">{% trans "Financial Health Score" %}</h5>
+                            <div class="d-flex align-items-center gap-2">
+                                <h2 class="mb-0 fw-bold text-{{ health_color }}">{{ health_score }}/100</h2>
+                                <span class="badge bg-white text-{{ health_color }} border border-{{ health_color }} rounded-pill px-3">{{ health_label }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="flex-grow-1 ms-md-4 border-start border-{{ health_color }} border-opacity-25 ps-md-4" style="max-width: 700px;">
+                        <h6 class="fw-bold text-{{ health_color }} mb-2"><i class="bi bi-magic me-1"></i> {% trans "AI Insights" %}</h6>
+                        {% if insights %}
+                            {% for insight in insights %}
+                            <div class="d-flex align-items-start mb-2">
+                                <i class="bi bi-check-circle-fill text-{{ health_color }} me-2 mt-1 small"></i>
+                                <p class="mb-0 text-muted small fw-medium">{{ insight }}</p>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                             <p class="mb-0 text-muted small">{% trans "Track more expenses to generate AI insights." %}</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Key Metrics Row -->
 <div class="row g-4 mb-4 animate__animated animate__fadeInUp">
     <div class="col-md-4">
@@ -84,8 +122,11 @@
     <!-- Line Chart -->
     <div class="col-lg-8">
         <div class="card border-0 shadow-lg h-100">
-            <div class="card-header bg-transparent border-bottom py-3">
-                <h5 class="fw-bold mb-0">{% trans "Income vs Expenses Analysis" %}</h5>
+            <div class="card-header bg-transparent border-bottom py-3 d-flex justify-content-between align-items-center">
+                <h5 class="fw-bold mb-0">{% trans "Income vs Expenses" %}</h5>
+                <span class="text-muted" data-bs-toggle="tooltip" title="{% trans 'Green bars show what you earned, Red bars show what you spent. The Blue line is your Net Savings.' %}">
+                    <i class="bi bi-question-circle"></i>
+                </span>
             </div>
             <div class="card-body">
                 <div style="height: 350px;">
@@ -104,8 +145,11 @@
     <!-- Donut Chart -->
     <div class="col-lg-4">
         <div class="card border-0 shadow-lg h-100">
-            <div class="card-header bg-transparent border-bottom py-3">
-                <h5 class="fw-bold mb-0">{% trans "Spending by Category" %} ({% now "Y" %})</h5>
+            <div class="card-header bg-transparent border-bottom py-3 d-flex justify-content-between align-items-center">
+                <h5 class="fw-bold mb-0">{% trans "Spending" %} ({% now "Y" %})</h5>
+                 <span class="text-muted" data-bs-toggle="tooltip" title="{% trans 'Breakdown of where your money went this year. The biggest slice is your biggest expense category.' %}">
+                    <i class="bi bi-question-circle"></i>
+                </span>
             </div>
             <div class="card-body d-flex flex-column align-items-center justify-content-center position-relative">
                 <div style="height: 300px; width: 100%;">
@@ -148,11 +192,14 @@
 <div class="row animate__animated animate__fadeInUp mt-4" style="animation-delay: 0.3s;">
     <div class="col-12">
         <div class="card border-0 shadow-lg mb-4">
-             <div class="card-header bg-transparent border-bottom py-3 d-flex justify-content-between align-items-center">
-                <div>
-                    <h5 class="fw-bold mb-0">{% trans "Cashflow Forecast (Next 6 Months)" %}</h5>
+            <div class="card-header bg-transparent border-bottom py-3 d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center gap-2">
+                    <h5 class="fw-bold mb-0">{% trans "Cashflow Forecast" %}</h5>
+                     <span class="text-muted" data-bs-toggle="tooltip" title="{% trans 'Projected based on your 3-month average + active recurring bills. See if you will save or overspend in future months.' %}">
+                        <i class="bi bi-question-circle"></i>
+                    </span>
                 </div>
-                <span class="badge bg-info bg-opacity-10 text-info rounded-pill">{% trans "Projected" %}</span>
+                <span class="badge bg-info bg-opacity-10 text-info rounded-pill">{% trans "Next 6 Months" %}</span>
             </div>
             <div class="card-body">
                  <div style="height: 350px;">
@@ -507,6 +554,12 @@
             plugins: [drawValuesPlugin] // Re-use the value drawer
         });
 
+        // Init Tooltips (Added for Contextual Help)
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl)
+        })
+
     });
 </script>
 
@@ -540,6 +593,12 @@
 
     <script>
         document.addEventListener("DOMContentLoaded", function() {
+            // Init Tooltips
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+            var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+              return new bootstrap.Tooltip(tooltipTriggerEl)
+            })
+
             var myModal = new bootstrap.Modal(document.getElementById('comparePlansModal'), {
                 backdrop: 'static',
                 keyboard: false

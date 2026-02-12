@@ -2672,6 +2672,59 @@ class AnalyticsView(LoginRequiredMixin, TemplateView):
         if months_counted > 0:
             avg_income /= months_counted
             avg_expense /= months_counted
+
+        # ---------------------------------------------------------
+        # 5. Financial Health Score & Insights
+        # ---------------------------------------------------------
+        balance_rate = context.get('avg_balance_rate', 0)
+        health_score = 0
+        health_label = ""
+        health_color = ""
+        insights = []
+        
+        # Score Logic
+        if balance_rate < 0:
+            health_score = 10
+            health_label = _("Critical")
+            health_color = "danger"
+            insights.append(_("You are spending more than you earn. Review your recurring expenses immediately."))
+        elif balance_rate < 10:
+            health_score = 40
+            health_label = _("Vulnerable")
+            health_color = "warning"
+            insights.append(_("Your savings buffer is thin. Try to cut down on discretionary spending."))
+        elif balance_rate < 30:
+            health_score = 70
+            health_label = _("Healthy")
+            health_color = "info"
+            insights.append(_("You're doing well! Aim for a 30% savings rate to accelerate your goals."))
+        else:
+            health_score = 95
+            health_label = _("Excellent")
+            health_color = "success"
+            insights.append(_("Outstanding! You're a master saver. Consider investing your surplus."))
+            
+        # Category Insight
+        if cat_data:
+            top_cat = cat_labels[0]
+            top_cat_amount = cat_data[0] # float
+            
+            # Use ytd_income_agg only if it is > 0
+            if ytd_income_agg > 0:
+                # Type cast check: top_cat_amount is float (from cat_data list cast above)
+                # ytd_income_agg comes from aggregate Sum(...) so it is Decimal
+                try:
+                    denominator = float(ytd_income_agg)
+                    cat_percent = (top_cat_amount / denominator) * 100
+                    if cat_percent > 30:
+                         insights.append(_(f"Caution: '{top_cat}' is consuming {cat_percent:.0f}% of your income."))
+                except (ValueError, TypeError):
+                    pass
+            
+        context['health_score'] = health_score
+        context['health_label'] = health_label
+        context['health_color'] = health_color
+        context['insights'] = insights
             
         # B. Project Next 6 Months (Dynamic)
         active_recurring = RecurringTransaction.objects.filter(user=user, is_active=True)
