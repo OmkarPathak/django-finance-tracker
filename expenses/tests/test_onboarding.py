@@ -12,6 +12,14 @@ class OnboardingViewTest(TestCase):
         self.client.login(username='onboarduser', password='password')
         self.url = reverse('onboarding')
 
+    def test_onboarding_access_unauthenticated(self):
+        """Unauthenticated users should be redirected to login, not crash."""
+        self.client.logout()
+        response = self.client.get(self.url)
+        # LoginRequiredMixin redirects to /accounts/login/?next=/onboarding/
+        self.assertEqual(response.status_code, 302)
+        self.assertIn('/accounts/login/', response.url)
+
     def test_onboarding_redirection_new_user(self):
         """New users should be redirected to onboarding from home."""
         response = self.client.get(reverse('home'))

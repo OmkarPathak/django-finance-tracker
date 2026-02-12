@@ -223,6 +223,9 @@ class OnboardingView(LoginRequiredMixin, TemplateView):
     template_name = 'onboarding.html'
 
     def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return super().dispatch(request, *args, **kwargs)
+
         # Redirect if user has already marked seen tutorial
         if request.user.profile.has_seen_tutorial:
             return redirect('home')
@@ -2433,8 +2436,13 @@ class ContactView(View):
 def predict_category_view(request):
     """
     AJAX view to predict category based on description.
+    Only available on PRO tier (AI Insights).
     """
     if request.method == 'GET':
+        # Gating: Only for Pro users
+        if not request.user.profile.is_pro:
+            return JsonResponse({'category': None, 'error': 'AI Insights is a Pro feature.'}, status=403)
+
         description = request.GET.get('description', '').strip()
         if not description:
              return JsonResponse({'category': None})
