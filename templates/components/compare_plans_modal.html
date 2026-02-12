@@ -12,30 +12,44 @@
                 
                 <h2 class="fw-bold mb-3">{% trans "Ready to Level Up?" %}</h2>
                 <p class="text-muted lead mb-4">
-                    {% trans "You've reached the limit for categories on the Free plan." %}<br>
+                    {% if user.profile.is_plus %}
+                        {% trans "Unlock Advanced Analytics & Forecasting with Pro." %}<br>
+                    {% else %}
+                        {% trans "You've reached the limit for categories on the Free plan." %}<br>
+                    {% endif %}
                     <span class="text-primary fw-bold">{% trans "Unlock Premium features and Export for just ₹25/month" %}</span>
                 </p>
 
                 <div class="row g-4 mb-4 text-start">
                     <div class="col-md-6">
                         <div class="p-3 rounded-3 bg-body-tertiary h-100">
-                            <h5 class="fw-bold mb-3 small text-uppercase text-muted">{% trans "Free Plan" %}</h5>
-                            <ul class="list-unstyled mb-0">
-                                <li class="mb-2 small text-muted"><i class="bi bi-check2 text-success me-2"></i> {% trans "5 Categories" %}</li>
-                                <li class="mb-2 small text-muted"><i class="bi bi-check2 text-success me-2"></i> {% trans "Basic Analytics" %}</li>
-                                <li class="mb-2 small text-muted opacity-50"><i class="bi bi-x text-danger me-2"></i> {% trans "No AI Insights" %}</li>
-                                <li class="mb-0 small text-muted opacity-50"><i class="bi bi-x text-danger me-2"></i> {% trans "No CSV/Excel Export" %}</li>
-                            </ul>
+                            {% if user.profile.is_plus %}
+                                <h5 class="fw-bold mb-3 small text-uppercase text-muted">{% trans "Current: Plus Plan" %}</h5>
+                                <ul class="list-unstyled mb-0">
+                                    <li class="mb-2 small text-muted"><i class="bi bi-check2 text-success me-2"></i> {% trans "Unlimited Categories" %}</li>
+                                    <li class="mb-2 small text-muted"><i class="bi bi-check2 text-success me-2"></i> {% trans "Basic Analytics" %}</li>
+                                    <li class="mb-2 small text-muted opacity-50"><i class="bi bi-x text-danger me-2"></i> {% trans "No Advanced Forecasts" %}</li>
+                                    <li class="mb-0 small text-muted opacity-50"><i class="bi bi-x text-danger me-2"></i> {% trans "Limited Exports" %}</li>
+                                </ul>
+                            {% else %}
+                                <h5 class="fw-bold mb-3 small text-uppercase text-muted">{% trans "Free Plan" %}</h5>
+                                <ul class="list-unstyled mb-0">
+                                    <li class="mb-2 small text-muted"><i class="bi bi-check2 text-success me-2"></i> {% trans "5 Categories" %}</li>
+                                    <li class="mb-2 small text-muted"><i class="bi bi-check2 text-success me-2"></i> {% trans "Basic Analytics" %}</li>
+                                    <li class="mb-2 small text-muted opacity-50"><i class="bi bi-x text-danger me-2"></i> {% trans "No AI Insights" %}</li>
+                                    <li class="mb-0 small text-muted opacity-50"><i class="bi bi-x text-danger me-2"></i> {% trans "No CSV/Excel Export" %}</li>
+                                </ul>
+                            {% endif %}
                         </div>
                     </div>
                     <div class="col-md-6">
                         <div class="p-3 rounded-3 bg-primary bg-opacity-10 border border-primary border-opacity-25 h-100">
                             <h5 class="fw-bold mb-3 small text-uppercase text-primary">{% trans "Pro Plan" %}</h5>
                             <ul class="list-unstyled mb-0">
-                                <li class="mb-2 small"><i class="bi bi-check2-all text-primary me-2"></i> <strong>{% trans "Unlimited Categories" %}</strong></li>
-                                <li class="mb-2 small"><i class="bi bi-check2-all text-primary me-2"></i> <strong>{% trans "Premium Features" %}</strong></li>
+                                <li class="mb-2 small"><i class="bi bi-check2-all text-primary me-2"></i> <strong>{% trans "Advanced Analytics" %}</strong></li>
+                                <li class="mb-2 small"><i class="bi bi-check2-all text-primary me-2"></i> <strong>{% trans "Cashflow Forecasts" %}</strong></li>
                                 <li class="mb-2 small"><i class="bi bi-check2-all text-primary me-2"></i> <strong>{% trans "Unlimited Exports" %}</strong></li>
-                                <li class="mb-0 small"><i class="bi bi-check2-all text-primary me-2"></i> {% trans "Email Reminders" %}</li>
+                                <li class="mb-0 small"><i class="bi bi-check2-all text-primary me-2"></i> {% trans "Priority Support" %}</li>
                             </ul>
                         </div>
                     </div>

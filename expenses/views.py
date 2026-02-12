@@ -2517,6 +2517,12 @@ class AnalyticsView(LoginRequiredMixin, TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         user = self.request.user
+        
+        # Check for Pro Access
+        if not hasattr(user, 'profile') or not user.profile.is_pro:
+            context['is_locked'] = True
+            return context
+        
         today = timezone.now().date()
         
         # 1. Monthly Trends (Last 12 Months)
@@ -2627,5 +2633,172 @@ class AnalyticsView(LoginRequiredMixin, TemplateView):
         else:
             context['avg_balance_rate'] = 0
             
+        # ---------------------------------------------------------
+        # 4. Cashflow Forecasting (Next 6 Months)
+        # ---------------------------------------------------------
+        
+        # A. Calculate Historical Average (Last 3 completed months)
+        # We need completed months to avoid partial data skewing
+        avg_income = 0
+        avg_expense = 0
+        months_counted = 0
+        
+        # Iterate back 3 months
+        for i in range(1, 4):
+            # Calculate past month/year
+            # e.g. If now is May, we want April, March, Feb
+            past_date = today.replace(day=1) - timedelta(days=20*i) # rough jump back
+            # normalize to 1st of that month
+            past_date = past_date.replace(day=1)
+            
+            # Re-calculate cleanly
+            # If today is 2023-05-15
+            # i=1 -> 2023-04-01
+            # i=2 -> 2023-03-01
+            # i=3 -> 2023-02-01
+            year = today.year
+            month = today.month - i
+            while month < 1:
+                month += 12
+                year -= 1
+            
+            p_income = Income.objects.filter(user=user, date__year=year, date__month=month).aggregate(Sum('base_amount'))['base_amount__sum'] or 0
+            p_expense = Expense.objects.filter(user=user, date__year=year, date__month=month).aggregate(Sum('base_amount'))['base_amount__sum'] or 0
+            
+            avg_income += p_income
+            avg_expense += p_expense
+            months_counted += 1
+            
+        if months_counted > 0:
+            avg_income /= months_counted
+            avg_expense /= months_counted
+
+        # ---------------------------------------------------------
+        # 5. Financial Health Score & Insights
+        # ---------------------------------------------------------
+        balance_rate = context.get('avg_balance_rate', 0)
+        health_score = 0
+        health_label = ""
+        health_color = ""
+        insights = []
+        
+        # Score Logic
+        if balance_rate < 0:
+            health_score = 10
+            health_label = _("Critical")
+            health_color = "danger"
+            insights.append(_("You are spending more than you earn. Review your recurring expenses immediately."))
+        elif balance_rate < 10:
+            health_score = 40
+            health_label = _("Vulnerable")
+            health_color = "warning"
+            insights.append(_("Your savings buffer is thin. Try to cut down on discretionary spending."))
+        elif balance_rate < 30:
+            health_score = 70
+            health_label = _("Healthy")
+            health_color = "info"
+            insights.append(_("You're doing well! Aim for a 30% savings rate to accelerate your goals."))
+        else:
+            health_score = 95
+            health_label = _("Excellent")
+            health_color = "success"
+            insights.append(_("Outstanding! You're a master saver. Consider investing your surplus."))
+            
+        # Category Insight
+        if cat_data:
+            top_cat = cat_labels[0]
+            top_cat_amount = cat_data[0] # float
+            
+            # Use ytd_income_agg only if it is > 0
+            if ytd_income_agg > 0:
+                # Type cast check: top_cat_amount is float (from cat_data list cast above)
+                # ytd_income_agg comes from aggregate Sum(...) so it is Decimal
+                try:
+                    denominator = float(ytd_income_agg)
+                    cat_percent = (top_cat_amount / denominator) * 100
+                    if cat_percent > 30:
+                         insights.append(_(f"Caution: '{top_cat}' is consuming {cat_percent:.0f}% of your income."))
+                except (ValueError, TypeError):
+                    pass
+            
+        context['health_score'] = health_score
+        context['health_label'] = health_label
+        context['health_color'] = health_color
+        context['insights'] = insights
+            
+        # B. Project Next 6 Months (Dynamic)
+        active_recurring = RecurringTransaction.objects.filter(user=user, is_active=True)
+        
+        forecast_labels = []
+        forecast_income_data = []
+        forecast_expense_data = []
+        forecast_net_data = []
+        
+        current_date_cursor = today
+        
+        for i in range(1, 7):
+            # Move to next month
+            next_month = current_date_cursor.month + 1
+            next_year = current_date_cursor.year
+            if next_month > 12:
+                next_month = 1
+                next_year += 1
+            current_date_cursor = date(next_year, next_month, 1)
+            
+            # Calculate Recurring "Floor" for THIS specific month
+            this_month_rec_income_base = 0
+            this_month_rec_expense_base = 0
+            this_month_rec_income_spike = 0
+            this_month_rec_expense_spike = 0
+            
+            days_in_month = calendar.monthrange(next_year, next_month)[1]
+            
+            for rt in active_recurring:
+                amount = float(rt.base_amount)
+                
+                if rt.frequency == 'DAILY':
+                    amount *= days_in_month
+                    is_spike = False
+                elif rt.frequency == 'WEEKLY':
+                    amount *= 4.33
+                    is_spike = False
+                elif rt.frequency == 'MONTHLY':
+                    # amount is as is
+                    is_spike = False
+                elif rt.frequency == 'YEARLY':
+                    # Check if the recurrence month matches this month
+                    if rt.start_date.month == next_month:
+                         is_spike = True
+                    else:
+                         amount = 0
+                         is_spike = False
+                
+                if rt.transaction_type == 'INCOME':
+                    if is_spike:
+                        this_month_rec_income_spike += amount
+                    else:
+                        this_month_rec_income_base += amount
+                else:
+                    if is_spike:
+                        this_month_rec_expense_spike += amount
+                    else:
+                        this_month_rec_expense_base += amount
+
+            # Logic: 
+            # Baseline = Max(Historical Avg, Regular Recurring)
+            # Forecast = Baseline + Spikes (Yearly/One-offs)
+            proj_inc = max(float(avg_income), this_month_rec_income_base) + this_month_rec_income_spike
+            proj_exp = max(float(avg_expense), this_month_rec_expense_base) + this_month_rec_expense_spike
+            
+            forecast_labels.append(date_format(current_date_cursor, 'M Y'))
+            forecast_income_data.append(round(proj_inc, 2))
+            forecast_expense_data.append(round(proj_exp, 2))
+            forecast_net_data.append(round(proj_inc - proj_exp, 2))
+            
+        context['forecast_labels'] = forecast_labels
+        context['forecast_income'] = forecast_income_data
+        context['forecast_expenses'] = forecast_expense_data
+        context['forecast_net'] = forecast_net_data
+
         return context
 
