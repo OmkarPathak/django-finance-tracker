@@ -142,9 +142,11 @@ if not use_sqlite and database_url:
             default=database_url,
             conn_max_age=600,
             conn_health_checks=True,
-            ssl_require=True
+            ssl_require=True,
         )
     }
+    # Disable server-side cursors to avoid issues with transaction poolers (e.g. PgBouncer)
+    DATABASES['default']['DISABLE_SERVER_SIDE_CURSORS'] = True
 else:
     DATABASES = {
         'default': {
