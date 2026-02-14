@@ -50,9 +50,10 @@ CRON_SECRET = os.getenv('CRON_SECRET', 'change_me_in_prod')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DEBUG', 'True') == 'True'
 
-ALLOWED_HOSTS = ['*']  # Update this to specific domain in production
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '*').split(',')
 
-CSRF_TRUSTED_ORIGINS = ['https://trackmyrupee.com', 'https://www.trackmyrupee.com', 'https://django-finance-tracker-fr1u.onrender.com']
+# CSRF Trusted Origins - load from environment variable
+CSRF_TRUSTED_ORIGINS = os.getenv('CSRF_TRUSTED_ORIGINS', '').split(',') if os.getenv('CSRF_TRUSTED_ORIGINS') else []
 
 
 # Application definition
