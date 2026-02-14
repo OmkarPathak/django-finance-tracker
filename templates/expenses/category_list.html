@@ -35,16 +35,23 @@
                         <tr>
                             <td class="ps-4">{{ category.name }}</td>
                             <td class="text-end">{% if category.limit %}{{ currency_symbol }}{{ category.limit|floatformat:2 }}{% else %}<span class="text-muted">-</span>{% endif %}</td>
-                            <td class="text-end pe-4">
-                                <a href="{% url 'category-edit' category.pk %}?next={{ request.path }}" class="btn btn-sm btn-link text-decoration-none p-0 me-2" title="Edit">
-                                    <i class="bi bi-pencil-square text-primary"></i>
-                                </a>
-                                <button type="button" class="btn btn-sm btn-link text-decoration-none p-0 delete-btn" 
-                                        data-bs-toggle="modal" data-bs-target="#deleteModal" 
-                                        data-url="{% url 'category-delete' category.pk %}"
-                                        data-message="Are you sure you want to delete category '{{ category.name|escapejs }}'? This will NOT delete expenses in this category, but they will be unlinked or require update.">
-                                    <i class="bi bi-trash text-danger"></i>
-                                </button>
+                            <td class="text-end pe-4 text-nowrap">
+                                <div class="hstack gap-3 justify-content-end">
+                                    <button type="button" class="btn btn-sm btn-link text-decoration-none p-0 d-inline-flex align-items-center" 
+                                            data-bs-toggle="modal" data-bs-target="#editCategoryModal"
+                                            data-url="{% url 'category-edit' category.pk %}"
+                                            data-name="{{ category.name }}"
+                                            data-limit="{{ category.limit|default_if_none:'' }}"
+                                            title="Edit">
+                                        <i class="bi bi-pencil-square text-primary fs-6"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-link text-decoration-none p-0 delete-btn d-inline-flex align-items-center" 
+                                            data-bs-toggle="modal" data-bs-target="#deleteModal" 
+                                            data-url="{% url 'category-delete' category.pk %}"
+                                            data-message="Are you sure you want to delete category '{{ category.name|escapejs }}'? This will NOT delete expenses in this category, but they will be unlinked or require update.">
+                                        <i class="bi bi-trash text-danger fs-6"></i>
+                                    </button>
+                                </div>
                             </td>
                         </tr>
                         {% empty %}
@@ -109,4 +116,64 @@
         {% endif %}
     </div>
 </div>
+
+{% endblock %}
+
+{% block modals %}
+    <!-- Edit Category Modal -->
+    <div class="modal fade" id="editCategoryModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title fw-bold">Edit Category</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="editCategoryForm" method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="next" value="{{ request.path }}">
+                        
+                        <div class="mb-3">
+                            <label for="edit_name" class="form-label text-muted small text-uppercase">Name</label>
+                            <input type="text" class="form-control" id="edit_name" name="name" required>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="edit_limit" class="form-label text-muted small text-uppercase">Monthly Limit (Optional)</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-transparent border-end-0 text-muted">{{ currency_symbol }}</span>
+                                <input type="number" class="form-control border-start-0 ps-0" id="edit_limit" name="limit" step="0.01" placeholder="0.00">
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary">Save Changes</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var editModal = document.getElementById('editCategoryModal');
+            if (editModal) {
+                editModal.addEventListener('show.bs.modal', function(event) {
+                    var button = event.relatedTarget;
+                    var url = button.getAttribute('data-url');
+                    var name = button.getAttribute('data-name');
+                    var limit = button.getAttribute('data-limit');
+                    
+                    var form = editModal.querySelector('#editCategoryForm');
+                    var nameInput = editModal.querySelector('#edit_name');
+                    var limitInput = editModal.querySelector('#edit_limit');
+                    
+                    form.action = url;
+                    nameInput.value = name;
+                    limitInput.value = limit || '';
+                });
+            }
+        });
+    </script>
 {% endblock %}

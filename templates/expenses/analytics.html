@@ -1,0 +1,418 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load currency_filters %}
+
+{% block title %}Analytics - TrackMyRupee{% endblock %}
+
+{% block content %}
+<div class="row mb-4 animate__animated animate__fadeIn">
+    <div class="col-12 d-flex justify-content-between align-items-center">
+        <div>
+            <h1 class="h3 fw-bold mb-1">Analytics & Trends</h1>
+            <p class="text-muted mb-0">Visualizing your financial journey over the last 12 months.</p>
+        </div>
+        <div class="d-none d-md-block">
+           <!-- Placeholder for Date Range Picker in v2 -->
+           <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2 rounded-pill border border-primary border-opacity-10">
+                <i class="bi bi-calendar3 me-1"></i> Last 12 Months
+           </span>
+        </div>
+    </div>
+</div>
+
+<!-- Key Metrics Row -->
+<div class="row g-4 mb-4 animate__animated animate__fadeInUp">
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center mb-3">
+                    <div class="icon-shape icon-shape-sm bg-success bg-opacity-10 text-success rounded-circle me-3">
+                        <i class="bi bi-graph-up-arrow fs-5"></i>
+                    </div>
+                    <div>
+                        <h6 class="text-muted mb-0">Total Income (YTD)</h6>
+                    </div>
+                </div>
+                <h3 class="fw-bold mb-0">
+                    {{ user.profile.currency }}{{ total_income_ytd|floatformat:0 }}
+                </h3>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+         <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center mb-3">
+                    <div class="icon-shape icon-shape-sm bg-danger bg-opacity-10 text-danger rounded-circle me-3">
+                        <i class="bi bi-cart3 fs-5"></i>
+                    </div>
+                    <div>
+                        <h6 class="text-muted mb-0">Total Expenses (YTD)</h6>
+                    </div>
+                </div>
+                <h3 class="fw-bold mb-0">
+                    {{ user.profile.currency }}{{ total_expense_ytd|floatformat:0 }}
+                </h3>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+         <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center mb-3">
+                    <div class="icon-shape icon-shape-sm bg-info bg-opacity-10 text-info rounded-circle me-3">
+                        <i class="bi bi-piggy-bank fs-5"></i>
+                    </div>
+                    <div>
+                        <h6 class="text-muted mb-0">Avg. Balance Rate (YTD)</h6>
+                    </div>
+                </div>
+                <h3 class="fw-bold mb-0">
+                    {{ avg_balance_rate }}%
+                </h3>
+                 <small class="text-muted">Percentage of income kept as balance/savings</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Row -->
+<div class="row g-4 mb-4 animate__animated animate__fadeInUp" style="animation-delay: 0.1s;">
+    <!-- Line Chart -->
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-lg h-100">
+            <div class="card-header bg-transparent border-bottom py-3">
+                <h5 class="fw-bold mb-0">Income vs Expenses Analysis</h5>
+            </div>
+            <div class="card-body">
+                <div style="height: 350px;">
+                    <canvas id="balanceChart"></canvas>
+                </div>
+                 <div class="mt-3 text-center">
+                    <small class="text-muted">
+                        <i class="bi bi-info-circle me-1"></i> 
+                        Comparing what comes in (Green) vs. what goes out (Red). The gap is your potential savings.
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Donut Chart -->
+    <div class="col-lg-4">
+        <div class="card border-0 shadow-lg h-100">
+            <div class="card-header bg-transparent border-bottom py-3">
+                <h5 class="fw-bold mb-0">Spending by Category ({% now "Y" %})</h5>
+            </div>
+            <div class="card-body d-flex flex-column align-items-center justify-content-center position-relative">
+                <div style="height: 300px; width: 100%;">
+                    <canvas id="categoryDonutChart"></canvas>
+                </div>
+                 <div class="mt-3 text-center">
+                    <small class="text-muted">
+                        <i class="bi bi-info-circle me-1"></i> 
+                        See which categories are consuming the most of your budget this year.
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Balance Rate Trend -->
+<div class="row animate__animated animate__fadeInUp" style="animation-delay: 0.2s;">
+    <div class="col-12">
+        <div class="card border-0 shadow-lg">
+             <div class="card-header bg-transparent border-bottom py-3">
+                <h5 class="fw-bold mb-0">Balance Rate Trend (%)</h5>
+            </div>
+            <div class="card-body">
+                 <div style="height: 300px;">
+                    <canvas id="rateChart"></canvas>
+                </div>
+                <div class="mt-3 text-center">
+                    <small class="text-muted">
+                        <i class="bi bi-info-circle me-1"></i> 
+                        Shows what % of your income is left after expenses. A higher positive percentage means you're growing your wealth.
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Data Passing -->
+{{ chart_labels|json_script:"chart-labels" }}
+{{ income_data|json_script:"income-data" }}
+{{ expense_data|json_script:"expense-data" }}
+{{ balance_rate_data|json_script:"balance-rate-data" }}
+{{ cat_labels|json_script:"cat-labels" }}
+{{ cat_data|json_script:"cat-data" }}
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const labels = JSON.parse(document.getElementById('chart-labels').textContent);
+        const incomeData = JSON.parse(document.getElementById('income-data').textContent);
+        const expenseData = JSON.parse(document.getElementById('expense-data').textContent);
+        const rateData = JSON.parse(document.getElementById('balance-rate-data').textContent);
+        const catLabels = JSON.parse(document.getElementById('cat-labels').textContent);
+        const catData = JSON.parse(document.getElementById('cat-data').textContent);
+
+        // --- Common Config ---
+        Chart.defaults.font.family = "'Outfit', sans-serif";
+        const isDark = document.documentElement.getAttribute('data-bs-theme') === 'dark';
+        Chart.defaults.color = isDark ? '#adb5bd' : '#6c757d';
+        const gridColor = isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)';
+
+
+        // --- Custom Plugin to Draw Values on Charts ---
+        const drawValuesPlugin = {
+            id: 'drawValues',
+            afterDatasetsDraw(chart, args, options) {
+                const { ctx } = chart;
+                ctx.save();
+                
+                chart.data.datasets.forEach((dataset, i) => {
+                    const meta = chart.getDatasetMeta(i);
+                    if (meta.hidden) return;
+
+                    meta.data.forEach((element, index) => {
+                        // Skip if value is 0 or null to avoid clutter
+                        const value = dataset.data[index];
+                        if (value === 0 || value === null) return;
+
+                        let text = value.toString();
+                        // Formatting
+                        if (chart.config.type === 'line' || dataset.label.includes('Rate')) {
+                             text += '%';
+                        } else {
+                             // Currency for others (approx) - can just show number
+                             text = value.toLocaleString(); 
+                        }
+
+                        ctx.font = 'bold 10px "Outfit", sans-serif';
+                        ctx.fillStyle = isDark ? '#adb5bd' : '#6c757d';
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'bottom';
+
+                        // Position check
+                        let x = element.x;
+                        let y = element.y - 5; // shift up
+
+                        // For Bar chart, if value is negative or small, adjust (assuming positive here mostly)
+                        ctx.fillText(text, x, y);
+                    });
+                });
+                ctx.restore();
+            }
+        };
+
+        // 1. Balance Chart (Line/Bar Combo)
+        const ctxBalance = document.getElementById('balanceChart').getContext('2d');
+        new Chart(ctxBalance, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: 'Income',
+                        data: incomeData,
+                        backgroundColor: 'rgba(75, 192, 192, 0.2)', // Green fill
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        borderWidth: 1,
+                        borderRadius: 4,
+                        order: 2
+                    },
+                    {
+                        label: 'Expense',
+                        data: expenseData,
+                        backgroundColor: 'rgba(255, 99, 132, 0.2)', // Red fill
+                        borderColor: 'rgba(255, 99, 132, 1)',
+                        borderWidth: 1,
+                        borderRadius: 4,
+                        order: 3
+                    },
+                    {
+                        type: 'line',
+                        label: 'Net Balance',
+                        data: incomeData.map((inc, i) => inc - expenseData[i]),
+                        borderColor: '#2196f3', // Blue line
+                        borderWidth: 2,
+                        tension: 0.4,
+                        pointRadius: 3,
+                        fill: false,
+                        order: 1
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'top' },
+                    tooltip: { mode: 'index', intersect: false }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                         grid: { color: gridColor }
+                    },
+                    x: {
+                         grid: { display: false }
+                    }
+                }
+            }
+        });
+
+        // 2. Spending Donut
+        const ctxDonut = document.getElementById('categoryDonutChart').getContext('2d');
+        // Generate nice colors (matching other charts)
+        const bgColors = [
+            'rgba(54, 162, 235, 0.8)',   // Blue
+            'rgba(255, 99, 132, 0.8)',   // Red
+            'rgba(255, 206, 86, 0.8)',   // Yellow
+            'rgba(75, 192, 192, 0.8)',   // Teal
+            'rgba(153, 102, 255, 0.8)',  // Purple
+            'rgba(255, 159, 64, 0.8)',   // Orange
+            'rgba(231, 233, 237, 0.8)'   // Grey
+        ];
+        
+        // Enhance labels with values and percentages for the Legend
+        const totalSpending = catData.reduce((acc, curr) => acc + curr, 0);
+        const donutLabelsWithValues = catLabels.map((label, i) => {
+            const val = catData[i];
+            const percent = totalSpending > 0 ? ((val / totalSpending) * 100).toFixed(1) + '%' : '0%';
+            return `${label} (${val.toLocaleString()} | ${percent})`;
+        });
+        
+        // --- Custom Plugin for Donut Percentages ---
+        const drawDonutValuesPlugin = {
+            id: 'drawDonutValues',
+            afterDatasetsDraw(chart, args, options) {
+                const { ctx } = chart;
+                ctx.save();
+                
+                chart.data.datasets.forEach((dataset, i) => {
+                    const meta = chart.getDatasetMeta(i);
+                    if (meta.hidden) return;
+                    
+                    const total = dataset.data.reduce((acc, curr) => acc + curr, 0);
+
+                    meta.data.forEach((element, index) => {
+                         const value = dataset.data[index];
+                         if (value === 0 || total === 0) return;
+                         
+                         const percentage = (value / total);
+                         // Only show text if slice is > 5% to avoid overlap
+                         if (percentage < 0.05) return;
+                         
+                         const text = (percentage * 100).toFixed(0) + '%';
+                         
+                         // Calculate position (centroid of arc)
+                         const { x, y } = element.tooltipPosition();
+
+                         ctx.font = 'bold 11px "Outfit", sans-serif';
+                         ctx.fillStyle = '#fff'; 
+                         ctx.textAlign = 'center';
+                         ctx.textBaseline = 'middle';
+                         
+                         // Shadow for readability on light/similar colors
+                         ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
+                         ctx.shadowBlur = 3;
+                         
+                         ctx.fillText(text, x, y);
+                         
+                         ctx.shadowColor = 'transparent';
+                    });
+                });
+                ctx.restore();
+            }
+        };
+        
+        new Chart(ctxDonut, {
+            type: 'doughnut',
+            data: {
+                labels: donutLabelsWithValues,
+                datasets: [{
+                    data: catData,
+                    backgroundColor: bgColors.slice(0, catLabels.length),
+                    borderWidth: 0,
+                    hoverOffset: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '70%',
+                plugins: {
+                    legend: { position: 'bottom', labels: { boxWidth: 10 } }
+                }
+            },
+            plugins: [drawDonutValuesPlugin]
+        });
+        
+        // 3. Rate Chart (Line)
+        const ctxRate = document.getElementById('rateChart').getContext('2d');
+        const gradientRate = ctxRate.createLinearGradient(0, 0, 0, 400);
+        gradientRate.addColorStop(0, 'rgba(13, 202, 240, 0.5)'); // Info color
+        gradientRate.addColorStop(1, 'rgba(13, 202, 240, 0.0)');
+
+        new Chart(ctxRate, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Balance Rate (%)',
+                    data: rateData,
+                    borderColor: '#0dcaf0',
+                    backgroundColor: gradientRate,
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 4,
+                    pointBackgroundColor: '#fff',
+                    pointBorderColor: '#0dcaf0',
+                    pointHoverRadius: 6
+                }]
+            },
+             options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: { 
+                        callbacks: {
+                            label: function(context) {
+                                return context.parsed.y + '%';
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100, // Usually percentage doesn't go above 100 unless weird
+                        grid: { color: gridColor },
+                        ticks: { display: false } // Hide Y axis labels
+                    },
+                    x: {
+                         grid: { display: false }
+                    }
+                }
+            },
+            plugins: [drawValuesPlugin]
+        });
+    });
+</script>
+
+<style>
+    .icon-shape-sm {
+        width: 48px;
+        height: 48px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+</style>
+{% endblock %}

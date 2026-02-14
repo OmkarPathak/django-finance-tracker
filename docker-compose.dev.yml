@@ -1,0 +1,31 @@
+# Docker Compose Override for Development
+# Usage: docker-compose -f docker-compose.yml -f docker-compose.dev.yml up
+
+version: '3.8'
+
+services:
+  web:
+    build:
+      context: .
+      target: production
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - .:/app
+      - /app/__pycache__
+    ports:
+      - "8000:8000"
+    environment:
+      - DEBUG=True
+      - SETUP_DEMO_USER=True
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    ports:
+      - "5432:5432"
+
+  # Disable nginx in development
+  nginx:
+    profiles:
+      - production-only

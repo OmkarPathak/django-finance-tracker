@@ -1,0 +1,114 @@
+{% extends "expenses/settings_base.html" %}
+
+{% block settings_content %}
+<div class="mb-4">
+    <a href="{% url 'friend-detail' friend.pk %}" class="text-decoration-none text-muted">
+        <i class="bi bi-arrow-left me-1"></i> Back to {{ friend.name }}
+    </a>
+</div>
+
+<div class="card border-0 rounded-4 shadow-sm">
+    <div class="card-header bg-transparent border-0 pt-4 pb-0 px-4">
+        <h4 class="fw-bold mb-0">
+            <i class="bi bi-cash-coin text-success me-2"></i>
+            Record Settlement with {{ friend.name }}
+        </h4>
+        <p class="text-muted mb-0 mt-2">
+            Record a payment between you and {{ friend.name }} to update the balance.
+        </p>
+    </div>
+    <div class="card-body p-4">
+        <form method="post">
+            {% csrf_token %}
+
+            <!-- Amount -->
+            <div class="mb-4">
+                <label for="id_amount" class="form-label fw-bold">Amount</label>
+                <div class="input-group input-group-lg">
+                    <span class="input-group-text">₹</span>
+                    {{ form.amount }}
+                </div>
+                {% if form.amount.errors %}
+                <div class="text-danger small mt-1">{{ form.amount.errors.0 }}</div>
+                {% endif %}
+            </div>
+
+            <!-- Date -->
+            <div class="mb-4">
+                <label for="id_date" class="form-label fw-bold">Date</label>
+                {{ form.date }}
+                {% if form.date.errors %}
+                <div class="text-danger small mt-1">{{ form.date.errors.0 }}</div>
+                {% endif %}
+            </div>
+
+            <!-- Who Paid? -->
+            <div class="mb-4">
+                <label class="form-label fw-bold">Who paid?</label>
+                <div class="row g-3">
+                    <div class="col-6">
+                        <div class="form-check card border rounded-4 p-3 h-100">
+                            <input class="form-check-input" type="radio" name="payer_is_user" id="payer_user"
+                                value="True" {% if form.payer_is_user.value == True or form.payer_is_user.value == 'True' %}
+                                checked{% endif %}>
+                            <label class="form-check-label w-100 cursor-pointer" for="payer_user">
+                                <div class="d-flex align-items-center">
+                                    <i class="bi bi-person-fill text-primary me-2 fs-4"></i>
+                                    <div>
+                                        <strong>I paid {{ friend.name }}</strong>
+                                        <small class="d-block text-muted">Reduces what you owe</small>
+                                    </div>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="form-check card border rounded-4 p-3 h-100">
+                            <input class="form-check-input" type="radio" name="payer_is_user" id="payer_friend"
+                                value="False" {% if form.payer_is_user.value == False or form.payer_is_user.value == 'False'%} checked{% endif %}>
+                            <label class="form-check-label w-100 cursor-pointer" for="payer_friend">
+                                <div class="d-flex align-items-center">
+                                    <i class="bi bi-person-fill text-success me-2 fs-4"></i>
+                                    <div>
+                                        <strong>{{ friend.name }} paid me</strong>
+                                        <small class="d-block text-muted">Reduces what they owe</small>
+                                    </div>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                {% if form.payer_is_user.errors %}
+                <div class="text-danger small mt-1">{{ form.payer_is_user.errors.0 }}</div>
+                {% endif %}
+            </div>
+
+            <!-- Account (Payment Source) -->
+            <div class="mb-4">
+                <label for="id_payment_source" class="form-label fw-bold">Account <span
+                        class="text-muted fw-normal">(optional)</span></label>
+                {{ form.payment_source }}
+                <div class="form-text">The bank account or wallet where money is transferred from/to.</div>
+                {% if form.payment_source.errors %}
+                <div class="text-danger small mt-1">{{ form.payment_source.errors.0 }}</div>
+                {% endif %}
+            </div>
+
+            <!-- Notes -->
+            <div class="mb-4">
+                <label for="id_notes" class="form-label fw-bold">Notes <span
+                        class="text-muted fw-normal">(optional)</span></label>
+                {{ form.notes }}
+            </div>
+
+            <!-- Submit Buttons -->
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-success px-4">
+                    <i class="bi bi-check-lg me-1"></i> Record Settlement
+                </button>
+                <a href="{% url 'friend-detail' friend.pk %}" class="btn btn-outline-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

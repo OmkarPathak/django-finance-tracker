@@ -1,0 +1,112 @@
+{% extends 'expenses/settings_base.html' %}
+
+{% block settings_content %}
+<div class="fade-in">
+    <div class="py-3 mb-4">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-2">
+                <li class="breadcrumb-item"><a href="{% url 'payment-source-list' %}">Payment Sources</a></li>
+                <li class="breadcrumb-item active">{{ title }}</li>
+            </ol>
+        </nav>
+        <h2 class="h4 mb-0 fw-bold">{{ title }}</h2>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-body p-4">
+            <form method="post" novalidate>
+                {% csrf_token %}
+
+                <div class="mb-3">
+                    <label for="id_name" class="form-label text-muted small text-uppercase">Account Name *</label>
+                    <input type="text" class="form-control {% if form.name.errors %}is-invalid{% endif %}" id="id_name"
+                        name="name" value="{{ form.name.value|default:'' }}"
+                        placeholder="e.g., Axis Savings, Paytm Wallet" required>
+                    {% if form.name.errors %}
+                    <div class="invalid-feedback">{{ form.name.errors.0 }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="mb-3">
+                    <label for="id_account_type" class="form-label text-muted small text-uppercase">Account Type
+                        *</label>
+                    <select class="form-select {% if form.account_type.errors %}is-invalid{% endif %}"
+                        id="id_account_type" name="account_type" required>
+                        <option value="">Select type...</option>
+                        <option value="savings" {% if form.account_type.value == 'savings' %}selected{% endif %}>Savings
+                            Account</option>
+                        <option value="current" {% if form.account_type.value == 'current' %}selected{% endif %}>Current
+                            Account</option>
+                        <option value="wallet" {% if form.account_type.value == 'wallet' %}selected{% endif %}>Digital
+                            Wallet</option>
+                        <option value="cash" {% if form.account_type.value == 'cash' %}selected{% endif %}>Cash in Hand
+                        </option>
+                    </select>
+                    {% if form.account_type.errors %}
+                    <div class="invalid-feedback">{{ form.account_type.errors.0 }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="mb-3" id="bank_name_group">
+                    <label for="id_bank_name" class="form-label text-muted small text-uppercase">Bank/Wallet
+                        Name</label>
+                    <input type="text" class="form-control {% if form.bank_name.errors %}is-invalid{% endif %}"
+                        id="id_bank_name" name="bank_name" value="{{ form.bank_name.value|default:'' }}"
+                        placeholder="e.g., Axis Bank, Paytm">
+                    {% if form.bank_name.errors %}
+                    <div class="invalid-feedback">{{ form.bank_name.errors.0 }}</div>
+                    {% endif %}
+                    <div class="form-text">Optional. Name of the bank or wallet provider.</div>
+                </div>
+
+                <div class="mb-4">
+                    <label for="id_balance" class="form-label text-muted small text-uppercase">Current Balance *</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-transparent border-end-0">{{ currency_symbol }}</span>
+                        <input type="number"
+                            class="form-control border-start-0 {% if form.balance.errors %}is-invalid{% endif %}"
+                            id="id_balance" name="balance" step="0.01" value="{{ form.balance.value|default:'0' }}"
+                            placeholder="0.00" required>
+                        {% if form.balance.errors %}
+                        <div class="invalid-feedback">{{ form.balance.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                {% if form.non_field_errors %}
+                <div class="alert alert-danger mb-4">
+                    {% for error in form.non_field_errors %}
+                    {{ error }}
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check-lg me-1"></i> {{ button_text }}
+                    </button>
+                    <a href="{% url 'payment-source-list' %}" class="btn btn-outline-secondary">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const typeSelect = document.getElementById('id_account_type');
+        const bankNameGroup = document.getElementById('bank_name_group');
+
+        function toggleBankName() {
+            if (typeSelect.value === 'cash') {
+                bankNameGroup.style.display = 'none';
+            } else {
+                bankNameGroup.style.display = 'block';
+            }
+        }
+
+        typeSelect.addEventListener('change', toggleBankName);
+        toggleBankName();
+    });
+</script>
+{% endblock %}

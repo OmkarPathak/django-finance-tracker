@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}TrackMyRupee{% endblock %}</title>
+    <!-- Import Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Clash+Display:wght@500;600&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        /* Base styles */
+        body {
+            font-family: 'Outfit', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            background-color: #F3F4F6; /* Fresh Gray Background */
+            margin: 0;
+            padding: 0;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* Container */
+        .email-container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        /* Header */
+        .email-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .brand-name {
+            font-family: 'Clash Display', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            color: #023047; /* Dark Blue */
+            font-size: 28px;
+            font-weight: 600;
+            margin: 0;
+            letter-spacing: -0.5px;
+            text-decoration: none;
+        }
+
+        .brand-subtitle {
+            color: #6c757d;
+            font-size: 14px;
+            margin-top: 5px;
+            font-weight: 500;
+        }
+
+        /* Card */
+        .email-card {
+            background-color: #ffffff;
+            border-radius: 16px;
+            padding: 40px;
+            text-align: center;
+            /* No shadow as requested, subtle border instead */
+            border: 1px solid rgba(0, 0, 0, 0.05); 
+        }
+
+        /* Typography */
+        h1, h2, h3 {
+            font-family: 'Clash Display', sans-serif;
+            color: #023047;
+            margin-top: 0;
+        }
+
+        p {
+            font-size: 16px;
+            color: #4a5568;
+            line-height: 1.6;
+            margin-bottom: 24px;
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-block;
+            padding: 14px 40px;
+            border-radius: 50px;
+            font-weight: 500;
+            font-size: 16px;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            /* Primary Gradient */
+            background: linear-gradient(135deg, #219EBC 0%, #023047 100%);
+            color: #ffffff !important;
+            box-shadow: 0 4px 15px rgba(33, 158, 188, 0.2);
+        }
+        
+        .btn-primary:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+
+        /* Links */
+        .link {
+            color: #219EBC;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        /* Footer */
+        .email-footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px dashed rgba(0,0,0,0.05);
+        }
+
+        .footer-text {
+            font-size: 12px;
+            color: #a0aec0;
+            line-height: 1.5;
+        }
+
+        .footer-link {
+            color: #a0aec0;
+            text-decoration: underline;
+        }
+
+        /* Mobile Responsive */
+        @media only screen and (max-width: 600px) {
+            .email-container {
+                padding: 20px 10px;
+            }
+            .email-card {
+                padding: 30px 20px;
+            }
+            .brand-name {
+                font-size: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <!-- Header -->
+        <div class="email-header">
+            <a href="https://trackmyrupee.com" class="brand-name">TrackMyRupee</a>
+            <div class="brand-subtitle">Master Your Money</div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="email-card">
+            {% block content %}
+            {% endblock %}
+        </div>
+
+        <!-- Footer -->
+        <div class="email-footer">
+            <p class="footer-text">
+                &copy; {% now "Y" %} TrackMyRupee. All rights reserved.<br>
+                You received this email because you signed up for TrackMyRupee.<br>
+                <a href="https://trackmyrupee.com/privacy" class="footer-link">Privacy Policy</a> • 
+                <a href="https://trackmyrupee.com/terms" class="footer-link">Terms of Service</a>
+            </p>
+        </div>
+    </div>
+</body>
+</html>
