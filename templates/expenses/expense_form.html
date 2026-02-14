@@ -408,11 +408,37 @@
                                 const option = new Option(data.name, data.name);
                                 select.add(option);
                             }
+
+                            // Sort options alphabetically
+                            const options = Array.from(select.options);
+                            options.sort((a, b) => a.text.localeCompare(b.text));
+                            select.innerHTML = '';
+                            options.forEach(opt => select.add(opt));
+
+                            // Rebuild bootstrap-multiselect to reflect the new option
+                            if ($(select).hasClass('django-multi-select')) {
+                                $(select).multiselect('rebuild');
+                            }
                         });
 
+                        // Auto-select the new category in the active/last row
                         if (activeSelectId) {
                             const activeEl = document.getElementById(activeSelectId);
-                            if (activeEl) activeEl.value = data.name;
+                            if (activeEl) {
+                                activeEl.value = data.name;
+                                if ($(activeEl).hasClass('django-multi-select')) {
+                                    $(activeEl).multiselect('select', data.name);
+                                }
+                            }
+                        } else {
+                            // If no specific row targeted, select in first row's dropdown
+                            const firstSelect = document.querySelector('select[name*="category"]');
+                            if (firstSelect) {
+                                firstSelect.value = data.name;
+                                if ($(firstSelect).hasClass('django-multi-select')) {
+                                    $(firstSelect).multiselect('select', data.name);
+                                }
+                            }
                         }
 
                         modal.hide();
