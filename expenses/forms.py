@@ -7,7 +7,7 @@ from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 
-from .models import Expense, Category, Income, RecurringTransaction, Friend
+from .models import Expense, Category, Income, RecurringTransaction, Friend, PaymentSource, CreditCard
 
 
 class ExpenseForm(forms.ModelForm):
@@ -33,6 +33,25 @@ class ExpenseForm(forms.ModelForm):
         label="Participants",
     )
 
+    # Account selection fields
+    payment_source = forms.ModelChoiceField(
+        queryset=PaymentSource.objects.none(),
+        required=False,
+        empty_label="Select Account/Wallet/Cash",
+        widget=forms.Select(attrs={"class": "form-select"}),
+        label="Payment Account",
+        help_text="Select the account from which this expense was paid"
+    )
+
+    credit_card = forms.ModelChoiceField(
+        queryset=CreditCard.objects.none(),
+        required=False,
+        empty_label="Select Credit Card",
+        widget=forms.Select(attrs={"class": "form-select"}),
+        label="Credit Card",
+        help_text="Select the credit card used for this expense"
+    )
+
     # Hidden fields for shared expense data
     participants_json = forms.CharField(widget=forms.HiddenInput(), required=False)
 
@@ -46,6 +65,8 @@ class ExpenseForm(forms.ModelForm):
             "description",
             "category",
             "payment_method",
+            "payment_source",
+            "credit_card",
             "has_cashback",
             "cashback_type",
             "cashback_value",
@@ -90,6 +111,15 @@ class ExpenseForm(forms.ModelForm):
             self.fields["participants"].queryset = Friend.objects.filter(
                 user=user
             ).order_by("name")
+
+            # Filter payment sources and credit cards to only show user's accounts
+            self.fields["payment_source"].queryset = PaymentSource.objects.filter(
+                user=user, is_active=True
+            ).order_by("account_type", "name")
+
+            self.fields["credit_card"].queryset = CreditCard.objects.filter(
+                user=user, is_active=True
+            ).order_by("bank_name", "name")
 
             # Only set default participant if this is a new expense (not editing)
             # Check if participants_json already has initial data from the view
@@ -194,6 +224,18 @@ class ExpenseForm(forms.ModelForm):
         cashback_type = cleaned_data.get("cashback_type")
         cashback_value = cleaned_data.get("cashback_value")
         expense_type = self.data.get("expense_type")
+        payment_method = cleaned_data.get("payment_method")
+        payment_source = cleaned_data.get("payment_source")
+        credit_card = cleaned_data.get("credit_card")
+
+        # Validate that only one payment account is selected
+        if payment_source and credit_card:
+            self.add_error(None, "Please select either a Payment Account OR a Credit Card, not both.")
+
+        # If payment method is Credit Card, suggest selecting a credit card
+        if payment_method == "Credit Card" and not credit_card and not payment_source:
+            # This is just a warning, not an error
+            pass
 
         # If cashback is enabled, validate type and value
         if has_cashback:

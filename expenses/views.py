@@ -1371,6 +1371,14 @@ class ExpenseCreateView(LoginRequiredMixin, generic.TemplateView):
                         expense.user = request.user
                         expense.save()
 
+                        # Update account balances
+                        if expense.payment_source:
+                            # Deduct from payment source (bank account, wallet, cash)
+                            expense.payment_source.deduct(expense.amount)
+                        elif expense.credit_card:
+                            # Use credit from credit card
+                            expense.credit_card.use_credit(expense.amount)
+
                         # Check if this is a shared expense
                         expense_type = request.POST.get("expense_type", "personal")
 
@@ -1544,7 +1552,29 @@ class ExpenseUpdateView(LoginRequiredMixin, generic.UpdateView):
 
     def form_valid(self, form):
         try:
-            return super().form_valid(form)
+            # Get the old expense to restore balances
+            old_expense = self.get_object()
+            old_amount = old_expense.amount
+            old_payment_source = old_expense.payment_source
+            old_credit_card = old_expense.credit_card
+
+            # Restore old balances first
+            if old_payment_source:
+                old_payment_source.add(old_amount)
+            elif old_credit_card:
+                old_credit_card.pay_bill(old_amount)
+
+            # Save the updated expense
+            response = super().form_valid(form)
+
+            # Deduct new balances
+            new_expense = self.object
+            if new_expense.payment_source:
+                new_expense.payment_source.deduct(new_expense.amount)
+            elif new_expense.credit_card:
+                new_expense.credit_card.use_credit(new_expense.amount)
+
+            return response
         except IntegrityError:
             messages.error(self.request, "This expense entry already exists.")
             return self.form_invalid(form)
@@ -1562,6 +1592,14 @@ class ExpenseBulkDeleteView(LoginRequiredMixin, View):
             
         # Filter by IDs and ensuring they belong to the current user for security
         expenses_to_delete = Expense.objects.filter(id__in=expense_ids, user=request.user)
+        
+        # Restore balances for each expense before deleting
+        for expense in expenses_to_delete:
+            if expense.payment_source:
+                expense.payment_source.add(expense.amount)
+            elif expense.credit_card:
+                expense.credit_card.pay_bill(expense.amount)
+        
         deleted_count = expenses_to_delete.count()
         
         if deleted_count > 0:
@@ -1579,8 +1617,18 @@ class ExpenseDeleteView(LoginRequiredMixin, generic.DeleteView):
 
     def get_queryset(self):
         return Expense.objects.filter(user=self.request.user)
-    def get_queryset(self):
-        return Expense.objects.filter(user=self.request.user)
+
+    def delete(self, request, *args, **kwargs):
+        """Override delete to restore account balances."""
+        expense = self.get_object()
+        
+        # Restore balances before deleting
+        if expense.payment_source:
+            expense.payment_source.add(expense.amount)
+        elif expense.credit_card:
+            expense.credit_card.pay_bill(expense.amount)
+        
+        return super().delete(request, *args, **kwargs)
 
 class CategoryListView(LoginRequiredMixin, generic.ListView):
     model = Category

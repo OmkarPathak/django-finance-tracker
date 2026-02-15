@@ -84,7 +84,7 @@
                                                     {% if field.name == 'has_cashback' %}
                                                         <input type="hidden" name="{{ field.html_name }}" value="false" class="cashback-enabled">
                                                     {% elif field.name == 'cashback_type' %}
-                                                        <select name="{{ field.html_name }}" class="form-select form-select-sm mb-1">
+                                                        <select name="{{ field.html_name }}" class="form-select form-select-sm mb-1" aria-label="Cashback type">
                                                             <option value="">Type</option>
                                                             <option value="PERCENTAGE">%</option>
                                                             <option value="FIXED">{{ currency_symbol }}</option>
@@ -94,6 +94,7 @@
                                                                name="{{ field.html_name }}" 
                                                                class="form-control form-control-sm" 
                                                                placeholder="Value"
+                                                               aria-label="Cashback value"
                                                                step="0.01"
                                                                min="0">
                                                     {% endif %}
@@ -144,9 +145,9 @@
 
                         <!-- Regular Expense Fields -->
                         {% for field in form %}
-                        {% if field.name != 'cashback_type' and field.name != 'cashback_value' and field.name != 'has_cashback' and field.name != 'expense_type' and field.name != 'participants_json' and field.name != 'payer_id' and field.name != 'participants' %}
+                        {% if field.name != 'cashback_type' and field.name != 'cashback_value' and field.name != 'has_cashback' and field.name != 'expense_type' and field.name != 'participants_json' and field.name != 'payer_id' and field.name != 'participants' and field.name != 'payment_source' and field.name != 'credit_card' %}
                         <div class="mb-3">
-                            <label class="form-label text-muted">{{ field.label }}</label>
+                            <label class="form-label text-muted" for="{{ field.id_for_label }}">{{ field.label }}</label>
                             {% if field.field.widget.input_type == "checkbox" %}
                                 <div class="form-check">
                                     {{ field }}
@@ -169,7 +170,8 @@
                                 <input type="{% if field.name == 'date' %}date{% else %}{{ field.field.widget.input_type|default:'text' }}{% endif %}" 
                                     name="{{ field.name }}" 
                                     class="form-control"
-                                    {% if field.value %}value="{{ field.value|date:'Y-m-d'|default:field.value }}"{% endif %} 
+                                    id="{{ field.id_for_label }}"
+                                    {% if field.value %}value="{{ field.value|date:'Y-m-d'|default:field.value }}"{% endif %}
                                     {% if field.field.required %}required{% endif %}
                                     {% if field.field.widget.input_type == "number" %}step="0.01"{% endif %}>
                             {% endif %}
@@ -180,6 +182,49 @@
                         </div>
                         {% endif %}
                         {% endfor %}
+
+                        <!-- Account Selection Section -->
+                        <div class="card bg-light border-0 mb-3">
+                            <div class="card-body">
+                                <h6 class="card-subtitle mb-3 text-primary">
+                                    <i class="bi bi-wallet2 me-2"></i>Payment Account (Optional)
+                                </h6>
+                                <p class="text-muted small mb-3">
+                                    Link this expense to an account to automatically track your balance
+                                </p>
+                                
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label text-muted">{{ form.payment_source.label }}</label>
+                                        {{ form.payment_source }}
+                                        {% if form.payment_source.errors %}
+                                        <div class="text-danger small mt-1">{{ form.payment_source.errors.0 }}</div>
+                                        {% endif %}
+                                        {% if form.payment_source.help_text %}
+                                        <small class="form-text text-muted d-block mt-1">{{ form.payment_source.help_text }}</small>
+                                        {% endif %}
+                                    </div>
+                                    
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label text-muted">{{ form.credit_card.label }}</label>
+                                        {{ form.credit_card }}
+                                        {% if form.credit_card.errors %}
+                                        <div class="text-danger small mt-1">{{ form.credit_card.errors.0 }}</div>
+                                        {% endif %}
+                                        {% if form.credit_card.help_text %}
+                                        <small class="form-text text-muted d-block mt-1">{{ form.credit_card.help_text }}</small>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                
+                                <div class="alert alert-info mb-0">
+                                    <small>
+                                        <i class="bi bi-info-circle me-1"></i>
+                                        <strong>Note:</strong> Select either a Payment Account OR a Credit Card. The amount will be automatically deducted from the selected account.
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
 
                         <!-- Shared Expense Section (Hidden by default) -->
                         <div id="shared-expense-section" class="d-none">
@@ -211,7 +256,7 @@
 
                                     <!-- Payer Selection -->
                                     <div class="mb-3">
-                                        <label class="form-label text-success">Who Paid?</label>
+                                        <label class="form-label text-success" for="payer-select">Who Paid?</label>
                                         <select id="payer-select" class="form-select">
                                             <option value="">Select payer...</option>
                                         </select>
@@ -255,14 +300,15 @@
                                             {% endif %}
                                         </div>
                                         <div class="col-md-6 mb-3">
-                                            <label class="form-label text-muted">{{ form.cashback_value.label }}</label>
-                                            <input type="number" 
+                                            <label class="form-label text-muted" for="id_cashback_value">{{ form.cashback_value.label }}</label>
+                                            <input type="number"
                                                 name="{{ form.cashback_value.name }}" 
                                                 class="form-control"
                                                 {% if form.cashback_value.value %}value="{{ form.cashback_value.value }}"{% endif %} 
                                                 step="0.01"
                                                 min="0"
-                                                placeholder="Enter value">
+                                                placeholder="Enter value"
+                                                id="id_cashback_value">
                                             {% if form.cashback_value.errors %}
                                             <div class="text-danger small mt-1">{{ form.cashback_value.errors.0 }}</div>
                                             {% endif %}
@@ -1066,42 +1112,37 @@
         container.addEventListener('keydown', function(e) {
             // Check if key is Enter
             if (e.key === 'Enter') {
-                const target = e.target;
+
+                // Allow Enter in textarea
+                if (e.target.tagName === 'TEXTAREA') {
+                    return;
+                }
                 
-                // Block on Inputs (except hidden/submit/reset/button)
-                const isInput = target.matches('input') && !['submit', 'reset', 'button', 'hidden'].includes(target.type);
-                // Block on Selects
-                const isSelect = target.matches('select');
-                // Block on Textareas (optional, usually Enter in textarea means new line, so maybe NOT block?)
-                // Usually we don't want to submit on Enter in textarea unless it's a chat app.
-                // But for Description/Notes, new line is valid. So let's NOT block textareas.
-                
-                if (isInput || isSelect) {
+                // Prevent form submission for input and select
+                if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') {
                     e.preventDefault();
-                    console.log('Blocked Enter key submission');
-                    
-                    // UX Improvement: Move focus to next field instead?
-                    // For now, just blocking is the priority.
-                    return false;
                 }
             }
         });
-
-        // Debugging: Log form submissions to console (invisible to user but verifies logic if we could see logs)
-        const form = document.querySelector('form');
-        if (form) {
-            form.addEventListener('submit', function(e) {
-                // If the submitter is NOT the save button, prevent it?
-                // `e.submitter` is the element that triggered the submit (button or form itself if Enter)
-                // If triggered by Enter, `submitter` might be null or the first button.
-                
-                // Chrome/Firefox: if Enter pressed, submitter is usually the first submit button in the form.
-                // In this form, it's the "Save Changes" button.
-                
-                // But we BLOCKED Enter on inputs.
-                // So if we are here, it should only be from a CLICK on the button.
-                
-                console.log('Form submitting...', e.submitter);
+        
+        // --- Account Selection Logic ---
+        // Ensure only one account type is selected at a time
+        const paymentSourceSelect = document.querySelector('select[name="payment_source"]');
+        const creditCardSelect = document.querySelector('select[name="credit_card"]');
+        
+        if (paymentSourceSelect && creditCardSelect) {
+            paymentSourceSelect.addEventListener('change', function() {
+                if (this.value) {
+                    // Clear credit card selection
+                    creditCardSelect.value = '';
+                }
+            });
+            
+            creditCardSelect.addEventListener('change', function() {
+                if (this.value) {
+                    // Clear payment source selection
+                    paymentSourceSelect.value = '';
+                }
             });
         }
     });
