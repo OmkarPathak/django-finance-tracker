@@ -1,0 +1,137 @@
+{% extends 'expenses/settings_base.html' %}
+
+{% block settings_content %}
+<div class="fade-in">
+    <div class="py-3 mb-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+                <h2 class="h4 mb-0 fw-bold">Credit Cards</h2>
+                <p class="text-muted small mb-0">Manage your credit cards and track limits</p>
+            </div>
+            <a href="{% url 'credit-card-add' %}" class="btn btn-primary btn-sm">
+                <i class="bi bi-plus-lg me-1"></i> Add Card
+            </a>
+        </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <p class="text-muted small text-uppercase mb-1">Total Credit Limit</p>
+                    <h4 class="mb-0 text-primary">{{ currency_symbol }}{{ total_credit_limit|floatformat:0 }}</h4>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <p class="text-muted small text-uppercase mb-1">Available Credit</p>
+                    <h4 class="mb-0 text-success">{{ currency_symbol }}{{ total_available|floatformat:0 }}</h4>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <p class="text-muted small text-uppercase mb-1">Credit Used</p>
+                    <h4 class="mb-0 text-danger">{{ currency_symbol }}{{ total_used|floatformat:0 }}</h4>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Credit Cards Grid -->
+    {% if credit_cards %}
+    <div class="row g-3">
+        {% for card in credit_cards %}
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm h-100 overflow-hidden">
+                <!-- Card Visual Header -->
+                <div class="card-header border-0 py-4"
+                    style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);">
+                    <div class="d-flex justify-content-between align-items-start text-white">
+                        <div>
+                            <h5 class="mb-1 fw-bold">{{ card.name }}</h5>
+                            <small class="opacity-75">{{ card.bank_name }}</small>
+                        </div>
+                        <i class="bi bi-credit-card-2-front display-6 opacity-50"></i>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <!-- Limit Progress Bar -->
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between small mb-1">
+                            <span class="text-muted">Used: {{ currency_symbol }}{{ card.used_limit|floatformat:0  }}</span>
+
+                            <span class="text-muted">Limit: {{ currency_symbol }}{{ card.credit_limit|floatformat:0  }}</span>
+                        </div>
+                        {% widthratio card.used_limit card.credit_limit 100 as usage_pct %}
+                        <div class="progress" style="height: 8px;">
+                            <div class="progress-bar {% if usage_pct > 80 %}bg-danger{% elif usage_pct > 50 %}bg-warning{% else %}bg-success{% endif %}"
+                                role="progressbar" style="width: {{ usage_pct }}%;" aria-valuenow="{{ usage_pct }}"
+                                aria-valuemin="0" aria-valuemax="100"></div>
+                        </div>
+                    </div>
+
+                    <!-- Billing Info -->
+                    <div class="row text-center border-top pt-3">
+                        <div class="col-6 border-end">
+                            <p class="text-muted small mb-0">Next Billing</p>
+                            <p class="mb-0 fw-bold">{{ card.next_billing_date|date:"d M" }}</p>
+                        </div>
+                        <div class="col-6">
+                            <p class="text-muted small mb-0">Due Date</p>
+                            <p class="mb-0 fw-bold">{{ card.next_due_date|date:"d M" }}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-transparent border-0 py-3">
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'credit-card-detail' card.pk %}" class="btn btn-outline-primary btn-sm">
+                            <i class="bi bi-eye me-1"></i> View Details
+                        </a>
+                        <div class="dropdown">
+                            <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="dropdown">
+                                <i class="bi bi-three-dots"></i>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><a class="dropdown-item" href="{% url 'credit-card-edit' card.pk %}"><i
+                                            class="bi bi-pencil me-2"></i>Edit</a></li>
+                                <li>
+                                    <hr class="dropdown-divider">
+                                </li>
+                                <li>
+                                    <form method="post" action="{% url 'credit-card-delete' card.pk %}"
+                                        class="d-inline">
+                                        {% csrf_token %}
+                                        <button type="submit" class="dropdown-item text-danger"
+                                            onclick="return confirm('Delete {{ card.name }}?')">
+                                            <i class="bi bi-trash me-2"></i>Delete
+                                        </button>
+                                    </form>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <!-- Empty State -->
+    <div class="card border-0 shadow-sm">
+        <div class="card-body text-center py-5">
+            <i class="bi bi-credit-card text-muted display-1 mb-3 d-block"></i>
+            <h4 class="fw-bold text-muted">No Credit Cards Yet</h4>
+            <p class="text-muted mb-4">Add your credit cards to track limits and billing cycles.</p>
+            <a href="{% url 'credit-card-add' %}" class="btn btn-primary">
+                <i class="bi bi-plus-lg me-1"></i> Add Your First Card
+            </a>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

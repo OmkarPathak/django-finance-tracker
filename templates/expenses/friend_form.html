@@ -1,0 +1,70 @@
+{% extends "expenses/settings_base.html" %}
+
+{% block settings_content %}
+<div class="mb-4">
+    <a href="{% url 'friend-list' %}" class="text-decoration-none text-muted">
+        <i class="bi bi-arrow-left me-1"></i> Back to Friends
+    </a>
+</div>
+
+<div class="card border-0 rounded-4 shadow-sm">
+    <div class="card-header bg-transparent border-0 pt-4 pb-0 px-4">
+        <h4 class="fw-bold mb-0">
+            {% if object %}
+            <i class="bi bi-pencil me-2"></i> Edit Friend
+            {% else %}
+            <i class="bi bi-person-plus me-2"></i> Add New Friend
+            {% endif %}
+        </h4>
+    </div>
+    <div class="card-body p-4">
+        <form method="post">
+            {% csrf_token %}
+
+            <div class="mb-3">
+                <label for="id_name" class="form-label fw-bold">Name <span class="text-danger">*</span></label>
+                {{ form.name }}
+                {% if form.name.help_text %}
+                <div class="form-text">{{ form.name.help_text }}</div>
+                {% endif %}
+                {% if form.name.errors %}
+                <div class="text-danger small mt-1">{{ form.name.errors.0 }}</div>
+                {% endif %}
+            </div>
+
+            <div class="mb-3">
+                <label for="id_email" class="form-label fw-bold">Email</label>
+                {{ form.email }}
+                {% if form.email.help_text %}
+                <div class="form-text">{{ form.email.help_text }}</div>
+                {% endif %}
+                {% if form.email.errors %}
+                <div class="text-danger small mt-1">{{ form.email.errors.0 }}</div>
+                {% endif %}
+            </div>
+
+            <div class="mb-4">
+                <label for="id_phone" class="form-label fw-bold">Phone</label>
+                {{ form.phone }}
+                {% if form.phone.help_text %}
+                <div class="form-text">{{ form.phone.help_text }}</div>
+                {% endif %}
+                {% if form.phone.errors %}
+                <div class="text-danger small mt-1">{{ form.phone.errors.0 }}</div>
+                {% endif %}
+            </div>
+
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary px-4">
+                    {% if object %}
+                    <i class="bi bi-check-lg me-1"></i> Save Changes
+                    {% else %}
+                    <i class="bi bi-plus-lg me-1"></i> Add Friend
+                    {% endif %}
+                </button>
+                <a href="{% url 'friend-list' %}" class="btn btn-outline-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

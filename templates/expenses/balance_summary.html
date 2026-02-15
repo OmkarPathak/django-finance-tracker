@@ -120,6 +120,62 @@
     </div>
     {% endif %}
 
+    <!-- Friends Management Section -->
+    <div class="px-3 mb-3">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="bi bi-people-fill me-2"></i>Manage Friends</h5>
+                <button class="btn btn-sm btn-light" data-bs-toggle="modal" data-bs-target="#addFriendModal">
+                    <i class="bi bi-plus-lg me-1"></i> Add Friend
+                </button>
+            </div>
+            <div class="card-body">
+                {% if all_friends %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Phone</th>
+                                <th class="text-end">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="friends-table-body">
+                            {% for friend in all_friends %}
+                            <tr data-friend-id="{{ friend.id }}">
+                                <td class="fw-bold">{{ friend.name }}</td>
+                                <td>{{ friend.email|default:"-" }}</td>
+                                <td>{{ friend.phone|default:"-" }}</td>
+                                <td class="text-end">
+                                    <button class="btn btn-sm btn-outline-primary edit-friend-btn" 
+                                            data-friend-id="{{ friend.id }}"
+                                            data-friend-name="{{ friend.name }}"
+                                            data-friend-email="{{ friend.email|default:'' }}"
+                                            data-friend-phone="{{ friend.phone|default:'' }}">
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-danger delete-friend-btn" 
+                                            data-friend-id="{{ friend.id }}"
+                                            data-friend-name="{{ friend.name }}">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-4">
+                    <i class="bi bi-people text-muted" style="font-size: 3rem;"></i>
+                    <p class="text-muted mt-2">No friends added yet. Add friends to track shared expenses.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
     <!-- Overall Summary Cards -->
     <div class="px-3 mb-3">
         <div class="row g-2">
@@ -427,4 +483,213 @@
         {% endif %}
     </div>
 </div>
+
+<!-- Add Friend Modal -->
+<div class="modal fade" id="addFriendModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add New Friend</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-danger d-none" id="addFriendError"></div>
+                <form id="addFriendForm">
+                    <div class="mb-3">
+                        <label for="friendName" class="form-label">Name <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="friendName" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="friendEmail" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="friendEmail">
+                    </div>
+                    <div class="mb-3">
+                        <label for="friendPhone" class="form-label">Phone</label>
+                        <input type="tel" class="form-control" id="friendPhone">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="saveFriendBtn">Save Friend</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Friend Modal -->
+<div class="modal fade" id="editFriendModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Edit Friend</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-danger d-none" id="editFriendError"></div>
+                <form id="editFriendForm">
+                    <input type="hidden" id="editFriendId">
+                    <div class="mb-3">
+                        <label for="editFriendName" class="form-label">Name <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="editFriendName" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editFriendEmail" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="editFriendEmail">
+                    </div>
+                    <div class="mb-3">
+                        <label for="editFriendPhone" class="form-label">Phone</label>
+                        <input type="tel" class="form-control" id="editFriendPhone">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="updateFriendBtn">Update Friend</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const addModal = new bootstrap.Modal(document.getElementById('addFriendModal'));
+    const editModal = new bootstrap.Modal(document.getElementById('editFriendModal'));
+    
+    // Add Friend
+    document.getElementById('saveFriendBtn').addEventListener('click', function() {
+        const name = document.getElementById('friendName').value.trim();
+        const email = document.getElementById('friendEmail').value.trim();
+        const phone = document.getElementById('friendPhone').value.trim();
+        const errorDiv = document.getElementById('addFriendError');
+        
+        if (!name) {
+            errorDiv.textContent = 'Name is required';
+            errorDiv.classList.remove('d-none');
+            return;
+        }
+        
+        this.disabled = true;
+        this.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Saving...';
+        
+        fetch("{% url 'friend-create-ajax' %}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({ name, email, phone })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                errorDiv.textContent = data.error;
+                errorDiv.classList.remove('d-none');
+            }
+        })
+        .catch(err => {
+            errorDiv.textContent = 'An error occurred';
+            errorDiv.classList.remove('d-none');
+        })
+        .finally(() => {
+            this.disabled = false;
+            this.textContent = 'Save Friend';
+        });
+    });
+    
+    // Edit Friend
+    document.querySelectorAll('.edit-friend-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const friendId = this.dataset.friendId;
+            const friendName = this.dataset.friendName;
+            const friendEmail = this.dataset.friendEmail;
+            const friendPhone = this.dataset.friendPhone;
+            
+            document.getElementById('editFriendId').value = friendId;
+            document.getElementById('editFriendName').value = friendName;
+            document.getElementById('editFriendEmail').value = friendEmail;
+            document.getElementById('editFriendPhone').value = friendPhone;
+            document.getElementById('editFriendError').classList.add('d-none');
+            
+            editModal.show();
+        });
+    });
+    
+    document.getElementById('updateFriendBtn').addEventListener('click', function() {
+        const friendId = document.getElementById('editFriendId').value;
+        const name = document.getElementById('editFriendName').value.trim();
+        const email = document.getElementById('editFriendEmail').value.trim();
+        const phone = document.getElementById('editFriendPhone').value.trim();
+        const errorDiv = document.getElementById('editFriendError');
+        
+        if (!name) {
+            errorDiv.textContent = 'Name is required';
+            errorDiv.classList.remove('d-none');
+            return;
+        }
+        
+        this.disabled = true;
+        this.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Updating...';
+        
+        fetch(`/api/friend/${friendId}/update/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({ name, email, phone })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                errorDiv.textContent = data.error;
+                errorDiv.classList.remove('d-none');
+            }
+        })
+        .catch(err => {
+            errorDiv.textContent = 'An error occurred';
+            errorDiv.classList.remove('d-none');
+        })
+        .finally(() => {
+            this.disabled = false;
+            this.textContent = 'Update Friend';
+        });
+    });
+    
+    // Delete Friend
+    document.querySelectorAll('.delete-friend-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const friendId = this.dataset.friendId;
+            const friendName = this.dataset.friendName;
+            
+            if (!confirm(`Are you sure you want to delete ${friendName}? This cannot be undone.`)) {
+                return;
+            }
+            
+            fetch(`/api/friend/${friendId}/delete/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert(data.error);
+                }
+            })
+            .catch(err => {
+                alert('An error occurred');
+            });
+        });
+    });
+});
+</script>
 {% endblock %}

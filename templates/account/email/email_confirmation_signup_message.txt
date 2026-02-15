@@ -1,12 +1,15 @@
-Welcome to TrackMyRupee!
+{% load i18n %}
+{% trans "Welcome aboard!" %}
 
-Hi {{ user.username }},
+{% blocktrans with user.username as username %}Hi {{ username }},{% endblocktrans %}
 
-Thank you for signing up. Please verify your email address by clicking the link below:
+{% trans "Thank you for joining. We're excited to help you take control of your finances!" %}
+
+{% trans "To get started, please confirm your email address by visiting the link below:" %}
 
 {{ activate_url }}
 
-If you didn't create an account, you can safely ignore this email.
+{% trans "If you didn't create an account, you can safely ignore this email." %}
 
 TrackMyRupee Team
 https://trackmyrupee.com

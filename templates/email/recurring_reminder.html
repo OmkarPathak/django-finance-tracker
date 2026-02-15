@@ -1,0 +1,47 @@
+{% extends "account/email/base_email.html" %}
+
+{% block title %}Upcoming Payment Reminder - TrackMyRupee{% endblock %}
+
+{% block content %}
+<h2>Upcoming Payments Reminder</h2>
+
+<p>Hello {{ user.first_name|default:user.username }},</p>
+
+<p>You have <strong>{{ transactions|length }}</strong> recurring payment{% if transactions|length > 1 %}s{% endif %} due on <strong>{{ due_date|date:"M d, Y" }}</strong>.</p>
+
+<div style="background-color: #f8f9fa; border-radius: 12px; padding: 20px; margin: 24px 0;">
+    <table style="width: 100%; border-collapse: collapse;">
+        <thead>
+            <tr style="border-bottom: 2px solid #e9ecef;">
+                <th style="padding: 10px; text-align: left; color: #6c757d; font-size: 14px;">Description</th>
+                <th style="padding: 10px; text-align: right; color: #6c757d; font-size: 14px;">Amount</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for t in transactions %}
+            <tr style="border-bottom: 1px solid #e9ecef;">
+                <td style="padding: 12px 10px;">
+                    <strong style="display: block; font-size: 16px;">{{ t.description }}</strong>
+                    <span style="font-size: 12px; color: #6c757d;">{{ t.frequency|title }} {{ t.transaction_type|title }}</span>
+                </td>
+                <td style="padding: 12px 10px; text-align: right;">
+                    <span style="font-weight: bold; color: {% if t.transaction_type == 'EXPENSE' %}#dc3545{% else %}#198754{% endif %};">
+                        {{ currency_symbol }}{{ t.amount }}
+                    </span>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+        <tfoot>
+            <tr>
+                <td style="padding: 16px 10px; text-align: right; font-weight: bold;">Total Due:</td>
+                <td style="padding: 16px 10px; text-align: right; font-weight: bold; font-size: 18px;">{{ currency_symbol }}{{ total_amount }}</td>
+            </tr>
+        </tfoot>
+    </table>
+</div>
+
+<p>Ensure you have sufficient funds or manage these subscriptions on your dashboard.</p>
+
+<a href="https://trackmyrupee.com/recurring/" class="btn btn-primary">Manage Subscriptions</a>
+{% endblock %}

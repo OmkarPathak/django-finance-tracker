@@ -1,0 +1,111 @@
+{% extends 'expenses/settings_base.html' %}
+
+{% block settings_content %}
+<div class="fade-in">
+    <div class="py-3 mb-4">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-2">
+                <li class="breadcrumb-item"><a href="{% url 'credit-card-list' %}">Credit Cards</a></li>
+                <li class="breadcrumb-item active">{{ title }}</li>
+            </ol>
+        </nav>
+        <h2 class="h4 mb-0 fw-bold">{{ title }}</h2>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-body p-4">
+            <form method="post" novalidate>
+                {% csrf_token %}
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="id_name" class="form-label text-muted small text-uppercase">Card Name *</label>
+                            <input type="text" class="form-control {% if form.name.errors %}is-invalid{% endif %}"
+                                id="id_name" name="name" value="{{ form.name.value|default:'' }}"
+                                placeholder="e.g., Axis Flipkart Card" required>
+                            {% if form.name.errors %}
+                            <div class="invalid-feedback">{{ form.name.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="id_bank_name" class="form-label text-muted small text-uppercase">Bank Name
+                                *</label>
+                            <input type="text" class="form-control {% if form.bank_name.errors %}is-invalid{% endif %}"
+                                id="id_bank_name" name="bank_name" value="{{ form.bank_name.value|default:'' }}"
+                                placeholder="e.g., Axis Bank" required>
+                            {% if form.bank_name.errors %}
+                            <div class="invalid-feedback">{{ form.bank_name.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="id_credit_limit" class="form-label text-muted small text-uppercase">Credit Limit
+                        *</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-transparent border-end-0">{{ currency_symbol }}</span>
+                        <input type="number"
+                            class="form-control border-start-0 {% if form.credit_limit.errors %}is-invalid{% endif %}"
+                            id="id_credit_limit" name="credit_limit" step="0.01"
+                            value="{{ form.credit_limit.value|default:'' }}" placeholder="100000" required>
+                        {% if form.credit_limit.errors %}
+                        <div class="invalid-feedback">{{ form.credit_limit.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="form-text">Total credit limit on this card.</div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="id_billing_cycle_day" class="form-label text-muted small text-uppercase">Billing
+                                Cycle Day *</label>
+                            <input type="number"
+                                class="form-control {% if form.billing_cycle_day.errors %}is-invalid{% endif %}"
+                                id="id_billing_cycle_day" name="billing_cycle_day" min="1" max="28"
+                                value="{{ form.billing_cycle_day.value|default:'15' }}" required>
+                            {% if form.billing_cycle_day.errors %}
+                            <div class="invalid-feedback">{{ form.billing_cycle_day.errors.0 }}</div>
+                            {% endif %}
+                            <div class="form-text">Day of month when your bill generates (1-28).</div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="id_due_date_days" class="form-label text-muted small text-uppercase">Due Date
+                                Days *</label>
+                            <input type="number"
+                                class="form-control {% if form.due_date_days.errors %}is-invalid{% endif %}"
+                                id="id_due_date_days" name="due_date_days" min="1" max="60"
+                                value="{{ form.due_date_days.value|default:'20' }}" required>
+                            {% if form.due_date_days.errors %}
+                            <div class="invalid-feedback">{{ form.due_date_days.errors.0 }}</div>
+                            {% endif %}
+                            <div class="form-text">Days after billing date to pay (typically 15-25).</div>
+                        </div>
+                    </div>
+                </div>
+
+                {% if form.non_field_errors %}
+                <div class="alert alert-danger mb-4">
+                    {% for error in form.non_field_errors %}
+                    {{ error }}
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                <div class="d-flex gap-2 mt-4">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check-lg me-1"></i> {{ button_text }}
+                    </button>
+                    <a href="{% url 'credit-card-list' %}" class="btn btn-outline-secondary">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,28 +1,56 @@
+import csv
+from django.views.decorators.csrf import csrf_exempt
 import calendar
 import csv
+import json
+import traceback
 from datetime import datetime, date, timedelta
 
+import openpyxl
+from allauth.account.models import EmailAddress
 from allauth.socialaccount.models import SocialAccount
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.models import User
 from django.core.cache import cache
+from django.core.mail import send_mail
+from django.core.management import call_command
 from django.db import IntegrityError
 from django.db.models import Sum, Q
+from django.db.models.functions import TruncMonth, TruncDay
 from django.forms import modelformset_factory
 from django.http import JsonResponse, HttpResponse
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse_lazy, reverse
+from django.utils import timezone
+from django.utils.html import mark_safe, format_html, format_html_join
 from django.views import generic
-from django.views.generic import TemplateView, ListView, CreateView, UpdateView, DeleteView, View
+from django.views.decorators.csrf import csrf_exempt
+from django.views.generic import (
+    TemplateView,
+    ListView,
+    CreateView,
+    UpdateView,
+    DeleteView,
+    View,
+)
 
-from .forms import ExpenseForm, IncomeForm, RecurringTransactionForm, ProfileUpdateForm, CustomSignupForm,ContactForm
-from .models import Expense, Category, Income, RecurringTransaction, UserProfile, SubscriptionPlan
+from finance_tracker.ai_utils import predict_category_ai
+from .forms import ExpenseForm, IncomeForm, RecurringTransactionForm, ProfileUpdateForm, CustomSignupForm, ContactForm
+from .models import (
+    Expense,
+    Category,
+    Income,
+    RecurringTransaction,
+    UserProfile,
+    SubscriptionPlan,
+    Friend,
+)
+from .models import Notification
 
-
-# ... existing imports ...
 
 def create_category_ajax(request):
     if request.method == 'POST':
@@ -53,10 +81,7 @@ def create_category_ajax(request):
             return JsonResponse({'success': False, 'error': str(e)}, status=500)
             
     return JsonResponse({'success': False, 'error': 'Invalid request method.'}, status=405)
-# Duplicate imports removed
-from django.core.management import call_command
-from allauth.account.models import EmailAddress
-import json
+
 
 def resend_verification_email(request):
     """
@@ -93,7 +118,7 @@ def resend_verification_email(request):
 
             except Exception as e:
                 # Log the actual error for debugging
-                import traceback
+                
                 print(traceback.format_exc())
                 return JsonResponse({'success': False, 'error': f'Send failed: {str(e)}'}, status=500)
                 
@@ -312,16 +337,20 @@ def home_view(request):
     category_data.sort(key=lambda x: x['total'], reverse=True)
 
     # Compute limits and usage per category for chart display
+    # Compute limits and usage per category for chart display
     category_limits = []
+    # Optimization: Pre-fetch all categories for the user to avoid N+1 queries in the loop
+    user_categories = {c.name: c for c in Category.objects.filter(user=request.user)}
+
     for item in category_data:
-        try:
-            cat_obj = Category.objects.get(user=request.user, name=item['category'])
-            limit = float(cat_obj.limit) if cat_obj.limit else None
-        except Category.DoesNotExist:
-            limit = None
+        cat_name = item['category']
+        cat_obj = user_categories.get(cat_name)
+
+        limit = float(cat_obj.limit) if (cat_obj and cat_obj.limit) else None
+
         used_percent = round((item['total'] / limit * 100), 1) if limit else None
         category_limits.append({
-            'name': item['category'],
+            'name': cat_name,
             'total': item['total'],
             'limit': limit,
             'used_percent': used_percent,
@@ -331,7 +360,6 @@ def home_view(request):
     category_amounts = [item['total'] for item in category_data]
     
     # 2. Time Trend (Stacked) Data
-    from django.db.models.functions import TruncMonth, TruncDay
     
     # Determine Labels (X-Axis)
     # Determine Labels (X-Axis)
@@ -429,8 +457,7 @@ def home_view(request):
 
 
     # 4. Summary Stats
-    # Calculate total using user's share for shared expenses
-    total_expenses = sum(expense.user_share_amount for expense in expenses)
+    total_expenses = expenses.aggregate(Sum('amount'))['amount__sum'] or 0
     transaction_count = expenses.count()
     top_category = category_data[0] if category_data else None
     
@@ -555,7 +582,6 @@ def home_view(request):
             pass
     
     # --- Emotional Feedback / Insights Logic (Enhanced) ---
-    from django.utils.html import mark_safe, format_html, format_html_join
     
     insights = []
     
@@ -583,7 +609,52 @@ def home_view(request):
             return format_html('{}, etc.', links_html)
         return links_html
 
+    # 0. Anomaly Detection (Spending Spike)
+    # Only if viewing current month (or default view)
+    is_current_month_view = False
+    now = datetime.now()
+    if not request.GET or (len(selected_months) == 1 and str(now.month) in selected_months and str(now.year) in selected_years):
+         is_current_month_view = True
+    
+    if is_current_month_view and total_expenses > 0:
+        # Calculate last 3 months average
+        last_3_months_total = 0
+        months_counted = 0
+        for i in range(1, 4):
+            # Calculate past month/year
+            y = now.year
+            m = now.month - i
+            while m < 1:
+                m += 12
+                y -= 1
+            
+            m_total = Expense.objects.filter(user=request.user, date__year=y, date__month=m).aggregate(Sum('amount'))['amount__sum'] or 0
+            if m_total > 0:
+                last_3_months_total += m_total
+                months_counted += 1
+        
+        if months_counted > 0:
+            avg_past_spend = last_3_months_total / months_counted
+            
+            # Project current month
+            days_in_month = calendar.monthrange(now.year, now.month)[1]
+            days_passed = now.day
+            if days_passed > 0:
+                projected_spend = (float(total_expenses) / days_passed) * days_in_month
+                avg_past_spend_float = float(avg_past_spend)
+                
+                if projected_spend > avg_past_spend_float * 1.25 and float(total_expenses) > 1000: # 25% Higher + Min Threshold
+                    pct_higher = int(((projected_spend - avg_past_spend_float) / avg_past_spend_float) * 100)
+                    insights.append({
+                        'type': 'warning',
+                        'icon': 'graph-up-arrow',
+                        'title': 'Traffic Alert 🚦',
+                        'message': f"You're pacing {pct_higher}% higher than usual. Slow down to stay on track!",
+                        'allow_share': False
+                    })
+
     # 1. Budget Warnings (High Priority)
+
     over_budget_cats = [c['name'] for c in category_limits if c['used_percent'] is not None and c['used_percent'] > 100]
     near_budget_cats = [c['name'] for c in category_limits if c['used_percent'] is not None and 90 <= c['used_percent'] <= 100]
     
@@ -798,8 +869,6 @@ def upload_view(request):
     """
     Upload view with year selection enforcement.
     """
-    import openpyxl
-    from datetime import date, datetime
     
     if request.method == 'POST' and request.FILES.get('file'):
         excel_file = request.FILES['file']
@@ -894,7 +963,6 @@ def upload_view(request):
             return redirect('home')
         except Exception as e:
             print(f"Error processing file: {e}")
-            import traceback
             traceback.print_exc()
             pass
 
@@ -906,12 +974,16 @@ def upload_view(request):
 
 class ExpenseListView(LoginRequiredMixin, RecurringTransactionMixin, ListView):
     model = Expense
-    template_name = 'expenses/expense_list.html'
-    context_object_name = 'expenses'
+    template_name = "expenses/expense_list.html"
+    context_object_name = "expenses"
     paginate_by = 20
 
     def get_queryset(self):
-        queryset = Expense.objects.filter(user=self.request.user).select_related('shared_details').order_by('-date')
+        queryset = (
+            Expense.objects.filter(user=self.request.user)
+            .select_related("shared_details")
+            .order_by("-date")
+        )
         
         # Filtering
         selected_years = self.request.GET.getlist('year')
@@ -964,6 +1036,14 @@ class ExpenseListView(LoginRequiredMixin, RecurringTransactionMixin, ListView):
         if search_query:
             queryset = queryset.filter(description__icontains=search_query)
             
+        # Sorting
+        sort_by = self.request.GET.get('sort')
+        if sort_by == 'amount_asc':
+            queryset = queryset.order_by('amount')
+        elif sort_by == 'amount_desc':
+            queryset = queryset.order_by('-amount')
+        # Default is already '-date' from line 961, so valid fallback.
+            
         return queryset
 
     def get_context_data(self, **kwargs):
@@ -972,10 +1052,7 @@ class ExpenseListView(LoginRequiredMixin, RecurringTransactionMixin, ListView):
         # Calculate stats for the filtered queryset
         filtered_queryset = self.object_list
         context['filtered_count'] = filtered_queryset.count()
-
-        # Calculate filtered_amount using user's share for shared expenses
-        filtered_amount = sum(expense.user_share_amount for expense in filtered_queryset)
-        context['filtered_amount'] = filtered_amount
+        context['filtered_amount'] = filtered_queryset.aggregate(Sum('amount'))['amount__sum'] or 0
 
         # Get unique years and categories for validation
         user_expenses = Expense.objects.filter(user=self.request.user)
@@ -1037,20 +1114,107 @@ class ExpenseCreateView(LoginRequiredMixin, generic.TemplateView):
 
     def get(self, request, *args, **kwargs):
         # Check if bulk mode is requested (for backward compatibility)
-        bulk_mode = request.GET.get('bulk', 'false').lower() == 'true'
+        bulk_mode = request.GET.get("bulk", "false").lower() == "true"
 
         if bulk_mode:
             # Use formset for bulk entry
-            ExpenseFormSet = modelformset_factory(Expense, form=ExpenseForm, extra=1, can_delete=True)
-            initial_data = [{'date': datetime.now().date()} for _ in range(1)]
-            formset = ExpenseFormSet(queryset=Expense.objects.none(), initial=initial_data, form_kwargs={'user': request.user})
-            next_url = request.GET.get('next', '')
-            return render(request, self.template_name, {'formset': formset, 'next_url': next_url})
+            ExpenseFormSet = modelformset_factory(
+                Expense, form=ExpenseForm, extra=1, can_delete=True
+            )
+            initial_data = [{"date": datetime.now().date()} for _ in range(1)]
+            formset = ExpenseFormSet(
+                queryset=Expense.objects.none(),
+                initial=initial_data,
+                form_kwargs={"user": request.user},
+            )
+            next_url = request.GET.get("next", "")
+            return render(
+                request, self.template_name, {"formset": formset, "next_url": next_url}
+            )
         else:
+            # Check if this is a copy operation
+            copy_expense_id = request.GET.get("copy")
+
+            # Prepare initial data if copying
+            initial_data = {}
+            copy_shared_data = None
+
+            if copy_expense_id:
+                try:
+                    # Fetch the expense to copy
+                    expense = get_object_or_404(
+                        Expense, pk=copy_expense_id, user=request.user
+                    )
+
+                    initial_data = {
+                        "date": expense.date,
+                        "amount": expense.amount,
+                        "description": f"{expense.description} (Copy)",
+                        "category": expense.category,
+                        "payment_method": expense.payment_method,
+                    }
+
+                    # Add cashback data if present
+                    if expense.has_cashback:
+                        initial_data["has_cashback"] = True
+                        initial_data["cashback_type"] = expense.cashback_type
+                        initial_data["cashback_value"] = expense.cashback_value
+
+                    # Handle shared expense data
+                    if hasattr(expense, "shared_details") and expense.shared_details:
+                        shared = expense.shared_details
+                        participants_data = []
+
+                        for participant in shared.participants.all():
+                            # Find the share for this participant
+                            share = shared.shares.filter(
+                                participant=participant
+                            ).first()
+                            participants_data.append(
+                                {
+                                    "id": participant.id,
+                                    "name": participant.name,
+                                    "is_user": participant.is_user,
+                                    "is_payer": participant.is_payer,
+                                    "amount": str(share.amount) if share else "0",
+                                }
+                            )
+
+                        # Find payer
+                        payer = shared.participants.filter(is_payer=True).first()
+
+                        copy_shared_data = {
+                            "participants_json": json.dumps(participants_data),
+                            "payer_id": payer.name if payer else "You",
+                        }
+
+                        # Set initial values for hidden fields
+                        initial_data["participants_json"] = copy_shared_data[
+                            "participants_json"
+                        ]
+                        initial_data["payer_id"] = copy_shared_data["payer_id"]
+                        initial_data["expense_type"] = "shared"
+
+                except Expense.DoesNotExist:
+                    messages.error(request, "Expense not found.")
+
             # Use single form for regular/shared expense entry
-            form = ExpenseForm(user=request.user)
-            next_url = request.GET.get('next', '')
-            return render(request, self.template_name, {'form': form, 'next_url': next_url})
+            form = ExpenseForm(
+                user=request.user, initial=initial_data if copy_expense_id else None
+            )
+            next_url = request.GET.get("next", "")
+
+            # Pass additional context
+            context = {
+                "form": form,
+                "next_url": next_url,
+                "is_copy": bool(copy_expense_id),
+            }
+
+            if copy_shared_data:
+                context["copy_shared_data"] = copy_shared_data
+
+            return render(request, self.template_name, context)
 
     def post(self, request, *args, **kwargs):
         from django.db import transaction
@@ -1058,12 +1222,14 @@ class ExpenseCreateView(LoginRequiredMixin, generic.TemplateView):
         from decimal import Decimal
 
         # Check if this is a bulk submission (formset) or single form
-        bulk_mode = 'form-TOTAL_FORMS' in request.POST
+        bulk_mode = "form-TOTAL_FORMS" in request.POST
 
         if bulk_mode:
             # Handle formset submission (bulk mode)
-            ExpenseFormSet = modelformset_factory(Expense, form=ExpenseForm, extra=1, can_delete=True)
-            formset = ExpenseFormSet(request.POST, form_kwargs={'user': request.user})
+            ExpenseFormSet = modelformset_factory(
+                Expense, form=ExpenseForm, extra=1, can_delete=True
+            )
+            formset = ExpenseFormSet(request.POST, form_kwargs={"user": request.user})
 
             if formset.is_valid():
                 try:
@@ -1076,15 +1242,19 @@ class ExpenseCreateView(LoginRequiredMixin, generic.TemplateView):
                         form_index = instances.index(instance)
                         form = formset.forms[form_index]
 
-                        expense_type = form.data.get(f'{formset.prefix}-{form_index}-expense_type', 'personal')
+                        expense_type = form.data.get(
+                            f"{formset.prefix}-{form_index}-expense_type", "personal"
+                        )
 
                         # Save the base expense first
                         instance.save()
 
                         # If this is a shared expense, create related records
-                        if expense_type == 'shared':
-                            participants_json = form.cleaned_data.get('participants_json')
-                            payer_id = form.cleaned_data.get('payer_id')
+                        if expense_type == "shared":
+                            participants_json = form.cleaned_data.get(
+                                "participants_json"
+                            )
+                            payer_id = form.cleaned_data.get("payer_id")
 
                             if participants_json and payer_id:
                                 with transaction.atomic():
@@ -1093,6 +1263,15 @@ class ExpenseCreateView(LoginRequiredMixin, generic.TemplateView):
 
                                     # Find payer data
                                     payer_name = payer_id.strip()
+
+                                    # Check if payer is "You" (the logged-in user)
+                                    payer_is_user = payer_name == "You"
+
+                                    # Check if user is in participants
+                                    user_in_participants = any(
+                                        p.get("is_user", False)
+                                        for p in participants_data
+                                    )
 
                                     # Create SharedExpense first (no payer FK anymore)
                                     shared_expense = SharedExpense.objects.create(
@@ -1103,53 +1282,82 @@ class ExpenseCreateView(LoginRequiredMixin, generic.TemplateView):
                                     participant_map = {}
 
                                     for participant_data in participants_data:
-                                        participant_name = participant_data.get('name', '').strip()
-                                        is_user = participant_data.get('is_user', False)
-                                        is_payer = participant_name == payer_name
+                                        participant_name = participant_data.get(
+                                            "name", ""
+                                        ).strip()
+                                        is_user = participant_data.get("is_user", False)
+                                        is_payer = (is_user and payer_is_user) or (
+                                            participant_name == payer_name
+                                        )
 
                                         # Get or create Friend from master table (not for user)
                                         friend = None
                                         if not is_user:
                                             friend, _ = Friend.objects.get_or_create(
-                                                name=participant_name
+                                                user=request.user, name=participant_name
                                             )
 
-                                        participant = SharedExpenseParticipant.objects.create(
-                                            shared_expense=shared_expense,
-                                            friend=friend,
-                                            is_user=is_user,
-                                            is_payer=is_payer
+                                        participant = (
+                                            SharedExpenseParticipant.objects.create(
+                                                shared_expense=shared_expense,
+                                                friend=friend,
+                                                is_user=is_user,
+                                                is_payer=is_payer,
+                                            )
                                         )
 
                                         participant_map[participant_name] = participant
 
-                                    # Create Share records
-                                    for participant_data in participants_data:
-                                        participant_name = participant_data.get('name', '').strip()
-                                        share_amount = participant_data.get('share_amount')
+                                    # If payer is user but not in participants, create a participant record for them as payer only
+                                    if payer_is_user and not user_in_participants:
+                                        payer_participant = (
+                                            SharedExpenseParticipant.objects.create(
+                                                shared_expense=shared_expense,
+                                                friend=None,
+                                                is_user=True,
+                                                is_payer=True,
+                                            )
+                                        )
+                                        participant_map["You"] = payer_participant
 
-                                        if share_amount is not None and share_amount != '':
-                                            participant = participant_map[participant_name]
+                                    # Create Share records (only for participants with share amounts)
+                                    for participant_data in participants_data:
+                                        participant_name = participant_data.get(
+                                            "name", ""
+                                        ).strip()
+                                        share_amount = participant_data.get(
+                                            "share_amount"
+                                        )
+
+                                        if (
+                                            share_amount is not None
+                                            and share_amount != ""
+                                        ):
+                                            participant = participant_map[
+                                                participant_name
+                                            ]
 
                                             Share.objects.create(
                                                 shared_expense=shared_expense,
                                                 participant=participant,
-                                                amount=Decimal(str(share_amount))
+                                                amount=Decimal(str(share_amount)),
                                             )
 
-                    next_url = request.POST.get('next') or request.GET.get('next')
+                    next_url = request.POST.get("next") or request.GET.get("next")
                     if next_url:
                         return redirect(next_url)
-                    return redirect('expense-list')
+                    return redirect("expense-list")
 
                 except IntegrityError as e:
-                    messages.error(request, f"This expense entry already exists: {str(e)}")
-                    return render(request, self.template_name, {'formset': formset})
+                    messages.error(
+                        request, f"This expense entry already exists: {str(e)}"
+                    )
+                    return render(request, self.template_name, {"formset": formset})
                 except (ValueError, KeyError, json.JSONDecodeError) as e:
                     messages.error(request, f"Error creating shared expense: {str(e)}")
-                    return render(request, self.template_name, {'formset': formset})
+                    return render(request, self.template_name, {"formset": formset})
 
-            return render(request, self.template_name, {'formset': formset})
+            return render(request, self.template_name, {"formset": formset})
 
         else:
             # Handle single form submission
@@ -1163,12 +1371,22 @@ class ExpenseCreateView(LoginRequiredMixin, generic.TemplateView):
                         expense.user = request.user
                         expense.save()
 
-                        # Check if this is a shared expense
-                        expense_type = request.POST.get('expense_type', 'personal')
+                        # Update account balances
+                        if expense.payment_source:
+                            # Deduct from payment source (bank account, wallet, cash)
+                            expense.payment_source.deduct(expense.amount)
+                        elif expense.credit_card:
+                            # Use credit from credit card
+                            expense.credit_card.use_credit(expense.amount)
 
-                        if expense_type == 'shared':
-                            participants_json = form.cleaned_data.get('participants_json')
-                            payer_id = form.cleaned_data.get('payer_id')
+                        # Check if this is a shared expense
+                        expense_type = request.POST.get("expense_type", "personal")
+
+                        if expense_type == "shared":
+                            participants_json = form.cleaned_data.get(
+                                "participants_json"
+                            )
+                            payer_id = form.cleaned_data.get("payer_id")
 
                             if participants_json and payer_id:
                                 # Parse participants data
@@ -1176,6 +1394,14 @@ class ExpenseCreateView(LoginRequiredMixin, generic.TemplateView):
 
                                 # Find payer name
                                 payer_name = payer_id.strip()
+
+                                # Check if payer is "You" (the logged-in user)
+                                payer_is_user = payer_name == "You"
+
+                                # Check if user is in participants
+                                user_in_participants = any(
+                                    p.get("is_user", False) for p in participants_data
+                                )
 
                                 # Create SharedExpense first (no payer FK anymore)
                                 shared_expense = SharedExpense.objects.create(
@@ -1186,55 +1412,78 @@ class ExpenseCreateView(LoginRequiredMixin, generic.TemplateView):
                                 participant_map = {}
 
                                 for participant_data in participants_data:
-                                    participant_name = participant_data.get('name', '').strip()
-                                    is_user = participant_data.get('is_user', False)
-                                    is_payer = participant_name == payer_name
+                                    participant_name = participant_data.get(
+                                        "name", ""
+                                    ).strip()
+                                    is_user = participant_data.get("is_user", False)
+                                    is_payer = (is_user and payer_is_user) or (
+                                        participant_name == payer_name
+                                    )
 
                                     # Get or create Friend from master table (not for user)
                                     friend = None
                                     if not is_user:
                                         friend, _ = Friend.objects.get_or_create(
-                                            name=participant_name
+                                            user=request.user, name=participant_name
                                         )
 
-                                    participant = SharedExpenseParticipant.objects.create(
-                                        shared_expense=shared_expense,
-                                        friend=friend,
-                                        is_user=is_user,
-                                        is_payer=is_payer
+                                    participant = (
+                                        SharedExpenseParticipant.objects.create(
+                                            shared_expense=shared_expense,
+                                            friend=friend,
+                                            is_user=is_user,
+                                            is_payer=is_payer,
+                                        )
                                     )
 
                                     participant_map[participant_name] = participant
 
-                                # Create Share records
-                                for participant_data in participants_data:
-                                    participant_name = participant_data.get('name', '').strip()
-                                    share_amount = participant_data.get('share_amount')
+                                # If payer is user but not in participants, create a participant record for them as payer only
+                                if payer_is_user and not user_in_participants:
+                                    payer_participant = (
+                                        SharedExpenseParticipant.objects.create(
+                                            shared_expense=shared_expense,
+                                            friend=None,
+                                            is_user=True,
+                                            is_payer=True,
+                                        )
+                                    )
+                                    participant_map["You"] = payer_participant
 
-                                    if share_amount is not None and share_amount != '':
+                                # Create Share records (only for participants with share amounts)
+                                for participant_data in participants_data:
+                                    participant_name = participant_data.get(
+                                        "name", ""
+                                    ).strip()
+                                    share_amount = participant_data.get("share_amount")
+
+                                    if share_amount is not None and share_amount != "":
                                         participant = participant_map[participant_name]
 
                                         Share.objects.create(
                                             shared_expense=shared_expense,
                                             participant=participant,
-                                            amount=Decimal(str(share_amount))
+                                            amount=Decimal(str(share_amount)),
                                         )
 
-                        messages.success(request, 'Expense created successfully!')
+                        messages.success(request, "Expense created successfully!")
 
-                        next_url = request.POST.get('next') or request.GET.get('next')
+                        next_url = request.POST.get("next") or request.GET.get("next")
                         if next_url:
                             return redirect(next_url)
-                        return redirect('expense-list')
+                        return redirect("expense-list")
 
                 except IntegrityError as e:
-                    messages.error(request, f"This expense entry already exists: {str(e)}")
-                    return render(request, self.template_name, {'form': form})
+                    messages.error(
+                        request, f"This expense entry already exists: {str(e)}"
+                    )
+                    return render(request, self.template_name, {"form": form})
                 except (ValueError, KeyError, json.JSONDecodeError) as e:
                     messages.error(request, f"Error creating shared expense: {str(e)}")
-                    return render(request, self.template_name, {'form': form})
+                    return render(request, self.template_name, {"form": form})
 
-            return render(request, self.template_name, {'form': form})
+            return render(request, self.template_name, {"form": form})
+
 
 class ExpenseUpdateView(LoginRequiredMixin, generic.UpdateView):
     model = Expense
@@ -1268,7 +1517,7 @@ class ExpenseUpdateView(LoginRequiredMixin, generic.UpdateView):
             shared_expense = expense.shared_details
 
             # Set expense type to shared
-            initial['expense_type'] = 'shared'
+            initial["expense_type"] = "shared"
 
             # Build participants list from existing data
             participants = []
@@ -1277,12 +1526,12 @@ class ExpenseUpdateView(LoginRequiredMixin, generic.UpdateView):
             for participant in shared_expense.participants.all():
                 # Get the participant's share
                 share = shared_expense.shares.filter(participant=participant).first()
-                share_amount = str(share.amount) if share else ''
+                share_amount = str(share.amount) if share else ""
 
                 participant_data = {
-                    'name': participant.name,
-                    'is_user': participant.is_user,
-                    'share_amount': share_amount
+                    "name": participant.name,
+                    "is_user": participant.is_user,
+                    "share_amount": share_amount,
                 }
                 participants.append(participant_data)
 
@@ -1291,103 +1540,43 @@ class ExpenseUpdateView(LoginRequiredMixin, generic.UpdateView):
                     payer_name = participant.name
 
             # Set the initial values for hidden fields
-            initial['participants_json'] = json.dumps(participants)
-            initial['payer_id'] = payer_name
-
+            initial["participants_json"] = json.dumps(participants)
+            initial["payer_id"] = payer_name
 
         except Exception as e:
             # Not a shared expense or error loading data - use defaults
+            # This is expected for personal expenses
             pass
 
         return initial
 
     def form_valid(self, form):
-        from django.db import transaction
-        from .models import SharedExpense, SharedExpenseParticipant, Share, Friend
-        from decimal import Decimal
-
         try:
-            with transaction.atomic():
-                # Save the base expense
-                expense = form.save()
+            # Get the old expense to restore balances
+            old_expense = self.get_object()
+            old_amount = old_expense.amount
+            old_payment_source = old_expense.payment_source
+            old_credit_card = old_expense.credit_card
 
-                # Check if this is being converted to a shared expense
-                expense_type = self.request.POST.get('expense_type', 'personal')
+            # Restore old balances first
+            if old_payment_source:
+                old_payment_source.add(old_amount)
+            elif old_credit_card:
+                old_credit_card.pay_bill(old_amount)
 
-                if expense_type == 'shared':
-                    participants_json = form.cleaned_data.get('participants_json')
-                    payer_id = form.cleaned_data.get('payer_id')
+            # Save the updated expense
+            response = super().form_valid(form)
 
-                    if participants_json and payer_id:
-                        # Parse participants data
-                        participants_data = json.loads(participants_json)
-                        payer_name = payer_id.strip()
+            # Deduct new balances
+            new_expense = self.object
+            if new_expense.payment_source:
+                new_expense.payment_source.deduct(new_expense.amount)
+            elif new_expense.credit_card:
+                new_expense.credit_card.use_credit(new_expense.amount)
 
-                        # Check if shared expense already exists for this expense
-                        try:
-                            existing_shared = expense.shared_details
-                            # Delete old shared expense data to recreate
-                            existing_shared.delete()
-                        except SharedExpense.DoesNotExist:
-                            pass
-
-                        # Create SharedExpense
-                        shared_expense = SharedExpense.objects.create(expense=expense)
-
-                        # Create all SharedExpenseParticipant records
-                        participant_map = {}
-
-                        for participant_data in participants_data:
-                            participant_name = participant_data.get('name', '').strip()
-                            is_user = participant_data.get('is_user', False)
-                            is_payer = participant_name == payer_name
-
-                            # Get or create Friend from master table (not for user)
-                            friend = None
-                            if not is_user:
-                                friend, _ = Friend.objects.get_or_create(
-                                    name=participant_name
-                                )
-
-                            participant = SharedExpenseParticipant.objects.create(
-                                shared_expense=shared_expense,
-                                friend=friend,
-                                is_user=is_user,
-                                is_payer=is_payer
-                            )
-
-                            participant_map[participant_name] = participant
-
-                        # Create Share records
-                        for participant_data in participants_data:
-                            participant_name = participant_data.get('name', '').strip()
-                            share_amount = participant_data.get('share_amount')
-
-                            if share_amount is not None and share_amount != '':
-                                participant = participant_map[participant_name]
-
-                                Share.objects.create(
-                                    shared_expense=shared_expense,
-                                    participant=participant,
-                                    amount=Decimal(str(share_amount))
-                                )
-
-                elif expense_type == 'personal':
-                    # If converting from shared to personal, delete shared expense data
-                    try:
-                        existing_shared = expense.shared_details
-                        existing_shared.delete()
-                    except SharedExpense.DoesNotExist:
-                        pass
-
-                messages.success(self.request, 'Expense updated successfully!')
-                return redirect(self.get_success_url())
-
+            return response
         except IntegrityError:
             messages.error(self.request, "This expense entry already exists.")
-            return self.form_invalid(form)
-        except (ValueError, KeyError, json.JSONDecodeError) as e:
-            messages.error(self.request, f"Error updating shared expense: {str(e)}")
             return self.form_invalid(form)
 
     def get_queryset(self):
@@ -1403,6 +1592,14 @@ class ExpenseBulkDeleteView(LoginRequiredMixin, View):
             
         # Filter by IDs and ensuring they belong to the current user for security
         expenses_to_delete = Expense.objects.filter(id__in=expense_ids, user=request.user)
+        
+        # Restore balances for each expense before deleting
+        for expense in expenses_to_delete:
+            if expense.payment_source:
+                expense.payment_source.add(expense.amount)
+            elif expense.credit_card:
+                expense.credit_card.pay_bill(expense.amount)
+        
         deleted_count = expenses_to_delete.count()
         
         if deleted_count > 0:
@@ -1420,8 +1617,18 @@ class ExpenseDeleteView(LoginRequiredMixin, generic.DeleteView):
 
     def get_queryset(self):
         return Expense.objects.filter(user=self.request.user)
-    def get_queryset(self):
-        return Expense.objects.filter(user=self.request.user)
+
+    def delete(self, request, *args, **kwargs):
+        """Override delete to restore account balances."""
+        expense = self.get_object()
+        
+        # Restore balances before deleting
+        if expense.payment_source:
+            expense.payment_source.add(expense.amount)
+        elif expense.credit_card:
+            expense.credit_card.pay_bill(expense.amount)
+        
+        return super().delete(request, *args, **kwargs)
 
 class CategoryListView(LoginRequiredMixin, generic.ListView):
     model = Category
@@ -1567,8 +1774,6 @@ def export_expenses(request):
 # --------------------
 # Income Views
 # --------------------
-
-from django.utils import timezone
 
 class IncomeListView(LoginRequiredMixin, RecurringTransactionMixin, ListView):
     model = Income
@@ -2159,10 +2364,9 @@ class RecurringTransactionDeleteView(LoginRequiredMixin, DeleteView):
     def get_queryset(self):
         return RecurringTransaction.objects.filter(user=self.request.user)
 
-    def delete(self, request, *args, **kwargs):
-        obj = self.get_object()
-        
+    def form_valid(self, form):
         # Calculate savings
+        obj = self.object
         amount = obj.amount
         if obj.frequency == 'DAILY':
             yearly_saving = amount * 365
@@ -2178,7 +2382,7 @@ class RecurringTransactionDeleteView(LoginRequiredMixin, DeleteView):
             currency = self.request.user.userprofile.currency
             
         messages.success(self.request, f"You just saved {currency}{yearly_saving:,.0f}/year 🎉")
-        return super().delete(request, *args, **kwargs)
+        return super().form_valid(form)
 
 class AccountDeleteView(LoginRequiredMixin, DeleteView):
     model = User
@@ -2272,21 +2476,20 @@ class BalanceSummaryView(LoginRequiredMixin, TemplateView):
         - 8.4: Calculate settlements across all time periods by default
         - 8.5: Allow filtering settlements by date range
     """
-    template_name = 'expenses/balance_summary.html'
+
+    template_name = "expenses/balance_summary.html"
 
     def get_context_data(self, **kwargs):
         from .services import BalanceCalculationService
         from .models import SharedExpense, Friend
-        from datetime import date
-        import calendar
 
         context = super().get_context_data(**kwargs)
         user = self.request.user
 
         # Get filter parameters
-        month_param = self.request.GET.get('month')
-        year_param = self.request.GET.get('year')
-        friend_param = self.request.GET.get('friend')
+        month_param = self.request.GET.get("month")
+        year_param = self.request.GET.get("year")
+        friend_param = self.request.GET.get("friend")
 
         # Initialize date range variables
         start_date = None
@@ -2310,11 +2513,11 @@ class BalanceSummaryView(LoginRequiredMixin, TemplateView):
                     end_date = date(year, month, last_day)
 
                     filter_applied = True
-                    context['selected_month'] = month
-                    context['selected_year'] = year
-                    context['month_name'] = calendar.month_name[month]
+                    context["selected_month"] = month
+                    context["selected_year"] = year
+                    context["month_name"] = calendar.month_name[month]
             except (ValueError, TypeError):
-                # Invalid month/year, ignore filters
+                # Invalid month/year format - ignore and skip filter
                 pass
         elif year_param:
             # Year only filter
@@ -2324,8 +2527,9 @@ class BalanceSummaryView(LoginRequiredMixin, TemplateView):
                     start_date = date(year, 1, 1)
                     end_date = date(year, 12, 31)
                     filter_applied = True
-                    context['selected_year'] = year
+                    context["selected_year"] = year
             except (ValueError, TypeError):
+                # Invalid year format - ignore and skip filter
                 pass
 
         # Process friend filter
@@ -2333,28 +2537,29 @@ class BalanceSummaryView(LoginRequiredMixin, TemplateView):
             try:
                 selected_friend_id = int(friend_param)
                 filter_applied = True
-                context['selected_friend_id'] = selected_friend_id
+                context["selected_friend_id"] = selected_friend_id
             except (ValueError, TypeError):
+                # Invalid friend ID format - ignore and skip filter
                 pass
 
         # Calculate balances using the service (now returns Friend-based data)
         balances = BalanceCalculationService.calculate_balances(
-            user=user,
-            start_date=start_date,
-            end_date=end_date
+            user=user, start_date=start_date, end_date=end_date
         )
 
         # Get transaction details for each friend
         transactions_by_friend = BalanceCalculationService.get_transactions_by_friend(
-            user=user,
-            start_date=start_date,
-            end_date=end_date
+            user=user, start_date=start_date, end_date=end_date
         )
 
         # Filter by friend if specified
         if selected_friend_id:
             balances = {k: v for k, v in balances.items() if k == selected_friend_id}
-            transactions_by_friend = {k: v for k, v in transactions_by_friend.items() if k == selected_friend_id}
+            transactions_by_friend = {
+                k: v
+                for k, v in transactions_by_friend.items()
+                if k == selected_friend_id
+            }
 
         # Prepare balance data for template
         # Separate into people who owe user (positive net) and people user owes (negative net)
@@ -2363,20 +2568,20 @@ class BalanceSummaryView(LoginRequiredMixin, TemplateView):
         settled_people = []
 
         for friend_id, balance_data in balances.items():
-            net_balance = balance_data['net']
-            friend = balance_data.get('friend')
+            net_balance = balance_data["net"]
+            friend = balance_data.get("friend")
 
             balance_info = {
-                'id': friend_id,
-                'friend': friend,
-                'name': balance_data['name'],
-                'email': friend.email if friend else None,
-                'phone': friend.phone if friend else None,
-                'lent': balance_data['lent'],
-                'borrowed': balance_data['borrowed'],
-                'net': net_balance,
-                'net_abs': abs(net_balance),
-                'transactions': transactions_by_friend.get(friend_id, [])
+                "id": friend_id,
+                "friend": friend,
+                "name": balance_data["name"],
+                "email": friend.email if friend else None,
+                "phone": friend.phone if friend else None,
+                "lent": balance_data["lent"],
+                "borrowed": balance_data["borrowed"],
+                "net": net_balance,
+                "net_abs": abs(net_balance),
+                "transactions": transactions_by_friend.get(friend_id, []),
             }
 
             if net_balance > 0:
@@ -2390,60 +2595,57 @@ class BalanceSummaryView(LoginRequiredMixin, TemplateView):
                 settled_people.append(balance_info)
 
         # Sort by absolute net balance (highest first)
-        people_owe_user.sort(key=lambda x: x['net'], reverse=True)
-        user_owes_people.sort(key=lambda x: x['net'])
-        settled_people.sort(key=lambda x: x['name'])
+        people_owe_user.sort(key=lambda x: x["net"], reverse=True)
+        user_owes_people.sort(key=lambda x: x["net"])
+        settled_people.sort(key=lambda x: x["name"])
 
         # Add to context
-        context['people_owe_user'] = people_owe_user
-        context['user_owes_people'] = user_owes_people
-        context['settled_people'] = settled_people
-        context['filter_applied'] = filter_applied
+        context["people_owe_user"] = people_owe_user
+        context["user_owes_people"] = user_owes_people
+        context["settled_people"] = settled_people
+        context["filter_applied"] = filter_applied
 
         # Calculate totals
-        total_owed_to_user = sum(b['net'] for b in people_owe_user)
-        total_user_owes = abs(sum(b['net'] for b in user_owes_people))
+        total_owed_to_user = sum(b["net"] for b in people_owe_user)
+        total_user_owes = abs(sum(b["net"] for b in user_owes_people))
         overall_net = total_owed_to_user - total_user_owes
 
-        context['total_owed_to_user'] = total_owed_to_user
-        context['total_user_owes'] = total_user_owes
-        context['overall_net'] = overall_net
+        context["total_owed_to_user"] = total_owed_to_user
+        context["total_user_owes"] = total_user_owes
+        context["overall_net"] = overall_net
 
         # Get all friends for the user (for potential friend management)
-        context['all_friends'] = Friend.objects.filter(
-            expense_participations__shared_expense__expense__user=user
-        ).distinct().order_by('name')
-        context['friends_count'] = context['all_friends'].count()
+        # Show ALL friends, not just those with transactions
+        context["all_friends"] = Friend.objects.filter(user=user).order_by("name")
+        context["friends_count"] = context["all_friends"].count()
 
         # Provide month and year options for filter dropdowns
         today = date.today()
-        context['months_list'] = [(i, calendar.month_name[i]) for i in range(1, 13)]
+        context["months_list"] = [(i, calendar.month_name[i]) for i in range(1, 13)]
 
         # Get years from shared expenses
         shared_expenses = SharedExpense.objects.filter(
             expense__user=user
-        ).select_related('expense')
+        ).select_related("expense")
 
         if shared_expenses.exists():
             years_set = set(se.expense.date.year for se in shared_expenses)
             years_set.add(today.year)
-            context['years'] = sorted(years_set, reverse=True)
+            context["years"] = sorted(years_set, reverse=True)
         else:
-            context['years'] = [today.year]
+            context["years"] = [today.year]
 
         return context
 
-from django.core.mail import send_mail
-from django.conf import settings
 
 class ContactView(View):
     template_name = 'contact.html'
-
+    
     # Spam protection settings
     RATE_LIMIT_HOURLY = 3
     RATE_LIMIT_DAILY = 10
     MIN_MESSAGE_LENGTH = 10
-
+    
     # Common spam patterns
     SPAM_KEYWORDS = [
         'precio', 'price check', 'buy now', 'click here', 'earn money',
@@ -2452,7 +2654,7 @@ class ContactView(View):
         'make money fast', 'work from home', 'investment opportunity',
         'hola, quería saber', 'please kindly', 'dear friend'
     ]
-
+    
     # Disposable email domains
     DISPOSABLE_DOMAINS = [
         'tempmail.com', 'guerrillamail.com', '10minutemail.com',
@@ -2463,7 +2665,7 @@ class ContactView(View):
     def get(self, request):
         form = ContactForm()
         return render(request, self.template_name, {'form': form})
-
+    
     def _get_client_ip(self, request):
         """Get client IP address from request"""
         x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
@@ -2472,53 +2674,53 @@ class ContactView(View):
         else:
             ip = request.META.get('REMOTE_ADDR')
         return ip
-
+    
     def _check_rate_limit(self, ip):
         """Check if IP has exceeded rate limits"""
-
+        
         hourly_key = f'contact_hourly_{ip}'
         daily_key = f'contact_daily_{ip}'
-
+        
         hourly_count = cache.get(hourly_key, 0)
         daily_count = cache.get(daily_key, 0)
-
+        
         if hourly_count >= self.RATE_LIMIT_HOURLY:
             return False, "Too many submissions. Please try again in an hour."
-
+        
         if daily_count >= self.RATE_LIMIT_DAILY:
             return False, "Daily submission limit reached. Please try again tomorrow."
-
+        
         # Increment counters
         cache.set(hourly_key, hourly_count + 1, 3600)  # 1 hour
         cache.set(daily_key, daily_count + 1, 86400)   # 24 hours
-
+        
         return True, None
-
+    
     def _is_spam_content(self, text):
         """Check if text contains spam patterns"""
         text_lower = text.lower()
-
+        
         # Check for URLs (most spam contains links)
         if 'http://' in text_lower or 'https://' in text_lower or 'www.' in text_lower:
             return True, "Messages with URLs are not allowed."
-
+        
         # Check for spam keywords
         for keyword in self.SPAM_KEYWORDS:
             if keyword in text_lower:
                 return True, "Your message was flagged as potential spam."
-
+        
         # Check for excessive caps (> 50% uppercase)
         if len(text) > 20:
             caps_count = sum(1 for c in text if c.isupper())
             if caps_count / len(text) > 0.5:
                 return True, "Please don't use excessive capitalization."
-
+        
         # Check message length
         if len(text.strip()) < self.MIN_MESSAGE_LENGTH:
             return True, "Please provide a more detailed message."
-
+        
         return False, None
-
+    
     def _is_disposable_email(self, email):
         """Check if email is from a disposable domain"""
         domain = email.split('@')[-1].lower()
@@ -2526,7 +2728,7 @@ class ContactView(View):
 
     def post(self, request):
         form = ContactForm(request.POST)
-
+        
         # This handles validations for all fields including reCAPTCHA (if configured)
         if not form.is_valid():
             messages.error(request, "Please correct the errors below.")
@@ -2539,33 +2741,33 @@ class ContactView(View):
         subject = data.get('subject')
         message = data.get('message')
         honeypot = data.get('website')
-
+        
         # Layer 1: Honeypot check
         if honeypot:
             # Silently reject spam bots - don't reveal honeypot was triggered
             messages.success(request, "Your message has been sent! We'll get back to you shortly.")
             return redirect('contact')
-
+        
         # Layer 2: Rate limiting
         client_ip = self._get_client_ip(request)
         rate_ok, rate_msg = self._check_rate_limit(client_ip)
         if not rate_ok:
             messages.error(request, rate_msg)
             return render(request, self.template_name, {'form': form})
-
+        
         # Layer 3: Content filtering
         is_spam, spam_msg = self._is_spam_content(subject + ' ' + message)
         if is_spam:
             messages.error(request, spam_msg)
             return render(request, self.template_name, {'form': form})
-
+        
         # Layer 4: Email validation
         if self._is_disposable_email(email):
             messages.error(request, "Please use a permanent email address.")
             return render(request, self.template_name, {'form': form})
-
+        
         # Layer 5: reCAPTCHA verification is handled by form.is_valid()
-
+        
         # All checks passed - send email
         full_message = f"""
         New Contact Form Submission:
@@ -2584,12 +2786,335 @@ class ContactView(View):
                 subject=f"Contact Form: {subject}",
                 message=full_message,
                 from_email=settings.DEFAULT_FROM_EMAIL,
-                recipient_list=['track.my.rupee.app@gmail.com'],
+                recipient_list=["track.my.rupee.app@gmail.com"],
                 fail_silently=False,
             )
-            messages.success(request, "Your message has been sent! We'll get back to you shortly.")
-            return redirect('contact')
+            messages.success(
+                request, "Your message has been sent! We'll get back to you shortly."
+            )
+            return redirect("contact")
         except Exception as e:
             # Log error if possible
             messages.error(request, "Something went wrong. Please try again later.")
-            return render(request, self.template_name, {'form': form})
+            return render(request, self.template_name, {"form": form})
+
+
+@login_required
+def predict_category_view(request):
+    """
+    AJAX view to predict category based on description.
+    """
+    if request.method == "GET":
+        description = request.GET.get("description", "").strip()
+        if not description:
+            return JsonResponse({"category": None})
+
+        category = predict_category_ai(description, request.user)
+        return JsonResponse({"category": category})
+    return JsonResponse({"error": "Invalid request"}, status=400)
+
+
+# Friend Management Views (AJAX)
+@login_required
+def create_friend_ajax(request):
+    """AJAX endpoint to create a new friend."""
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            name = data.get("name", "").strip()
+            email = data.get("email", "").strip()
+            phone = data.get("phone", "").strip()
+
+            if not name:
+                return JsonResponse({"success": False, "error": "Name is required"})
+
+            # Check if friend already exists for this user
+            if Friend.objects.filter(user=request.user, name=name).exists():
+                return JsonResponse(
+                    {
+                        "success": False,
+                        "error": "A friend with this name already exists",
+                    }
+                )
+
+            # Create friend for current user
+            friend = Friend.objects.create(
+                user=request.user,
+                name=name,
+                email=email if email else None,
+                phone=phone if phone else None,
+            )
+
+            return JsonResponse(
+                {
+                    "success": True,
+                    "friend": {
+                        "id": friend.id,
+                        "name": friend.name,
+                        "email": friend.email or "",
+                        "phone": friend.phone or "",
+                    },
+                }
+            )
+        except Exception as e:
+            return JsonResponse({"success": False, "error": str(e)})
+
+    return JsonResponse({"success": False, "error": "Invalid request method"})
+
+
+@login_required
+def update_friend_ajax(request, pk):
+    """AJAX endpoint to update an existing friend."""
+    if request.method == "POST":
+        try:
+            friend = get_object_or_404(Friend, pk=pk, user=request.user)
+            data = json.loads(request.body)
+
+            name = data.get("name", "").strip()
+            email = data.get("email", "").strip()
+            phone = data.get("phone", "").strip()
+
+            if not name:
+                return JsonResponse({"success": False, "error": "Name is required"})
+
+            # Check if another friend of this user has this name
+            if (
+                Friend.objects.filter(user=request.user, name=name)
+                .exclude(pk=pk)
+                .exists()
+            ):
+                return JsonResponse(
+                    {
+                        "success": False,
+                        "error": "A friend with this name already exists",
+                    }
+                )
+
+            # Update friend
+            friend.name = name
+            friend.email = email if email else None
+            friend.phone = phone if phone else None
+            friend.save()
+
+            return JsonResponse(
+                {
+                    "success": True,
+                    "friend": {
+                        "id": friend.id,
+                        "name": friend.name,
+                        "email": friend.email or "",
+                        "phone": friend.phone or "",
+                    },
+                }
+            )
+        except Exception as e:
+            return JsonResponse({"success": False, "error": str(e)})
+
+    return JsonResponse({"success": False, "error": "Invalid request method"})
+
+
+# --------------------
+# Notification Views
+# --------------------
+
+class NotificationListView(LoginRequiredMixin, ListView):
+    model = Notification
+    template_name = 'expenses/notification_list.html'
+    context_object_name = 'notifications'
+    paginate_by = 20
+
+    def get_queryset(self):
+        return Notification.objects.filter(user=self.request.user).order_by('-created_at')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['unread_count'] = Notification.objects.filter(user=self.request.user, is_read=False).count()
+        return context
+
+@login_required
+def mark_notifications_read(request):
+    if request.method == 'POST':
+        Notification.objects.filter(user=request.user, is_read=False).update(is_read=True)
+        messages.success(request, "All notifications marked as read.")
+        return redirect('notification-list')
+    return redirect('notification-list')
+
+@login_required
+def mark_single_notification_read(request, pk):
+    try:
+        notification = Notification.objects.get(pk=pk, user=request.user)
+        notification.is_read = True
+        notification.save()
+        return JsonResponse({'success': True})
+    except Notification.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Notification not found'}, status=404)
+
+@csrf_exempt
+def trigger_notifications(request):
+    """
+    HTTP endpoint to trigger notifications via external cron service (e.g. cron-job.org).
+    Secured by a secret key in the URL params: ?secret=YOUR_CRON_SECRET
+    """
+    secret = request.GET.get('secret')
+
+    # Check against dedicated CRON_SECRET
+    if not secret or secret != settings.CRON_SECRET:
+        return JsonResponse({'error': 'Unauthorized'}, status=403)
+
+    try:
+        call_command('send_notifications')
+        return JsonResponse({'success': True, 'message': 'Notifications triggered successfully'})
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+    if request.method == 'POST':
+        notification = get_object_or_404(Notification, pk=pk, user=request.user)
+        notification.is_read = True
+        notification.save()
+        return JsonResponse({'success': True})
+    return JsonResponse({'success': False}, status=400)
+
+
+class AnalyticsView(LoginRequiredMixin, TemplateView):
+    template_name = 'expenses/analytics.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user = self.request.user
+        today = timezone.now().date()
+
+        # 1. Monthly Trends (Last 12 Months)
+        labels = []
+        income_data = []
+        expense_data = []
+        balance_rate_data = []
+
+        # Determine the start date: 1st day of the month 11 months ago
+        # If today is Jan 2026, 11 months ago is Feb 2025.
+        start_date = (today.replace(day=1) - timedelta(days=365)).replace(day=1)
+
+        # Fetch data grouped by Month
+        monthly_income = Income.objects.filter(
+            user=user, date__gte=start_date
+        ).annotate(month=TruncMonth('date')).values('month').annotate(total=Sum('amount')).order_by('month')
+
+        monthly_expenses = Expense.objects.filter(
+            user=user, date__gte=start_date
+        ).annotate(month=TruncMonth('date')).values('month').annotate(total=Sum('amount')).order_by('month')
+
+        # Merge data into a map {date: {income: 0, expense: 0}}
+        data_map = {}
+
+        # Initialize map with all 12 months to ensure 0s for missing months
+        # Iterate from start_date to today month by month
+        curr = start_date
+        while curr <= today:
+            d = curr.replace(day=1)
+            data_map[d] = {'income': 0, 'expense': 0}
+            # Move to next month
+            # Carefully handle month increment
+            next_month = curr.month + 1
+            next_year = curr.year
+            if next_month > 12:
+                next_month = 1
+                next_year += 1
+            curr = date(next_year, next_month, 1)
+
+        # Fill with DB data
+        # Fill with DB data
+        for item in monthly_income:
+            if item['month']:
+                d = item['month']
+                if isinstance(d, datetime):
+                    d = d.date()
+                d = d.replace(day=1)
+                if d in data_map:
+                    data_map[d]['income'] = float(item['total'])
+
+        for item in monthly_expenses:
+             if item['month']:
+                d = item['month']
+                if isinstance(d, datetime):
+                    d = d.date()
+                d = d.replace(day=1)
+                if d in data_map:
+                    data_map[d]['expense'] = float(item['total'])
+
+        # Sort and prepare lists
+        sorted_keys = sorted(data_map.keys())
+        # Limit to last 12 months if while loop went over
+        sorted_keys = sorted_keys[-12:]
+
+        for k in sorted_keys:
+            labels.append(k.strftime('%b %Y'))
+            inc = data_map[k]['income']
+            exp = data_map[k]['expense']
+            income_data.append(inc)
+            expense_data.append(exp)
+
+            # Balance Rate = (Income - Expense) / Income * 100
+            if inc > 0:
+                rate = ((inc - exp) / inc) * 100
+            else:
+                rate = 0
+            balance_rate_data.append(round(rate, 1))
+
+        context['chart_labels'] = labels
+        context['income_data'] = income_data
+        context['expense_data'] = expense_data
+        context['balance_rate_data'] = balance_rate_data
+
+        # 2. Category Breakdown (Current Year)
+        current_year = today.year
+        category_stats = Expense.objects.filter(
+            user=user, date__year=current_year
+        ).values('category').annotate(total=Sum('amount')).order_by('-total')
+
+        cat_labels = [x['category'] for x in category_stats]
+        cat_data = [float(x['total']) for x in category_stats]
+
+        context['cat_labels'] = cat_labels
+        context['cat_data'] = cat_data
+
+        # 3. Key Metrics (YTD)
+        # Recalculate based on DB (more accurate than summing chart data if chart is limited)
+        # Use date__lte=today to ensure we don't include future recurring entries or future dates
+        ytd_income_agg = Income.objects.filter(user=user, date__year=current_year, date__lte=today).aggregate(Sum('amount'))['amount__sum'] or 0
+        ytd_expense_agg = Expense.objects.filter(user=user, date__year=current_year, date__lte=today).aggregate(Sum('amount'))['amount__sum'] or 0
+
+        context['total_income_ytd'] = ytd_income_agg
+        context['total_expense_ytd'] = ytd_expense_agg
+        context['total_balance_ytd'] = ytd_income_agg - ytd_expense_agg
+
+        if ytd_income_agg > 0:
+            context['avg_balance_rate'] = round(((ytd_income_agg - ytd_expense_agg) / ytd_income_agg) * 100, 1)
+        else:
+            context['avg_balance_rate'] = 0
+
+        return context
+
+@login_required
+def delete_friend_ajax(request, pk):
+    """AJAX endpoint to delete a friend."""
+    if request.method == "POST":
+        try:
+            friend = get_object_or_404(Friend, pk=pk, user=request.user)
+            friend_name = friend.name
+
+            # Check if friend is used in any shared expenses
+            if friend.expense_participations.exists():
+                return JsonResponse(
+                    {
+                        "success": False,
+                        "error": f"{friend_name} cannot be deleted because they are involved in shared expenses",
+                    }
+                )
+
+            friend.delete()
+
+            return JsonResponse(
+                {"success": True, "message": f"{friend_name} deleted successfully"}
+            )
+        except Exception as e:
+            return JsonResponse({"success": False, "error": str(e)})
+
+    return JsonResponse({"success": False, "error": "Invalid request method"})

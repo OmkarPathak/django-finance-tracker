@@ -1,0 +1,79 @@
+{% extends 'expenses/settings_base.html' %}
+
+{% block settings_content %}
+<div class="fade-in">
+    <div class="py-3 mb-4">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-2">
+                <li class="breadcrumb-item"><a href="{% url 'payment-source-list' %}">Payment Sources</a></li>
+                <li class="breadcrumb-item active">{{ source.name }}</li>
+            </ol>
+        </nav>
+        <div class="d-flex justify-content-between align-items-center">
+            <h2 class="h4 mb-0 fw-bold">{{ source.name }}</h2>
+            <a href="{% url 'payment-source-edit' source.pk %}" class="btn btn-outline-primary btn-sm">
+                <i class="bi bi-pencil me-1"></i> Edit
+            </a>
+        </div>
+    </div>
+
+    <!-- Account Summary Card -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-4 text-center border-end">
+                    <p class="text-muted small text-uppercase mb-1">Current Balance</p>
+                    <h2 class="text-primary mb-0">{{ currency_symbol }}{{ source.balance|floatformat:2 }}</h2>
+                </div>
+                <div class="col-md-4 text-center border-end">
+                    <p class="text-muted small text-uppercase mb-1">Account Type</p>
+                    <h5 class="mb-0">{{ source.get_account_type_display }}</h5>
+                </div>
+                <div class="col-md-4 text-center">
+                    <p class="text-muted small text-uppercase mb-1">Total Spent</p>
+                    <h5 class="text-danger mb-0">{{ currency_symbol }}{{ total_spent|floatformat:2 }}</h5>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Transaction History -->
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-transparent border-0 py-3">
+            <h5 class="mb-0 fw-bold">Recent Transactions</h5>
+        </div>
+        <div class="card-body p-0">
+            {% if transactions %}
+            <div class="table-responsive">
+                <table class="table table-hover mb-0 align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="ps-4">Date</th>
+                            <th>Description</th>
+                            <th>Category</th>
+                            <th class="text-end pe-4">Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for txn in transactions %}
+                        <tr>
+                            <td class="ps-4">{{ txn.date|date:"d M Y" }}</td>
+                            <td>{{ txn.description|truncatechars:40 }}</td>
+                            <td><span class="badge bg-secondary">{{ txn.category }}</span></td>
+                            <td class="text-end pe-4 text-danger">-{{ currency_symbol }}{{ txn.amount|floatformat:2 }}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-5">
+                <i class="bi bi-receipt text-muted display-4 mb-3 d-block"></i>
+                <p class="text-muted">No transactions found for this account.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
