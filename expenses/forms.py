@@ -31,7 +31,7 @@ class ExpenseForm(forms.ModelForm):
             categories = Category.objects.filter(user=user).order_by('name')
             # Create choices list: [(name, name), ...]
             choices = [(cat.name, cat.name) for cat in categories]
-            self.fields['category'].widget = forms.Select(choices=choices, attrs={'class': 'form-select'})
+            self.fields['category'].widget = forms.Select(choices=choices, attrs={'class': 'form-select django-multi-select'})
         else:
             self.fields['category'].widget = forms.TextInput(attrs={'class': 'form-control'})
 

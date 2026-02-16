@@ -30,7 +30,7 @@
                     
                     {% if formset %}
                         {{ formset.management_form }}
-                        <div class="table-responsive">
+                        <div class="table-responsive-xl" style="overflow-y: visible;">
                             <table class="table table-borderless align-top" id="formset-table" data-user-currency="{{ request.user.profile.currency }}">
                                 <thead>
                             <tr>
@@ -198,13 +198,26 @@
                 let newForm = templateRow.cloneNode(true);
                 
                 // Regex to replace numbers in name/id
-                // We need to handle cases where the last row might have index 5 (if we deleted 2,3,4) 
-                // OR we strictly re-index on delete. Strat: strictly re-index on delete makes this simpler?
-                // Actually, just append with new index is safer if we don't hold state.
-                
                 const regex = new RegExp(`form-(\\d+)-`, 'g');
                 newForm.innerHTML = newForm.innerHTML.replace(regex, `form-${currentFormCount}-`);
                 
+                // Cleanup cloned Multiselect UI from the new row
+                // The clone includes the generated button-group and hidden select. We need to revert to a clean select.
+                const categoryCell = newForm.querySelector('td:nth-child(5)'); // Category is 5th column
+                if (categoryCell) {
+                    // Remove the generated btn-group
+                    const btnGroup = categoryCell.querySelector('.btn-group');
+                    if (btnGroup) btnGroup.remove();
+                    
+                    // Reset the select element
+                    const select = categoryCell.querySelector('select');
+                    if (select) {
+                        select.style.display = ''; // Unhide
+                        // Remove any multiselect references/data if jQuery attached them (cloneNode doesn't copy event listeners but might copy some attributes)
+                        // Actually, we just need to re-init.
+                    }
+                }
+
                 const userCurrency = document.getElementById('formset-table').dataset.userCurrency;
                 const inputs = newForm.querySelectorAll('input, select');
                 inputs.forEach(input => {
@@ -222,10 +235,6 @@
                 // Reset text content of non-inputs if any
                 newForm.querySelectorAll('.text-danger').forEach(el => el.remove());
 
-                // IMPORTANT: The cloned row might be an "existing" row (with delete checkbox).
-                // We need to convert it to a "new" row UI (remove hidden DELETE, change button).
-                // But simplified: Just resetting content is usually enough if we verify the "Delete" button.
-                
                 // Change delete button to remove button
                 const actionCell = newForm.querySelector('td.text-center');
                 actionCell.innerHTML = `
@@ -236,6 +245,43 @@
 
                 container.appendChild(newForm);
                 totalForms.value = currentFormCount + 1;
+
+                // Re-init multiselect for the new row
+                if (categoryCell) {
+                    const newSelect = categoryCell.querySelector('select');
+                    if (newSelect && $(newSelect).hasClass('django-multi-select')) {
+                         // Check size
+                         const isSmall = $(newSelect).hasClass('form-select-sm') || $(newSelect).hasClass('form-control-sm');
+                         const sizeClass = isSmall ? 'form-select-sm' : '';
+
+                         $(newSelect).multiselect({
+                            buttonWidth: '100%',
+                            nonSelectedText: "{% trans 'Select...' %}",
+                            nSelectedText: " {% trans '- Selected' %}",
+                            allSelectedText: "{% trans 'All Selected' %}",
+                            numberDisplayed: 1,
+                            includeSelectAllOption: true,
+                            enableFiltering: true,
+                            enableCaseInsensitiveFiltering: true,
+                            filterPlaceholder: "{% trans 'Search...' %}",
+                            buttonClass: `form-select multiselect-btn ${sizeClass} text-start`,
+                            inheritClass: false,
+                            templates: {
+                                button: '<button type="button" class="multiselect dropdown-toggle" data-bs-toggle="dropdown" data-bs-boundary="viewport"><span class="multiselect-selected-text"></span></button>',
+                                option: '<div class="multiselect-option" style="padding: 0.25rem 0.25rem 0.25rem 0.75rem; cursor: pointer;"></div>'
+                            },
+                             onInitialized: function(select, container) {
+                                const button = container.find('button');
+                                button.removeClass('btn btn-default btn-outline-secondary');
+                                button.addClass('form-select multiselect-btn');
+                                if (isSmall) button.addClass('form-select-sm');
+                                
+                                // Fix for options having icons
+                                container.find('input').removeClass('form-select');
+                            }
+                        });
+                    }
+                }
             });
         }
 
@@ -362,11 +408,37 @@
                                 const option = new Option(data.name, data.name);
                                 select.add(option);
                             }
+
+                            // Sort options alphabetically
+                            const options = Array.from(select.options);
+                            options.sort((a, b) => a.text.localeCompare(b.text));
+                            select.innerHTML = '';
+                            options.forEach(opt => select.add(opt));
+
+                            // Rebuild bootstrap-multiselect to reflect the new option
+                            if ($(select).hasClass('django-multi-select')) {
+                                $(select).multiselect('rebuild');
+                            }
                         });
 
+                        // Auto-select the new category in the active/last row
                         if (activeSelectId) {
                             const activeEl = document.getElementById(activeSelectId);
-                            if (activeEl) activeEl.value = data.name;
+                            if (activeEl) {
+                                activeEl.value = data.name;
+                                if ($(activeEl).hasClass('django-multi-select')) {
+                                    $(activeEl).multiselect('select', data.name);
+                                }
+                            }
+                        } else {
+                            // If no specific row targeted, select in first row's dropdown
+                            const firstSelect = document.querySelector('select[name*="category"]');
+                            if (firstSelect) {
+                                firstSelect.value = data.name;
+                                if ($(firstSelect).hasClass('django-multi-select')) {
+                                    $(firstSelect).multiselect('select', data.name);
+                                }
+                            }
                         }
 
                         modal.hide();

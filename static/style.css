@@ -267,6 +267,7 @@ a:hover {
 /* Navbar Links (Dark Blue on Light Background) */
 .nav-link {
   color: var(--color-primary);
+  height: 38px !important; /* Force standard height */
   font-weight: 400; /* Regular weight */
   font-size: 1rem; /* Consistent size */
 }
@@ -661,3 +662,31 @@ a:hover {
 .progress-gradient-info {
   background: linear-gradient(45deg, #3498db, #0077b5);
 }
+
+/* Fix for Multiselect Dropdown Visibility */
+.multiselect-container.dropdown-menu {
+  z-index: 2000 !important;
+}
+
+/* Fix: Remove chevron/caret from dropdown option items */
+.multiselect-container .multiselect-option::after,
+.multiselect-container .multiselect-all::after,
+.multiselect-container .dropdown-item::after {
+  display: none !important;
+  content: none !important;
+}
+
+/* Fix: Ensure radio inputs in single-select dropdown look correct */
+.multiselect-container .form-check-input[type="radio"] {
+  appearance: auto !important;
+  -webkit-appearance: auto !important;
+  background-image: none !important;
+  width: 16px;
+  height: 16px;
+  margin-right: 8px;
+  vertical-align: middle;
+  cursor: pointer;
+}
+
+
+
