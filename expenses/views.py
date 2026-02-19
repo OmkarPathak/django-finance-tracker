@@ -23,6 +23,7 @@ import calendar
 from decimal import Decimal
 
 from .models import Expense, Category, Income, RecurringTransaction, UserProfile, SubscriptionPlan, Notification, CURRENCY_CHOICES
+from .utils import get_exchange_rate
 from finance_tracker.ai_utils import predict_category_ai
 from .forms import ExpenseForm, IncomeForm, RecurringTransactionForm, ProfileUpdateForm, CustomSignupForm, ContactForm, LanguageUpdateForm
 from allauth.socialaccount.models import SocialAccount
@@ -171,84 +172,106 @@ def demo_signup(request):
 class RecurringTransactionMixin:
     def dispatch(self, request, *args, **kwargs):
         if request.user.is_authenticated:
-            self.process_recurring_transactions(request.user)
+            process_user_recurring_transactions(request.user)
         return super().dispatch(request, *args, **kwargs)
 
     def process_recurring_transactions(self, user):
-        today = date.today()
-        recurring_txs = RecurringTransaction.objects.filter(user=user, is_active=True)
+        # Deprecated: Use process_user_recurring_transactions instead
+        process_user_recurring_transactions(user)
+
+def process_user_recurring_transactions(user):
+    today = date.today()
+    recurring_txs = RecurringTransaction.objects.filter(user=user, is_active=True)
+    
+    new_expenses = []
+    new_incomes = []
+    updates_needed = []
+    
+    # Pre-fetch profile currency
+    try:
+        base_currency = user.profile.currency
+    except UserProfile.DoesNotExist:
+        return
+
+    for rt in recurring_txs:
+        if not rt.last_processed_date:
+            current_date = rt.start_date
+        else:
+            current_date = rt.get_next_date(rt.last_processed_date, rt.frequency)
+
+        # Check if processing is needed
+        if current_date > today:
+            continue
+
+        # Currency conversion needed?
+        exchange_rate = Decimal('1.0')
+        if rt.currency != base_currency:
+            exchange_rate = get_exchange_rate(rt.currency, base_currency)
         
-        new_expenses = []
-        new_incomes = []
-        updates_needed = []
+        # Base amount calculation
+        base_amount = (rt.amount * exchange_rate).quantize(Decimal('0.01'))
 
-        for rt in recurring_txs:
-            if not rt.last_processed_date:
-                current_date = rt.start_date
-            else:
-                current_date = rt.get_next_date(rt.last_processed_date, rt.frequency)
-
-            # Check if processing is needed
-            if current_date > today:
-                continue
-
-            # Process all pending occurrences for this transaction
-            while current_date <= today:
-                description = f"{rt.description} (Recurring)"
-                if rt.transaction_type == 'EXPENSE':
-                    # Check for duplicates before adding to bulk list (optimization)
-                    # We only check for the specific recurring transaction signature for this date
-                    exists = Expense.objects.filter(
-                        user=user,
-                        date=current_date,
-                        amount=rt.amount,
-                        description=description,
-                        currency=rt.currency
-                    ).exists()
-                    
-                    if not exists:
-                        new_expenses.append(Expense(
-                            user=user,
-                            date=current_date,
-                            amount=rt.amount,
-                            currency=rt.currency,
-                            category=rt.category or 'Uncategorized',
-                            description=description,
-                            payment_method=rt.payment_method
-                        ))
-                else:
-                    exists = Income.objects.filter(
-                        user=user,
-                        date=current_date,
-                        amount=rt.amount,
-                        description=description,
-                        currency=rt.currency
-                    ).exists()
-
-                    if not exists:
-                        new_incomes.append(Income(
-                            user=user,
-                            date=current_date,
-                            amount=rt.amount,
-                            currency=rt.currency,
-                            source=rt.source or 'Other',
-                            description=description
-                        ))
+        # Process all pending occurrences for this transaction
+        while current_date <= today:
+            description = f"{rt.description} (Recurring)"
+            
+            if rt.transaction_type == 'EXPENSE':
+                # Check for duplicates
+                exists = Expense.objects.filter(
+                    user=user,
+                    date=current_date,
+                    amount=rt.amount,
+                    description=description,
+                    currency=rt.currency
+                ).exists()
                 
-                rt.last_processed_date = current_date
-                current_date = rt.get_next_date(current_date, rt.frequency)
-            
-            updates_needed.append(rt)
+                if not exists:
+                    new_expenses.append(Expense(
+                        user=user,
+                        date=current_date,
+                        amount=rt.amount,
+                        currency=rt.currency,
+                        category=rt.category or 'Uncategorized',
+                        description=description,
+                        payment_method=rt.payment_method,
+                        exchange_rate=exchange_rate,
+                        base_amount=base_amount
+                    ))
+            else:
+                exists = Income.objects.filter(
+                    user=user,
+                    date=current_date,
+                    amount=rt.amount,
+                    description=description,
+                    currency=rt.currency
+                ).exists()
 
-        # Bulk Create
-        if new_expenses:
-            Expense.objects.bulk_create(new_expenses)
-        if new_incomes:
-            Income.objects.bulk_create(new_incomes)
+                if not exists:
+                    new_incomes.append(Income(
+                        user=user,
+                        date=current_date,
+                        amount=rt.amount,
+                        currency=rt.currency,
+                        source=rt.source or 'Other',
+                        description=description,
+                        exchange_rate=exchange_rate,
+                        base_amount=base_amount
+                    ))
             
-        # Update Recurring Transactions (last_processed_date)
-        if updates_needed:
-            RecurringTransaction.objects.bulk_update(updates_needed, ['last_processed_date'])
+            rt.last_processed_date = current_date
+            current_date = rt.get_next_date(current_date, rt.frequency)
+        
+        updates_needed.append(rt)
+
+    # Bulk Create
+    if new_expenses:
+        Expense.objects.bulk_create(new_expenses)
+    if new_incomes:
+        Income.objects.bulk_create(new_incomes)
+        
+    # Update Recurring Transactions (last_processed_date)
+    if updates_needed:
+        RecurringTransaction.objects.bulk_update(updates_needed, ['last_processed_date'])
 
 
 # Custom signup view to log user in immediately
@@ -402,43 +425,7 @@ def home_view(request):
         return redirect('onboarding')
 
     # Process recurring transactions
-    from expenses.models import RecurringTransaction
-    recurring_txs = RecurringTransaction.objects.filter(user=request.user, is_active=True)
-    today = date.today()
-    for rt in recurring_txs:
-        if not rt.last_processed_date:
-            current_date = rt.start_date
-        else:
-            current_date = rt.get_next_date(rt.last_processed_date, rt.frequency)
-
-        while current_date <= today:
-            description = f"{rt.description} (Recurring)"
-            if rt.transaction_type == 'EXPENSE':
-                Expense.objects.get_or_create(
-                    user=request.user,
-                    date=current_date,
-                    amount=rt.amount,
-                    currency=rt.currency,
-                    category=rt.category or 'Uncategorized',
-                    defaults={
-                        'description': description,
-                        'payment_method': rt.payment_method
-                    }
-                )
-            elif rt.transaction_type == 'INCOME':
-                Income.objects.get_or_create(
-                    user=request.user,
-                    date=current_date,
-                    amount=rt.amount,
-                    currency=rt.currency,
-                    source=rt.source or 'Uncategorized',
-                    defaults={
-                        'description': description
-                    }
-                )
-            rt.last_processed_date = current_date
-            rt.save()
-            current_date = rt.get_next_date(current_date, rt.frequency)
+    process_user_recurring_transactions(request.user)
 
     # Base QuerySet
     expenses = Expense.objects.filter(user=request.user).order_by('-date')
