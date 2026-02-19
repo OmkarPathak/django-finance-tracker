@@ -21,16 +21,16 @@ class CategoryAdmin(admin.ModelAdmin):
 class ExpenseAdmin(admin.ModelAdmin):
     list_display = ('date', 'description', 'category', 'amount', 'user')
     list_select_related = ('user',)
-    list_filter = ('category', 'date', 'user')
-    search_fields = ('description', 'category')
+    list_filter = ('date', 'user', 'category')
+    search_fields = ('description', 'category', 'user__username')
     ordering = ('-date',)
 
 @admin.register(Income)
 class IncomeAdmin(admin.ModelAdmin):
     list_display = ('date', 'source', 'amount', 'user')
     list_select_related = ('user',)
-    list_filter = ('source', 'date', 'user')
-    search_fields = ('description', 'source')
+    list_filter = ('date', 'user', 'source')
+    search_fields = ('source', 'description', 'user__username')
     ordering = ('-date',)
 
 @admin.register(RecurringTransaction)
@@ -38,7 +38,7 @@ class RecurringTransactionAdmin(admin.ModelAdmin):
     list_display = ('description', 'transaction_type', 'amount', 'frequency', 'next_due_date', 'user', 'is_active')
     list_select_related = ('user',)
     list_filter = ('transaction_type', 'frequency', 'is_active', 'user')
-    search_fields = ('description',)
+    search_fields = ('description', 'user__username')
 
 from .models import UserProfile, PaymentHistory
 

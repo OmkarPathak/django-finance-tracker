@@ -1,4 +1,4 @@
-const CACHE_NAME = 'finance-tracker-v8';
+const CACHE_NAME = 'finance-tracker-v9';
 const OFFLINE_URL = '/offline/';
 
 const ASSETS_TO_CACHE = [
