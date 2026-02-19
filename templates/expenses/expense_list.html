@@ -136,7 +136,7 @@
     </div>
 
     <!-- Stats Row -->
-    <div class="px-3 mb-3 mt-3 mt-md-0">
+    <div class="mb-3 mt-3 mt-md-0">
         <div class="row g-2">
             <div class="col-6 col-md-auto">
                 <div class="p-2 border rounded bg-body-tertiary shadow-sm text-center text-md-start">
@@ -154,19 +154,6 @@
     </div>
 
     <script>
-        function showLoader() {
-            const loader = document.getElementById('page-loader');
-            if (loader) {
-                loader.classList.remove('d-none');
-                loader.classList.add('d-flex');
-            }
-        }
-    
-        function showLoaderAndSubmit() {
-            showLoader();
-            document.getElementById('filter-form').submit();
-        }
-
         // Bulk Delete Logic
         document.addEventListener('DOMContentLoaded', function() {
             const selectAllCheckbox = document.getElementById('selectAll');

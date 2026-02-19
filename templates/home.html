@@ -624,15 +624,6 @@
 {{ payment_data|json_script:"payment-data" }}
 
 <script>
-    function showLoader() {
-        document.getElementById('page-loader').classList.remove('d-none');
-        document.getElementById('page-loader').classList.add('d-flex');
-    }
-
-    function showLoaderAndSubmit() {
-        showLoader();
-        document.getElementById('filter-form').submit();
-    }
 
     // Global Filter Function
     window.filterByCategory = function(category) {

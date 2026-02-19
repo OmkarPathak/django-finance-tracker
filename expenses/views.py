@@ -569,7 +569,11 @@ def home_view(request):
 
     # 3. Top 5 Expenses
     top_expenses_qs = expenses.order_by('-base_amount')[:5]
-    top_labels = [e.description[:20] + '...' if len(e.description) > 20 else e.description for e in top_expenses_qs]
+    top_labels = [
+        (e.description.decode('utf-8', errors='replace') if isinstance(e.description, bytes) else str(e.description))[:20] + '...' 
+        if len(str(e.description)) > 20 else str(e.description) 
+        for e in top_expenses_qs
+    ]
     top_amounts = [float(e.base_amount) for e in top_expenses_qs]
 
     # --- NEW: Income vs Expenses Trend Data ---
