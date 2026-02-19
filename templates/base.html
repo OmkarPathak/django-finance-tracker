@@ -780,16 +780,20 @@
 
     <!-- Global Loader Logic -->
     <script>
-        const loader = document.getElementById('page-loader');
-
         window.showLoader = function () {
-            if (loader) loader.classList.remove('d-none');
-            if (loader) loader.classList.add('d-flex');
+            const loader = document.getElementById('page-loader');
+            if (loader) {
+                loader.classList.remove('d-none');
+                loader.classList.add('d-flex');
+            }
         };
 
         window.hideLoader = function () {
-            if (loader) loader.classList.remove('d-flex');
-            if (loader) loader.classList.add('d-none');
+            const loader = document.getElementById('page-loader');
+            if (loader) {
+                loader.classList.remove('d-flex');
+                loader.classList.add('d-none');
+            }
         };
 
         // 1. Handle Programmatic Form Submits
@@ -797,7 +801,7 @@
             const originalSubmit = HTMLFormElement.prototype.submit;
             HTMLFormElement.prototype.submit = function () {
                 if (!this.classList.contains('no-loader') && this.target !== '_blank') {
-                    showLoader();
+                    window.showLoader();
                 }
                 originalSubmit.apply(this, arguments);
             };
@@ -808,7 +812,7 @@
             if (!e.defaultPrevented) {
                 const form = e.target;
                 if (!form.classList.contains('no-loader') && form.target !== '_blank') {
-                    showLoader();
+                    window.showLoader();
                 }
             }
         });
@@ -832,37 +836,26 @@
             if (link.hasAttribute('data-bs-toggle') || link.hasAttribute('data-bs-dismiss')) return;
 
             // Ignore standard protocols that don't unload page
-            if (link.href.startsWith('javascript:') ||
-                link.href.startsWith('mailto:') ||
-                link.href.startsWith('tel:')) return;
+            const href = link.getAttribute('href') || '';
+            if (href.startsWith('javascript:') || href.startsWith('mailto:') || href.startsWith('tel:')) return;
 
             // Robust Hash Check
-            const hrefAttr = link.getAttribute('href');
-            if (!hrefAttr || hrefAttr === '#') return; // Empty or just hash
-
-            // Check for in-page anchors
-            if (hrefAttr.startsWith('#')) {
-                return;
-            }
+            if (!href || href === '#' || href.startsWith('#')) return;
 
             // Check if it's a full URL processing to the same page with a hash
             try {
-                const url = new URL(link.href, location.origin);
-                const isSamePage = (url.origin === location.origin) &&
-                                 (url.pathname === location.pathname) &&
-                                 (url.search === location.search);
+                const url = new URL(link.href, window.location.origin);
+                const isSamePage = (url.origin === window.location.origin) &&
+                                 (url.pathname === window.location.pathname) &&
+                                 (url.search === window.location.search);
 
-                if (isSamePage && url.hash) {
-                    return;
-                }
-            } catch (err) {
-                // If URL parsing fails, assume it's just a path and proceed
-            }
+                if (isSamePage && url.hash) return;
+            } catch (err) {}
 
             // Small delay to allow other handlers (like preventDefault) to run
             setTimeout(() => {
                 if (!e.defaultPrevented) {
-                    showLoader();
+                    window.showLoader();
                 }
             }, 0);
         });
@@ -935,13 +928,13 @@
             </button>
             <ul class="dropdown-menu dropdown-menu-end shadow border-0 mb-2">
                 <li>
-                    <a class="dropdown-item py-2 d-flex align-items-center" href="{% url 'expense-create' %}">
-                        <i class="bi bi-dash-circle text-primary me-2"></i> {% trans "Add Expense" %}
+                    <a class="dropdown-item py-2 d-flex align-items-center" href="{% url 'expense-create' %}" onclick="window.showLoader()">
+                        <i class="bi bi-dash-circle text-primary me-2" onclick="window.showLoader()"></i> {% trans "Add Expense" %}
                     </a>
                 </li>
                 <li>
-                    <a class="dropdown-item py-2 d-flex align-items-center" href="{% url 'income-create' %}">
-                        <i class="bi bi-plus-circle text-success me-2"></i> {% trans "Add Income" %}
+                    <a class="dropdown-item py-2 d-flex align-items-center" href="{% url 'income-create' %}" onclick="window.showLoader()">
+                        <i class="bi bi-plus-circle text-success me-2" onclick="window.showLoader()"></i> {% trans "Add Income" %}
                     </a>
                 </li>
             </ul>

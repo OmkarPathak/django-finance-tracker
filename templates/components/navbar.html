@@ -105,9 +105,9 @@
                             <span class="text-gradient-primary">{% trans "Add" %}</span>
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2">
-                            <li><a class="dropdown-item py-2" href="{% url 'expense-create' %}?next={{ request.path }}"><i class="bi bi-dash-circle text-danger me-2"></i> {% trans "Add Expense" %}</a></li>
-                            <li><a class="dropdown-item py-2" href="{% url 'recurring-create' %}?next={{ request.path }}"><i class="bi bi-arrow-repeat text-primary me-2"></i> {% trans "Add Subscription" %}</a></li>
-                            <li><a class="dropdown-item py-2" href="{% url 'income-create' %}?next={{ request.path }}"><i class="bi bi-plus-circle text-success me-2"></i> {% trans "Add Income" %}</a></li>
+                            <li><a class="dropdown-item py-2" href="{% url 'expense-create' %}?next={{ request.path }}" onclick="window.showLoader()"><i class="bi bi-dash-circle text-danger me-2"></i> {% trans "Add Expense" %}</a></li>
+                            <li><a class="dropdown-item py-2" href="{% url 'recurring-create' %}?next={{ request.path }}" onclick="window.showLoader()"><i class="bi bi-arrow-repeat text-primary me-2"></i> {% trans "Add Subscription" %}</a></li>
+                            <li><a class="dropdown-item py-2" href="{% url 'income-create' %}?next={{ request.path }}" onclick="window.showLoader()"><i class="bi bi-plus-circle text-success me-2"></i> {% trans "Add Income" %}</a></li>
                         </ul>
                     </li>
 

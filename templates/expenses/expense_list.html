@@ -154,19 +154,6 @@
     </div>
 
     <script>
-        function showLoader() {
-            const loader = document.getElementById('page-loader');
-            if (loader) {
-                loader.classList.remove('d-none');
-                loader.classList.add('d-flex');
-            }
-        }
-    
-        function showLoaderAndSubmit() {
-            showLoader();
-            document.getElementById('filter-form').submit();
-        }
-
         // Bulk Delete Logic
         document.addEventListener('DOMContentLoaded', function() {
             const selectAllCheckbox = document.getElementById('selectAll');
