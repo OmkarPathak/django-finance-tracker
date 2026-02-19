@@ -178,39 +178,77 @@ class RecurringTransactionMixin:
         today = date.today()
         recurring_txs = RecurringTransaction.objects.filter(user=user, is_active=True)
         
+        new_expenses = []
+        new_incomes = []
+        updates_needed = []
+
         for rt in recurring_txs:
             if not rt.last_processed_date:
                 current_date = rt.start_date
             else:
                 current_date = rt.get_next_date(rt.last_processed_date, rt.frequency)
 
+            # Check if processing is needed
+            if current_date > today:
+                continue
+
+            # Process all pending occurrences for this transaction
             while current_date <= today:
                 description = f"{rt.description} (Recurring)"
                 if rt.transaction_type == 'EXPENSE':
-                    Expense.objects.get_or_create(
+                    # Check for duplicates before adding to bulk list (optimization)
+                    # We only check for the specific recurring transaction signature for this date
+                    exists = Expense.objects.filter(
                         user=user,
                         date=current_date,
                         amount=rt.amount,
-                        currency=rt.currency,
-                        category=rt.category or 'Uncategorized',
-                        defaults={
-                            'description': description,
-                            'payment_method': rt.payment_method
-                        }
-                    )
+                        description=description,
+                        currency=rt.currency
+                    ).exists()
+                    
+                    if not exists:
+                        new_expenses.append(Expense(
+                            user=user,
+                            date=current_date,
+                            amount=rt.amount,
+                            currency=rt.currency,
+                            category=rt.category or 'Uncategorized',
+                            description=description,
+                            payment_method=rt.payment_method
+                        ))
                 else:
-                    Income.objects.get_or_create(
+                    exists = Income.objects.filter(
                         user=user,
                         date=current_date,
                         amount=rt.amount,
-                        currency=rt.currency,
-                        source=rt.source or 'Other',
-                        defaults={'description': description}
-                    )
+                        description=description,
+                        currency=rt.currency
+                    ).exists()
+
+                    if not exists:
+                        new_incomes.append(Income(
+                            user=user,
+                            date=current_date,
+                            amount=rt.amount,
+                            currency=rt.currency,
+                            source=rt.source or 'Other',
+                            description=description
+                        ))
                 
                 rt.last_processed_date = current_date
-                rt.save()
                 current_date = rt.get_next_date(current_date, rt.frequency)
+            
+            updates_needed.append(rt)
+
+        # Bulk Create
+        if new_expenses:
+            Expense.objects.bulk_create(new_expenses)
+        if new_incomes:
+            Income.objects.bulk_create(new_incomes)
+            
+        # Update Recurring Transactions (last_processed_date)
+        if updates_needed:
+            RecurringTransaction.objects.bulk_update(updates_needed, ['last_processed_date'])
 
 
 # Custom signup view to log user in immediately
@@ -592,7 +630,7 @@ def home_view(request):
     all_periods_sorted = sorted(list(inc_periods.union(exp_periods)))
     
     ie_labels = [p.strftime(date_format) for p in all_periods_sorted]
-    ie_income_data = [float(inc_trend.get(period=p)['total']) if inc_trend.filter(period=p).exists() else 0 for p in all_periods_sorted]
+    
     # Optimization: Use dict lookup instead of filter inside loop
     inc_map = {i['period']: float(i['total']) for i in inc_trend}
     exp_map = {e['period']: float(e['total']) for e in exp_trend}
