@@ -1,5 +1,6 @@
-
 version: '3.8'
+
+ENV DEBIAN_FRONTEND=noninteractive
 
 services:
   web:
