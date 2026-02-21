@@ -50,10 +50,9 @@ CRON_SECRET = os.getenv('CRON_SECRET', 'change_me_in_prod')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DEBUG', 'True') == 'True'
 
-ALLOWED_HOSTS = ['*']  # Update this to specific domain in production
+ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '*').split(',')
 
-CSRF_TRUSTED_ORIGINS = ['https://trackmyrupee.com', 'https://www.trackmyrupee.com', 'https://django-finance-tracker-fr1u.onrender.com']
-
+CSRF_TRUSTED_ORIGINS = os.environ.get('CSRF_TRUSTED_ORIGINS', 'https://trackmyrupee.com,https://www.trackmyrupee.com,https://django-finance-tracker-fr1u.onrender.com').split(',')
 
 # Application definition
 
@@ -291,6 +290,10 @@ if not DEBUG:
     SECURE_SSL_REDIRECT = True
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
+    
+    # Additional Security Headers
+    SECURE_BROWSER_XSS_FILTER = True
+    SECURE_CONTENT_TYPE_NOSNIFF = True
 
     # Ensure Allauth builds HTTPS links
     ACCOUNT_DEFAULT_HTTP_PROTOCOL = 'https'
