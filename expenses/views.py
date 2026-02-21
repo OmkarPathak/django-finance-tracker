@@ -22,10 +22,10 @@ from datetime import datetime, date, timedelta
 import calendar
 from decimal import Decimal
 
-from .models import Expense, Category, Income, RecurringTransaction, UserProfile, SubscriptionPlan, Notification, CURRENCY_CHOICES
+from .models import Expense, Category, Income, RecurringTransaction, UserProfile, SubscriptionPlan, Notification, CURRENCY_CHOICES, SavingsGoal, GoalContribution
 from .utils import get_exchange_rate
 from finance_tracker.ai_utils import predict_category_ai
-from .forms import ExpenseForm, IncomeForm, RecurringTransactionForm, ProfileUpdateForm, CustomSignupForm, ContactForm, LanguageUpdateForm
+from .forms import ExpenseForm, IncomeForm, RecurringTransactionForm, ProfileUpdateForm, CustomSignupForm, ContactForm, LanguageUpdateForm, SavingsGoalForm, GoalContributionForm
 from allauth.socialaccount.models import SocialAccount
 import openpyxl
 import requests
@@ -2831,4 +2831,143 @@ class AnalyticsView(LoginRequiredMixin, TemplateView):
         context['forecast_net'] = forecast_net_data
 
         return context
+
+# --- Savings Goal Views ---
+
+class SavingsGoalListView(LoginRequiredMixin, ListView):
+    model = SavingsGoal
+    template_name = 'expenses/goal_list.html'
+    context_object_name = 'goals'
+
+    def get_queryset(self):
+        return SavingsGoal.objects.filter(user=self.request.user).order_by('-created_at')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        goals = context['goals']
+        
+        # Calculate total saved across all active goals (in user's base currency, simple sum for MVP)
+        total_saved = sum(g.current_amount for g in goals)
+        context['total_saved'] = round(total_saved, 2)
+        
+        # Free users get 1 goal, Plus gets 3, Pro gets unlimited
+        context['can_create_goal'] = True
+        if self.request.user.profile.is_pro:
+            context['can_create_goal'] = True
+        elif self.request.user.profile.is_plus:
+            if goals.count() >= 3:
+                context['can_create_goal'] = False
+        else:
+            if goals.count() >= 1:
+                context['can_create_goal'] = False
+                
+        return context
+
+class SavingsGoalCreateView(LoginRequiredMixin, CreateView):
+    model = SavingsGoal
+    form_class = SavingsGoalForm
+    template_name = 'expenses/goal_form.html'
+    success_url = reverse_lazy('goal-list')
+
+    def dispatch(self, request, *args, **kwargs):
+        # Limit check
+        if not request.user.profile.is_pro:
+            goals_count = SavingsGoal.objects.filter(user=request.user).count()
+            if request.user.profile.is_plus:
+                if goals_count >= 3:
+                    messages.error(request, _("PLUS plan is limited to 3 active Savings Goals. Upgrade to PRO to unlock unlimited goals!"))
+                    return redirect('goal-list')
+            else:
+                if goals_count >= 1:
+                    messages.error(request, _("Free plan is limited to 1 active Savings Goal. Upgrade to PLUS for 3 goals, or PRO for unlimited!"))
+                    return redirect('goal-list')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['user'] = self.request.user
+        return kwargs
+
+    def form_valid(self, form):
+        form.instance.user = self.request.user
+        messages.success(self.request, _("Savings goal created successfully!"))
+        return super().form_valid(form)
+
+class SavingsGoalUpdateView(LoginRequiredMixin, UpdateView):
+    model = SavingsGoal
+    form_class = SavingsGoalForm
+    template_name = 'expenses/goal_form.html'
+    success_url = reverse_lazy('goal-list')
+
+    def get_queryset(self):
+        return SavingsGoal.objects.filter(user=self.request.user)
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['user'] = self.request.user
+        return kwargs
+
+    def form_valid(self, form):
+        messages.success(self.request, _("Savings goal updated successfully!"))
+        return super().form_valid(form)
+
+class SavingsGoalDeleteView(LoginRequiredMixin, DeleteView):
+    model = SavingsGoal
+    success_url = reverse_lazy('goal-list')
+
+    def get_queryset(self):
+        return SavingsGoal.objects.filter(user=self.request.user)
+        
+    def delete(self, request, *args, **kwargs):
+        messages.success(self.request, _("Savings goal deleted successfully."))
+        return super().delete(request, *args, **kwargs)
+
+class SavingsGoalDetailView(LoginRequiredMixin, View):
+    template_name = 'expenses/goal_detail.html'
+
+    def get(self, request, pk):
+        goal = get_object_or_404(SavingsGoal, pk=pk, user=request.user)
+        contributions = goal.contributions.all().order_by('-date', '-created_at')
+        form = GoalContributionForm()
+        
+        context = {
+            'goal': goal,
+            'contributions': contributions,
+            'form': form
+        }
+        return render(request, self.template_name, context)
+
+    def post(self, request, pk):
+        goal = get_object_or_404(SavingsGoal, pk=pk, user=request.user)
+        
+        # Handle JS fetch to clear confetti
+        if request.content_type == 'application/json':
+            try:
+                data = json.loads(request.body)
+                if data.get('clear_confetti'):
+                    if 'trigger_confetti' in request.session:
+                        del request.session['trigger_confetti']
+                    return JsonResponse({'success': True})
+            except:
+                pass
+
+        contributions = goal.contributions.all().order_by('-date', '-created_at')
+        form = GoalContributionForm(request.POST)
+
+        if form.is_valid():
+            contribution = form.save(commit=False)
+            contribution.goal = goal
+            contribution.save() # This triggers the save() method in models which updates the goal's current_amount
+            
+            messages.success(request, _("Funds added successfully!"))
+            request.session['trigger_confetti'] = True
+            
+            return redirect('goal-detail', pk=goal.pk)
+
+        context = {
+            'goal': goal,
+            'contributions': contributions,
+            'form': form
+        }
+        return render(request, self.template_name, context)
 

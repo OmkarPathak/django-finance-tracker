@@ -977,6 +977,18 @@
     </script>
     {% endif %}
 
+    <!-- Globel CSS Fixes for Multiselect -->
+    <style>
+        .multiselect-container .multiselect-option,
+        .multiselect-container .multiselect-all {
+            white-space: nowrap;
+        }
+        .multiselect-container .form-check-label {
+            white-space: nowrap; 
+            display: inline-block;
+        }
+    </style>
+
     <!-- jQuery (Required for Bootstrap Multiselect) -->
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="{% static 'js/bootstrap-multiselect.js' %}"></script>

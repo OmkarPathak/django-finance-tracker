@@ -47,6 +47,13 @@ urlpatterns = [
     path('account/delete/', views.AccountDeleteView.as_view(), name='account-delete'),
     path('tutorial/complete/', views.complete_tutorial, name='complete-tutorial'),
     
+    # Savings Goals
+    path('goals/', views.SavingsGoalListView.as_view(), name='goal-list'),
+    path('goals/add/', views.SavingsGoalCreateView.as_view(), name='goal-create'),
+    path('goals/<int:pk>/edit/', views.SavingsGoalUpdateView.as_view(), name='goal-edit'),
+    path('goals/<int:pk>/delete/', views.SavingsGoalDeleteView.as_view(), name='goal-delete'),
+    path('goals/<int:pk>/', views.SavingsGoalDetailView.as_view(), name='goal-detail'),
+    
     # Static Pages
     path('privacy-policy/', TemplateView.as_view(template_name='privacy_policy.html'), name='privacy-policy'),
     path('terms-of-service/', TemplateView.as_view(template_name='terms_of_service.html'), name='terms-of-service'),

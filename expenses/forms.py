@@ -202,3 +202,55 @@ class ContactForm(forms.Form):
             from django_recaptcha.widgets import ReCaptchaV3
             self.fields['captcha'] = ReCaptchaField(widget=ReCaptchaV3)
 
+from .models import SavingsGoal, GoalContribution
+
+class SavingsGoalForm(forms.ModelForm):
+    class Meta:
+        model = SavingsGoal
+        fields = ['name', 'target_amount', 'currency', 'target_date', 'icon', 'color']
+        widgets = {
+            'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': _('e.g. Dream Vacation')}),
+            'target_amount': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
+            'currency': forms.Select(attrs={'class': 'form-select'}),
+            'target_date': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
+            'icon': forms.TextInput(attrs={'class': 'form-control', 'placeholder': _('e.g. ✈️')}),
+            'color': forms.Select(attrs={'class': 'form-select'}, choices=[
+                ('primary', _('Blue')),
+                ('success', _('Green')),
+                ('danger', _('Red')),
+                ('warning', _('Yellow')),
+                ('info', _('Light Blue')),
+            ]),
+        }
+        
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)
+        super().__init__(*args, **kwargs)
+        if user:
+            self.fields['currency'].initial = user.profile.currency
+
+    def clean_target_amount(self):
+        target_amount = self.cleaned_data.get('target_amount')
+        if target_amount is not None and target_amount <= 0:
+            raise forms.ValidationError(_("Target amount must be greater than zero."))
+        return target_amount
+
+class GoalContributionForm(forms.ModelForm):
+    class Meta:
+        model = GoalContribution
+        fields = ['amount', 'date']
+        widgets = {
+            'amount': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01', 'placeholder': _('Amount')}),
+            'date': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
+        }
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['date'].initial = date.today
+        
+    def clean_amount(self):
+        amount = self.cleaned_data.get('amount')
+        if amount is not None and amount <= 0:
+            raise forms.ValidationError(_("Contribution amount must be greater than zero."))
+        return amount
+
