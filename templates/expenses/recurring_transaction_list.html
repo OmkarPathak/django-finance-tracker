@@ -192,7 +192,7 @@
                                                 <button class="dropdown-item text-danger delete-btn" type="button" 
                                                     data-bs-toggle="modal" data-bs-target="#deleteModal"
                                                     data-url="{% url 'recurring-delete' sub.pk %}"
-                                                    data-message="{% trans 'Are you sure you want to delete subscription' %} '{{ sub.description|escapejs }}'? {% trans 'This will stop all future tracking for this item.' %}">
+                                                    data-message="{% trans 'Are you sure you want to delete subscription' %} '{{ sub.description }}'? {% trans 'This will stop all future tracking for this item.' %}">
                                                     <i class="bi bi-trash me-2"></i>{% trans "Delete" %}
                                                 </button>
                                             </li>

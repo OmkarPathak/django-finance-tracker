@@ -74,7 +74,7 @@
                                 <button type="button" class="btn btn-sm btn-link text-decoration-none p-0 delete-btn" 
                                         data-bs-toggle="modal" data-bs-target="#deleteModal" 
                                         data-url="{% url 'recurring-delete' sub.pk %}"
-                                        data-message="Are you sure you want to delete subscription '{{ sub.description|escapejs }}'? This will stop all future tracking for this item.">
+                                        data-message="Are you sure you want to delete subscription '{{ sub.description }}'? This will stop all future tracking for this item.">
                                     <i class="bi bi-trash text-danger"></i>
                                 </button>
                             </td>
@@ -115,7 +115,7 @@
                                 <button type="button" class="btn btn-sm btn-link text-decoration-none p-0 delete-btn ms-2" 
                                         data-bs-toggle="modal" data-bs-target="#deleteModal" 
                                         data-url="{% url 'recurring-delete' sub.pk %}"
-                                        data-message="Are you sure you want to delete subscription '{{ sub.description|escapejs }}'? This will permanently remove it.">
+                                        data-message="Are you sure you want to delete subscription '{{ sub.description }}'? This will permanently remove it.">
                                     <i class="bi bi-trash text-danger"></i>
                                 </button>
                             </td>

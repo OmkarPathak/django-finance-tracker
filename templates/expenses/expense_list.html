@@ -286,7 +286,7 @@
                                     <button type="button" class="btn btn-sm btn-link text-decoration-none p-0 delete-btn d-inline-flex align-items-center" 
                                             data-bs-toggle="modal" data-bs-target="#deleteModal" 
                                             data-url="{% url 'expense-delete' expense.pk %}"
-                                            data-message="{% trans 'Are you sure you want to delete' %} '{{ expense.description|escapejs }}'?">
+                                            data-message="{% trans 'Are you sure you want to delete' %} '{{ expense.description }}'?">
                                         <i class="bi bi-trash text-danger"></i>
                                     </button>
                                 </div>

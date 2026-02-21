@@ -2746,7 +2746,8 @@ class AnalyticsView(LoginRequiredMixin, TemplateView):
                     denominator = float(ytd_income_agg)
                     cat_percent = (top_cat_amount / denominator) * 100
                     if cat_percent > 30:
-                         insights.append(_(f"Caution: '{top_cat}' is consuming {cat_percent:.0f}% of your income."))
+                         safe_top_cat = escape(top_cat)
+                         insights.append(_(f"Caution: '{safe_top_cat}' is consuming {cat_percent:.0f}% of your income."))
                 except (ValueError, TypeError):
                     pass
             
