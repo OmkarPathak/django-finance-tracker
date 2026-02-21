@@ -1,0 +1,46 @@
+{% load i18n %}
+{# Contextual Upgrade Nudge - Include with: show_nudge, nudge_current, nudge_limit, nudge_feature_name, nudge_upgrade_tier, nudge_at_limit #}
+
+{% if show_nudge %}
+<div class="upgrade-nudge alert border-0 shadow-sm rounded-4 mb-4 d-flex align-items-center justify-content-between flex-wrap gap-3 alert-dismissible fade show" 
+     role="alert"
+     style="background: linear-gradient(135deg, rgba(13, 110, 253, 0.06) 0%, rgba(111, 66, 193, 0.08) 100%); border-left: 4px solid var(--bs-primary) !important;">
+    
+    <div class="d-flex align-items-center gap-3 flex-grow-1">
+        <div class="d-flex align-items-center justify-content-center rounded-circle bg-primary bg-opacity-10 flex-shrink-0" style="width: 42px; height: 42px;">
+            {% if nudge_at_limit %}
+            <i class="bi bi-exclamation-triangle-fill text-warning fs-5"></i>
+            {% else %}
+            <i class="bi bi-lightning-charge-fill text-primary fs-5"></i>
+            {% endif %}
+        </div>
+        <div>
+            {% if nudge_at_limit %}
+            <p class="mb-0 fw-bold small">
+                {% blocktrans with current=nudge_current limit=nudge_limit feature=nudge_feature_name %}
+                You've reached your limit of {{ limit }} {{ feature }}.
+                {% endblocktrans %}
+            </p>
+            <p class="mb-0 text-muted" style="font-size: 0.8rem;">
+                {% blocktrans with tier=nudge_upgrade_tier %}Upgrade to {{ tier }} to unlock more.{% endblocktrans %}
+            </p>
+            {% else %}
+            <p class="mb-0 fw-bold small">
+                {% blocktrans with current=nudge_current limit=nudge_limit feature=nudge_feature_name %}
+                You're using {{ current }} of {{ limit }} {{ feature }}.
+                {% endblocktrans %}
+            </p>
+            <p class="mb-0 text-muted" style="font-size: 0.8rem;">
+                {% blocktrans with tier=nudge_upgrade_tier %}Upgrade to {{ tier }} for more capacity.{% endblocktrans %}
+            </p>
+            {% endif %}
+        </div>
+    </div>
+    
+    <a href="{% url 'pricing' %}" class="btn btn-primary btn-sm rounded-pill px-3 fw-bold shadow-sm flex-shrink-0" onclick="window.showLoader && window.showLoader()">
+        <i class="bi bi-arrow-up-circle me-1"></i> {% trans "Upgrade" %}
+    </a>
+
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close" style="position: absolute; top: 8px; right: 8px; font-size: 0.6rem;"></button>
+</div>
+{% endif %}

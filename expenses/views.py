@@ -1406,6 +1406,24 @@ class CategoryListView(LoginRequiredMixin, generic.ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['search_query'] = self.request.GET.get('search', '')
+        
+        # Nudge context for upgrade banner (use tier field directly to match sidebar display)
+        user_tier = self.request.user.profile.tier
+        if user_tier != 'PRO':
+            total_categories = Category.objects.filter(user=self.request.user).count()
+            if user_tier == 'PLUS':
+                limit = 10
+                upgrade_tier = 'PRO'
+            else:
+                limit = 5
+                upgrade_tier = 'PLUS'
+            context['nudge_current'] = total_categories
+            context['nudge_limit'] = limit
+            context['nudge_feature_name'] = 'categories'
+            context['nudge_upgrade_tier'] = upgrade_tier
+            context['nudge_at_limit'] = total_categories >= limit
+            context['show_nudge'] = total_categories >= max(1, int(limit * 0.6))
+        
         return context
 
 class CategoryCreateView(LoginRequiredMixin, generic.CreateView):
@@ -2040,6 +2058,29 @@ class RecurringTransactionListView(LoginRequiredMixin, ListView):
             'total_monthly_cost': total_monthly,
             'total_yearly_cost': total_yearly,
         })
+        
+        # Nudge context for upgrade banner (use tier field directly to match sidebar display)
+        user_tier = self.request.user.profile.tier
+        if user_tier != 'PRO':
+            active_count = RecurringTransaction.objects.filter(user=self.request.user, is_active=True).count()
+            if user_tier == 'PLUS':
+                limit = 3
+                upgrade_tier = 'PRO'
+            else:
+                limit = 0
+                upgrade_tier = 'PLUS'
+            context['nudge_current'] = active_count
+            context['nudge_limit'] = limit if limit > 0 else 1
+            context['nudge_feature_name'] = 'recurring transactions'
+            context['nudge_upgrade_tier'] = upgrade_tier
+            context['nudge_at_limit'] = active_count >= (limit if limit > 0 else 1)
+            # Free users: always show nudge (they have 0 limit)
+            # Plus users: show when >= 60% of 3 = 2+
+            if limit == 0:
+                context['show_nudge'] = True
+            else:
+                context['show_nudge'] = active_count >= max(1, int(limit * 0.6))
+        
         return context
 
 class RecurringTransactionManageView(RecurringTransactionListView):
@@ -2852,14 +2893,30 @@ class SavingsGoalListView(LoginRequiredMixin, ListView):
         
         # Free users get 1 goal, Plus gets 3, Pro gets unlimited
         context['can_create_goal'] = True
-        if self.request.user.profile.is_pro:
+        goal_count = goals.count()
+        user_tier = self.request.user.profile.tier
+        if user_tier == 'PRO':
             context['can_create_goal'] = True
-        elif self.request.user.profile.is_plus:
-            if goals.count() >= 3:
+        elif user_tier == 'PLUS':
+            if goal_count >= 3:
                 context['can_create_goal'] = False
+            # Nudge context
+            context['nudge_current'] = goal_count
+            context['nudge_limit'] = 3
+            context['nudge_feature_name'] = 'savings goals'
+            context['nudge_upgrade_tier'] = 'PRO'
+            context['nudge_at_limit'] = goal_count >= 3
+            context['show_nudge'] = goal_count >= 2  # 60% of 3
         else:
-            if goals.count() >= 1:
+            if goal_count >= 1:
                 context['can_create_goal'] = False
+            # Nudge context
+            context['nudge_current'] = goal_count
+            context['nudge_limit'] = 1
+            context['nudge_feature_name'] = 'savings goals'
+            context['nudge_upgrade_tier'] = 'PLUS'
+            context['nudge_at_limit'] = goal_count >= 1
+            context['show_nudge'] = goal_count >= 1  # any usage on free
                 
         return context
 
@@ -2870,10 +2927,11 @@ class SavingsGoalCreateView(LoginRequiredMixin, CreateView):
     success_url = reverse_lazy('goal-list')
 
     def dispatch(self, request, *args, **kwargs):
-        # Limit check
-        if not request.user.profile.is_pro:
+        # Limit check (use tier field directly, consistent with nudge logic)
+        user_tier = request.user.profile.tier
+        if user_tier != 'PRO':
             goals_count = SavingsGoal.objects.filter(user=request.user).count()
-            if request.user.profile.is_plus:
+            if user_tier == 'PLUS':
                 if goals_count >= 3:
                     messages.error(request, _("PLUS plan is limited to 3 active Savings Goals. Upgrade to PRO to unlock unlimited goals!"))
                     return redirect('goal-list')

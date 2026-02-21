@@ -23,11 +23,13 @@
             <i class="bi bi-plus-lg me-1"></i> {% trans "New Goal" %}
         </a>
         {% else %}
-        <a href="{% url 'pricing' %}" class="btn btn-warning shadow-sm" title="{% trans 'Upgrade to PRO for unlimited goals' %}">
-            <i class="bi bi-star-fill me-1"></i> {% trans "Upgrade to Add More" %}
+        <a href="{% url 'goal-create' %}" class="btn btn-primary shadow-sm disabled" onclick="window.showLoader()">
+            <i class="bi bi-plus-lg me-1"></i> {% trans "New Goal" %}
         </a>
         {% endif %}
     </div>
+
+    {% include 'components/upgrade_nudge.html' %}
 
     <!-- Savings Philosophy Callout -->
     <div class="alert alert-info border-0 shadow-sm rounded-4 mb-4 d-flex align-items-center" role="alert">
