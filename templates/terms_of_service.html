@@ -4,58 +4,233 @@
 {% block content %}
 <div class="container py-5">
     <div class="row justify-content-center">
-        <div class="col-lg-8">
+        <div class="col-lg-10 col-xl-8">
             <h1 class="display-4 fw-bold mb-4 text-center">{% trans "Terms of Service" %}</h1>
-            <p class="text-muted text-center mb-5">{% trans "Last updated: January 2026" %}</p>
+            <p class="text-muted text-center mb-5">{% trans "Last updated: February 22, 2026" %}</p>
 
-                    <h3 class="h5 fw-bold mb-3">{% trans "1. Acceptance of Terms" %}</h3>
-                    <p class="text-muted mb-4">
-                        {% blocktrans %}
-                        By accessing or using TrackMyRupee, you agree to be bound by these Terms of Service. If you disagree with any part of the terms, 
-                        you may not access the service.
-                        {% endblocktrans %}
-                    </p>
+                    <div class="bg-body-tertiary p-4 rounded mb-5">
+                        <h5 class="fw-bold mb-3">{% trans "Table of Contents" %}</h5>
+                        <ul class="list-unstyled mb-0">
+                            <li><a href="#tos-1" class="text-decoration-none">{% trans "1. Acceptance of Terms" %}</a></li>
+                            <li><a href="#tos-2" class="text-decoration-none">{% trans "2. Use of Service" %}</a></li>
+                            <li><a href="#tos-3" class="text-decoration-none">{% trans "3. User Content & Data Ownership" %}</a></li>
+                            <li><a href="#tos-4" class="text-decoration-none">{% trans "4. Subscription Plans & Payments" %}</a></li>
+                            <li><a href="#tos-5" class="text-decoration-none">{% trans "5. Cancellations & Refunds" %}</a></li>
+                            <li><a href="#tos-6" class="text-decoration-none">{% trans "6. Intellectual Property" %}</a></li>
+                            <li><a href="#tos-7" class="text-decoration-none">{% trans "7. Account Termination" %}</a></li>
+                            <li><a href="#tos-8" class="text-decoration-none">{% trans "8. Service Availability" %}</a></li>
+                            <li><a href="#tos-9" class="text-decoration-none">{% trans "9. Limitation of Liability" %}</a></li>
+                            <li><a href="#tos-10" class="text-decoration-none">{% trans "10. Governing Law & Dispute Resolution" %}</a></li>
+                            <li><a href="#tos-11" class="text-decoration-none">{% trans "11. Changes to Terms" %}</a></li>
+                            <li><a href="#tos-12" class="text-decoration-none">{% trans "12. Contact Us" %}</a></li>
+                        </ul>
+                    </div>
 
-                    <h3 class="h5 fw-bold mb-3">{% trans "2. Use of Service" %}</h3>
-                    <p class="text-muted mb-4">
-                        {% blocktrans %}
-                        You are responsible for maintaining the confidentiality of your account and password. You agree to accept responsibility for all 
-                        activities that occur under your account.
-                        {% endblocktrans %}
-                    </p>
+                    <div id="tos-1" class="mb-5">
+                        <h3 class="h4 fw-bold mb-3">{% trans "1. Acceptance of Terms" %}</h3>
+                        <p class="text-muted">
+                            {% blocktrans %}
+                            By accessing or using TrackMyRupee ("the Service"), you agree to be bound by these Terms of Service. If you disagree with any part of the terms, you may not access the service. These terms apply to all visitors, users, and others who access or use the Service.
+                            {% endblocktrans %}
+                        </p>
+                    </div>
 
-                    <h3 class="h5 fw-bold mb-3">{% trans "3. User Content" %}</h3>
-                    <p class="text-muted mb-4">
-                        {% blocktrans %}
-                        You retain ownership of the data you enter into the application. We claim no intellectual property rights over the material 
-                        you provide to the service.
-                        {% endblocktrans %}
-                    </p>
+                    <div id="tos-2" class="mb-5">
+                        <h3 class="h4 fw-bold mb-3">{% trans "2. Use of Service" %}</h3>
+                        <p class="text-muted">
+                            {% blocktrans %}
+                            You are responsible for maintaining the confidentiality of your account and password. You agree to accept responsibility for all activities that occur under your account. You must be at least 13 years of age to use this Service.
+                            {% endblocktrans %}
+                        </p>
+                        <p class="text-muted">{% trans "You agree not to:" %}</p>
+                        <ul class="text-muted">
+                            <li class="mb-2">{% trans "Use the Service for any unlawful purpose or in violation of any applicable laws." %}</li>
+                            <li class="mb-2">{% trans "Attempt to gain unauthorized access to other users' accounts or to the Service's systems." %}</li>
+                            <li class="mb-2">{% trans "Interfere with or disrupt the integrity or performance of the Service." %}</li>
+                            <li class="mb-2">{% trans "Use automated means (bots, scrapers) to access the Service without our express written permission." %}</li>
+                        </ul>
+                    </div>
 
-                    <h3 class="h5 fw-bold mb-3">{% trans "4. Limitation of Liability and Disclaimer" %}</h3>
-                    <p class="text-muted mb-4">
-                        {% blocktrans %}
-                        The service is provided on an "AS IS" and "AS AVAILABLE" basis. TrackMyRupee makes no seeking to warranties regarding the reliability, accuracy, or availability of the service. 
-                        {% endblocktrans %}
-                        <br><br>
-                        <strong>
+                    <div id="tos-3" class="mb-5">
+                        <h3 class="h4 fw-bold mb-3">{% trans "3. User Content & Data Ownership" %}</h3>
+                        <p class="text-muted">
+                            {% blocktrans %}
+                            You retain full ownership of the data you enter into the application, including your expenses, incomes, categories, and financial records. We claim no intellectual property rights over the material you provide to the Service.
+                            {% endblocktrans %}
+                        </p>
+                        <p class="text-muted">
+                            {% blocktrans %}
+                            By using the Service, you grant us a limited, non-exclusive license to use your data solely for the purpose of providing and improving the Service (e.g., generating charts, analytics, and reports for your account).
+                            {% endblocktrans %}
+                        </p>
+                    </div>
+
+                    <div id="tos-4" class="mb-5">
+                        <h3 class="h4 fw-bold mb-3">{% trans "4. Subscription Plans & Payments" %}</h3>
+                        <p class="text-muted">
+                            {% blocktrans %}
+                            TrackMyRupee offers a Free tier and paid subscription plans (Plus, Pro) with monthly and yearly billing options.
+                            {% endblocktrans %}
+                        </p>
+                        <ul class="text-muted">
+                            <li class="mb-2">
+                                <strong>{% trans "Free Tier" %}:</strong>
+                                {% blocktrans %}
+                                Available at no cost with feature limits as described on our Pricing page.
+                                {% endblocktrans %}
+                            </li>
+                            <li class="mb-2">
+                                <strong>{% trans "Paid Plans" %}:</strong>
+                                {% blocktrans %}
+                                Paid subscriptions unlock additional features. Prices are listed in Indian Rupees (INR) on our Pricing page and are subject to change with prior notice.
+                                {% endblocktrans %}
+                            </li>
+                            <li class="mb-2">
+                                <strong>{% trans "Payment Processing" %}:</strong>
+                                {% blocktrans %}
+                                All payments are securely processed by Razorpay. We do not store your payment card details, UPI IDs, or banking credentials. By making a purchase, you agree to Razorpay's terms of service.
+                                {% endblocktrans %}
+                            </li>
+                            <li class="mb-2">
+                                <strong>{% trans "Billing Cycle" %}:</strong>
+                                {% blocktrans %}
+                                Subscriptions are billed at the start of each billing period (monthly or yearly). Subscriptions do not auto-renew; you will need to manually renew when your current period expires.
+                                {% endblocktrans %}
+                            </li>
+                            <li class="mb-2">
+                                <strong>{% trans "Downgrade on Expiry" %}:</strong>
+                                {% blocktrans %}
+                                If a paid subscription expires and is not renewed, your account will revert to the Free tier. Your existing data will be preserved, but you will not be able to create new items beyond the Free tier limits.
+                                {% endblocktrans %}
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div id="tos-5" class="mb-5">
+                        <h3 class="h4 fw-bold mb-3">{% trans "5. Cancellations & Refunds" %}</h3>
+                        <p class="text-muted">
+                            {% blocktrans %}
+                            You may cancel your subscription at any time. Upon cancellation, your subscription will remain active until the end of the current billing period.
+                            {% endblocktrans %}
+                        </p>
+                        <p class="text-muted">
+                            {% blocktrans %}
+                            We offer a 14-day money-back guarantee on initial purchases. For full details, please refer to our
+                            {% endblocktrans %}
+                            <a href="{% url 'refund-policy' %}" class="text-decoration-none fw-bold">{% trans "Refund and Cancellation Policy" %}</a>.
+                        </p>
+                    </div>
+
+                    <div id="tos-6" class="mb-5">
+                        <h3 class="h4 fw-bold mb-3">{% trans "6. Intellectual Property" %}</h3>
+                        <p class="text-muted">
+                            {% blocktrans %}
+                            The Service, its original content (excluding user-generated content), features, functionality, branding, logos, and design are and will remain the exclusive property of TrackMyRupee and its licensors. The Service is protected by copyright, trademark, and other laws of India.
+                            {% endblocktrans %}
+                        </p>
+                        <p class="text-muted">
+                            {% blocktrans %}
+                            You may not copy, modify, distribute, sell, or lease any part of our Service without our written consent.
+                            {% endblocktrans %}
+                        </p>
+                    </div>
+
+                    <div id="tos-7" class="mb-5">
+                        <h3 class="h4 fw-bold mb-3">{% trans "7. Account Termination" %}</h3>
+                        <p class="text-muted">
+                            {% blocktrans %}
+                            We reserve the right to suspend or terminate your account, without prior notice, if we reasonably believe that:
+                            {% endblocktrans %}
+                        </p>
+                        <ul class="text-muted">
+                            <li class="mb-2">{% trans "You have violated these Terms of Service." %}</li>
+                            <li class="mb-2">{% trans "Your account is being used for fraudulent, abusive, or illegal activity." %}</li>
+                            <li class="mb-2">{% trans "You have created multiple accounts to circumvent feature limits." %}</li>
+                        </ul>
+                        <p class="text-muted">
+                            {% blocktrans %}
+                            You may also delete your account at any time from your account settings. Upon deletion, all your data will be permanently removed in accordance with our Privacy Policy.
+                            {% endblocktrans %}
+                        </p>
+                    </div>
+
+                    <div id="tos-8" class="mb-5">
+                        <h3 class="h4 fw-bold mb-3">{% trans "8. Service Availability" %}</h3>
+                        <p class="text-muted">
+                            {% blocktrans %}
+                            We strive to keep TrackMyRupee available at all times, but we do not guarantee uninterrupted or error-free access. The Service may be temporarily unavailable due to maintenance, updates, or circumstances beyond our control.
+                            {% endblocktrans %}
+                        </p>
+                        <p class="text-muted">
+                            {% blocktrans %}
+                            We are not liable for any loss or damage arising from service downtime or interruptions.
+                            {% endblocktrans %}
+                        </p>
+                    </div>
+
+                    <div id="tos-9" class="mb-5">
+                        <h3 class="h4 fw-bold mb-3">{% trans "9. Limitation of Liability" %}</h3>
+                        <p class="text-muted">
+                            {% blocktrans %}
+                            The service is provided on an "AS IS" and "AS AVAILABLE" basis. TrackMyRupee makes no warranties, expressed or implied, regarding the reliability, accuracy, or availability of the service.
+                            {% endblocktrans %}
+                        </p>
+                        <p class="text-muted">
+                            <strong>
                             {% blocktrans %}
                             We are not liable for any data loss, service interruptions, or financial damages resulting from the use or inability to use our application.
                             {% endblocktrans %}
-                        </strong> 
-                        {% blocktrans %}
-                        In no event shall TrackMyRupee be liable for any indirect, incidental, special, consequential, or punitive damages, including without limitation, loss of profits, data, use, goodwill, or other intangible losses.
-                        {% endblocktrans %}
-                    </p>
-                    
-                    <h3 class="h5 fw-bold mb-3">{% trans "5. Changes to Terms" %}</h3>
-                    <p class="text-muted mb-0">
-                        {% blocktrans %}
-                        We reserve the right to modify or replace these Terms at any time. We will try to provide at least 30 days' notice prior to any 
-                        new terms taking effect.
-                        {% endblocktrans %}
-                    </p>
-             <div class="text-center mt-4">
+                            </strong>
+                            {% blocktrans %}
+                            In no event shall TrackMyRupee be liable for any indirect, incidental, special, consequential, or punitive damages, including without limitation, loss of profits, data, use, goodwill, or other intangible losses.
+                            {% endblocktrans %}
+                        </p>
+                        <p class="text-muted">
+                            {% blocktrans %}
+                            TrackMyRupee is a financial tracking tool and does not provide financial, tax, or investment advice. Decisions made based on data in the application are solely your responsibility.
+                            {% endblocktrans %}
+                        </p>
+                    </div>
+
+                    <div id="tos-10" class="mb-5">
+                        <h3 class="h4 fw-bold mb-3">{% trans "10. Governing Law & Dispute Resolution" %}</h3>
+                        <p class="text-muted">
+                            {% blocktrans %}
+                            These Terms shall be governed and construed in accordance with the laws of India, without regard to its conflict of law provisions.
+                            {% endblocktrans %}
+                        </p>
+                        <p class="text-muted">
+                            {% blocktrans %}
+                            Any disputes arising out of or relating to these Terms or the Service shall be subject to the exclusive jurisdiction of the courts in Pune, Maharashtra, India.
+                            {% endblocktrans %}
+                        </p>
+                        <p class="text-muted">
+                            {% blocktrans %}
+                            Before pursuing formal legal action, both parties agree to attempt to resolve any dispute informally by contacting each other via email.
+                            {% endblocktrans %}
+                        </p>
+                    </div>
+
+                    <div id="tos-11" class="mb-5">
+                        <h3 class="h4 fw-bold mb-3">{% trans "11. Changes to Terms" %}</h3>
+                        <p class="text-muted">
+                            {% blocktrans %}
+                            We reserve the right to modify or replace these Terms at any time. We will try to provide at least 30 days' notice prior to any new terms taking effect by posting the updated terms on this page or sending you an email. Your continued use of the Service after changes take effect constitutes acceptance of the new terms.
+                            {% endblocktrans %}
+                        </p>
+                    </div>
+
+                    <div id="tos-12" class="mb-0">
+                        <h3 class="h4 fw-bold mb-3">{% trans "12. Contact Us" %}</h3>
+                        <p class="text-muted mb-0">
+                            {% blocktrans %}
+                            If you have questions about these Terms of Service, please contact us at:
+                            {% endblocktrans %} <br>
+                            <a href="mailto:support@trackmyrupee.com" class="fw-bold text-decoration-none">support@trackmyrupee.com</a>
+                        </p>
+                    </div>
+
+            <div class="text-center mt-5">
                 <a href="{% url 'home' %}" class="btn btn-outline-secondary">
                     <i class="bi bi-arrow-left me-1"></i> {% trans "Back to Home" %}
                 </a>
