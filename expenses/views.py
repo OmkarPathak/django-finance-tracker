@@ -23,7 +23,7 @@ import calendar
 from decimal import Decimal
 
 from .models import Expense, Category, Income, RecurringTransaction, UserProfile, SubscriptionPlan, Notification, CURRENCY_CHOICES, SavingsGoal, GoalContribution
-from .utils import get_exchange_rate
+from .utils import get_exchange_rate, generate_year_in_review_data
 from finance_tracker.ai_utils import predict_category_ai
 from .forms import ExpenseForm, IncomeForm, RecurringTransactionForm, ProfileUpdateForm, CustomSignupForm, ContactForm, LanguageUpdateForm, SavingsGoalForm, GoalContributionForm
 from allauth.socialaccount.models import SocialAccount
@@ -994,6 +994,20 @@ def home_view(request):
     # Check for onboarding (True if user has NO data at all)
     has_any_data = Expense.objects.filter(user=request.user).exists() or Income.objects.filter(user=request.user).exists()
 
+    # Logic for "Year in Review" Banner
+    show_year_in_review = False
+    year_in_review_year = None
+    if has_any_data:
+        # Show last year's review in Jan/Feb
+        if now.month <= 2:
+            year_in_review_year = now.year - 1
+        # Show this year's review in Nov/Dec
+        elif now.month >= 11:
+            year_in_review_year = now.year
+            
+        if year_in_review_year:
+            show_year_in_review = Expense.objects.filter(user=request.user, date__year=year_in_review_year).exists()
+
     context = {
         'is_new_user': not has_any_data,
         'insights': insights[::-1],
@@ -1035,6 +1049,8 @@ def home_view(request):
         'next_month_url': next_month_url,
         'show_tutorial': not request.user.profile.has_seen_tutorial or request.GET.get('tour') == 'true',
         'has_any_budget': any((c.get('limit') or 0) > 0 for c in category_limits),
+        'show_year_in_review': show_year_in_review,
+        'year_in_review_year': year_in_review_year,
     }
     return render(request, 'home.html', context)
 
@@ -2308,6 +2324,25 @@ class ProfileUpdateView(LoginRequiredMixin, UpdateView):
         context = super().get_context_data(**kwargs)
         context['page_title'] = 'Profile Settings'
         context['is_social_user'] = SocialAccount.objects.filter(user=self.request.user).exists()
+        
+        # Handle Year in Review visibility
+        now = timezone.now()
+        has_any_data = Expense.objects.filter(user=self.request.user).exists() or Income.objects.filter(user=self.request.user).exists()
+        show_year_in_review = False
+        year_in_review_year = None
+        
+        if has_any_data:
+            if now.month <= 2:
+                year_in_review_year = now.year - 1
+            elif now.month >= 11:
+                year_in_review_year = now.year
+                
+            if year_in_review_year:
+                show_year_in_review = Expense.objects.filter(user=self.request.user, date__year=year_in_review_year).exists()
+                
+        context['show_year_in_review'] = show_year_in_review
+        context['year_in_review_year'] = year_in_review_year
+        
         return context
 
     def form_valid(self, form):
@@ -3029,3 +3064,31 @@ class SavingsGoalDetailView(LoginRequiredMixin, View):
         }
         return render(request, self.template_name, context)
 
+
+class YearInReviewView(LoginRequiredMixin, TemplateView):
+    template_name = 'expenses/year_in_review.html'
+
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.profile.is_plus:
+            messages.info(request, "Year in Review is a Premium feature. Upgrade to Plus or Pro to unlock your personalized financial story!")
+            return redirect('pricing')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        
+        # Get requested year, default to current year
+        requested_year = self.kwargs.get('year')
+        current_year = datetime.now().year
+        
+        if not requested_year:
+            # If it's Jan or Feb, they probably want to see last year's review
+            if datetime.datetime.now().month <= 2:
+                requested_year = current_year - 1
+            else:
+                requested_year = current_year
+                
+        context['year'] = requested_year
+        context['review_data'] = generate_year_in_review_data(self.request.user, requested_year)
+        
+        return context

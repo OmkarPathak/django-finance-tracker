@@ -39,8 +39,18 @@
                 <div class="form-text text-muted small">{% trans "This email will be used for logins and account recovery." %}</div>
             </div>
 
+            {% if show_year_in_review %}
+            <div class="mb-4 p-3 bg-light rounded border border-primary border-opacity-25 d-flex align-items-center justify-content-between">
+                <div>
+                    <h6 class="fw-bold mb-1 text-primary"><i class="bi bi-stars me-2"></i>Year in Review</h6>
+                    <p class="small text-muted mb-0">Replay your {{ year_in_review_year }} financial journey any time.</p>
+                </div>
+                <a href="{% url 'year_in_review' year_in_review_year %}" class="btn btn-sm btn-outline-primary rounded-pill fw-bold">View Saved Wrapped</a>
+            </div>
+            {% endif %}
+
             <div class="d-flex justify-content-end">
-                <a href="{% url 'account_change_password' %}" class="btn btn-outline-warning me-auto {% if is_social_user %}disabled{% endif %}">
+                <a href="{% url 'account_change_password' %}" class="btn btn-outline-secondary me-auto {% if is_social_user %}disabled{% endif %}">
                     <i class="bi bi-shield-lock me-1"></i> {% trans "Change Password" %}
                 </a>
                 <button type="submit" class="btn btn-primary" {% if is_social_user %}disabled{% endif %}>

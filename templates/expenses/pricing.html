@@ -56,6 +56,7 @@
                     <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>{% trans "3 Savings Goals" %}</li>
                     <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>{% trans "Email Reminders" %}</li>
                     <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>{% trans "Export to CSV/Excel" %}</li>
+                    <li class="mb-2"><i class="bi bi-star-fill text-warning me-2"></i><strong>{% trans "Year in Review" %}</strong></li>
                 </ul>
                 {% if user.profile.tier == 'PLUS' and user.profile.is_plus %}
                      <button type="button" class="w-100 btn btn-lg btn-outline-primary mt-auto rounded-pill fw-bold" disabled>{% trans "Current Plan" %}</button>
@@ -83,7 +84,8 @@
                     <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i><strong>{% trans "Unlimited Savings Goals" %}</strong></li>
                     <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>{% trans "Email Reminders" %}</li>
                     <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>{% trans "Priority Support" %}</li>
-                    <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>{% trans "AI Insights (Coming Soon)" %}</li>
+                    <li class="mb-2"><i class="bi bi-star-fill text-warning me-2"></i><strong>{% trans "Year in Review" %}</strong></li>
+                    <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>{% trans "AI Insights" %}</li>
                 </ul>
                  {% if user.profile.is_pro %}
                     <button type="button" class="w-100 btn btn-lg btn-outline-primary mt-auto rounded-pill fw-bold" disabled>{% trans "Current Plan" %}</button>

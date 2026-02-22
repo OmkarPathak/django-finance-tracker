@@ -1,0 +1,442 @@
+{% extends 'base.html' %}
+{% load currency_filters digit_filters static i18n %}
+
+{% block title %}{{ year }} Year in Review - TrackMyRupee{% endblock %}
+
+{% block content %}
+<style>
+    /* Immersive Full Screen Design */
+    body {
+        background-color: #000 !important;
+        color: #fff !important;
+        overflow: hidden; /* Hide scrollbars for story mode */
+        height: 100vh;
+        margin: 0;
+        padding: 0;
+    }
+    
+    /* Hide the main navbar/sidebar to make it immersive */
+    .navbar, footer, .sidebar {
+        display: none !important;
+    }
+    
+    /* Override base container padding to be full edge */
+    .container-fluid, .container {
+        padding: 0 !important;
+        margin: 0 !important;
+        max-width: 100% !important;
+    }
+
+    .yir-slide {
+        height: 100vh;
+        width: 100vw;
+        display: none; /* Hidden by default */
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        padding: 2rem;
+        position: absolute;
+        top: 0;
+        left: 0;
+        overflow: hidden;
+        animation: fadeIn 0.3s ease-in-out;
+    }
+    
+    .yir-slide.active {
+        display: flex;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: scale(0.98); }
+        to { opacity: 1; transform: scale(1); }
+    }
+
+    .yir-bg-1 { background: radial-gradient(circle at top right, #3a1c71, #d76d77, #ffaf7b); }
+    .yir-bg-2 { background: radial-gradient(circle at bottom left, #0f2027, #203a43, #2c5364); }
+    .yir-bg-3 { background: radial-gradient(circle at top left, #11998e, #38ef7d); }
+    .yir-bg-4 { background: radial-gradient(circle at bottom right, #ff416c, #ff4b2b); }
+    .yir-bg-5 { background: #111; } /* Dark theme for summary card */
+
+    .yir-title {
+        font-family: 'Clash Display', sans-serif;
+        font-weight: 700;
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        line-height: 1.1;
+    }
+    
+    @media (min-width: 768px) {
+        .yir-title { font-size: 5rem; }
+    }
+
+    .yir-text {
+        font-family: 'Outfit', sans-serif;
+        font-size: 1.5rem;
+        opacity: 0.9;
+        max-width: 600px;
+        pointer-events: none; /* Let clicks pass through */
+    }
+
+    .yir-highlight {
+        font-weight: 800;
+        font-size: 4rem;
+        background: -webkit-linear-gradient(45deg, #f3ec78, #af4261);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        display: block;
+        margin: 1rem 0;
+        pointer-events: none;
+    }
+
+    /* Story Progress Bars */
+    .story-progress-container {
+        position: absolute;
+        top: 10px;
+        left: 0;
+        right: 0;
+        width: 100%;
+        padding: 0 10px;
+        display: flex;
+        gap: 5px;
+        z-index: 1000;
+    }
+    
+    .story-progress-bar {
+        height: 3px;
+        flex-grow: 1;
+        background-color: rgba(255, 255, 255, 0.3);
+        border-radius: 3px;
+        overflow: hidden;
+    }
+    
+    .story-progress-fill {
+        height: 100%;
+        width: 0%;
+        background-color: #fff;
+    }
+    
+    .story-progress-bar.completed .story-progress-fill {
+        width: 100%;
+    }
+
+    /* Navigation Overlay Areas */
+    .nav-area-left {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 30%;
+        height: 100%;
+        z-index: 50;
+        cursor: pointer;
+    }
+    
+    .nav-area-right {
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 70%;
+        height: 100%;
+        z-index: 50;
+        cursor: pointer;
+    }
+
+    /* Summary Card Styling */
+    #share-card {
+        background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+        border-radius: 20px;
+        padding: 2.5rem;
+        width: 100%;
+        max-width: 400px;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+        color: white;
+        text-align: left;
+        position: relative;
+        z-index: 100; /* Above nav areas to allow interaction */
+    }
+
+    .close-btn {
+        position: absolute;
+        top: 2rem;
+        right: 2rem;
+        color: white;
+        font-size: 2rem;
+        z-index: 1000;
+        text-decoration: none;
+        opacity: 0.7;
+        transition: opacity 0.2s;
+    }
+    .close-btn:hover { opacity: 1; color: white; }
+    
+    .interactive-element {
+        position: relative;
+        z-index: 100;
+    }
+</style>
+
+<!-- Exit Button -->
+<a href="{% url 'home' %}" onclick="if(document.referrer && document.referrer.indexOf(window.location.host) !== -1) { history.back(); return false; }" class="close-btn"><i class="bi bi-x-circle-fill"></i></a>
+
+{% if not review_data.has_data %}
+<div class="yir-slide active yir-bg-1">
+    <h1 class="yir-title">We don't have enough data for {{ year }}.</h1>
+    <p class="yir-text">Start tracking this year to see your insights next year!</p>
+    <a href="{% url 'home' %}" class="btn btn-light rounded-pill px-4 py-2 mt-4 fw-bold interactive-element">Back to Dashboard</a>
+</div>
+{% else %}
+
+<!-- Story Progress Indicators -->
+<div class="story-progress-container">
+    <div class="story-progress-bar" id="pb-0"><div class="story-progress-fill"></div></div>
+    <div class="story-progress-bar" id="pb-1"><div class="story-progress-fill"></div></div>
+    <div class="story-progress-bar" id="pb-2"><div class="story-progress-fill"></div></div>
+    <div class="story-progress-bar" id="pb-3"><div class="story-progress-fill"></div></div>
+    <div class="story-progress-bar" id="pb-4"><div class="story-progress-fill"></div></div>
+</div>
+
+<!-- Slide Navigation Overlays (Click zones) -->
+<div class="nav-area-left" id="nav-left"></div>
+<div class="nav-area-right" id="nav-right"></div>
+
+<!-- Slide 1: Intro -->
+<div class="yir-slide active yir-bg-1" id="slide-0">
+    <p class="yir-text mb-0">TrackMyRupee</p>
+    <h1 class="yir-title">Your {{ year }}<br>Wrapped</h1>
+    <p class="yir-text mt-3">Ready to see how you spent your time... and money?</p>
+    <p class="text-white-50 mt-5 small"><i class="bi bi-hand-index-thumb"></i> Tap right to continue</p>
+</div>
+
+<!-- Slide 2: The Big Numbers -->
+<div class="yir-slide yir-bg-2" id="slide-1">
+    <h1 class="yir-title">The Big Picture</h1>
+    <p class="yir-text">You earned a total of</p>
+    <span class="yir-highlight" style="background: -webkit-linear-gradient(45deg, #00b09b, #96c93d); -webkit-background-clip: text;">{{ currency_symbol }}{{ review_data.total_earned|humanize_currency:currency_symbol|translate_digits }}</span>
+    <p class="yir-text mt-2">and tracked {{ review_data.transaction_count|translate_digits }} expenses totalling</p>
+    <span class="yir-highlight" style="background: -webkit-linear-gradient(45deg, #ff416c, #ff4b2b); -webkit-background-clip: text;">{{ currency_symbol }}{{ review_data.total_spent|humanize_currency:currency_symbol|translate_digits }}</span>
+</div>
+
+<!-- Slide 3: Top Categories -->
+<div class="yir-slide yir-bg-3" id="slide-2">
+    <h1 class="yir-title">Where did it go?</h1>
+    <p class="yir-text mb-4">Your top 3 spending categories this year:</p>
+    
+    <div class="d-flex flex-column gap-3 w-100 align-items-center mb-4" style="max-width: 400px; pointer-events: none;">
+        {% for cat in review_data.top_categories %}
+        <div class="w-100 bg-white bg-opacity-10 rounded-pill p-3 d-flex justify-content-between align-items-center backdrop-blur">
+            <span class="fs-4 fw-bold">#{{ forloop.counter }} {{ cat.category }}</span>
+            <span class="fs-5">{{ currency_symbol }}{{ cat.total|humanize_currency:currency_symbol|translate_digits }}</span>
+        </div>
+        {% empty %}
+        <p>No categories tracked.</p>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Slide 4: Best and Worst Months -->
+<div class="yir-slide yir-bg-4" id="slide-3">
+    <h1 class="yir-title">Peaks and Valleys</h1>
+    {% if review_data.highest_month %}
+    <p class="yir-text">You really let loose in</p>
+    <span class="yir-highlight text-white" style="-webkit-text-fill-color: white;">{{ review_data.highest_month.name }}</span>
+    <p class="yir-text mt-0">spending {{ currency_symbol }}{{ review_data.highest_month.total|humanize_currency:currency_symbol|translate_digits }}</p>
+    {% endif %}
+    
+    <div class="my-3 border-top w-25 border-white opacity-50"></div>
+    
+    {% if review_data.lowest_month %}
+    <p class="yir-text">But you were a savings master in</p>
+    <span class="yir-highlight text-white" style="-webkit-text-fill-color: white;">{{ review_data.lowest_month.name }}</span>
+    {% endif %}
+</div>
+
+<!-- Slide 5: The Shareable Summary Card -->
+<div class="yir-slide yir-bg-5" id="slide-4">
+    <div id="share-card" class="interactive-element">
+        <h3 class="fw-bold mb-0">My {{ year }}</h3>
+        <p class="text-white-50 small mb-4">Tracked on TrackMyRupee</p>
+        
+        <div class="row g-3 mb-4">
+            <div class="col-6">
+                <small class="text-white-50 d-block text-uppercase fw-bold" style="font-size: 0.7rem;">Earned</small>
+                <span class="fs-5 fw-bold">{{ currency_symbol }}{{ review_data.total_earned|humanize_currency:currency_symbol|translate_digits }}</span>
+            </div>
+            <div class="col-6">
+                <small class="text-white-50 d-block text-uppercase fw-bold" style="font-size: 0.7rem;">Spent</small>
+                <span class="fs-5 fw-bold">{{ currency_symbol }}{{ review_data.total_spent|humanize_currency:currency_symbol|translate_digits }}</span>
+            </div>
+            <div class="col-12 mt-2">
+                <small class="text-white-50 d-block text-uppercase fw-bold" style="font-size: 0.7rem;">Top Spending</small>
+                <span class="fs-5 fw-bold">
+                    {% if review_data.top_categories %}
+                        {{ review_data.top_categories.0.category }}
+                    {% else %}
+                        None
+                    {% endif %}
+                </span>
+            </div>
+            {% if review_data.goals_completed > 0 %}
+            <div class="col-12 mt-2">
+                <small class="text-white-50 d-block text-uppercase fw-bold" style="font-size: 0.7rem;">Achievements</small>
+                <span class="fs-5 fw-bold">Crushed {{ review_data.goals_completed|translate_digits }} Savings Goals! 🎯</span>
+            </div>
+            {% endif %}
+        </div>
+        
+        <div class="text-center mt-4">
+            <span class="badge bg-white text-dark rounded-pill px-3 py-2 fw-bold" style="font-size: 0.7rem;">trackmyrupee.in</span>
+        </div>
+    </div>
+    
+    <!-- Action Buttons -->
+    <div class="mt-5 d-flex gap-3 interactive-element" data-html2canvas-ignore="true">
+        <button id="download-btn" class="btn btn-light rounded-pill px-4 py-2 fw-bold">
+            <i class="bi bi-download me-2"></i> Save to Gallery
+        </button>
+        <a href="{% url 'home' %}" onclick="if(document.referrer && document.referrer.indexOf(window.location.host) !== -1) { history.back(); return false; }" class="btn btn-outline-light rounded-pill px-4 py-2 fw-bold">
+            Exit
+        </a>
+    </div>
+</div>
+
+{% endif %}
+
+<!-- html2canvas for downloading the card -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // --- Story Carousel Logic ---
+        const totalSlides = 5;
+        let currentSlide = 0;
+        let timer;
+        const SLIDE_DURATION = 5000; // 5 seconds per slide
+        
+        // If we don't have enough data, this doesn't run.
+        if (document.getElementById('slide-0')) {
+            const navLeft = document.getElementById('nav-left');
+            const navRight = document.getElementById('nav-right');
+            
+            function showSlide(index) {
+                // Bounds checking
+                if (index >= totalSlides) {
+                    // Reached end, bounce back or just stay on last slide
+                    index = totalSlides - 1;
+                } else if (index < 0) {
+                    index = 0;
+                }
+                
+                // Update Classes
+                for (let i = 0; i < totalSlides; i++) {
+                    const slide = document.getElementById(`slide-${i}`);
+                    const pb = document.getElementById(`pb-${i}`);
+                    
+                    if (i < index) {
+                        // Past slides
+                        slide.classList.remove('active');
+                        pb.classList.add('completed');
+                        pb.querySelector('.story-progress-fill').style.transition = 'none';
+                        pb.querySelector('.story-progress-fill').style.width = '100%';
+                    } else if (i === index) {
+                        // Current slide
+                        slide.classList.add('active');
+                        pb.classList.remove('completed');
+                        
+                        // Restart Animation for current slide
+                        const fill = pb.querySelector('.story-progress-fill');
+                        fill.style.transition = 'none';
+                        fill.style.width = '0%';
+                        
+                        // Force reflow
+                        void fill.offsetWidth;
+                        
+                        fill.style.transition = `width ${SLIDE_DURATION}ms linear`;
+                        fill.style.width = '100%';
+                        
+                    } else {
+                        // Future slides
+                        slide.classList.remove('active');
+                        pb.classList.remove('completed');
+                        pb.querySelector('.story-progress-fill').style.transition = 'none';
+                        pb.querySelector('.story-progress-fill').style.width = '0%';
+                    }
+                }
+                
+                currentSlide = index;
+                resetTimer();
+                
+                // Hide nav areas on the last slide so user can click the buttons safely
+                if (currentSlide === totalSlides - 1) {
+                    navLeft.style.display = 'none';
+                    navRight.style.display = 'none';
+                } else {
+                    navLeft.style.display = 'block';
+                    navRight.style.display = 'block';
+                }
+            }
+            
+            function nextSlide() {
+                if (currentSlide < totalSlides - 1) {
+                    showSlide(currentSlide + 1);
+                }
+            }
+            
+            function prevSlide() {
+                if (currentSlide > 0) {
+                    showSlide(currentSlide - 1);
+                }
+            }
+            
+            function resetTimer() {
+                clearInterval(timer);
+                if (currentSlide < totalSlides - 1) {
+                    timer = setInterval(nextSlide, SLIDE_DURATION);
+                }
+            }
+            
+            // Events
+            navLeft.addEventListener('click', prevSlide);
+            navRight.addEventListener('click', nextSlide);
+            
+            // Allow keyboard nav too
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'ArrowRight' || e.key === ' ') nextSlide();
+                if (e.key === 'ArrowLeft') prevSlide();
+            });
+
+            // Initialize Custom Start
+            showSlide(0);
+        }
+    
+        // --- Download Logic ---
+        const downloadBtn = document.getElementById('download-btn');
+        if (downloadBtn) {
+            downloadBtn.addEventListener('click', function() {
+                const card = document.getElementById('share-card');
+                const prevHtml = downloadBtn.innerHTML;
+                downloadBtn.innerHTML = '<i class="bi bi-hourglass-split me-2"></i> Generating...';
+                downloadBtn.disabled = true;
+                
+                // Use html2canvas
+                html2canvas(card, {
+                    scale: 3, // Very high resolution for crisp text
+                    backgroundColor: null,
+                    useCORS: true,
+                    logging: false
+                }).then(canvas => {
+                    // Convert to image
+                    const link = document.createElement('a');
+                    link.download = 'TrackMyRupee_Wrapped_{{ year }}.png';
+                    link.href = canvas.toDataURL('image/png');
+                    link.click();
+                    
+                    downloadBtn.innerHTML = '<i class="bi bi-check-lg me-2"></i> Saved';
+                    setTimeout(() => {
+                        downloadBtn.innerHTML = prevHtml;
+                        downloadBtn.disabled = false;
+                    }, 2000);
+                });
+            });
+        }
+    });
+</script>
+
+{% endblock %}

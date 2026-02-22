@@ -247,6 +247,56 @@
 </script>
 {% endif %}
 
+<!-- Year in Review Banner -->
+{% if show_year_in_review %}
+<div id="yir-banner-container" style="display: none;">
+    <div class="alert alert-primary border-0 shadow-sm d-flex flex-column flex-sm-row align-items-sm-center justify-content-between fade-in mb-4 gap-3 position-relative pe-5" role="alert" style="background: linear-gradient(135deg, rgba(30,60,114,0.05) 0%, rgba(42,82,152,0.05) 100%);">
+        
+        <!-- Dismiss Button -->
+        <button type="button" class="btn-close position-absolute top-0 end-0 m-2 mt-2 me-2" id="dismiss-yir-btn" aria-label="Close" style="font-size: 0.75rem;"></button>
+
+        <div class="d-flex align-items-center gap-3">
+            <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center flex-shrink-0" style="width: 40px; height: 40px;">
+                <i class="bi bi-stars fs-5"></i>
+            </div>
+            <div>
+                <h6 class="alert-heading fw-bold mb-0 text-primary" style="font-family: 'Clash Display', sans-serif;">Your {{ year_in_review_year }} in Review is Ready ✨</h6>
+                <p class="mb-0 small text-muted" style="opacity: 0.85;">See your financial year wrapped and discover your top spending habits.</p>
+            </div>
+        </div>
+        <a href="{% url 'year_in_review' year_in_review_year %}" class="btn btn-primary btn-sm rounded-pill px-4 py-2 fw-bold text-nowrap flex-shrink-0 shadow-sm mt-2 mt-sm-0 me-sm-4">View Now</a>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const yirContainer = document.getElementById('yir-banner-container');
+    const dismissBtn = document.getElementById('dismiss-yir-btn');
+    const storageKey = 'trackmyrupee_dismissed_yir_{{ year_in_review_year }}';
+
+    if (yirContainer && dismissBtn) {
+        // Check if previously dismissed
+        if (localStorage.getItem(storageKey) !== 'true') {
+            yirContainer.style.display = 'block'; // Show it
+        }
+
+        // Handle dismiss click
+        dismissBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            // Store preference
+            localStorage.setItem(storageKey, 'true');
+            // Hide nicely
+            yirContainer.style.transition = 'opacity 0.3s ease';
+            yirContainer.style.opacity = '0';
+            setTimeout(() => {
+                yirContainer.style.display = 'none';
+            }, 300);
+        });
+    }
+});
+</script>
+{% endif %}
+
 <!-- Summary Cards Row -->
 <div class="row g-4 mb-4">
     <!-- Total Income -->
