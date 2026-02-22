@@ -6,7 +6,7 @@
     <div class="row justify-content-center">
         <div class="col-lg-10 col-xl-8">
             <h1 class="display-4 fw-bold mb-4 text-center">{% trans "Privacy Policy" %}</h1>
-            <p class="text-muted text-center mb-5">{% trans "Last updated: January 14, 2026" %}</p>
+            <p class="text-muted text-center mb-5">{% trans "Last updated: February 22, 2026" %}</p>
 
                     <p class="lead mb-4">
                         {% blocktrans %}
@@ -41,7 +41,7 @@
                             <li class="mb-2">
                                 <strong>{% trans "Account Information" %}:</strong>
                                 {% blocktrans %}
-                                Your username, email address, and password (encrypted).
+                                Your username, email address, and password (securely hashed — never stored in plain text).
                                 {% endblocktrans %}
                             </li>
                             <li class="mb-2">
@@ -160,17 +160,17 @@
                         <ul class="text-muted">
                             <li class="mb-2">
                                 {% blocktrans %}
-                                Encryption of sensitive data (like passwords) at rest.
+                                Passwords are securely hashed using industry-standard algorithms (PBKDF2) and are never stored in plain text.
                                 {% endblocktrans %}
                             </li>
                             <li class="mb-2">
                                 {% blocktrans %}
-                                Secure HTTPS (TLS/SSL) for all data in transit.
+                                Secure HTTPS (TLS/SSL) for all data transmitted between your browser and our servers.
                                 {% endblocktrans %}
                             </li>
                             <li class="mb-2">
                                 {% blocktrans %}
-                                Regular backups and security assessments.
+                                Payment processing is handled entirely by Razorpay — we never store your card numbers, UPI IDs, or banking credentials.
                                 {% endblocktrans %}
                             </li>
                             <li class="mb-2">
@@ -179,6 +179,12 @@
                                 {% endblocktrans %}
                             </li>
                         </ul>
+                        <p class="text-muted">
+                            <strong>{% trans "Note" %}:</strong>
+                            {% blocktrans %}
+                            Your financial data (expenses, incomes, categories) is stored in our database and is not encrypted at rest. While we take measures to protect our infrastructure, we encourage you not to enter highly sensitive information (such as bank account numbers or credit card details) into expense descriptions.
+                            {% endblocktrans %}
+                        </p>
                     </div>
 
                     <div id="section-6" class="mb-5">

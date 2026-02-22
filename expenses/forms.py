@@ -5,7 +5,8 @@ from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
 from allauth.socialaccount.models import SocialAccount
 from .models import Expense, Category, Income, RecurringTransaction, UserProfile
-
+from django_recaptcha.fields import ReCaptchaField
+from django_recaptcha.widgets import ReCaptchaV3
 from datetime import date
 
 class ExpenseForm(forms.ModelForm):
@@ -174,6 +175,14 @@ class CustomSignupForm(UserCreationForm):
         model = User
         fields = ('username', 'email')
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        from django.conf import settings
+
+        # Add reCAPTCHA field if keys are configured
+        if getattr(settings, 'RECAPTCHA_PUBLIC_KEY', None) and getattr(settings, 'RECAPTCHA_PRIVATE_KEY', None):
+            self.fields['captcha'] = ReCaptchaField(widget=ReCaptchaV3)
+
     def clean_email(self):
         email = self.cleaned_data.get('email')
         if User.objects.filter(email=email).exists():
@@ -198,8 +207,6 @@ class ContactForm(forms.Form):
         
         # Add reCAPTCHA field if keys are configured
         if getattr(settings, 'RECAPTCHA_PUBLIC_KEY', None) and getattr(settings, 'RECAPTCHA_PRIVATE_KEY', None):
-            from django_recaptcha.fields import ReCaptchaField
-            from django_recaptcha.widgets import ReCaptchaV3
             self.fields['captcha'] = ReCaptchaField(widget=ReCaptchaV3)
 
 from .models import SavingsGoal, GoalContribution
