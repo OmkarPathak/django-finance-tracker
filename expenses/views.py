@@ -402,7 +402,9 @@ class LandingPageView(TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         plans = SubscriptionPlan.objects.filter(is_active=True)
-        context['plans'] = {p.tier: p for p in plans}
+        context['plans_monthly'] = {p.tier: p for p in plans.filter(duration='MONTHLY')}
+        context['plans_yearly'] = {p.tier: p for p in plans.filter(duration='YEARLY')}
+        context['plans'] = context['plans_yearly']
         return context
 
 class SettingsHomeView(LoginRequiredMixin, TemplateView):
@@ -1423,11 +1425,11 @@ class CategoryListView(LoginRequiredMixin, generic.ListView):
         context = super().get_context_data(**kwargs)
         context['search_query'] = self.request.GET.get('search', '')
         
-        # Nudge context for upgrade banner (use tier field directly to match sidebar display)
-        user_tier = self.request.user.profile.tier
-        if user_tier != 'PRO':
+        # Nudge context for upgrade banner (use is_plus/is_pro to respect subscription expiry)
+        profile = self.request.user.profile
+        if not profile.is_pro:
             total_categories = Category.objects.filter(user=self.request.user).count()
-            if user_tier == 'PLUS':
+            if profile.is_plus:
                 limit = 10
                 upgrade_tier = 'PRO'
             else:
@@ -2075,11 +2077,11 @@ class RecurringTransactionListView(LoginRequiredMixin, ListView):
             'total_yearly_cost': total_yearly,
         })
         
-        # Nudge context for upgrade banner (use tier field directly to match sidebar display)
-        user_tier = self.request.user.profile.tier
-        if user_tier != 'PRO':
+        # Nudge context for upgrade banner (use is_plus/is_pro to respect subscription expiry)
+        profile = self.request.user.profile
+        if not profile.is_pro:
             active_count = RecurringTransaction.objects.filter(user=self.request.user, is_active=True).count()
-            if user_tier == 'PLUS':
+            if profile.is_plus:
                 limit = 3
                 upgrade_tier = 'PRO'
             else:
@@ -2373,7 +2375,10 @@ class PricingView(TemplateView):
         context = super().get_context_data(**kwargs)
         context['RAZORPAY_KEY_ID'] = settings.RAZORPAY_KEY_ID
         plans = SubscriptionPlan.objects.filter(is_active=True)
-        context['plans'] = {p.tier: p for p in plans}
+        context['plans_monthly'] = {p.tier: p for p in plans.filter(duration='MONTHLY')}
+        context['plans_yearly'] = {p.tier: p for p in plans.filter(duration='YEARLY')}
+        # Backward compat: default "plans" uses yearly
+        context['plans'] = context['plans_yearly']
         return context
 
 def ping(request):
@@ -2614,6 +2619,24 @@ def trigger_notifications(request):
         notification.save()
         return JsonResponse({'success': True})
     return JsonResponse({'success': False}, status=400)
+
+
+@csrf_exempt
+def trigger_lifecycle_emails(request):
+    """
+    HTTP endpoint to trigger lifecycle drip emails via external cron service.
+    Secured by a secret key in the URL params: ?secret=YOUR_CRON_SECRET
+    """
+    secret = request.GET.get('secret')
+
+    if not secret or secret != settings.CRON_SECRET:
+        return JsonResponse({'error': 'Unauthorized'}, status=403)
+
+    try:
+        call_command('send_lifecycle_emails')
+        return JsonResponse({'success': True, 'message': 'Lifecycle emails triggered successfully'})
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
 
 
 class AnalyticsView(LoginRequiredMixin, TemplateView):
@@ -2976,10 +2999,10 @@ class SavingsGoalListView(LoginRequiredMixin, ListView):
         # Free users get 1 goal, Plus gets 3, Pro gets unlimited
         context['can_create_goal'] = True
         goal_count = goals.count()
-        user_tier = self.request.user.profile.tier
-        if user_tier == 'PRO':
+        profile = self.request.user.profile
+        if profile.is_pro:
             context['can_create_goal'] = True
-        elif user_tier == 'PLUS':
+        elif profile.is_plus:
             if goal_count >= 3:
                 context['can_create_goal'] = False
             # Nudge context
@@ -3009,11 +3032,11 @@ class SavingsGoalCreateView(LoginRequiredMixin, CreateView):
     success_url = reverse_lazy('goal-list')
 
     def dispatch(self, request, *args, **kwargs):
-        # Limit check (use tier field directly, consistent with nudge logic)
-        user_tier = request.user.profile.tier
-        if user_tier != 'PRO':
+        # Limit check (use is_plus/is_pro to respect subscription expiry)
+        profile = request.user.profile
+        if not profile.is_pro:
             goals_count = SavingsGoal.objects.filter(user=request.user).count()
-            if user_tier == 'PLUS':
+            if profile.is_plus:
                 if goals_count >= 3:
                     messages.error(request, _("PLUS plan is limited to 3 active Savings Goals. Upgrade to PRO to unlock unlimited goals!"))
                     return redirect('goal-list')

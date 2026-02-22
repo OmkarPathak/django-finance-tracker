@@ -1,0 +1,35 @@
+{% extends "account/email/base_email.html" %}
+
+{% block title %}Never Miss a Bill Again — TrackMyRupee{% endblock %}
+
+{% block content %}
+    <h2>Did You Know? You Can Track Subscriptions Automatically 🔄</h2>
+    
+    <p>Hi <strong>{{ user.first_name|default:user.username }}</strong>,</p>
+    
+    <p>How many subscriptions are you paying for right now? Netflix, Spotify, gym, insurance, internet... it adds up quickly.</p>
+    
+    <p>TrackMyRupee's <strong>Recurring Transactions</strong> feature lets you:</p>
+    
+    <div style="text-align: left; margin: 25px 0; background: #f8f9fa; border-radius: 12px; padding: 20px;">
+        <p style="margin-bottom: 12px;">✅ <strong>Set recurring expenses once</strong> — they're logged automatically every month</p>
+        <p style="margin-bottom: 12px;">🔔 <strong>Get smart reminders</strong> — email, push, and in-app alerts 3 days before each payment</p>
+        <p style="margin-bottom: 12px;">📈 <strong>See your subscription total</strong> — know exactly how much goes to recurring bills</p>
+        <p style="margin-bottom: 0;">💰 <strong>Track recurring income too</strong> — salary, freelance, dividends all auto-logged</p>
+    </div>
+    
+    <div style="background: linear-gradient(135deg, #f0f9ff, #e0f2fe); border-radius: 12px; padding: 20px; margin: 25px 0; text-align: center;">
+        <p style="margin: 0; font-size: 14px; color: #0369a1;">
+            💡 <strong>Recurring Transactions</strong> are available on <strong>Plus</strong> and <strong>Pro</strong> plans. 
+            <a href="https://trackmyrupee.com/pricing/" style="color: #0575e6; font-weight: 600;">See plans →</a>
+        </p>
+    </div>
+    
+    <div style="margin: 35px 0;">
+        <a href="https://trackmyrupee.com/recurring/" class="btn btn-primary">
+            Manage Subscriptions
+        </a>
+    </div>
+    
+    <p>Keep tracking,<br>Omkar @ TrackMyRupee</p>
+{% endblock %}

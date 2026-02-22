@@ -17,9 +17,13 @@ def create_order(request):
         try:
             data = json.loads(request.body)
             plan_type = data.get('plan_type')
+            duration = data.get('duration', 'YEARLY')
+
+            if duration not in ('MONTHLY', 'YEARLY'):
+                return JsonResponse({'error': 'Invalid duration'}, status=400)
 
             try:
-                plan_obj = SubscriptionPlan.objects.get(tier=plan_type, is_active=True)
+                plan_obj = SubscriptionPlan.objects.get(tier=plan_type, duration=duration, is_active=True)
             except SubscriptionPlan.DoesNotExist:
                  return JsonResponse({'error': 'Invalid or inactive plan'}, status=400)
 
@@ -30,10 +34,11 @@ def create_order(request):
             
             order_data = {
                 'amount': amount_in_paise,
-                'currency': 'INR', # Keeping INR default for now, can be dynamic from model if needed
+                'currency': 'INR',
                 'receipt': f'receipt_order_{request.user.id}_{int(timezone.now().timestamp())}',
                 'notes': {
                     'plan': plan_type,
+                    'duration': duration,
                     'user_id': request.user.id
                 }
             }
@@ -46,6 +51,7 @@ def create_order(request):
                 order_id=order['id'],
                 amount=plan_obj.price,
                 tier=plan_type,
+                duration=duration,
                 status='PENDING'
             )
 
@@ -92,9 +98,11 @@ def verify_payment(request):
             profile.tier = payment_record.tier
             profile.razorpay_order_id = razorpay_order_id
             
-            # Set end date (1 year from now)
-            # Hardcoded to 365 days for now, could move to model
-            profile.subscription_end_date = timezone.now() + timedelta(days=365)
+            # Set end date based on duration
+            if payment_record.duration == 'MONTHLY':
+                profile.subscription_end_date = timezone.now() + timedelta(days=30)
+            else:
+                profile.subscription_end_date = timezone.now() + timedelta(days=365)
             profile.save()
 
             return JsonResponse({'success': True})
