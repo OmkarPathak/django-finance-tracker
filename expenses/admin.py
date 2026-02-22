@@ -68,9 +68,10 @@ from .models import SubscriptionPlan
 
 @admin.register(SubscriptionPlan)
 class SubscriptionPlanAdmin(admin.ModelAdmin):
-    list_display = ('name', 'tier', 'price', 'is_active')
+    list_display = ('name', 'tier', 'duration', 'price', 'is_active')
     list_editable = ('price', 'is_active')
-    ordering = ('price',)
+    list_filter = ('tier', 'duration')
+    ordering = ('tier', 'price')
 
 # Re-register User Admin to include Email Verification inline
 from django.contrib.auth.models import User

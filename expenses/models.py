@@ -237,6 +237,9 @@ class UserProfile(models.Model):
     is_lifetime = models.BooleanField(default=False)
     razorpay_order_id = models.CharField(max_length=100, blank=True, null=True)
 
+    # Lifecycle email drip tracking
+    last_drip_email_day = models.IntegerField(default=0)
+
     @property
     def is_pro(self):
         """Check if user has active Pro access (either lifetime or valid subscription)."""
@@ -266,18 +269,24 @@ class PaymentHistory(models.Model):
     payment_id = models.CharField(max_length=100, blank=True, null=True)
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     tier = models.CharField(max_length=10) # PLUS, PRO
+    duration = models.CharField(max_length=10, default='YEARLY')  # MONTHLY, YEARLY
     status = models.CharField(max_length=20, default='PENDING') # PENDING, SUCCESS, FAILED
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.user.username} - {self.tier} - {self.status}"
+        return f"{self.user.username} - {self.tier} ({self.duration}) - {self.status}"
 
 class SubscriptionPlan(models.Model):
+    DURATION_CHOICES = [
+        ('MONTHLY', 'Monthly'),
+        ('YEARLY', 'Yearly'),
+    ]
     TIER_CHOICES = [
         ('PLUS', 'Plus'),
         ('PRO', 'Pro'),
     ]
-    tier = models.CharField(max_length=10, choices=TIER_CHOICES, unique=True)
+    tier = models.CharField(max_length=10, choices=TIER_CHOICES)
+    duration = models.CharField(max_length=10, choices=DURATION_CHOICES, default='YEARLY')
     name = models.CharField(max_length=100)
     price = models.DecimalField(max_digits=10, decimal_places=2, help_text="Price in INR")
     features = models.TextField(help_text="Comma separated features", blank=True)
@@ -285,8 +294,16 @@ class SubscriptionPlan(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['tier', 'duration'],
+                name='unique_plan_tier_duration'
+            )
+        ]
+
     def __str__(self):
-        return f"{self.name} - ₹{self.price}"
+        return f"{self.name} ({self.get_duration_display()}) - ₹{self.price}"
 
 class Notification(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications')

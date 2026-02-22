@@ -1,0 +1,43 @@
+{% extends "account/email/base_email.html" %}
+
+{% block title %}Your First Month in Review — TrackMyRupee{% endblock %}
+
+{% block content %}
+    <h2>🎉 1 Month with TrackMyRupee — Congratulations!</h2>
+    
+    <p>Hi <strong>{{ user.first_name|default:user.username }}</strong>,</p>
+    
+    <p>You've been tracking your finances for <strong>one full month</strong>. That is a real milestone — most people never make it this far. You should be proud!</p>
+
+    <div style="background: linear-gradient(135deg, #f0fdf4, #dcfce7); border-radius: 12px; padding: 20px; margin: 25px 0; text-align: center;">
+        <p style="margin: 0 0 8px; font-size: 14px; color: #15803d; font-weight: 600;">YOUR FIRST MONTH</p>
+        <div style="display: inline-block; margin: 0 16px;">
+            <p style="margin: 0; font-size: 28px; font-weight: 700; color: #023047;">{{ expense_count|default:"—" }}</p>
+            <p style="margin: 0; font-size: 12px; color: #6c757d;">Expenses Tracked</p>
+        </div>
+        <div style="display: inline-block; margin: 0 16px;">
+            <p style="margin: 0; font-size: 28px; font-weight: 700; color: #023047;">{{ income_count|default:"—" }}</p>
+            <p style="margin: 0; font-size: 12px; color: #6c757d;">Income Entries</p>
+        </div>
+        <div style="display: inline-block; margin: 0 16px;">
+            <p style="margin: 0; font-size: 28px; font-weight: 700; color: #023047;">{{ category_count|default:"—" }}</p>
+            <p style="margin: 0; font-size: 12px; color: #6c757d;">Categories Used</p>
+        </div>
+    </div>
+    
+    <p>Now imagine what the next 11 months could look like with the full power of TrackMyRupee <strong>Plus</strong> or <strong>Pro</strong>:</p>
+    
+    <div style="text-align: left; margin: 20px 0; background: #f8f9fa; border-radius: 12px; padding: 20px;">
+        <p style="margin-bottom: 10px;">📈 <strong>Year in Review</strong> — A beautiful annual summary of your finances</p>
+        <p style="margin-bottom: 10px;">🧠 <strong>AI Insights</strong> — Auto-categorize expenses with AI</p>
+        <p style="margin-bottom: 0;">📤 <strong>Export Data</strong> — Download your full history anytime</p>
+    </div>
+    
+    <div style="margin: 35px 0;">
+        <a href="https://trackmyrupee.com/pricing/" class="btn btn-primary">
+            Explore Plans
+        </a>
+    </div>
+    
+    <p>Here's to another great month,<br>Omkar @ TrackMyRupee</p>
+{% endblock %}

@@ -1,0 +1,48 @@
+{% extends "account/email/base_email.html" %}
+
+{% block title %}Unlock Your Full Financial Potential — TrackMyRupee{% endblock %}
+
+{% block content %}
+    <h2>You've Been Tracking for 2 Weeks — Time to Level Up? 🚀</h2>
+    
+    <p>Hi <strong>{{ user.first_name|default:user.username }}</strong>,</p>
+    
+    <p>You've been using TrackMyRupee for <strong>2 weeks</strong> now. That's already more consistent than 80% of people who try to track their finances! 🎉</p>
+    
+    <p>But imagine what you could do with the full toolkit:</p>
+    
+    <div style="text-align: left; margin: 25px 0;">
+        <!-- Plus Features -->
+        <div style="background: #f0f9ff; border-radius: 12px; padding: 20px; margin-bottom: 16px;">
+            <p style="margin: 0 0 12px; font-weight: 700; color: #0575e6; font-size: 18px;">✨ Plus Plan</p>
+            <table style="width: 100%; font-size: 14px; color: #4a5568;">
+                <tr><td style="padding: 6px 0;">📂 10 Budget Categories</td></tr>
+                <tr><td style="padding: 6px 0;">🔄 3 Recurring Transactions</td></tr>
+                <tr><td style="padding: 6px 0;">🎯 3 Savings Goals</td></tr>
+                <tr><td style="padding: 6px 0;">📧 Email Reminders</td></tr>
+                <tr><td style="padding: 6px 0;">📊 Export to CSV/Excel</td></tr>
+                <tr><td style="padding: 6px 0;">📅 Year in Review</td></tr>
+            </table>
+        </div>
+        
+        <!-- Pro Features -->
+        <div style="background: #fdf4ff; border-radius: 12px; padding: 20px;">
+            <p style="margin: 0 0 12px; font-weight: 700; color: #7c3aed; font-size: 18px;">🔮 Pro Plan</p>
+            <table style="width: 100%; font-size: 14px; color: #4a5568;">
+                <tr><td style="padding: 6px 0;">♾️ Unlimited Everything</td></tr>
+                <tr><td style="padding: 6px 0;">🧠 AI-Powered Category Predictions</td></tr>
+                <tr><td style="padding: 6px 0;">⚡ Priority Support</td></tr>
+            </table>
+        </div>
+    </div>
+    
+    <p style="font-size: 14px; color: #6c757d;">Plans start from just <strong>₹{{ monthly_price|default:"29" }}/month</strong>. That's less than a cup of coffee. ☕</p>
+    
+    <div style="margin: 35px 0;">
+        <a href="https://trackmyrupee.com/pricing/" class="btn btn-primary">
+            View Plans & Upgrade
+        </a>
+    </div>
+    
+    <p>To your financial success,<br>Omkar @ TrackMyRupee</p>
+{% endblock %}
