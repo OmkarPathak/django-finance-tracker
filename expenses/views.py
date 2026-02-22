@@ -2630,23 +2630,42 @@ class AnalyticsView(LoginRequiredMixin, TemplateView):
         
         today = timezone.now().date()
         
-        # 1. Monthly Trends (Last 12 Months)
+        # Get Available Years from User Data
+        expense_years = list(Expense.objects.filter(user=user).dates('date', 'year').values_list('date__year', flat=True))
+        income_years = list(Income.objects.filter(user=user).dates('date', 'year').values_list('date__year', flat=True))
+        available_years = sorted(list(set(expense_years + income_years)), reverse=True)
+        
+        if not available_years:
+            available_years = [today.year]
+            
+        # Determine Selected Year
+        selected_year_str = self.request.GET.get('year')
+        if selected_year_str and selected_year_str.isdigit():
+            selected_year = int(selected_year_str)
+        else:
+            selected_year = today.year
+            
+        context['available_years'] = available_years
+        context['selected_year'] = selected_year
+        context['is_current_year'] = (selected_year == today.year)
+        
+        # 1. Monthly Trends (Selected Year)
         labels = []
         income_data = []
         expense_data = []
         balance_rate_data = []
         
-        # Determine the start date: 1st day of the month 11 months ago
-        # If today is Jan 2026, 11 months ago is Feb 2025.
-        start_date = (today.replace(day=1) - timedelta(days=365)).replace(day=1)
+        # Determine the start and end date for the selected year
+        start_date = date(selected_year, 1, 1)
+        end_date = date(selected_year, 12, 31)
         
-        # Fetch data grouped by Month
+        # Fetch data grouped by Month for the selected year
         monthly_income = Income.objects.filter(
-            user=user, date__gte=start_date
+            user=user, date__gte=start_date, date__lte=end_date
         ).annotate(month=TruncMonth('date')).values('month').annotate(total=Sum('base_amount')).order_by('month')
         
         monthly_expenses = Expense.objects.filter(
-            user=user, date__gte=start_date
+            user=user, date__gte=start_date, date__lte=end_date
         ).annotate(month=TruncMonth('date')).values('month').annotate(total=Sum('base_amount')).order_by('month')
         
         # Merge data into a map {date: {income: 0, expense: 0}}
@@ -2711,10 +2730,9 @@ class AnalyticsView(LoginRequiredMixin, TemplateView):
         context['expense_data'] = expense_data
         context['balance_rate_data'] = balance_rate_data
         
-        # 2. Category Breakdown (Current Year)
-        current_year = today.year
+        # 2. Category Breakdown (Selected Year)
         category_stats = Expense.objects.filter(
-            user=user, date__year=current_year
+            user=user, date__year=selected_year
         ).values('category').annotate(total=Sum('base_amount')).order_by('-total')
         
         cat_labels = [_(x['category']) for x in category_stats]
@@ -2723,11 +2741,15 @@ class AnalyticsView(LoginRequiredMixin, TemplateView):
         context['cat_labels'] = cat_labels
         context['cat_data'] = cat_data
         
-        # 3. Key Metrics (YTD)
-        # Recalculate based on DB (more accurate than summing chart data if chart is limited)
-        # Use date__lte=today to ensure we don't include future recurring entries or future dates
-        ytd_income_agg = Income.objects.filter(user=user, date__year=current_year, date__lte=today).aggregate(Sum('base_amount'))['base_amount__sum'] or 0
-        ytd_expense_agg = Expense.objects.filter(user=user, date__year=current_year, date__lte=today).aggregate(Sum('base_amount'))['base_amount__sum'] or 0
+        # 3. Key Metrics (YTD / Full Year depending on selection)
+        if selected_year == today.year:
+            # For current year, limit to today so future recurring entries don't skew YTD
+            ytd_income_agg = Income.objects.filter(user=user, date__year=selected_year, date__lte=today).aggregate(Sum('base_amount'))['base_amount__sum'] or 0
+            ytd_expense_agg = Expense.objects.filter(user=user, date__year=selected_year, date__lte=today).aggregate(Sum('base_amount'))['base_amount__sum'] or 0
+        else:
+            # For past years, show the full year's total
+            ytd_income_agg = Income.objects.filter(user=user, date__year=selected_year).aggregate(Sum('base_amount'))['base_amount__sum'] or 0
+            ytd_expense_agg = Expense.objects.filter(user=user, date__year=selected_year).aggregate(Sum('base_amount'))['base_amount__sum'] or 0
         
         context['total_income_ytd'] = ytd_income_agg
         context['total_expense_ytd'] = ytd_expense_agg
@@ -2739,7 +2761,32 @@ class AnalyticsView(LoginRequiredMixin, TemplateView):
             context['avg_balance_rate'] = 0
             
         # ---------------------------------------------------------
-        # 4. Cashflow Forecasting (Next 6 Months)
+        # 4. Sankey Data (Income -> Expenses/Savings) YTD
+        # ---------------------------------------------------------
+        sankey_data = []
+        if ytd_income_agg > 0 or ytd_expense_agg > 0:
+            top_cats = list(category_stats[:8])
+            other_cats = list(category_stats[8:])
+            
+            for cat in top_cats:
+                sankey_data.append([_('Income'), _(cat['category']), float(cat['total'])])
+                
+            if other_cats:
+                other_total = sum(float(cat['total']) for cat in other_cats)
+                if other_total > 0:
+                    sankey_data.append([_('Income'), _('Other Expenses'), other_total])
+                    
+            savings = ytd_income_agg - ytd_expense_agg
+            if savings > 0:
+                sankey_data.append([_('Income'), _('Savings'), float(savings)])
+            elif savings < 0:
+                # If deficit, flow deficit into Income so Google Chart balances it as money source
+                sankey_data.append([_('Deficit (Overspending)'), _('Income'), abs(float(savings))])
+                
+        context['sankey_data'] = sankey_data
+            
+        # ---------------------------------------------------------
+        # 5. Cashflow Forecasting (Next 6 Months)
         # ---------------------------------------------------------
         
         # A. Calculate Historical Average (Last 3 completed months)
