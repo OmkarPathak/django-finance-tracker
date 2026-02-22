@@ -22,10 +22,10 @@ from datetime import datetime, date, timedelta
 import calendar
 from decimal import Decimal
 
-from .models import Expense, Category, Income, RecurringTransaction, UserProfile, SubscriptionPlan, Notification, CURRENCY_CHOICES
-from .utils import get_exchange_rate
+from .models import Expense, Category, Income, RecurringTransaction, UserProfile, SubscriptionPlan, Notification, CURRENCY_CHOICES, SavingsGoal, GoalContribution
+from .utils import get_exchange_rate, generate_year_in_review_data
 from finance_tracker.ai_utils import predict_category_ai
-from .forms import ExpenseForm, IncomeForm, RecurringTransactionForm, ProfileUpdateForm, CustomSignupForm, ContactForm, LanguageUpdateForm
+from .forms import ExpenseForm, IncomeForm, RecurringTransactionForm, ProfileUpdateForm, CustomSignupForm, ContactForm, LanguageUpdateForm, SavingsGoalForm, GoalContributionForm
 from allauth.socialaccount.models import SocialAccount
 import openpyxl
 import requests
@@ -994,6 +994,20 @@ def home_view(request):
     # Check for onboarding (True if user has NO data at all)
     has_any_data = Expense.objects.filter(user=request.user).exists() or Income.objects.filter(user=request.user).exists()
 
+    # Logic for "Year in Review" Banner
+    show_year_in_review = False
+    year_in_review_year = None
+    if has_any_data:
+        # Show last year's review in Jan/Feb
+        if now.month <= 2:
+            year_in_review_year = now.year - 1
+        # Show this year's review in Nov/Dec
+        elif now.month >= 11:
+            year_in_review_year = now.year
+            
+        if year_in_review_year:
+            show_year_in_review = Expense.objects.filter(user=request.user, date__year=year_in_review_year).exists()
+
     context = {
         'is_new_user': not has_any_data,
         'insights': insights[::-1],
@@ -1035,6 +1049,8 @@ def home_view(request):
         'next_month_url': next_month_url,
         'show_tutorial': not request.user.profile.has_seen_tutorial or request.GET.get('tour') == 'true',
         'has_any_budget': any((c.get('limit') or 0) > 0 for c in category_limits),
+        'show_year_in_review': show_year_in_review,
+        'year_in_review_year': year_in_review_year,
     }
     return render(request, 'home.html', context)
 
@@ -1406,6 +1422,24 @@ class CategoryListView(LoginRequiredMixin, generic.ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['search_query'] = self.request.GET.get('search', '')
+        
+        # Nudge context for upgrade banner (use tier field directly to match sidebar display)
+        user_tier = self.request.user.profile.tier
+        if user_tier != 'PRO':
+            total_categories = Category.objects.filter(user=self.request.user).count()
+            if user_tier == 'PLUS':
+                limit = 10
+                upgrade_tier = 'PRO'
+            else:
+                limit = 5
+                upgrade_tier = 'PLUS'
+            context['nudge_current'] = total_categories
+            context['nudge_limit'] = limit
+            context['nudge_feature_name'] = 'categories'
+            context['nudge_upgrade_tier'] = upgrade_tier
+            context['nudge_at_limit'] = total_categories >= limit
+            context['show_nudge'] = total_categories >= max(1, int(limit * 0.6))
+        
         return context
 
 class CategoryCreateView(LoginRequiredMixin, generic.CreateView):
@@ -2040,6 +2074,29 @@ class RecurringTransactionListView(LoginRequiredMixin, ListView):
             'total_monthly_cost': total_monthly,
             'total_yearly_cost': total_yearly,
         })
+        
+        # Nudge context for upgrade banner (use tier field directly to match sidebar display)
+        user_tier = self.request.user.profile.tier
+        if user_tier != 'PRO':
+            active_count = RecurringTransaction.objects.filter(user=self.request.user, is_active=True).count()
+            if user_tier == 'PLUS':
+                limit = 3
+                upgrade_tier = 'PRO'
+            else:
+                limit = 0
+                upgrade_tier = 'PLUS'
+            context['nudge_current'] = active_count
+            context['nudge_limit'] = limit if limit > 0 else 1
+            context['nudge_feature_name'] = 'recurring transactions'
+            context['nudge_upgrade_tier'] = upgrade_tier
+            context['nudge_at_limit'] = active_count >= (limit if limit > 0 else 1)
+            # Free users: always show nudge (they have 0 limit)
+            # Plus users: show when >= 60% of 3 = 2+
+            if limit == 0:
+                context['show_nudge'] = True
+            else:
+                context['show_nudge'] = active_count >= max(1, int(limit * 0.6))
+        
         return context
 
 class RecurringTransactionManageView(RecurringTransactionListView):
@@ -2267,6 +2324,25 @@ class ProfileUpdateView(LoginRequiredMixin, UpdateView):
         context = super().get_context_data(**kwargs)
         context['page_title'] = 'Profile Settings'
         context['is_social_user'] = SocialAccount.objects.filter(user=self.request.user).exists()
+        
+        # Handle Year in Review visibility
+        now = timezone.now()
+        has_any_data = Expense.objects.filter(user=self.request.user).exists() or Income.objects.filter(user=self.request.user).exists()
+        show_year_in_review = False
+        year_in_review_year = None
+        
+        if has_any_data:
+            if now.month <= 2:
+                year_in_review_year = now.year - 1
+            elif now.month >= 11:
+                year_in_review_year = now.year
+                
+            if year_in_review_year:
+                show_year_in_review = Expense.objects.filter(user=self.request.user, date__year=year_in_review_year).exists()
+                
+        context['show_year_in_review'] = show_year_in_review
+        context['year_in_review_year'] = year_in_review_year
+        
         return context
 
     def form_valid(self, form):
@@ -2554,23 +2630,42 @@ class AnalyticsView(LoginRequiredMixin, TemplateView):
         
         today = timezone.now().date()
         
-        # 1. Monthly Trends (Last 12 Months)
+        # Get Available Years from User Data
+        expense_years = list(Expense.objects.filter(user=user).dates('date', 'year').values_list('date__year', flat=True))
+        income_years = list(Income.objects.filter(user=user).dates('date', 'year').values_list('date__year', flat=True))
+        available_years = sorted(list(set(expense_years + income_years)), reverse=True)
+        
+        if not available_years:
+            available_years = [today.year]
+            
+        # Determine Selected Year
+        selected_year_str = self.request.GET.get('year')
+        if selected_year_str and selected_year_str.isdigit():
+            selected_year = int(selected_year_str)
+        else:
+            selected_year = today.year
+            
+        context['available_years'] = available_years
+        context['selected_year'] = selected_year
+        context['is_current_year'] = (selected_year == today.year)
+        
+        # 1. Monthly Trends (Selected Year)
         labels = []
         income_data = []
         expense_data = []
         balance_rate_data = []
         
-        # Determine the start date: 1st day of the month 11 months ago
-        # If today is Jan 2026, 11 months ago is Feb 2025.
-        start_date = (today.replace(day=1) - timedelta(days=365)).replace(day=1)
+        # Determine the start and end date for the selected year
+        start_date = date(selected_year, 1, 1)
+        end_date = date(selected_year, 12, 31)
         
-        # Fetch data grouped by Month
+        # Fetch data grouped by Month for the selected year
         monthly_income = Income.objects.filter(
-            user=user, date__gte=start_date
+            user=user, date__gte=start_date, date__lte=end_date
         ).annotate(month=TruncMonth('date')).values('month').annotate(total=Sum('base_amount')).order_by('month')
         
         monthly_expenses = Expense.objects.filter(
-            user=user, date__gte=start_date
+            user=user, date__gte=start_date, date__lte=end_date
         ).annotate(month=TruncMonth('date')).values('month').annotate(total=Sum('base_amount')).order_by('month')
         
         # Merge data into a map {date: {income: 0, expense: 0}}
@@ -2635,10 +2730,9 @@ class AnalyticsView(LoginRequiredMixin, TemplateView):
         context['expense_data'] = expense_data
         context['balance_rate_data'] = balance_rate_data
         
-        # 2. Category Breakdown (Current Year)
-        current_year = today.year
+        # 2. Category Breakdown (Selected Year)
         category_stats = Expense.objects.filter(
-            user=user, date__year=current_year
+            user=user, date__year=selected_year
         ).values('category').annotate(total=Sum('base_amount')).order_by('-total')
         
         cat_labels = [_(x['category']) for x in category_stats]
@@ -2647,11 +2741,15 @@ class AnalyticsView(LoginRequiredMixin, TemplateView):
         context['cat_labels'] = cat_labels
         context['cat_data'] = cat_data
         
-        # 3. Key Metrics (YTD)
-        # Recalculate based on DB (more accurate than summing chart data if chart is limited)
-        # Use date__lte=today to ensure we don't include future recurring entries or future dates
-        ytd_income_agg = Income.objects.filter(user=user, date__year=current_year, date__lte=today).aggregate(Sum('base_amount'))['base_amount__sum'] or 0
-        ytd_expense_agg = Expense.objects.filter(user=user, date__year=current_year, date__lte=today).aggregate(Sum('base_amount'))['base_amount__sum'] or 0
+        # 3. Key Metrics (YTD / Full Year depending on selection)
+        if selected_year == today.year:
+            # For current year, limit to today so future recurring entries don't skew YTD
+            ytd_income_agg = Income.objects.filter(user=user, date__year=selected_year, date__lte=today).aggregate(Sum('base_amount'))['base_amount__sum'] or 0
+            ytd_expense_agg = Expense.objects.filter(user=user, date__year=selected_year, date__lte=today).aggregate(Sum('base_amount'))['base_amount__sum'] or 0
+        else:
+            # For past years, show the full year's total
+            ytd_income_agg = Income.objects.filter(user=user, date__year=selected_year).aggregate(Sum('base_amount'))['base_amount__sum'] or 0
+            ytd_expense_agg = Expense.objects.filter(user=user, date__year=selected_year).aggregate(Sum('base_amount'))['base_amount__sum'] or 0
         
         context['total_income_ytd'] = ytd_income_agg
         context['total_expense_ytd'] = ytd_expense_agg
@@ -2663,7 +2761,32 @@ class AnalyticsView(LoginRequiredMixin, TemplateView):
             context['avg_balance_rate'] = 0
             
         # ---------------------------------------------------------
-        # 4. Cashflow Forecasting (Next 6 Months)
+        # 4. Sankey Data (Income -> Expenses/Savings) YTD
+        # ---------------------------------------------------------
+        sankey_data = []
+        if ytd_income_agg > 0 or ytd_expense_agg > 0:
+            top_cats = list(category_stats[:8])
+            other_cats = list(category_stats[8:])
+            
+            for cat in top_cats:
+                sankey_data.append([_('Income'), _(cat['category']), float(cat['total'])])
+                
+            if other_cats:
+                other_total = sum(float(cat['total']) for cat in other_cats)
+                if other_total > 0:
+                    sankey_data.append([_('Income'), _('Other Expenses'), other_total])
+                    
+            savings = ytd_income_agg - ytd_expense_agg
+            if savings > 0:
+                sankey_data.append([_('Income'), _('Savings'), float(savings)])
+            elif savings < 0:
+                # If deficit, flow deficit into Income so Google Chart balances it as money source
+                sankey_data.append([_('Deficit (Overspending)'), _('Income'), abs(float(savings))])
+                
+        context['sankey_data'] = sankey_data
+            
+        # ---------------------------------------------------------
+        # 5. Cashflow Forecasting (Next 6 Months)
         # ---------------------------------------------------------
         
         # A. Calculate Historical Average (Last 3 completed months)
@@ -2832,3 +2955,187 @@ class AnalyticsView(LoginRequiredMixin, TemplateView):
 
         return context
 
+# --- Savings Goal Views ---
+
+class SavingsGoalListView(LoginRequiredMixin, ListView):
+    model = SavingsGoal
+    template_name = 'expenses/goal_list.html'
+    context_object_name = 'goals'
+
+    def get_queryset(self):
+        return SavingsGoal.objects.filter(user=self.request.user).order_by('-created_at')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        goals = context['goals']
+        
+        # Calculate total saved across all active goals (in user's base currency, simple sum for MVP)
+        total_saved = sum(g.current_amount for g in goals)
+        context['total_saved'] = round(total_saved, 2)
+        
+        # Free users get 1 goal, Plus gets 3, Pro gets unlimited
+        context['can_create_goal'] = True
+        goal_count = goals.count()
+        user_tier = self.request.user.profile.tier
+        if user_tier == 'PRO':
+            context['can_create_goal'] = True
+        elif user_tier == 'PLUS':
+            if goal_count >= 3:
+                context['can_create_goal'] = False
+            # Nudge context
+            context['nudge_current'] = goal_count
+            context['nudge_limit'] = 3
+            context['nudge_feature_name'] = 'savings goals'
+            context['nudge_upgrade_tier'] = 'PRO'
+            context['nudge_at_limit'] = goal_count >= 3
+            context['show_nudge'] = goal_count >= 2  # 60% of 3
+        else:
+            if goal_count >= 1:
+                context['can_create_goal'] = False
+            # Nudge context
+            context['nudge_current'] = goal_count
+            context['nudge_limit'] = 1
+            context['nudge_feature_name'] = 'savings goals'
+            context['nudge_upgrade_tier'] = 'PLUS'
+            context['nudge_at_limit'] = goal_count >= 1
+            context['show_nudge'] = goal_count >= 1  # any usage on free
+                
+        return context
+
+class SavingsGoalCreateView(LoginRequiredMixin, CreateView):
+    model = SavingsGoal
+    form_class = SavingsGoalForm
+    template_name = 'expenses/goal_form.html'
+    success_url = reverse_lazy('goal-list')
+
+    def dispatch(self, request, *args, **kwargs):
+        # Limit check (use tier field directly, consistent with nudge logic)
+        user_tier = request.user.profile.tier
+        if user_tier != 'PRO':
+            goals_count = SavingsGoal.objects.filter(user=request.user).count()
+            if user_tier == 'PLUS':
+                if goals_count >= 3:
+                    messages.error(request, _("PLUS plan is limited to 3 active Savings Goals. Upgrade to PRO to unlock unlimited goals!"))
+                    return redirect('goal-list')
+            else:
+                if goals_count >= 1:
+                    messages.error(request, _("Free plan is limited to 1 active Savings Goal. Upgrade to PLUS for 3 goals, or PRO for unlimited!"))
+                    return redirect('goal-list')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['user'] = self.request.user
+        return kwargs
+
+    def form_valid(self, form):
+        form.instance.user = self.request.user
+        messages.success(self.request, _("Savings goal created successfully!"))
+        return super().form_valid(form)
+
+class SavingsGoalUpdateView(LoginRequiredMixin, UpdateView):
+    model = SavingsGoal
+    form_class = SavingsGoalForm
+    template_name = 'expenses/goal_form.html'
+    success_url = reverse_lazy('goal-list')
+
+    def get_queryset(self):
+        return SavingsGoal.objects.filter(user=self.request.user)
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['user'] = self.request.user
+        return kwargs
+
+    def form_valid(self, form):
+        messages.success(self.request, _("Savings goal updated successfully!"))
+        return super().form_valid(form)
+
+class SavingsGoalDeleteView(LoginRequiredMixin, DeleteView):
+    model = SavingsGoal
+    success_url = reverse_lazy('goal-list')
+
+    def get_queryset(self):
+        return SavingsGoal.objects.filter(user=self.request.user)
+        
+    def delete(self, request, *args, **kwargs):
+        messages.success(self.request, _("Savings goal deleted successfully."))
+        return super().delete(request, *args, **kwargs)
+
+class SavingsGoalDetailView(LoginRequiredMixin, View):
+    template_name = 'expenses/goal_detail.html'
+
+    def get(self, request, pk):
+        goal = get_object_or_404(SavingsGoal, pk=pk, user=request.user)
+        contributions = goal.contributions.all().order_by('-date', '-created_at')
+        form = GoalContributionForm()
+        
+        context = {
+            'goal': goal,
+            'contributions': contributions,
+            'form': form
+        }
+        return render(request, self.template_name, context)
+
+    def post(self, request, pk):
+        goal = get_object_or_404(SavingsGoal, pk=pk, user=request.user)
+        
+        # Handle JS fetch to clear confetti
+        if request.content_type == 'application/json':
+            try:
+                data = json.loads(request.body)
+                if data.get('clear_confetti'):
+                    if 'trigger_confetti' in request.session:
+                        del request.session['trigger_confetti']
+                    return JsonResponse({'success': True})
+            except:
+                pass
+
+        contributions = goal.contributions.all().order_by('-date', '-created_at')
+        form = GoalContributionForm(request.POST)
+
+        if form.is_valid():
+            contribution = form.save(commit=False)
+            contribution.goal = goal
+            contribution.save() # This triggers the save() method in models which updates the goal's current_amount
+            
+            messages.success(request, _("Funds added successfully!"))
+            request.session['trigger_confetti'] = True
+            
+            return redirect('goal-detail', pk=goal.pk)
+
+        context = {
+            'goal': goal,
+            'contributions': contributions,
+            'form': form
+        }
+        return render(request, self.template_name, context)
+
+
+class YearInReviewView(LoginRequiredMixin, TemplateView):
+    template_name = 'expenses/year_in_review.html'
+
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.profile.is_plus:
+            messages.info(request, "Year in Review is a Premium feature. Upgrade to Plus or Pro to unlock your personalized financial story!")
+            return redirect('pricing')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        
+        # Get requested year, default to current year
+        requested_year = self.kwargs.get('year')
+        current_year = datetime.now().year
+        
+        if not requested_year:
+            # If it's Jan or Feb, they probably want to see last year's review
+            if datetime.datetime.now().month <= 2:
+                requested_year = current_year - 1
+            else:
+                requested_year = current_year
+                
+        context['year'] = requested_year
+        context['review_data'] = generate_year_in_review_data(self.request.user, requested_year)
+        
+        return context

@@ -8,6 +8,8 @@ urlpatterns = [
     path('dashboard/', views.home_view, name='home'),
     path('budget/', views.BudgetDashboardView.as_view(), name='budget'),
     path('analytics/', views.AnalyticsView.as_view(), name='analytics'),
+    path('year-in-review/', views.YearInReviewView.as_view(), name='year_in_review_default'),
+    path('year-in-review/<int:year>/', views.YearInReviewView.as_view(), name='year_in_review'),
     path('demo/', views.demo_login, name='demo_login'),
     path('demo-signup/', views.demo_signup, name='demo_signup'),
     path('upload/', views.upload_view, name='upload'),
@@ -46,6 +48,13 @@ urlpatterns = [
     path('settings/', views.SettingsHomeView.as_view(), name='settings-home'), # Settings Home
     path('account/delete/', views.AccountDeleteView.as_view(), name='account-delete'),
     path('tutorial/complete/', views.complete_tutorial, name='complete-tutorial'),
+    
+    # Savings Goals
+    path('goals/', views.SavingsGoalListView.as_view(), name='goal-list'),
+    path('goals/add/', views.SavingsGoalCreateView.as_view(), name='goal-create'),
+    path('goals/<int:pk>/edit/', views.SavingsGoalUpdateView.as_view(), name='goal-edit'),
+    path('goals/<int:pk>/delete/', views.SavingsGoalDeleteView.as_view(), name='goal-delete'),
+    path('goals/<int:pk>/', views.SavingsGoalDetailView.as_view(), name='goal-detail'),
     
     # Static Pages
     path('privacy-policy/', TemplateView.as_view(template_name='privacy_policy.html'), name='privacy-policy'),

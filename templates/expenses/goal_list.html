@@ -1,0 +1,156 @@
+{% extends 'base.html' %}
+{% load i18n digit_filters %}
+
+{% block content %}
+<div class="container fade-in py-4">
+    <div class="row align-items-center mb-4">
+        <div class="col-md-6 mb-3 mb-md-0">
+            <h1 class="h3 fw-bold mb-1">{% trans "Savings Goals" %}</h1>
+            <p class="text-muted mb-0">{% trans "Track your progress towards your financial dreams." %}</p>
+        </div>
+        <div class="col-md-6 text-md-end">
+            <div class="bg-body-tertiary p-3 rounded d-inline-block text-start shadow-sm border">
+                <p class="text-muted small mb-1">{% trans "Total Saved" %}</p>
+                <h4 class="mb-0 fw-bold text-success">{{ user.profile.currency }}{{ total_saved|translate_digits }}</h4>
+            </div>
+        </div>
+    </div>
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h5 class="fw-bold mb-0">{% trans "Your Active Goals" %}</h5>
+        {% if can_create_goal %}
+        <a href="{% url 'goal-create' %}" class="btn btn-primary shadow-sm" onclick="window.showLoader()">
+            <i class="bi bi-plus-lg me-1"></i> {% trans "New Goal" %}
+        </a>
+        {% else %}
+        <a href="{% url 'goal-create' %}" class="btn btn-primary shadow-sm disabled" onclick="window.showLoader()">
+            <i class="bi bi-plus-lg me-1"></i> {% trans "New Goal" %}
+        </a>
+        {% endif %}
+    </div>
+
+    {% include 'components/upgrade_nudge.html' %}
+
+    <!-- Savings Philosophy Callout -->
+    <div class="alert alert-info border-0 shadow-sm rounded-4 mb-4 d-flex align-items-center" role="alert">
+        <i class="bi bi-info-circle-fill fs-4 me-3 text-info"></i>
+        <div>
+            <h6 class="alert-heading fw-bold mb-1">{% trans "How We Track Savings" %}</h6>
+            <p class="mb-0 small">
+                {% trans "To keep your budget honest, any funds you add to a Savings Goal will automatically be logged as a " %} 
+                <strong>{% trans "Savings Transfer Expense" %}</strong>. 
+                {% trans "This ensures your Dashboard Net Balance accurately reflects the money you have left to spend." %}
+            </p>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        {% for goal in goals %}
+        <div class="col-12 col-md-6 col-xl-4">
+            <div class="card h-100 border-0 shadow-sm hover-elevate transition-all" style="border-radius: 16px;">
+                <div class="card-body p-4 position-relative">
+                    
+                    {% if goal.is_completed %}
+                    <span class="badge bg-success position-absolute top-0 end-0 m-3 rounded-pill px-3 py-1 shadow-sm small">
+                        <i class="bi bi-check-circle-fill me-1"></i> {% trans "Achieved" %}
+                    </span>
+                    {% endif %}
+
+                    <!-- Header: Icon & Title -->
+                    <div class="d-flex align-items-center mb-4">
+                        <div class="me-3 bg-white rounded-circle shadow-sm d-flex align-items-center justify-content-center" style="width: 50px; height: 50px; font-size: 1.5rem; border: 1px solid rgba(0,0,0,0.05);">
+                            {{ goal.icon }}
+                        </div>
+                        <div>
+                            <h5 class="fw-bold mb-0 text-truncate text-dark" style="max-width: 200px;">{{ goal.name }}</h5>
+                            <p class="text-secondary small mb-0 mt-1 d-flex align-items-center gap-1">
+                                {% if goal.target_date %}
+                                    <i class="bi bi-calendar3"></i> {% trans "Target:" %} {{ goal.target_date|date:"M d, Y" }}
+                                {% else %}
+                                    <i class="bi bi-calendar-x"></i> {% trans "No target date" %}
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Progress Stats Layout -->
+                    <div class="d-flex justify-content-between align-items-end mb-2">
+                        <div>
+                            <span class="text-secondary small d-block mb-1" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;">{% trans "Progress" %}</span>
+                            <h4 class="fw-bold mb-0 text-{{ goal.color }}">{{ goal.progress_percentage|translate_digits }}%</h4>
+                        </div>
+                        <div class="text-end">
+                            <span class="text-secondary small d-block mb-1" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;">{% trans "Saved" %}</span>
+                            <span class="fw-bold text-dark">{{ goal.currency }}{{ goal.current_amount|translate_digits }}</span> 
+                            <span class="text-muted small">/ {{ goal.target_amount|translate_digits }}</span>
+                        </div>
+                    </div>
+
+                    <!-- Slim Progress Bar -->
+                    <div class="progress mb-4 bg-light" style="height: 8px; border-radius: 8px; box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);">
+                        <div class="progress-bar progress-bar-striped {% if not goal.is_completed %}progress-bar-animated{% endif %} bg-{{ goal.color }}" role="progressbar" 
+                             style="width: {{ goal.progress_percentage }}%; border-radius: 8px;" aria-valuenow="{{ goal.progress_percentage|stringformat:'f'|translate_digits }}" aria-valuemin="0" aria-valuemax="100">
+                        </div>
+                    </div>
+
+                    <hr class="text-muted opacity-25 mb-3">
+
+                    <!-- Actions Layout -->
+                    <div class="d-flex justify-content-between align-items-center">
+                        <a href="{% url 'goal-detail' goal.pk %}" class="btn btn-{{ goal.color }} btn-sm px-3 fw-bold rounded-3 shadow-sm" onclick="window.showLoader()">
+                            <i class="bi bi-plus-circle me-1"></i>{% trans "Add Funds" %}
+                        </a>
+                        <div class="d-flex gap-2">
+                            <a href="{% url 'goal-edit' goal.pk %}" class="btn btn-light btn-sm rounded-3 text-secondary border icon-btn" onclick="window.showLoader()" title="{% trans 'Edit' %}">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <button type="button" class="btn btn-outline-danger btn-sm rounded-3 icon-btn" 
+                                    data-bs-toggle="modal" data-bs-target="#deleteModal"
+                                    data-url="{% url 'goal-delete' goal.pk %}"
+                                    data-message="{% blocktrans with name=goal.name %}Are you sure you want to delete the goal '{{ name }}'? The funds will not be affected, but the goal tracking will be removed.{% endblocktrans %}"
+                                    title="{% trans 'Delete' %}">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12 text-center py-5">
+            <div class="mb-4 text-primary opacity-50">
+                <i class="bi bi-bullseye display-1"></i>
+            </div>
+            <h4 class="fw-bold">{% trans "No Savings Goals Yet" %}</h4>
+            <p class="text-muted mb-4">{% trans "Set up a goal to track your savings for a vacation, emergency fund, or a new gadget." %}</p>
+            {% if can_create_goal %}
+            <a href="{% url 'goal-create' %}" class="btn btn-primary shadow" onclick="window.showLoader()">{% trans "Create Your First Goal" %}</a>
+            {% else %}
+            <a href="{% url 'pricing' %}" class="btn btn-warning shadow">{% trans "Upgrade to Create More Goals" %}</a>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<style>
+.hover-elevate {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.hover-elevate:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 .5rem 1rem rgba(0,0,0,.1)!important;
+}
+
+/* Make action buttons square-ish like the mockup */
+.icon-btn {
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+</style>
+{% endblock %}

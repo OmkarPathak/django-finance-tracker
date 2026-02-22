@@ -83,6 +83,11 @@
                         </a>
                     </li>
                     <li class="nav-item">
+                        <a href="{% url 'goal-list' %}" class="nav-link {% if 'goal' in request.resolver_match.url_name %}active{% endif %}">
+                            {% trans "Savings Goals" %}
+                        </a>
+                    </li>
+                    <li class="nav-item">
                         <a href="{% url 'calendar' %}" class="nav-link {% if 'calendar' in request.resolver_match.url_name %}active{% endif %}">
                             {% trans "Calendar" %}
                         </a>

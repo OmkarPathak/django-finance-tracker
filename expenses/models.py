@@ -299,3 +299,84 @@ class Notification(models.Model):
 
     def __str__(self):
         return f"Notification for {self.user.username}: {self.title}"
+
+class SavingsGoal(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='savings_goals')
+    name = models.CharField(max_length=255, verbose_name=_('Goal Name'))
+    target_amount = models.DecimalField(max_digits=12, decimal_places=2, verbose_name=_('Target Amount'))
+    current_amount = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal('0.00'), verbose_name=_('Current Amount'))
+    target_date = models.DateField(blank=True, null=True, verbose_name=_('Target Date'))
+    icon = models.CharField(max_length=10, default='🎯', verbose_name=_('Icon'))
+    color = models.CharField(max_length=20, default='primary', verbose_name=_('Color Theme'))
+    is_completed = models.BooleanField(default=False)
+    
+    currency = models.CharField(max_length=5, choices=CURRENCY_CHOICES, default='₹', verbose_name=_('Currency'))
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    @property
+    def progress_percentage(self):
+        if self.target_amount > 0:
+            percentage = (self.current_amount / self.target_amount) * 100
+            if percentage > 100:
+                return 100
+            return round(percentage, 1)
+        return 0
+        
+    def save(self, *args, **kwargs):
+        if self.current_amount >= self.target_amount and self.target_amount > 0:
+            self.is_completed = True
+        else:
+            self.is_completed = False
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return self.name
+
+class GoalContribution(models.Model):
+    goal = models.ForeignKey(SavingsGoal, on_delete=models.CASCADE, related_name='contributions')
+    amount = models.DecimalField(max_digits=12, decimal_places=2, verbose_name=_('Contribution Amount'))
+    date = models.DateField(default=timezone.now, verbose_name=_('Date'))
+    
+    # Link to the generated Expense to keep them in sync
+    expense = models.OneToOneField('Expense', on_delete=models.SET_NULL, null=True, blank=True, related_name='goal_contribution')
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def save(self, *args, **kwargs):
+        is_new = self._state.adding
+        super().save(*args, **kwargs)
+        
+        # Update goal's current amount
+        if is_new:
+            self.goal.current_amount += self.amount
+            self.goal.save()
+            
+            # Create the matching Expense record
+            expense = Expense.objects.create(
+                user=self.goal.user,
+                date=self.date,
+                amount=self.amount,
+                currency=self.goal.currency,
+                description=f"Contribution to Savings Goal: {self.goal.name}",
+                category="Savings Transfer",
+                payment_method='Cash' # default for internal
+            )
+            # Link them without triggering infinite save loop
+            GoalContribution.objects.filter(pk=self.pk).update(expense=expense)
+            self.expense = expense
+            
+    def delete(self, *args, **kwargs):
+        # Update goal's current amount when deleting a contribution
+        self.goal.current_amount -= self.amount
+        self.goal.save()
+        
+        # Delete the linked expense if it exists
+        if self.expense:
+            self.expense.delete()
+            
+        super().delete(*args, **kwargs)
+
+    def __str__(self):
+        return f"+{self.amount} to {self.goal.name} on {self.date}"
