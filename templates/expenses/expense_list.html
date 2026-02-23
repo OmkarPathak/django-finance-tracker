@@ -23,28 +23,6 @@
     }
 
     @media (max-width: 767.98px) {
-        /* On mobile, render dropdown as a fixed overlay for usability */
-        #filter-form .multiselect-container.dropdown-menu {
-            position: fixed !important;
-            top: 50% !important;
-            left: 50% !important;
-            transform: translate(-50%, -50%) !important;
-            width: 85vw !important;
-            max-width: 320px;
-            max-height: 60vh !important;
-            z-index: 1060 !important;
-            border-radius: 12px !important;
-            box-shadow: 0 16px 48px rgba(0, 0, 0, 0.3) !important;
-        }
-
-        /* Backdrop behind the dropdown */
-        .multiselect-backdrop {
-            position: fixed;
-            inset: 0;
-            background: rgba(0, 0, 0, 0.4);
-            z-index: 1055;
-            backdrop-filter: blur(2px);
-        }
 
         /* Constrain page width, allow table to scroll */
         /* allow fade-in overflow on mobile for dropdowns */
@@ -280,7 +258,7 @@
                                     const toggle = btnGroup.querySelector('.dropdown-toggle');
                                     if (toggle) toggle.click();
                                 });
-                                document.body.appendChild(backdrop);
+                                btnGroup.appendChild(backdrop);
                             } else if (!isOpen && backdrop) {
                                 backdrop.remove();
                             }
