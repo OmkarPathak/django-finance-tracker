@@ -11,6 +11,63 @@
         .filter-w-month { width: 140px; }
         .filter-w-category { width: 160px; }
     }
+
+    /* Fix multiselect dropdown overflow on mobile */
+    #filter-form .row,
+    #filter-form .row > [class*="col"] {
+        overflow: visible !important;
+    }
+
+    #filter-form .btn-group {
+        position: static;
+    }
+
+    @media (max-width: 767.98px) {
+        /* On mobile, render dropdown as a fixed overlay for usability */
+        #filter-form .multiselect-container.dropdown-menu {
+            position: fixed !important;
+            top: 50% !important;
+            left: 50% !important;
+            transform: translate(-50%, -50%) !important;
+            width: 85vw !important;
+            max-width: 320px;
+            max-height: 60vh !important;
+            z-index: 1060 !important;
+            border-radius: 12px !important;
+            box-shadow: 0 16px 48px rgba(0, 0, 0, 0.3) !important;
+        }
+
+        /* Backdrop behind the dropdown */
+        .multiselect-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.4);
+            z-index: 1055;
+            backdrop-filter: blur(2px);
+        }
+
+        /* Constrain page width, allow table to scroll */
+        .fade-in {
+            overflow-x: clip;
+        }
+
+        .card-body.p-0 {
+            overflow: hidden;
+        }
+
+        #bulkDeleteForm {
+            overflow: hidden;
+        }
+
+        .table-responsive {
+            overflow-x: auto !important;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .table-responsive table {
+            min-width: 700px;
+        }
+    }
 </style>
 <div class="fade-in">
     <!-- Mobile Header -->
@@ -207,6 +264,33 @@
             // Handle Delete Button Click (Modal triggering is handled by bootstrap data-bs-target)
             // But we might want to ensure the modal knows which form to submit? 
             // The modal submit button does `document.getElementById('bulkDeleteForm').submit()`, which works globally.
+
+            // Mobile multiselect backdrop
+            if (window.innerWidth < 768) {
+                document.querySelectorAll('#filter-form .btn-group').forEach(function(btnGroup) {
+                    const observer = new MutationObserver(function(mutations) {
+                        mutations.forEach(function(mutation) {
+                            const dropdown = btnGroup.querySelector('.dropdown-menu');
+                            if (!dropdown) return;
+                            const isOpen = dropdown.classList.contains('show');
+                            let backdrop = document.querySelector('.multiselect-backdrop');
+                            if (isOpen && !backdrop) {
+                                backdrop = document.createElement('div');
+                                backdrop.className = 'multiselect-backdrop';
+                                backdrop.addEventListener('click', function() {
+                                    // Close the dropdown by clicking the toggle
+                                    const toggle = btnGroup.querySelector('.dropdown-toggle');
+                                    if (toggle) toggle.click();
+                                });
+                                document.body.appendChild(backdrop);
+                            } else if (!isOpen && backdrop) {
+                                backdrop.remove();
+                            }
+                        });
+                    });
+                    observer.observe(btnGroup, { attributes: true, subtree: true, attributeFilter: ['class'] });
+                });
+            }
         });
     </script>
     

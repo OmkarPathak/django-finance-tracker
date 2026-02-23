@@ -17,7 +17,7 @@
                     {% else %}
                         {% trans "You've reached the limit for categories on the Free plan." %}<br>
                     {% endif %}
-                    <span class="text-primary fw-bold">{% trans "Unlock Premium features and Export for just ₹25/month" %}</span>
+                    <span class="text-primary fw-bold">{% trans "Unlock Premium features and Export for just ₹49/month" %}</span>
                 </p>
 
                 <div class="row g-4 mb-4 text-start">
@@ -56,7 +56,12 @@
                 </div>
 
                 <div class="d-grid gap-3">
-                    <a href="{% url 'pricing' %}" class="btn btn-primary btn-lg rounded-pill fw-bold py-3 shadow">
+                    {% if user.profile.can_start_trial %}
+                        <button onclick="startTrial()" class="btn btn-lg rounded-pill fw-bold py-3 shadow hover-lift" style="background-color: var(--color-primary); color: white; border: none;">
+                            <i class="bi bi-stars me-2" style="color: var(--color-warning);"></i>{% trans "Start 7-Day Pro Free Trial" %}
+                        </button>
+                    {% endif %}
+                    <a href="{% url 'pricing' %}" class="btn {% if user.profile.can_start_trial %}btn-link text-decoration-none mt-1{% else %}btn-primary shadow{% endif %} btn-lg rounded-pill fw-bold py-3" {% if user.profile.can_start_trial %}style="color: var(--color-primary); opacity: 0.8;"{% endif %}>
                         {% trans "Compare Plans & Upgrade" %}
                     </a>
                     <button type="button" class="btn btn-link text-muted text-decoration-none small" data-bs-dismiss="modal">

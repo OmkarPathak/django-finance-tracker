@@ -8,6 +8,10 @@ from django.utils import timezone
 class AnalyticsForecastTest(TestCase):
     def setUp(self):
         self.user = User.objects.create_user(username='testuser', password='password')
+        self.profile = self.user.profile
+        self.profile.tier = 'PRO'
+        self.profile.is_lifetime = True
+        self.profile.save()
         self.client.force_login(self.user)
         self.category, _ = Category.objects.get_or_create(user=self.user, name='Food')
         

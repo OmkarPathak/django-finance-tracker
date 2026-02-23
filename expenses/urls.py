@@ -68,11 +68,11 @@ urlpatterns = [
     path('ping/', views.ping, name='ping'),
 
     # Payments
-    # Payments
     path('api/create-order/', views_payment.create_order, name='create-order'),
     path('api/verify-payment/', views_payment.verify_payment, name='verify-payment'),
     path('api/resend-verification/', views.resend_verification_email, name='resend-verification'),
     path('api/predict-category/', views.predict_category_view, name='predict-category'),
+    path('api/start-trial/', views_payment.start_trial, name='start-trial'),
     
     # Notification URLs
     path('notifications/', views.NotificationListView.as_view(), name='notification-list'),

@@ -30,6 +30,9 @@ class SendNotificationsCommandTest(TestCase):
             start_date=self.due_date,
             is_active=True
         )
+        
+        # Clear outbox (which contains the welcome email from user creation in setUp)
+        mail.outbox.clear()
 
     def test_notification_creation(self):
         """Test that a notification is created for due transaction"""

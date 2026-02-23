@@ -24,6 +24,9 @@ class LifecycleEmailTest(TestCase):
             tier='PLUS', duration='MONTHLY', name='Plus Monthly',
             price=29, is_active=True
         )
+        
+        # Clear outbox (which contains the welcome email from user creation in setUp)
+        mail.outbox.clear()
 
     def test_day2_email_sent(self):
         """Day 2 email should be sent for a 2-day-old free user."""
