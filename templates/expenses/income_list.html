@@ -2,6 +2,18 @@
 {% load i18n digit_filters %}
 
 {% block settings_content %}
+    <style>
+        @media (max-width: 768px) {
+            .table-responsive {
+                overflow-x: auto !important;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            .table-responsive table {
+                min-width: 600px;
+            }
+        }
+    </style>
     <!-- Mobile Header -->
     <div class="d-md-none py-3 mb-3">
         <div class="d-flex justify-content-between align-items-center">
