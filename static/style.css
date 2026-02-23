@@ -706,10 +706,14 @@ a:hover {
 }
 
 /* Ensure multiselect dropdown is always above other elements */
-.multiselect-native-select .btn-group,
-.multiselect-container {
+.multiselect-native-select .btn-group {
   position: relative;
-  z-index: 1051 !important; /* Above other form controls */
+}
+
+.multiselect-native-select .btn-group:hover,
+.multiselect-native-select .btn-group:focus-within,
+.multiselect-native-select .btn-group.show {
+  z-index: 1055 !important; /* Elevate only the active dropdown to escape sibling stacking overlap */
 }
 
 /* Fix for overlapping rows in formsets on mobile */

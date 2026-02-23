@@ -122,12 +122,10 @@
                     <button type="button" class="w-100 btn btn-lg btn-outline-primary mt-auto rounded-pill fw-bold" disabled>{% trans "Current Plan" %}</button>
                 {% else %}
                      {% if user.profile.can_start_trial %}
-                        <button onclick="startTrial()" class="w-100 btn btn-lg mt-auto rounded-pill fw-bold mb-2 shadow hover-lift" style="background-color: var(--color-primary); color: white; border: none; font-weight: 600;">
-                            <i class="bi bi-stars me-2" style="color: var(--color-warning);"></i>{% trans "Start 7-Day Free Trial" %}
+                        <button onclick="startTrial()" class="w-100 btn btn-lg btn-success mt-auto rounded-pill fw-bold mb-2 shadow-sm">
+                            <i class="bi bi-gift-fill me-2"></i>{% trans "Start 7-Day Free Trial" %}
                         </button>
-                        <button onclick="startPayment('PRO')" class="w-100 btn btn-sm btn-link text-decoration-none mt-2" style="color: var(--color-primary); opacity: 0.8;">
-                            {% trans "Skip trial & buy Pro" %}
-                        </button>
+                        <button onclick="startPayment('PRO')" class="w-100 btn btn-outline-primary rounded-pill fw-bold">{% trans "Buy Pro Now" %}</button>
                      {% else %}
                         <button onclick="startPayment('PRO')" class="w-100 btn btn-lg btn-outline-primary mt-auto rounded-pill fw-bold">{% trans "Go Pro" %}</button>
                      {% endif %}
