@@ -236,6 +236,7 @@ class UserProfile(models.Model):
     subscription_end_date = models.DateTimeField(null=True, blank=True)
     is_lifetime = models.BooleanField(default=False)
     razorpay_order_id = models.CharField(max_length=100, blank=True, null=True)
+    has_used_trial = models.BooleanField(default=False)
 
     # Lifecycle email drip tracking
     last_drip_email_day = models.IntegerField(default=0)
@@ -259,6 +260,11 @@ class UserProfile(models.Model):
             if self.subscription_end_date and self.subscription_end_date > timezone.now():
                 return True
         return False
+
+    @property
+    def can_start_trial(self):
+        """Check if user is eligible to start a free 7-day Pro trial."""
+        return self.tier == 'FREE' and not self.has_used_trial
 
     def __str__(self):
         return f"{self.user.username}'s Profile ({self.tier})"

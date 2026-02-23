@@ -11,6 +11,23 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+@csrf_exempt
+@login_required
+def start_trial(request):
+    if request.method == "POST":
+        profile = request.user.profile
+        if not profile.can_start_trial:
+            return JsonResponse({'error': 'Trial already used or not eligible'}, status=400)
+        
+        # Activate 7-day Pro trial
+        profile.tier = 'PRO'
+        profile.subscription_end_date = timezone.now() + timedelta(days=7)
+        profile.has_used_trial = True
+        profile.save()
+        
+        return JsonResponse({'success': True, 'message': '7-Day Pro Trial activated successfully!'})
+    return JsonResponse({'error': 'Invalid method'}, status=405)
+
 @login_required
 def create_order(request):
     if request.method == "POST":

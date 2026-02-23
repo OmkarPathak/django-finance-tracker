@@ -186,6 +186,10 @@ class AnalyticsViewTest(BaseViewTest):
         except:
              return 
 
+        self.user.profile.tier = 'PRO'
+        self.user.profile.is_lifetime = True
+        self.user.profile.save()
+
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         self.assertIn('income_data', response.context)
