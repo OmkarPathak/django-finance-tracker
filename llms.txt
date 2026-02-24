@@ -1,0 +1,21 @@
+# TrackMyRupee
+
+> The best personal finance tracker for India. Track expenses, manage budgets, and visualize your spending.
+
+## Overview
+TrackMyRupee is a comprehensive financial management tool designed for the Indian market. It provides a precision dashboard and intelligent analysis to turn financial chaos into clarity.
+
+## Key Features
+- **Expense & Income Tracking**: Comprehensive logging with category support and bulk actions.
+- **Budget Management**: Set and monitor monthly budget limits for different categories.
+- **Analytics & Insights**: Deep-dive visualizations of spending trends and category-wise analysis.
+- **Smart Notifications**: Automated reminders for recurring bills, subscriptions, and budget limits.
+- **Security First**: Data encryption at rest and in transit, with automated backups.
+- **Progressive Web App (PWA)**: Installable on mobile devices for a native app experience.
+- **Multi-lingual Support**: Fully internationalized with support for English, Hindi, and Marathi.
+
+## Important Links
+- [Home Page](https://trackmyrupee.com/)
+- [Security & Privacy](https://trackmyrupee.com/security/)
+- [Blog & Comparisons](https://trackmyrupee.com/blog/)
+- [GitHub Repository](https://github.com/omkarpathak/django-finance-tracker)

@@ -25,16 +25,17 @@
 
     <!-- SEO Meta Tags -->
     <meta name="description"
-        content="Looking for the best finance tracker? TrackMyRupee helps you track expenses, manage budgets, and visualize your spending. The ultimate personal finance app for India.">
+        content="TrackMyRupee: The best finance tracker for India. Monitor expenses, manage budgets, and gain financial clarity with our precision dashboard. Start tracking today!">
     <meta name="keywords"
         content="best finance tracker, expense tracker india, budget app, personal finance manager, rupee tracker, money management software, spending tracker, track my rupee">
     <meta name="author" content="Omkar Pathak">
     <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://trackmyrupee.com/">
 
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://trackmyrupee.com/">
-    <meta property="og:title" content="Best Finance Tracker | TrackMyRupee">
+    <meta property="og:title" content="TrackMyRupee | Best Finance Tracker">
     <meta property="og:description"
         content="Stop guessing where your money goes. Use TrackMyRupee, the best finance tracker to monitor expenses and grow savings.">
     <meta property="og:image" content="https://trackmyrupee.com/static/img/og-preview.png">
@@ -42,7 +43,7 @@
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:url" content="https://trackmyrupee.com/">
-    <meta name="twitter:title" content="Best Finance Tracker | TrackMyRupee">
+    <meta name="twitter:title" content="TrackMyRupee | Best Finance Tracker">
     <meta name="twitter:description"
         content="Stop guessing where your money goes. Use TrackMyRupee, the best finance tracker to monitor expenses and grow savings.">
     <meta name="twitter:image" content="https://trackmyrupee.com/static/img/og-preview.png">
@@ -120,8 +121,11 @@
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Bootstrap Icons -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" media="print" onload="this.media='all'">
     <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Clash+Display:wght@400;500;600;700&family=Outfit:wght@300;400;500;700&display=swap">
     <link
         href="https://fonts.googleapis.com/css2?family=Clash+Display:wght@400;500;600;700&family=Outfit:wght@300;400;500;700&display=swap"
         rel="stylesheet">
@@ -407,10 +411,9 @@
                     </div>
                 </div>
                 <div class="col-lg-6 mt-5 mt-lg-0" data-aos="zoom-in" data-aos-duration="1200">
-                    <div class="floating-ui mockup-container">
-                        <img src="{% static 'img/hero_dashboard.svg' %}" alt="Analytics Dashboard" class="img-dark">
-                        <img src="{% static 'img/hero_dashboard_light.svg' %}" alt="Analytics Dashboard"
-                            class="img-light">
+                    <div class="mockup-container" data-aos="fade-left">
+                        <img src="{% static 'img/hero_dashboard.svg' %}" alt="Analytics Dashboard" class="img-dark" fetchpriority="high" loading="eager" decoding="async">
+                        <img src="{% static 'img/hero_dashboard_light.svg' %}" alt="Analytics Dashboard" class="img-light" fetchpriority="high" loading="eager" decoding="async">
                     </div>
                 </div>
             </div>
@@ -620,6 +623,7 @@
                         <span id="lp-label-monthly" class="fw-semibold text-muted">Monthly</span>
                         <div class="form-check form-switch mb-0">
                             <input class="form-check-input" type="checkbox" role="switch" id="lpBillingToggle" checked
+                                aria-label="Toggle Billing Frequency">
                                 style="width: 3em; height: 1.5em; cursor: pointer;">
                         </div>
                         <span id="lp-label-yearly" class="fw-semibold">Yearly
@@ -634,12 +638,12 @@
                 <div class="col" data-aos="fade-up" data-aos-delay="100">
                     <div class="card mb-4 rounded-4 shadow-sm border-0 h-100 position-relative"
                         style="background: var(--surface-color);">
-                        <div class="card-header py-3 bg-transparent border-0">
-                            <h4 class="my-0 fw-normal">Free</h4>
+                        <div class="card-header py-3 bg-transparent border-0 mt-3">
+                            <h4 class="my-0 fw-bold">Free</h4>
                         </div>
                         <div class="card-body d-flex flex-column">
-                            <h1 class="card-title pricing-card-title display-5 fw-bold">₹0<small
-                                    class="text-muted fw-light fs-4">/mo</small></h1>
+                            <h3 class="card-title pricing-card-title display-5 fw-bold">₹0<small
+                                    class="text-muted fw-light fs-4">/mo</small></h3>
                             <ul class="list-unstyled mt-3 mb-4 text-start mx-auto text-muted">
                                 <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Unlimited
                                     Expenses</li>
@@ -673,14 +677,14 @@
                                     style="font-size: 0.6em;">LIMITED OFFER</span></h4>
                         </div>
                         <div class="card-body d-flex flex-column">
-                            <h1 class="card-title pricing-card-title display-5 fw-bold">
+                            <h3 class="card-title pricing-card-title display-5 fw-bold">
                                 <span class="lp-plan-price"
                                     data-monthly="{{ plans_monthly.PLUS.price|default:'0'|floatformat:0 }}"
                                     data-yearly="{{ plans_yearly.PLUS.price|default:'0'|floatformat:0 }}">
                                     ₹{% if plans_yearly.PLUS %}{{ plans_yearly.PLUS.price|floatformat:0 }}{% else %}0{% endif %}
                                 </span>
                                 <small class="text-muted fw-light fs-4 lp-plan-suffix">/yr</small>
-                            </h1>
+                            </h3>
                             <ul class="list-unstyled mt-3 mb-4 text-start mx-auto text-muted">
                                 <li class="mb-2"><i
                                         class="bi bi-check-circle-fill text-success me-2"></i><strong>Everything in
@@ -712,14 +716,14 @@
                                     style="font-size: 0.6em;">LIMITED OFFER</span></h4>
                         </div>
                         <div class="card-body d-flex flex-column">
-                            <h1 class="card-title pricing-card-title display-5 fw-bold">
+                            <h3 class="card-title pricing-card-title display-5 fw-bold">
                                 <span class="lp-plan-price"
                                     data-monthly="{{ plans_monthly.PRO.price|default:'0'|floatformat:0 }}"
                                     data-yearly="{{ plans_yearly.PRO.price|default:'0'|floatformat:0 }}">
                                     ₹{% if plans_yearly.PRO %}{{ plans_yearly.PRO.price|floatformat:0 }}{% else %}0{% endif %}
                                 </span>
                                 <small class="text-muted fw-light fs-4 lp-plan-suffix">/yr</small>
-                            </h1>
+                            </h3>
                             <ul class="list-unstyled mt-3 mb-4 text-start mx-auto text-muted">
                                 <li class="mb-2"><i
                                         class="bi bi-check-circle-fill text-success me-2"></i><strong>Everything in
@@ -799,8 +803,8 @@
                 <div class="col-lg-8 text-center" data-aos="fade-up">
                     <div class="mb-4">
                         <img src="https://github.com/OmkarPathak.png" alt="Omkar Pathak"
-                            class="rounded-circle shadow-lg border border-4 border-white"
-                            style="width: 120px; height: 120px;">
+                            class="rounded-circle mb-3 border border-3 border-primary border-opacity-25" width="80"
+                            height="80" loading="lazy" decoding="async">
                     </div>
                     <span class="badge rounded-pill bg-success bg-opacity-10 text-success px-3 py-2 mb-3 fw-bold">
                         <i class="bi bi-code-slash me-1"></i> Built by an Indie Developer
@@ -940,7 +944,7 @@
                 <div class="col-lg-4 mb-4 mb-lg-0">
                     <a href="/" class="d-flex align-items-center gap-2 mb-3 text-decoration-none">
                         <img src="{% static 'img/logo.svg' %}" alt="TMR" width="32" height="32"
-                            class="d-inline-block align-text-top rounded-3">
+                            class="d-inline-block align-text-top rounded-3" loading="lazy" decoding="async">
                         <span class="fs-4 fw-bold text-body">TrackMyRupee</span>
                     </a>
                     <p class="text-muted small mb-4">
