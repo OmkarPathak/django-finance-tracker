@@ -36,7 +36,7 @@
                 <h4 class="my-0 fw-normal">{% trans "Free" %}</h4>
             </div>
             <div class="card-body d-flex flex-column">
-                <h1 class="card-title pricing-card-title display-5 fw-bold">₹{{ 0 }}<small class="text-muted fw-light fs-4">/{% trans "mo" %}</small></h1>
+                <h3 class="card-title pricing-card-title display-5 fw-bold">₹{{ 0 }}<small class="text-muted fw-light fs-4">/{% trans "mo" %}</small></h3>
                 <ul class="list-unstyled mt-3 mb-4 text-start small mx-auto">
                     <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>{% trans "Unlimited Expenses/Income" %}</li>
                     <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>{% blocktrans with count=5 %}{{ count }} Categories{% endblocktrans %}</li>
@@ -65,14 +65,14 @@
                 <h4 class="my-0 fw-bold text-primary">{% trans "Plus" %} <span class="badge bg-danger ms-2 rounded-pill" style="font-size: 0.6em;">{% trans "LIMITED OFFER" %}</span></h4>
             </div>
             <div class="card-body d-flex flex-column">
-                <h1 class="card-title pricing-card-title display-5 fw-bold">
+                <h3 class="card-title pricing-card-title display-5 fw-bold">
                     <span class="plan-price"
                         data-monthly="{{ plans_monthly.PLUS.price|default:'0'|floatformat:0 }}"
                         data-yearly="{{ plans_yearly.PLUS.price|default:'0'|floatformat:0 }}">
                         ₹{% if plans_yearly.PLUS %}{{ plans_yearly.PLUS.price|floatformat:0 }}{% else %}0{% endif %}
                     </span>
                     <small class="text-muted fw-light fs-4 plan-suffix">/{% trans "yr" %}</small>
-                </h1>
+                </h3>
                 <ul class="list-unstyled mt-3 mb-4 text-start small mx-auto">
                     <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>{% trans "Everything in Free" %}</li>
                     <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>{% blocktrans with count=10 %}{{ count }} Categories{% endblocktrans %}</li>
@@ -100,14 +100,14 @@
                 <h4 class="my-0 fw-normal">{% trans "Pro" %} <span class="badge bg-danger ms-2 rounded-pill" style="font-size: 0.6em;">{% trans "LIMITED OFFER" %}</span></h4>
             </div>
             <div class="card-body d-flex flex-column">
-                <h1 class="card-title pricing-card-title display-5 fw-bold">
+                <h3 class="card-title pricing-card-title display-5 fw-bold">
                     <span class="plan-price"
                         data-monthly="{{ plans_monthly.PRO.price|default:'0'|floatformat:0 }}"
                         data-yearly="{{ plans_yearly.PRO.price|default:'0'|floatformat:0 }}">
                         ₹{% if plans_yearly.PRO %}{{ plans_yearly.PRO.price|floatformat:0 }}{% else %}0{% endif %}
                     </span>
                     <small class="text-muted fw-light fs-4 plan-suffix">/{% trans "yr" %}</small>
-                </h1>
+                </h3>
                 <ul class="list-unstyled mt-3 mb-4 text-start small mx-auto">
                     <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>{% trans "Everything in Plus" %}</li>
                     <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>{% trans "Unlimited Categories" %}</li>

@@ -73,10 +73,17 @@
 
     {% block meta_tags %}
     <meta name="description"
-        content="Turn financial chaos into clarity. TrackMyRupee gives you a precision dashboard to visualize your spending, spot trends, and master your monthly budget—all in one place.">
+        content="TrackMyRupee: Visualize spending, spot trends, and master your monthly budget with our precision financial dashboard. Turn chaos into clarity today.">
     <meta name="keywords"
-        content="TrackMyRupee, finance, expense tracker, budget, personal finance, money management, django, rupee tracker">
+        content="TrackMyRupee, finance, expense tracker, budget, personal finance, money management, django, rupee tracker, TrackMyRupee vs Walnut (Axio) vs Money Manager: Which Expense Tracker Is Best for Indians in 2026?">
     <meta name="author" content="Omkar Pathak">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="TrackMyRupee - Know Exactly Where Every Rupee Goes">
+    <meta name="twitter:description" content="Stop Guessing. Start Growing. Track your expenses and master your budget with TrackMyRupee.">
+    <meta name="twitter:image" content="https://trackmyrupee.com/static/img/og-preview.png">
+    <meta name="twitter:url" content="{{ request.build_absolute_uri }}">
 
     <!-- Google Fonts (Unifying with Landing Page) -->
     <link
@@ -88,6 +95,7 @@
     <link rel="manifest" href="{% url 'manifest' %}">
     <meta name="theme-color" content="#023047">
     <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="TrackMyRupee">
     <link rel="apple-touch-icon" href="{% static 'img/pwa-icon-512.png' %}">
@@ -632,6 +640,8 @@
                                 </li>
                                 <li><a href="{% url 'refund-policy' %}"
                                         class="text-decoration-none text-muted small hover-primary">{% trans "Refund & Cancellation" %}</a></li>
+                                <li><a href="{% url 'security' %}"
+                                        class="text-decoration-none text-muted small hover-primary">{% trans "Security" %}</a></li>
                             </ul>
                         </div>
                     </div>

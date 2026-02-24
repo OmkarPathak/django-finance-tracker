@@ -46,12 +46,23 @@ def robots_txt(request):
     ]
     return HttpResponse("\n".join(lines), content_type="text/plain")
 
+@require_GET
+def llms_txt(request):
+    import os
+    file_path = os.path.join(settings.BASE_DIR, 'llms.txt')
+    if os.path.exists(file_path):
+        with open(file_path, 'r') as f:
+            content = f.read()
+        return HttpResponse(content, content_type="text/plain")
+    return HttpResponse("llms.txt not found", status=404)
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('auth/login/', RedirectView.as_view(pattern_name='account_login', permanent=True)), # Redirect legacy login
     path('accounts/', include('allauth.urls')),
     path('sitemap.xml', sitemap, {'sitemaps': sitemaps}, name='django.contrib.sitemaps.views.sitemap'),
     path('robots.txt', robots_txt),
+    path('llms.txt', llms_txt),
     path('favicon.ico', RedirectView.as_view(url='/static/img/pwa-icon-512.png')),
     path('apple-touch-icon.png', RedirectView.as_view(url='/static/img/pwa-icon-512.png')),
     path('apple-touch-icon-precomposed.png', RedirectView.as_view(url='/static/img/pwa-icon-512.png')),

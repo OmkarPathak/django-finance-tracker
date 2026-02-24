@@ -1,0 +1,208 @@
+{% extends 'base.html' %}
+{% load i18n static %}
+
+{% block title %}Security & Data Protection | TrackMyRupee{% endblock %}
+
+{% block content %}
+<div class="container py-5 mt-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-12">
+            <!-- Header section -->
+            <div class="text-center mb-5 fade-in">
+                <span class="badge rounded-pill bg-primary bg-opacity-10 text-primary px-3 py-2 border mb-3 fw-bold" style="border-color: rgba(var(--bs-primary-rgb), 0.2) !important;">
+                    <i class="bi bi-shield-check me-1"></i> {% trans "Your Data, Secured" %}
+                </span>
+                <h1 class="display-5 fw-bold mb-4" style="letter-spacing: -1px;">Security &amp; Data Protection</h1>
+                <p class="text-muted mx-auto" style="max-width: 800px; line-height: 1.6;">
+                    At TrackMyRupee, we treat your financial data with the utmost respect. We employ industry-standard security practices to ensure your information is safe, private, and always available to you.
+                </p>
+            </div>
+
+            <!-- Content section -->
+            <div class="row g-5 fade-in" style="animation-delay: 0.2s;">
+                <!-- Data at Rest -->
+                <div class="col-12">
+                    <div class="card security-card-premium overflow-hidden border-0 rounded-5 position-relative">
+                        <div class="glow-ambient bg-primary"></div>
+                        <div class="card-body p-4 p-lg-5">
+                            <div class="row align-items-center g-4">
+                                <div class="col-lg-4">
+                                    <div class="d-flex align-items-center mb-3 mb-lg-0">
+                                        <div class="icon-glow bg-primary bg-opacity-10 text-primary rounded-4 me-3 d-flex justify-content-center align-items-center shadow-sm" style="width: 56px; height: 56px;">
+                                            <i class="bi bi-hdd-fill fs-3"></i>
+                                        </div>
+                                        <h3 class="fw-bold mb-0">{% trans "Data at Rest" %}</h3>
+                                    </div>
+                                </div>
+                                <div class="col-lg-8 border-start-lg ps-lg-5">
+                                    <p class="text-muted mb-0" style="line-height: 1.7;">
+                                        {% trans "We utilize Supabase, a managed PostgreSQL database service, hosted on highly secure cloud infrastructure. All data stored within our databases, including backups, is encrypted at rest using industry-standard AES-256 encryption (via AWS KMS). This ensures that even in the highly unlikely event of physical hardware compromise, your data remains irretrievable without the necessary decryption keys." %}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Data in Transit -->
+                <div class="col-12">
+                    <div class="card security-card-premium overflow-hidden border-0 rounded-5 position-relative">
+                        <div class="glow-ambient bg-success"></div>
+                        <div class="card-body p-4 p-lg-5">
+                            <div class="row align-items-center g-4">
+                                <div class="col-lg-4">
+                                    <div class="d-flex align-items-center mb-3 mb-lg-0">
+                                        <div class="icon-glow bg-success bg-opacity-10 text-success rounded-4 me-3 d-flex justify-content-center align-items-center shadow-sm" style="width: 56px; height: 56px;">
+                                            <i class="bi bi-shield-lock-fill fs-3"></i>
+                                        </div>
+                                        <h3 class="fw-bold mb-0">{% trans "Data in Transit" %}</h3>
+                                    </div>
+                                </div>
+                                <div class="col-lg-8 border-start-lg ps-lg-5">
+                                    <p class="text-muted mb-0" style="line-height: 1.7;">
+                                        {% trans "Every interaction you have with TrackMyRupee is secured. We enforce strict HTTPS connections for all traffic between your browser or device and our servers. Additionally, all connections between our application servers and our Supabase database are securely encrypted using TLS (Transport Layer Security), preventing any interception, tampering, or eavesdropping of your sensitive financial information as it travels across the internet." %}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Database Backups -->
+                <div class="col-12">
+                    <div class="card security-card-premium overflow-hidden border-0 rounded-5 position-relative">
+                        <div class="glow-ambient bg-info"></div>
+                        <div class="card-body p-4 p-lg-5">
+                            <div class="row align-items-center g-4">
+                                <div class="col-lg-4">
+                                    <div class="d-flex align-items-center mb-3 mb-lg-0">
+                                        <div class="icon-glow bg-info bg-opacity-10 text-info rounded-4 me-3 d-flex justify-content-center align-items-center shadow-sm" style="width: 56px; height: 56px;">
+                                            <i class="bi bi-cloud-arrow-up-fill fs-3"></i>
+                                        </div>
+                                        <h3 class="fw-bold mb-0">{% trans "Automated Backups" %}</h3>
+                                    </div>
+                                </div>
+                                <div class="col-lg-8 border-start-lg ps-lg-5">
+                                    <p class="text-muted mb-0" style="line-height: 1.7;">
+                                        {% trans "Your data's availability and durability are critical. We leverage Supabase's automated database backup systems to securely back up our database architecture daily. These backups are stored in geographically redundant locations and enable data recovery in the highly unlikely event of data corruption or a catastrophic system failure." %}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Privacy Guarantee -->
+                <div class="col-12">
+                    <div class="card security-card-premium overflow-hidden border-0 rounded-5 position-relative">
+                        <div class="glow-ambient bg-warning"></div>
+                        <div class="card-body p-4 p-lg-5">
+                            <div class="row align-items-center g-4">
+                                <div class="col-lg-4">
+                                    <div class="d-flex align-items-center mb-3 mb-lg-0">
+                                        <div class="icon-glow bg-warning bg-opacity-10 text-warning rounded-4 me-3 d-flex justify-content-center align-items-center shadow-sm" style="width: 56px; height: 56px;">
+                                            <i class="bi bi-person-lock fs-3"></i>
+                                        </div>
+                                        <h3 class="fw-bold mb-0">{% trans "Privacy First" %}</h3>
+                                    </div>
+                                </div>
+                                <div class="col-lg-8 border-start-lg ps-lg-5">
+                                    <p class="text-muted mb-0" style="line-height: 1.7;">
+                                        {% trans "We are an indie-developed tool built to provide value, not to farm data. We explicitly pledge never to sell your personal or financial data to third-party advertisers or brokers. Your data is analyzed solely by our internal engine to provide you with insights, charts, and forecasts. You maintain ownership of your data at all times." %}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer summary -->
+            <div class="text-center mt-5 pt-3 fade-in" style="animation-delay: 0.4s;">
+                <p class="text-muted mb-4">
+                    {% trans "Have specific questions about our infrastructure?" %}
+                </p>
+                <div class="d-flex justify-content-center gap-3">
+                    <a href="{% url 'contact' %}" class="btn btn-primary btn-lg rounded-pill px-5 fw-bold shadow-lg">
+                        {% trans "Contact Support" %}
+                    </a>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<style>
+    .security-card-premium {
+        background: var(--glass-card-bg);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        box-shadow: 0 4px 24px -1px rgba(0, 0, 0, 0.06), 0 2px 8px -1px rgba(0, 0, 0, 0.04);
+        transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+        border: 1px solid var(--glass-card-border) !important;
+    }
+
+    [data-bs-theme="light"] .security-card-premium {
+        --glass-card-bg: rgba(255, 255, 255, 0.8);
+        --glass-card-border: rgba(0, 0, 0, 0.04);
+    }
+    [data-bs-theme="dark"] .security-card-premium {
+        --glass-card-bg: rgba(30, 34, 40, 0.5);
+        --glass-card-border: rgba(255, 255, 255, 0.04);
+    }
+
+    .security-card-premium:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.12), 0 18px 36px -18px rgba(0, 0, 0, 0.08);
+        border-color: rgba(var(--bs-primary-rgb), 0.2) !important;
+    }
+
+    .glow-ambient {
+        position: absolute;
+        top: -50px;
+        left: -50px;
+        width: 150px;
+        height: 150px;
+        border-radius: 50%;
+        filter: blur(80px);
+        opacity: 0.1;
+        pointer-events: none;
+        z-index: 0;
+    }
+
+    .icon-glow {
+        position: relative;
+        z-index: 1;
+        transition: all 0.3s ease;
+    }
+
+    .security-card-premium:hover .icon-glow {
+        transform: scale(1.1) rotate(5deg);
+    }
+
+    @media (min-width: 992px) {
+        .border-start-lg {
+            border-left: 1px solid rgba(128, 128, 128, 0.1) !important;
+        }
+    }
+
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .fade-in {
+        opacity: 0;
+        animation: fadeInUp 0.8s ease forwards;
+    }
+
+    .fw-black { font-weight: 900; }
+</style>
+{% endblock %}

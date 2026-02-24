@@ -24,6 +24,7 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="{{ post.title }}">
 <meta name="twitter:description" content="{{ post.summary }}">
+<meta name="twitter:url" content="{{ request.build_absolute_uri }}">
 {% if post.image %}
 <meta name="twitter:image" content="{{ post.image.url }}">
 {% else %}
