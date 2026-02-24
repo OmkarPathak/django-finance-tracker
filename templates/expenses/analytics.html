@@ -7,15 +7,15 @@
 {% block content %}
 {% if not is_locked %}
 <div class="row mb-4 animate__animated animate__fadeIn">
-    <div class="col-12 d-flex justify-content-between align-items-center">
+    <div class="col-12 d-flex justify-content-between align-items-center flex-wrap gap-2">
         <div>
             <h1 class="h3 fw-bold mb-1">{% trans "Analytics & Trends" %}</h1>
-            <p class="text-muted mb-0">{% trans "Visualizing your financial journey over the last 12 months." %}</p>
+            <p class="text-muted mb-0">{% trans "Visualizing your financial journey over the year." %}</p>
         </div>
-        <div class="d-none d-md-block">
+        <div>
             <form method="get" class="d-inline-block">
                 <div class="input-group input-group-sm shadow-sm" style="width: 130px;">
-                    <span class="input-group-text bg-white border-end-0 text-primary"><i class="bi bi-calendar3"></i></span>
+                    <span class="input-group-text bg-body border-end-0 text-primary"><i class="bi bi-calendar3"></i></span>
                     <select name="year" class="form-select border-start-0 ps-0 fw-bold" onchange="this.form.submit()" style="cursor: pointer;">
                         {% for yr in available_years %}
                             <option value="{{ yr }}" {% if yr == selected_year %}selected{% endif %}>{{ yr }}</option>
@@ -30,34 +30,71 @@
 <!-- Financial Health Score Section -->
 <div class="row mb-4 animate__animated animate__fadeInUp">
     <div class="col-12">
-        <div class="card border-0 shadow-sm bg-{{ health_color }} bg-opacity-10">
+        <div class="card border-0 shadow-sm health-card-clean position-relative overflow-hidden" style="border-top: 4px solid var(--bs-{{ health_color }}) !important;">
+            <style>
+                .health-card-clean {
+                    background: var(--glass-clean-bg);
+                    backdrop-filter: blur(8px);
+                    -webkit-backdrop-filter: blur(8px);
+                    border: 1px solid var(--glass-clean-border) !important;
+                }
+                [data-bs-theme="light"] .health-card-clean {
+                    --glass-clean-bg: rgba(255, 255, 255, 0.8);
+                    --glass-clean-border: rgba(0, 0, 0, 0.04);
+                }
+                [data-bs-theme="dark"] .health-card-clean {
+                    --glass-clean-bg: rgba(33, 37, 41, 0.5);
+                    --glass-clean-border: rgba(255, 255, 255, 0.04);
+                }
+                .health-divider-clean { 
+                    border-top: 1px solid rgba(var(--bs-{{ health_color }}-rgb), 0.1); 
+                    margin-top: 1rem; 
+                    padding-top: 1rem; 
+                }
+                @media (min-width: 768px) { 
+                    .health-divider-clean { 
+                        border-top: none; margin-top: 0; padding-top: 0;
+                        border-left: 1px solid rgba(var(--bs-{{ health_color }}-rgb), 0.1); 
+                        margin-left: 2rem; padding-left: 2rem; 
+                    } 
+                }
+            </style>
             <div class="card-body p-4">
-                <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
-                    <div class="d-flex align-items-center">
-                        <div class="icon-shape icon-shape-md bg-white text-{{ health_color }} rounded-circle me-3 shadow-sm" style="width: 60px; height: 60px; display: flex; align-items: center; justify-content: center;">
-                            <i class="bi bi-heart-pulse-fill fs-3"></i>
+                <div class="d-flex flex-column flex-md-row align-items-start align-items-md-center">
+                    <!-- Left: Score & Identifier -->
+                    <div class="d-flex align-items-center flex-shrink-0">
+                        <div class="bg-{{ health_color }} bg-opacity-10 text-{{ health_color }} rounded-3 me-3 d-flex align-items-center justify-content-center shadow-sm" style="width: 56px; height: 56px;">
+                            <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor" stroke="none"><style>@keyframes heartbeat-subtle { 0%,100% { transform: scale(1); } 50% { transform: scale(1.08); } } .anim-heart-subtle { animation: heartbeat-subtle 3s ease-in-out infinite; transform-origin: center; }</style><path class="anim-heart-subtle" d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
                         </div>
                         <div>
-                            <h5 class="fw-bold mb-1">{% trans "Financial Health Score" %}</h5>
-                            <div class="d-flex align-items-center gap-2">
-                                <h2 class="mb-0 fw-bold text-{{ health_color }}">{{ health_score }}/100</h2>
-                                <span class="badge bg-white text-{{ health_color }} border border-{{ health_color }} rounded-pill px-3">{{ health_label }}</span>
+                            <p class="text-uppercase small fw-bold text-muted mb-0 ls-1">{% trans "Health Score" %}</p>
+                            <div class="d-flex align-items-baseline gap-2">
+                                <h1 class="mb-0 fw-black text-{{ health_color }}">{{ health_score }}<span class="fs-4 fw-medium op-5">/100</span></h1>
+                                <span class="badge rounded-pill bg-{{ health_color }} text-white px-3 py-1 small fw-bold">{{ health_label }}</span>
                             </div>
                         </div>
                     </div>
                     
-                    <div class="flex-grow-1 ms-md-4 border-start border-{{ health_color }} border-opacity-25 ps-md-4" style="max-width: 700px;">
-                        <h6 class="fw-bold text-{{ health_color }} mb-2"><i class="bi bi-magic me-1"></i> {% trans "AI Insights" %}</h6>
+                    <!-- Right: AI Guidance -->
+                    <div class="flex-grow-1 health-divider-clean">
+                        <div class="d-flex align-items-center gap-2 mb-2">
+                            <span class="text-{{ health_color }}"><i class="bi bi-robot"></i></span>
+                            <h6 class="fw-bold mb-0 text-dark-emphasis">{% trans "Personalized Insights" %}</h6>
+                        </div>
+                        <div class="row g-2">
                         {% if insights %}
                             {% for insight in insights %}
-                            <div class="d-flex align-items-start mb-2">
-                                <i class="bi bi-check-circle-fill text-{{ health_color }} me-2 mt-1 small"></i>
-                                <p class="mb-0 text-muted small fw-medium">{{ insight }}</p>
+                            <div class="col-md-6">
+                                <div class="d-flex align-items-center">
+                                    <span class="text-{{ health_color }} me-2 small">●</span>
+                                    <p class="mb-0 text-muted small fw-medium">{{ insight }}</p>
+                                </div>
                             </div>
                             {% endfor %}
                         {% else %}
-                             <p class="mb-0 text-muted small">{% trans "Track more expenses to generate AI insights." %}</p>
+                             <p class="mb-0 text-muted small">{% trans "Analyze your trends to see insights here." %}</p>
                         {% endif %}
+                        </div>
                     </div>
                 </div>
             </div>
@@ -71,8 +108,8 @@
         <div class="card border-0 shadow-sm h-100">
             <div class="card-body">
                 <div class="d-flex align-items-center mb-3">
-                    <div class="icon-shape icon-shape-sm bg-success bg-opacity-10 text-success rounded-circle me-3">
-                        <i class="bi bi-graph-up-arrow fs-5"></i>
+                    <div class="me-3">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-muted"><style>@keyframes graph-draw { 0% { stroke-dasharray: 0 30; } 100% { stroke-dasharray: 30 30; } } .anim-graph { animation: graph-draw 3s ease-in-out infinite alternate; }</style><polyline points="23 6 13.5 15.5 8.5 10.5 1 18" class="anim-graph"/><polyline points="17 6 23 6 23 12" class="anim-graph"/></svg>
                     </div>
                     <div>
                         <h6 class="text-muted mb-0">{% trans "Total Income" %} {% if is_current_year %}(YTD){% endif %}</h6>
@@ -89,8 +126,8 @@
          <div class="card border-0 shadow-sm h-100">
             <div class="card-body">
                 <div class="d-flex align-items-center mb-3">
-                    <div class="icon-shape icon-shape-sm bg-danger bg-opacity-10 text-danger rounded-circle me-3">
-                        <i class="bi bi-cart3 fs-5"></i>
+                    <div class="me-3">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-muted"><style>@keyframes cart-roll { 0%,100% { transform: translateX(0); } 50% { transform: translateX(2px); } } .anim-cart { animation: cart-roll 3s ease-in-out infinite; }</style><circle cx="9" cy="21" r="1" class="anim-cart"/><circle cx="20" cy="21" r="1" class="anim-cart"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6" class="anim-cart"/></svg>
                     </div>
                     <div>
                         <h6 class="text-muted mb-0">{% trans "Total Expenses" %} {% if is_current_year %}(YTD){% endif %}</h6>
@@ -107,8 +144,8 @@
          <div class="card border-0 shadow-sm h-100">
             <div class="card-body">
                 <div class="d-flex align-items-center mb-3">
-                    <div class="icon-shape icon-shape-sm bg-info bg-opacity-10 text-info rounded-circle me-3">
-                        <i class="bi bi-piggy-bank fs-5"></i>
+                    <div class="me-3">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-muted"><style>@keyframes piggy-bob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-2px); } } .anim-piggy { animation: piggy-bob 3s ease-in-out infinite; }</style><path class="anim-piggy" d="M20 16.5c0 1.4-1.1 2.5-2.5 2.5H6.5C5.1 19 4 17.9 4 16.5v-5C4 10.1 5.1 9 6.5 9H17l3-3v10.5"/><circle class="anim-piggy" cx="16" cy="14" r="1.5"/></svg>
                     </div>
                     <div>
                         <h6 class="text-muted mb-0">{% trans "Avg. Balance Rate" %} {% if is_current_year %}(YTD){% endif %}</h6>
@@ -129,19 +166,21 @@
     <div class="col-lg-8">
         <div class="card border-0 shadow-lg h-100">
             <div class="card-header bg-transparent border-bottom py-3 d-flex justify-content-between align-items-center">
-                <h5 class="fw-bold mb-0">{% trans "Income vs Expenses" %}</h5>
-                <span class="text-muted" data-bs-toggle="tooltip" title="{% trans 'Green bars show what you earned, Red bars show what you spent. The Blue line is your Net Savings.' %}">
+                <h5 class="fw-bold mb-0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="me-2 text-muted" style="vertical-align: -3px;"><style>@keyframes an-vs { 0%,100% { transform: scale(1); } 50% { transform: scale(1.1); } } .an-vs { animation: an-vs 4s ease-in-out infinite; }</style><rect x="3" y="12" width="4" height="9" rx="1" class="an-vs"/><rect x="10" y="7" width="4" height="14" rx="1" class="an-vs" style="animation-delay:0.2s"/><rect x="17" y="3" width="4" height="18" rx="1" class="an-vs" style="animation-delay:0.4s"/></svg> {% trans "Income vs Expenses" %}</h5>
+                <span class="text-muted" data-bs-toggle="tooltip" title="{% trans 'Blue bars show income, Violet bars show expenses. The Teal line is your Net Savings.' %}">
                     <i class="bi bi-question-circle"></i>
                 </span>
             </div>
             <div class="card-body">
-                <div style="height: 350px;">
-                    <canvas id="balanceChart"></canvas>
+                <div class="chart-container-scrollable" style="overflow-x: auto; -webkit-overflow-scrolling: touch;">
+                    <div style="height: 350px; min-width: 600px;">
+                        <canvas id="balanceChart"></canvas>
+                    </div>
                 </div>
                  <div class="mt-3 text-center">
                     <small class="text-muted">
                         <i class="bi bi-info-circle me-1"></i> 
-                        {% trans "Comparing what comes in (Green) vs. what goes out (Red). The gap is your potential savings." %}
+                        {% trans "Comparing what comes in (Blue) vs. what goes out (Violet). The gap is your potential savings." %}
                     </small>
                 </div>
             </div>
@@ -152,7 +191,7 @@
     <div class="col-lg-4">
         <div class="card border-0 shadow-lg h-100">
             <div class="card-header bg-transparent border-bottom py-3 d-flex justify-content-between align-items-center">
-                <h5 class="fw-bold mb-0">{% trans "Spending" %} ({{ selected_year }})</h5>
+                <h5 class="fw-bold mb-0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="me-2 text-muted" style="vertical-align: -3px;"><style>@keyframes an-donut { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } } .an-donut { animation: an-donut 12s linear infinite; transform-origin: center; }</style><circle cx="12" cy="12" r="10" class="an-donut" stroke-dasharray="15 8 8 8"/></svg> {% trans "Spending" %} ({{ selected_year }})</h5>
                  <span class="text-muted" data-bs-toggle="tooltip" title="{% trans 'Breakdown of where your money went this year. The biggest slice is your biggest expense category.' %}">
                     <i class="bi bi-question-circle"></i>
                 </span>
@@ -177,7 +216,7 @@
     <div class="col-12">
         <div class="card border-0 shadow-lg">
              <div class="card-header bg-transparent border-bottom py-3">
-                <h5 class="fw-bold mb-0">{% trans "Balance Rate Trend (%)" %}</h5>
+                <h5 class="fw-bold mb-0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="me-2 text-muted" style="vertical-align: -3px;"><style>@keyframes an-line { 0% { stroke-dasharray: 0 40; } 100% { stroke-dasharray: 40 40; } } .an-line { animation: an-line 3s ease-in-out infinite alternate; }</style><polyline points="4 18 8 12 14 16 20 6" class="an-line"/></svg> {% trans "Balance Rate Trend (%)" %}</h5>
             </div>
             <div class="card-body">
                  <div style="height: 300px;">
@@ -200,7 +239,7 @@
         <div class="card border-0 shadow-lg mb-4">
             <div class="card-header bg-transparent border-bottom py-3 d-flex justify-content-between align-items-center">
                 <div class="d-flex align-items-center gap-2">
-                    <h5 class="fw-bold mb-0">{% trans "Income Flow" %}</h5>
+                    <h5 class="fw-bold mb-0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="me-2 text-muted" style="vertical-align: -3px;"><style>@keyframes an-flow { 0%,100% { opacity: 0.5; } 50% { opacity: 1; } } .an-flow { animation: an-flow 3s ease-in-out infinite; }</style><path d="M5 5v14" class="an-flow"/><path d="M19 5v14" class="an-flow" style="animation-delay:0.5s"/><path d="M5 12c3-4 8 4 14 0" class="an-flow" style="animation-delay:0.25s"/></svg> {% trans "Income Flow" %}</h5>
                      <span class="text-muted" data-bs-toggle="tooltip" title="{% trans 'Visualizes how your income is distributed across your expenses and savings.' %}">
                         <i class="bi bi-question-circle"></i>
                     </span>
@@ -219,29 +258,54 @@
     </div>
 </div>
 
-<!-- Cashflow Forecast Section (New) -->
-{% if is_current_year %}
-<div class="row animate__animated animate__fadeInUp mt-4" style="animation-delay: 0.3s;">
-    <div class="col-12">
-        <div class="card border-0 shadow-lg mb-4">
-            <div class="card-header bg-transparent border-bottom py-3 d-flex justify-content-between align-items-center">
-                <div class="d-flex align-items-center gap-2">
-                    <h5 class="fw-bold mb-0">{% trans "Cashflow Forecast" %}</h5>
-                     <span class="text-muted" data-bs-toggle="tooltip" title="{% trans 'Projected based on your 3-month average + active recurring bills. See if you will save or overspend in future months.' %}">
-                        <i class="bi bi-question-circle"></i>
-                    </span>
-                </div>
-                <span class="badge bg-info bg-opacity-10 text-info rounded-pill">{% trans "Next 6 Months" %}</span>
+<!-- Day of Week & Recurring Split -->
+<div class="row g-4 animate__animated animate__fadeInUp mt-2" style="animation-delay: 0.3s;">
+    <div class="col-lg-7">
+        <div class="card border-0 shadow-lg h-100">
+            <div class="card-header bg-transparent border-bottom py-3">
+                <h5 class="fw-bold mb-0"><i class="bi bi-calendar-event me-2 text-muted fs-6" style="vertical-align: -1px;"></i> {% trans "Day-of-Week Spending" %}</h5>
             </div>
             <div class="card-body">
-                 <div style="height: 350px;">
-                    <canvas id="forecastChart"></canvas>
+                <div style="height: 300px;">
+                    <canvas id="dowChart"></canvas>
                 </div>
                 <div class="mt-3 text-center">
-                    <small class="text-muted">
-                        <i class="bi bi-info-circle me-1"></i> 
-                        {% trans "Projections based on your last 3 months average and active recurring transactions." %}
-                    </small>
+                    <small class="text-muted">{% trans "Identifies which days you tend to spend the most." %}</small>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-5">
+        <div class="card border-0 shadow-lg h-100">
+            <div class="card-header bg-transparent border-bottom py-3">
+                <h5 class="fw-bold mb-0"><i class="bi bi-repeat me-2 text-muted fs-6" style="vertical-align: -1px;"></i> {% trans "Recurring vs One-time" %}</h5>
+            </div>
+            <div class="card-body">
+                <div style="height: 300px;">
+                    <canvas id="recurringSplitChart"></canvas>
+                </div>
+                <div class="mt-3 text-center">
+                    <small class="text-muted">{% trans "Fixed costs vs discretionary spending this month." %}</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if burn_down_spent %}
+<!-- Cumulative Burn-down -->
+<div class="row animate__animated animate__fadeInUp mt-4 mb-4" style="animation-delay: 0.4s;">
+    <div class="col-12">
+        <div class="card border-0 shadow-lg">
+            <div class="card-header bg-transparent border-bottom py-3">
+                <h5 class="fw-bold mb-0"><i class="bi bi-graph-down-arrow me-2 text-muted fs-6" style="vertical-align: -1px;"></i> {% trans "Cumulative Spending Burn-down" %}</h5>
+            </div>
+            <div class="card-body">
+                <div style="height: 350px;">
+                    <canvas id="burnDownChart"></canvas>
+                </div>
+                <div class="mt-3 text-center">
+                    <small class="text-muted">{% trans "Pace of spending through the month vs. your total budget limit." %}</small>
                 </div>
             </div>
         </div>
@@ -256,11 +320,16 @@
 {{ balance_rate_data|json_script:"balance-rate-data" }}
 {{ cat_labels|json_script:"cat-labels" }}
 {{ cat_data|json_script:"cat-data" }}
-{{ forecast_labels|json_script:"forecast-labels" }}
-{{ forecast_income|json_script:"forecast-income" }}
-{{ forecast_expenses|json_script:"forecast-expense" }}
-{{ forecast_net|json_script:"forecast-net" }}
+
 {{ sankey_data|json_script:"sankey-data" }}
+{{ dow_labels|json_script:"dow-labels" }}
+{{ dow_data|json_script:"dow-data" }}
+
+{{ recurring_split_labels|json_script:"recurring-split-labels" }}
+{{ recurring_split_data|json_script:"recurring-split-data" }}
+{{ burn_down_labels|json_script:"burn-down-labels" }}
+{{ burn_down_spent|json_script:"burn-down-spent" }}
+{{ burn_down_budget|json_script:"burn-down-budget" }}
 
 <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
 <script type="text/javascript">
@@ -281,18 +350,18 @@
     data.addRows(rawSankeyData);
 
     const isDark = document.documentElement.getAttribute('data-bs-theme') === 'dark';
-    const textColor = isDark ? '#adb5bd' : '#6c757d';
+    const textColor = isDark ? '#f8f9fa' : '#212529';
 
     var options = {
       sankey: {
         node: {
-          label: { color: textColor, fontName: 'Outfit', fontSize: 13, bold: true },
+          label: { color: textColor, fontName: 'Outfit', fontSize: 14, bold: true },
           nodePadding: 30,
-          colors: ['#4bc0c0', '#36a2eb', '#ff6384', '#ffce56', '#9966ff', '#ff9f40', '#0dcaf0', '#2196f3', '#6610f2', '#e7e9ed']
+          colors: ['#0072ff', '#38f9d7', '#a78bfa', '#00f2fe', '#43e97b', '#f97316', '#6366f1', '#0dcaf0', '#7c3aed', '#94a3b8']
         },
         link: {
           colorMode: 'gradient',
-          colors: ['#4bc0c0', '#36a2eb', '#ff6384', '#ffce56', '#9966ff', '#ff9f40', '#0dcaf0', '#2196f3', '#6610f2', '#e7e9ed']
+          colors: ['#0072ff', '#38f9d7', '#a78bfa', '#00f2fe', '#43e97b', '#f97316', '#6366f1', '#0dcaf0', '#7c3aed', '#94a3b8']
         }
       }
     };
@@ -301,13 +370,23 @@
     chart.draw(data, options);
   }
 
-  // Redraw chart on window resize for responsiveness
+  // Redraw chart on window resize or theme change
   window.addEventListener('resize', function() {
       const container = document.getElementById('sankey_basic');
       if (container && container.innerHTML !== '') {
           drawSankeyChart();
       }
   });
+
+  // Watch for theme changes and redraw
+  const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+          if (mutation.type === 'attributes' && mutation.attributeName === 'data-bs-theme') {
+              drawSankeyChart();
+          }
+      });
+  });
+  observer.observe(document.documentElement, { attributes: true });
 </script>
 
 <script>
@@ -379,26 +458,30 @@
                     {
                         label: '{% trans "Income" %}',
                         data: incomeData,
-                        backgroundColor: 'rgba(75, 192, 192, 0.2)', // Green fill
-                        borderColor: 'rgba(75, 192, 192, 1)',
+                        backgroundColor: 'rgba(0, 114, 255, 0.8)',
+                        borderColor: '#0072ff',
                         borderWidth: 1,
                         borderRadius: 4,
-                        order: 2
+                        order: 2,
+                        barPercentage: 0.8,
+                        categoryPercentage: 0.9
                     },
                     {
                         label: '{% trans "Expense" %}',
                         data: expenseData,
-                        backgroundColor: 'rgba(255, 99, 132, 0.2)', // Red fill
-                        borderColor: 'rgba(255, 99, 132, 1)',
+                        backgroundColor: 'rgba(167, 139, 250, 0.8)',
+                        borderColor: '#7c3aed',
                         borderWidth: 1,
                         borderRadius: 4,
-                        order: 3
+                        order: 3,
+                        barPercentage: 0.8,
+                        categoryPercentage: 0.9
                     },
                     {
                         type: 'line',
                         label: '{% trans "Net Balance" %}',
                         data: incomeData.map((inc, i) => inc - expenseData[i]),
-                        borderColor: '#2196f3', // Blue line
+                        borderColor: '#38f9d7',
                         borderWidth: 2,
                         tension: 0.4,
                         pointRadius: 3,
@@ -430,13 +513,13 @@
         const ctxDonut = document.getElementById('categoryDonutChart').getContext('2d');
         // Generate nice colors (matching other charts)
         const bgColors = [
-            'rgba(54, 162, 235, 0.8)',   // Blue
-            'rgba(255, 99, 132, 0.8)',   // Red
-            'rgba(255, 206, 86, 0.8)',   // Yellow
-            'rgba(75, 192, 192, 0.8)',   // Teal
-            'rgba(153, 102, 255, 0.8)',  // Purple
-            'rgba(255, 159, 64, 0.8)',   // Orange
-            'rgba(231, 233, 237, 0.8)'   // Grey
+            'rgba(0, 114, 255, 0.6)', // Blue (matches bar chart)
+            '#38f9d7',           // Teal
+            '#a78bfa',           // Soft Violet
+            '#00f2fe',           // Cyan
+            '#43e97b',           // Green
+            '#f97316',           // Orange
+            '#6366f1'            // Indigo
         ];
         
         // Enhance labels with values and percentages for the Legend
@@ -516,7 +599,7 @@
         // 3. Rate Chart (Line)
         const ctxRate = document.getElementById('rateChart').getContext('2d');
         const gradientRate = ctxRate.createLinearGradient(0, 0, 0, 400);
-        gradientRate.addColorStop(0, 'rgba(13, 202, 240, 0.5)'); // Info color
+        gradientRate.addColorStop(0, 'rgba(13, 202, 240, 0.7)');
         gradientRate.addColorStop(1, 'rgba(13, 202, 240, 0.0)');
 
         new Chart(ctxRate, {
@@ -564,77 +647,104 @@
             plugins: [drawValuesPlugin]
         });
 
-        // ---------------------------------------------------------
-        // 4. Cashflow Forecast Chart (Mixed: Bar + Line)
-        // ---------------------------------------------------------
-        const forecastLabels = JSON.parse(document.getElementById('forecast-labels').textContent);
-        const forecastIncome = JSON.parse(document.getElementById('forecast-income').textContent);
-        const forecastExpense = JSON.parse(document.getElementById('forecast-expense').textContent);
-        const forecastNet = JSON.parse(document.getElementById('forecast-net').textContent);
-
-        const ctxForecast = document.getElementById('forecastChart').getContext('2d');
+        // 5. Day-of-Week Chart (Bar)
+        const dowLabels = JSON.parse(document.getElementById('dow-labels').textContent);
+        const dowData = JSON.parse(document.getElementById('dow-data').textContent);
+        const ctxDow = document.getElementById('dowChart').getContext('2d');
         
-        new Chart(ctxForecast, {
+        new Chart(ctxDow, {
             type: 'bar',
             data: {
-                labels: forecastLabels,
-                datasets: [
-                    {
-                        label: '{% trans "Projected Income" %}',
-                        data: forecastIncome,
-                        backgroundColor: 'rgba(75, 192, 192, 0.2)', 
-                        borderColor: 'rgba(75, 192, 192, 1)',
-                        borderWidth: 1,
-                        borderRadius: 4,
-                        order: 2
-                    },
-                    {
-                        label: '{% trans "Projected Expense" %}',
-                        data: forecastExpense,
-                        backgroundColor: 'rgba(255, 99, 132, 0.2)', 
-                        borderColor: 'rgba(255, 99, 132, 1)',
-                        borderWidth: 1,
-                        borderRadius: 4,
-                        order: 3
-                    },
-                    {
-                        type: 'line',
-                        label: '{% trans "Projected Net Savings" %}',
-                        data: forecastNet,
-                        borderColor: '#6610f2', // Indigo/Purple
-                        borderWidth: 2,
-                        tension: 0.4,
-                        pointRadius: 4,
-                        fill: false,
-                        order: 1,
-                        borderDash: [5, 5] // Dashed line to indicate projection
-                    }
-                ]
+                labels: dowLabels,
+                datasets: [{
+                    label: '{% trans "Total Spend" %}',
+                    data: dowData,
+                    backgroundColor: 'rgba(56, 249, 215, 0.85)',
+                    borderColor: '#38f9d7',
+                    borderWidth: 1,
+                    borderRadius: 4
+                }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: {
-                    legend: { position: 'top' },
-                    tooltip: { mode: 'index', intersect: false }
+                    legend: { display: false }
                 },
                 scales: {
-                    y: {
-                        beginAtZero: true,
-                        grid: { color: gridColor },
-                        ticks: {
-                            callback: function(value) {
-                                return translateDigits(value.toLocaleString());
-                            }
-                        }
-                    },
-                    x: {
-                         grid: { display: false }
-                    }
+                    y: { beginAtZero: true, grid: { color: gridColor } },
+                    x: { grid: { display: false } }
                 }
             },
-            plugins: [drawValuesPlugin] // Re-use the value drawer
+            plugins: [drawValuesPlugin]
         });
+
+        // 6. Recurring Split Donut
+        const recLabels = JSON.parse(document.getElementById('recurring-split-labels').textContent);
+        const recData = JSON.parse(document.getElementById('recurring-split-data').textContent);
+        const ctxRec = document.getElementById('recurringSplitChart').getContext('2d');
+        
+        new Chart(ctxRec, {
+            type: 'doughnut',
+            data: {
+                labels: recLabels,
+                datasets: [{
+                    data: recData,
+                    backgroundColor: ['#6366f1', '#38f9d7'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '70%',
+                plugins: {
+                    legend: { position: 'bottom', labels: { boxWidth: 10 } }
+                }
+            }
+        });
+
+        // 8. Cumulative Burn-down (Line)
+        const burnLabels = JSON.parse(document.getElementById('burn-down-labels').textContent);
+        const burnSpent = JSON.parse(document.getElementById('burn-down-spent').textContent);
+        const burnBudget = JSON.parse(document.getElementById('burn-down-budget').textContent);
+        
+        if (burnSpent && burnSpent.length > 0) {
+            const ctxBurn = document.getElementById('burnDownChart').getContext('2d');
+            new Chart(ctxBurn, {
+                type: 'line',
+                data: {
+                    labels: burnLabels,
+                    datasets: [
+                        {
+                            label: '{% trans "Cumulative Spent" %}',
+                            data: burnSpent,
+                            borderColor: '#7c3aed',
+                            backgroundColor: 'rgba(124, 58, 237, 0.1)',
+                            fill: true,
+                            tension: 0.2,
+                            pointRadius: 2
+                        },
+                        {
+                            label: '{% trans "Ideal Budget Line" %}',
+                            data: burnBudget,
+                            borderColor: '#38f9d7',
+                            borderDash: [5, 5],
+                            fill: false,
+                            pointRadius: 0
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { beginAtZero: true, grid: { color: gridColor } },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+        }
 
         // Init Tooltips (Added for Contextual Help)
         var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
@@ -652,7 +762,7 @@
         <div class="col-md-8 text-center">
              <div class="mb-4">
                 <div class="feature-icon-box bg-warning bg-opacity-10 text-warning mx-auto mb-4" style="width: 100px; height: 100px; font-size: 3rem; display: flex; align-items: center; justify-content: center; border-radius: 50%;">
-                    <i class="bi bi-lock-fill"></i>
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="currentColor" stroke="none" class="text-warning"><style>@keyframes lock-shake { 0%,100% { transform: rotate(0); } 25% { transform: rotate(-5deg); } 75% { transform: rotate(5deg); } } .anim-lock { animation: lock-shake 3s ease-in-out infinite; transform-origin: center; }</style><rect x="3" y="11" width="18" height="11" rx="2" class="anim-lock"/><path d="M7 11V7a5 5 0 0110 0v4" fill="none" stroke="currentColor" stroke-width="2" class="anim-lock"/></svg>
                 </div>
                 <h1 class="fw-bold mb-3">{% trans "Analytics is a Pro Feature" %}</h1>
                 <p class="lead text-muted mb-4">

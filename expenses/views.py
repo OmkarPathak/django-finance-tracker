@@ -13,7 +13,7 @@ from django.urls import reverse_lazy, reverse
 from django.views import generic
 from django.views.generic import TemplateView, ListView, CreateView, UpdateView, DeleteView, View
 from django.views.decorators.csrf import csrf_exempt
-from django.db.models import Sum, Q
+from django.db.models import Sum, Q, Avg
 from django.http import JsonResponse, HttpResponse
 import json
 from django.utils import timezone
@@ -35,7 +35,7 @@ from allauth.account.models import EmailAddress
 from django.core.mail import send_mail
 from django.conf import settings
 from django.core.cache import cache
-from django.db.models.functions import TruncMonth, TruncDay
+from django.db.models.functions import TruncMonth, TruncDay, ExtractWeekDay
 from django.utils.html import mark_safe, escape, format_html, format_html_join
 from django.utils.formats import date_format
 
@@ -2902,79 +2902,77 @@ class AnalyticsView(LoginRequiredMixin, TemplateView):
         context['health_color'] = health_color
         context['insights'] = insights
             
-        # B. Project Next 6 Months (Dynamic)
-        active_recurring = RecurringTransaction.objects.filter(user=user, is_active=True)
-        
-        forecast_labels = []
-        forecast_income_data = []
-        forecast_expense_data = []
-        forecast_net_data = []
-        
-        current_date_cursor = today
-        
-        for i in range(1, 7):
-            # Move to next month
-            next_month = current_date_cursor.month + 1
-            next_year = current_date_cursor.year
-            if next_month > 12:
-                next_month = 1
-                next_year += 1
-            current_date_cursor = date(next_year, next_month, 1)
-            
-            # Calculate Recurring "Floor" for THIS specific month
-            this_month_rec_income_base = 0
-            this_month_rec_expense_base = 0
-            this_month_rec_income_spike = 0
-            this_month_rec_expense_spike = 0
-            
-            days_in_month = calendar.monthrange(next_year, next_month)[1]
-            
-            for rt in active_recurring:
-                amount = float(rt.base_amount)
-                
-                if rt.frequency == 'DAILY':
-                    amount *= days_in_month
-                    is_spike = False
-                elif rt.frequency == 'WEEKLY':
-                    amount *= 4.33
-                    is_spike = False
-                elif rt.frequency == 'MONTHLY':
-                    # amount is as is
-                    is_spike = False
-                elif rt.frequency == 'YEARLY':
-                    # Check if the recurrence month matches this month
-                    if rt.start_date.month == next_month:
-                         is_spike = True
-                    else:
-                         amount = 0
-                         is_spike = False
-                
-                if rt.transaction_type == 'INCOME':
-                    if is_spike:
-                        this_month_rec_income_spike += amount
-                    else:
-                        this_month_rec_income_base += amount
-                else:
-                    if is_spike:
-                        this_month_rec_expense_spike += amount
-                    else:
-                        this_month_rec_expense_base += amount
 
-            # Logic: 
-            # Baseline = Max(Historical Avg, Regular Recurring)
-            # Forecast = Baseline + Spikes (Yearly/One-offs)
-            proj_inc = max(float(avg_income), this_month_rec_income_base) + this_month_rec_income_spike
-            proj_exp = max(float(avg_expense), this_month_rec_expense_base) + this_month_rec_expense_spike
+
+        # 4. Day-of-Week Spending (Selected Year)
+        dow_stats = Expense.objects.filter(
+            user=user, date__year=selected_year
+        ).annotate(weekday=ExtractWeekDay('date')).values('weekday').annotate(
+            total=Sum('base_amount')
+        ).order_by('weekday')
+        
+        # ExtractWeekDay: 1 (Sun) to 7 (Sat)
+        dow_labels = [_('Sun'), _('Mon'), _('Tue'), _('Wed'), _('Thu'), _('Fri'), _('Sat')]
+        dow_data = [0] * 7
+        for item in dow_stats:
+            dow_data[item['weekday'] - 1] = float(item['total'])
+        
+        context['dow_labels'] = dow_labels
+        context['dow_data'] = dow_data
+
+        # 5. Cumulative Burn-down (Current Month)
+        # Only relevant for the current month/year
+        this_month_labels = []
+        this_month_spent = []
+        this_month_budget_line = []
+        
+        if today.year == selected_year:
+            # Current Month Cumulative
+            days_in_month = calendar.monthrange(today.year, today.month)[1]
+            daily_spending = Expense.objects.filter(
+                user=user, date__year=today.year, date__month=today.month
+            ).values('date__day').annotate(total=Sum('base_amount')).order_by('date__day')
             
-            forecast_labels.append(date_format(current_date_cursor, 'M Y'))
-            forecast_income_data.append(round(proj_inc, 2))
-            forecast_expense_data.append(round(proj_exp, 2))
-            forecast_net_data.append(round(proj_inc - proj_exp, 2))
+            daily_map = {item['date__day']: float(item['total']) for item in daily_spending}
             
-        context['forecast_labels'] = forecast_labels
-        context['forecast_income'] = forecast_income_data
-        context['forecast_expenses'] = forecast_expense_data
-        context['forecast_net'] = forecast_net_data
+            total_monthly_limit = Category.objects.filter(user=user).aggregate(Sum('limit'))['limit__sum'] or 0
+            total_monthly_limit = float(total_monthly_limit)
+            
+            cumulative = 0
+            for day in range(1, days_in_month + 1):
+                this_month_labels.append(str(day))
+                cumulative += daily_map.get(day, 0)
+                this_month_spent.append(round(cumulative, 2))
+                
+                # Ideal line (pro-rated budget)
+                if total_monthly_limit > 0:
+                    this_month_budget_line.append(round((total_monthly_limit / days_in_month) * day, 2))
+                else:
+                    this_month_budget_line.append(0)
+        
+        context['burn_down_labels'] = this_month_labels
+        context['burn_down_spent'] = this_month_spent
+        context['burn_down_budget'] = this_month_budget_line
+
+
+
+        # 7. Recurring vs One-time (Current Month)
+        recurring_sum = Expense.objects.filter(
+            user=user, 
+            date__year=today.year, 
+            date__month=today.month,
+            description__icontains='(Recurring)'
+        ).aggregate(Sum('base_amount'))['base_amount__sum'] or 0
+        
+        total_sum = Expense.objects.filter(
+            user=user, date__year=today.year, date__month=today.month
+        ).aggregate(Sum('base_amount'))['base_amount__sum'] or 1 # Avoid div by zero
+        
+        rec_val = float(recurring_sum)
+        one_time_val = float(total_sum) - rec_val
+        
+        context['recurring_split_labels'] = [_('Recurring'), _('One-time')]
+        context['recurring_split_data'] = [rec_val, max(0, one_time_val)]
 
         return context
 
