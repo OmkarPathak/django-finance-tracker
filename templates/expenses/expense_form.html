@@ -523,6 +523,12 @@
                                         if (opt.text.toLowerCase() === data.category.toLowerCase() || 
                                             opt.value.toLowerCase() === data.category.toLowerCase()) {
                                             categorySelect.selectedIndex = i;
+                                            
+                                            // Synchronize bootstrap-multiselect UI
+                                            if ($(categorySelect).hasClass('django-multi-select')) {
+                                                $(categorySelect).multiselect('select', opt.value);
+                                            }
+                                            
                                             found = true;
                                             
                                             // Visual feedback - Flash glow
