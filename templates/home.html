@@ -25,6 +25,42 @@
     /* Chart header icon hover: subtle brighten on card hover */
     .card-header svg { opacity: 0.5; transition: opacity 0.3s ease; }
     .card:hover .card-header svg { opacity: 1; }
+
+    /* SVG Gauge Styles */
+    .gauge-svg {
+        width: 100%;
+        height: 100%;
+        transform: rotate(-90deg);
+    }
+    .gauge-bg {
+        fill: none;
+        stroke: var(--bs-tertiary-bg);
+        stroke-width: 8;
+    }
+    .gauge-fill {
+        fill: none;
+        stroke-width: 8;
+        stroke-linecap: round;
+        stroke-dasharray: 282.7; /* 2 * PI * 45 */
+        stroke-dashoffset: 282.7;
+        transition: stroke-dashoffset 1.5s cubic-bezier(0.1, 0.5, 0.2, 1);
+        filter: drop-shadow(0 0 3px rgba(var(--bs-primary-rgb), 0.3));
+    }
+    [data-bs-theme="dark"] .gauge-bg {
+        stroke: #2c3034;
+    }
+
+    /* Unified Empty State Centering */
+    .empty-state-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        height: 100%;
+        min-height: 250px;
+        padding: 2rem;
+    }
 </style>
 <div class="d-flex flex-column flex-md-row justify-content-between align-items-center mb-4 gap-3 fade-in" style="position: relative; z-index: 100;">
     <!-- Mobile Header (One Line) -->
@@ -493,10 +529,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 <span class="fw-bold"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1 text-muted" style="vertical-align: -2px;"><style>@keyframes vs-scale { 0%,100% { transform: scale(1); } 50% { transform: scale(1.15); } } .anim-vs { animation: vs-scale 4s ease-in-out infinite; }</style><circle cx="7" cy="12" r="5" class="anim-vs"/><circle cx="17" cy="12" r="5" class="anim-vs" style="animation-delay: 0.5s;"/></svg> {% trans "Income vs Expenses" %}</span>
             </div>
             <div class="card-body d-flex align-items-center justify-content-center p-4">
-                <div class="position-relative" style="height: 180px; width: 180px;">
-                    <canvas id="incomeExpensesChart"></canvas>
-                    <div class="position-absolute top-50 start-50 translate-middle text-center">
-                        <span class="h2 fw-bold mb-0" id="ie-percentage">{{ total_expenses|floatformat:0|translate_digits }}%</span>
+                <div class="position-relative d-flex align-items-center justify-content-center" style="height: 180px; width: 180px;">
+                    <svg viewBox="0 0 100 100" class="gauge-svg">
+                        <circle cx="50" cy="50" r="45" class="gauge-bg"></circle>
+                        <circle cx="50" cy="50" r="45" class="gauge-fill" id="gauge-fill-path"></circle>
+                    </svg>
+                    <div class="position-absolute text-center">
+                        <span class="h2 fw-bold mb-0" id="ie-percentage">0%</span>
                     </div>
                 </div>
                 <div class="ms-5">
@@ -550,9 +589,9 @@ document.addEventListener('DOMContentLoaded', function() {
                         {% endfor %}
                     </div>
                 {% else %}
-                    <div class="h-100 d-flex flex-column justify-content-center align-items-center text-center p-3" style="min-height: 250px;">
+                    <div class="empty-state-container">
                         <div class="mb-3 text-primary opacity-50">
-                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-primary">
+                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
                                 <style>
                                     @keyframes pie-spin { 0% { stroke-dashoffset: 50; } 100% { stroke-dashoffset: 0; } }
                                     .anim-pie { stroke-dasharray: 50; animation: pie-spin 3s ease-in-out infinite alternate; }
@@ -580,11 +619,25 @@ document.addEventListener('DOMContentLoaded', function() {
                 {% trans "Payment Method Distribution" %}
             </div>
             <div class="card-body">
+                {% if payment_data %}
                 <div style="height: 180px; width: 100%;">
                     <canvas id="paymentChart"></canvas>
                 </div>
-                {% if not payment_data %}
-                <div class="text-center text-muted mt-5">{% trans "No data available" %}</div>
+                {% else %}
+                <div class="empty-state-container" style="min-height: 250px;">
+                    <div class="mb-3 text-muted opacity-50">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                            <style>
+                                @keyframes card-slide { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(5px); } }
+                                .anim-card-empty { animation: card-slide 3s ease-in-out infinite; }
+                            </style>
+                            <rect x="2" y="5" width="20" height="14" rx="2" class="anim-card-empty"/>
+                            <line x1="2" y1="10" x2="22" y2="10" class="anim-card-empty"/>
+                            <path d="M7 15h2" class="anim-card-empty"/>
+                        </svg>
+                    </div>
+                    <p class="text-muted small mb-0">{% trans "No payment data available" %}</p>
+                </div>
                 {% endif %}
             </div>
         </div>
@@ -600,9 +653,25 @@ document.addEventListener('DOMContentLoaded', function() {
                 <span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1 text-muted" style="vertical-align: -2px;"><style>@keyframes trend-draw { 0% { stroke-dasharray: 0 40; } 100% { stroke-dasharray: 40 40; } } .anim-trend { animation: trend-draw 3s ease-in-out infinite alternate; }</style><polyline points="4 18 8 12 14 16 20 6" class="anim-trend"/></svg> {{ trend_title }} {% trans "(Stacked by Category)" %}</span>
             </div>
             <div class="card-body">
+                {% if trend_datasets %}
                 <div style="height: 350px; width: 100%;">
                     <canvas id="trendChart"></canvas>
                 </div>
+                {% else %}
+                <div class="empty-state-container" style="min-height: 350px;">
+                    <div class="mb-3 text-muted opacity-50">
+                        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                            <style>
+                                @keyframes trend-up-empty { 0% { stroke-dashoffset: 24; opacity: 0; } 50% { opacity: 1; } 100% { stroke-dashoffset: 0; opacity: 0; } }
+                                .anim-trend-empty { stroke-dasharray: 24; animation: trend-up-empty 3s linear infinite; }
+                            </style>
+                            <path d="M3 3v18h18" opacity="0.2"/>
+                            <path d="M7 14l4-4 4 4 3-8" class="anim-trend-empty"/>
+                        </svg>
+                    </div>
+                    <p class="text-muted mb-0">{% trans "Start tracking to see your spending trends!" %}</p>
+                </div>
+                {% endif %}
             </div>
         </div>
     </div>
@@ -644,18 +713,20 @@ document.addEventListener('DOMContentLoaded', function() {
                         <a href="{% url 'expense-edit' expense.pk %}" class="stretched-link"></a>
                     </div>
                     {% empty %}
-                    <div class="text-center py-5 text-muted">
-                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="opacity-50 mb-3">
-                            <style>
-                                @keyframes receipt-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
-                                .anim-receipt { animation: receipt-float 3s ease-in-out infinite; }
-                            </style>
-                            <path class="anim-receipt" d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1z"/>
-                            <line class="anim-receipt" x1="8" y1="7" x2="16" y2="7"/>
-                            <line class="anim-receipt" x1="8" y1="11" x2="14" y2="11"/>
-                            <line class="anim-receipt" x1="8" y1="15" x2="12" y2="15"/>
-                        </svg>
-                        {% trans "No recent transactions" %}
+                    <div class="empty-state-container" style="min-height: 350px;">
+                        <div class="mb-3 text-muted opacity-50">
+                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                <style>
+                                    @keyframes receipt-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+                                    .anim-receipt { animation: receipt-float 3s ease-in-out infinite; }
+                                </style>
+                                <path class="anim-receipt" d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1z"/>
+                                <line class="anim-receipt" x1="8" y1="7" x2="16" y2="7"/>
+                                <line class="anim-receipt" x1="8" y1="11" x2="14" y2="11"/>
+                                <line class="anim-receipt" x1="8" y1="15" x2="12" y2="15"/>
+                            </svg>
+                        </div>
+                        <p class="text-muted mb-0">{% trans "No recent transactions" %}</p>
                     </div>
                     {% endfor %}
                 </div>
@@ -674,11 +745,24 @@ document.addEventListener('DOMContentLoaded', function() {
                 {% trans "Category Distribution" %}
             </div>
             <div class="card-body">
+                {% if categories %}
                 <div style="height: 320px; width: 100%;">
                     <canvas id="categoryChart"></canvas>
                 </div>
-                {% if not categories %}
-                <div class="text-center text-muted mt-5">{% trans "No data available" %}</div>
+                {% else %}
+                <div class="empty-state-container" style="min-height: 320px;">
+                    <div class="mb-3 text-muted opacity-50">
+                        <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                            <style>
+                                @keyframes donut-pulse { 0%, 100% { transform: scale(1); opacity: 0.3; } 50% { transform: scale(1.05); opacity: 0.6; } }
+                                .anim-donut-empty { animation: donut-pulse 3s ease-in-out infinite; transform-origin: center; }
+                            </style>
+                            <circle cx="12" cy="12" r="10" class="anim-donut-empty" stroke-dasharray="15 8 8 8"/>
+                            <circle cx="12" cy="12" r="4" opacity="0.2"/>
+                        </svg>
+                    </div>
+                    <p class="text-muted mb-0">{% trans "No categories to display" %}</p>
+                </div>
                 {% endif %}
             </div>
         </div>
@@ -732,17 +816,19 @@ document.addEventListener('DOMContentLoaded', function() {
                         </div>
                     </div>
                     {% empty %}
-                    <div class="text-center py-5 text-muted">
-                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="opacity-50 mb-3">
-                            <style>
-                                @keyframes inbox-drop { 0%, 100% { transform: translateY(0); opacity: 0.5; } 50% { transform: translateY(4px); opacity: 1; } }
-                                .anim-inbox-arrow { animation: inbox-drop 2.5s ease-in-out infinite; }
-                            </style>
-                            <polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/>
-                            <path d="M5.45 5.11L2 12v6a2 2 0 002 2h16a2 2 0 002-2v-6l-3.45-6.89A2 2 0 0016.76 4H7.24a2 2 0 00-1.79 1.11z"/>
-                            <path class="anim-inbox-arrow" d="M12 3v6M9 6l3 3 3-3" stroke-width="2"/>
-                        </svg>
-                        {% trans "No expense data available" %}
+                    <div class="empty-state-container" style="min-height: 320px;">
+                        <div class="mb-3 text-muted opacity-50">
+                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                <style>
+                                    @keyframes inbox-drop { 0%, 100% { transform: translateY(0); opacity: 0.5; } 50% { transform: translateY(4px); opacity: 1; } }
+                                    .anim-inbox-arrow { animation: inbox-drop 2.5s ease-in-out infinite; }
+                                </style>
+                                <polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/>
+                                <path d="M5.45 5.11L2 12v6a2 2 0 002 2h16a2 2 0 002-2v-6l-3.45-6.89A2 2 0 0016.76 4H7.24a2 2 0 00-1.79 1.11z"/>
+                                <path class="anim-inbox-arrow" d="M12 3v6M9 6l3 3 3-3" stroke-width="2"/>
+                            </svg>
+                        </div>
+                        <p class="text-muted mb-0">{% trans "No expense data available" %}</p>
                     </div>
                     {% endfor %}
                 </div>
@@ -834,65 +920,60 @@ document.addEventListener('DOMContentLoaded', function() {
             return gradient;
         };
 
-        // --- 0. Income vs Expenses Chart (Donut) ---
+        // --- 0. Income vs Expenses Chart (SVG Animation) ---
         const totalIncome = {{ total_income|stringformat:"f"|default:0 }};
         const totalExpenses = {{ total_expenses|stringformat:"f"|default:0 }};
         let iePercentage = 0;
-        const ctxIncome = document.getElementById('incomeExpensesChart').getContext('2d');
-        const gradBlue = createGradient(ctxIncome, '#219EBC', '#8ECAE6');
-        const gradRed = createGradient(ctxIncome, '#E74C3C', '#C0392B');
-        const gradOrange = createGradient(ctxIncome, '#F39C12', '#F1C40F');
-
-        let chartColor = gradBlue; // Default Blue
-
+        
         if (totalIncome > 0) {
             iePercentage = Math.round((totalExpenses / totalIncome) * 100);
         } else if (totalExpenses > 0) {
-            iePercentage = 100; // No income but expenses exists
+            iePercentage = 100;
         }
 
-        // Set color based on percentage
-        if (iePercentage > 100) {
-            chartColor = gradRed; // Red if over budget
-            document.getElementById('ie-percentage').classList.add('text-danger');
-        } else if (iePercentage > 80) {
-            chartColor = gradOrange; // Orange warning
-        } else {
-            document.getElementById('ie-percentage').classList.add('text-primary'); // Blue default
-            chartColor = gradBlue; 
-        }
+        const gaugeFill = document.getElementById('gauge-fill-path');
+        const percentageText = document.getElementById('ie-percentage');
         
-        document.getElementById('ie-percentage').innerText = translateDigits(iePercentage) + '%';
-        if (iePercentage > 100) document.getElementById('ie-percentage').innerText = '>' + translateDigits(100) + '%';
+        let chartColor = '#219EBC'; // Default Blue
 
-        charts.incomeExpenses = new Chart(ctxIncome, {
-            type: 'doughnut',
-            data: {
-                labels: ['Expenses', 'Remaining'],
-                datasets: [{
-                    data: [totalExpenses, Math.max(0, totalIncome - totalExpenses)],
-                    backgroundColor: [
-                        chartColor,
-                        currentColors.remaining // Light gray for remaining
-                    ],
-                    borderWidth: 0,
-                    borderRadius: 20,
-                    cutout: '85%',   // Thin ring
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { display: false },
-                    tooltip: { enabled: false } // Disable tooltip for cleaner look
-                },
-                animation: {
-                    animateScale: true,
-                    animateRotate: true
-                }
+        if (iePercentage > 100) {
+            chartColor = '#E74C3C'; // Red
+            percentageText.classList.add('text-danger');
+        } else if (iePercentage > 80) {
+            chartColor = '#F39C12'; // Orange
+            percentageText.classList.add('text-warning');
+        } else {
+            chartColor = '#219EBC';
+            percentageText.classList.add('text-primary');
+        }
+
+        if (gaugeFill) {
+            gaugeFill.style.stroke = chartColor;
+            // Animate fill
+            setTimeout(() => {
+                const radius = 45;
+                const circumference = 2 * Math.PI * radius;
+                const offset = circumference - (Math.min(iePercentage, 100) / 100) * circumference;
+                gaugeFill.style.strokeDashoffset = offset;
+            }, 100);
+        }
+
+        // Percentage Number Toggle/Count Up
+        let start = 0;
+        const duration = 1500;
+        const stepTime = 20;
+        const totalSteps = duration / stepTime;
+        const increment = iePercentage / totalSteps;
+
+        const timer = setInterval(() => {
+            start += increment;
+            if (start >= iePercentage) {
+                percentageText.innerText = (iePercentage > 100 ? '>' + translateDigits(100) : translateDigits(iePercentage)) + '%';
+                clearInterval(timer);
+            } else {
+                percentageText.innerText = translateDigits(Math.floor(start)) + '%';
             }
-        });
+        }, stepTime);
 
         // --- 1. Trend Chart ---
         const ctxTrend = document.getElementById('trendChart').getContext('2d');

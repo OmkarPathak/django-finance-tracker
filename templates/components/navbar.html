@@ -1,6 +1,6 @@
 {% load static i18n %}
 <!-- Unified Navbar -->
-<nav class="navbar navbar-expand-lg {% if is_landing %}fixed-top navbar-landing{% else %}bg-body-tertiary border-bottom{% endif %}">
+<nav class="navbar navbar-expand-lg sticky-top {% if is_landing %}navbar-landing{% else %}bg-body-tertiary border-bottom{% endif %}">
     <div class="container">
         <a class="navbar-brand fw-bold d-flex align-items-center gap-2" href="{% if user.is_authenticated %}{% url 'home' %}{% else %}{% url 'landing' %}{% endif %}">
             <img src="{% static 'img/logo.svg' %}" alt="TMR" width="32" height="32" class="d-inline-block align-text-top rounded-3">
