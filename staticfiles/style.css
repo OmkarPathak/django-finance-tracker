@@ -137,6 +137,9 @@ h3,
 
 [data-bs-theme="dark"] .navbar {
   border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+  background-color: rgba(17, 19, 21, 0.8) !important;
+  backdrop-filter: blur(12px) saturate(180%);
+  -webkit-backdrop-filter: blur(12px) saturate(180%);
 }
 
 [data-bs-theme="dark"] footer {
@@ -542,9 +545,17 @@ a:hover {
 
 /* Ensure Navbar sits above filters (which have z-index: 1040) but below modals (1055) */
 /* Essential because backdrop-filter in dark mode creates a new stacking context */
-.navbar:not(.fixed-top) {
-  position: relative;
+/* Sticky Navbar Glassmorphism and Z-index */
+.navbar.sticky-top {
+  background-color: rgba(var(--bs-tertiary-bg-rgb), 0.8) !important;
+  backdrop-filter: blur(12px) saturate(180%);
+  -webkit-backdrop-filter: blur(12px) saturate(180%);
   z-index: 1050;
+  transition: all 0.3s ease;
+}
+
+[data-bs-theme="dark"] .navbar.sticky-top {
+  background-color: rgba(var(--color-surface-rgb, 26, 29, 33), 0.8) !important;
 }
 
 /* Social Share Buttons */
@@ -706,10 +717,14 @@ a:hover {
 }
 
 /* Ensure multiselect dropdown is always above other elements */
-.multiselect-native-select .btn-group,
-.multiselect-container {
+.multiselect-native-select .btn-group {
   position: relative;
-  z-index: 1051 !important; /* Above other form controls */
+}
+
+.multiselect-native-select .btn-group:hover,
+.multiselect-native-select .btn-group:focus-within,
+.multiselect-native-select .btn-group.show {
+  z-index: 1055 !important; /* Elevate only the active dropdown to escape sibling stacking overlap */
 }
 
 /* Fix for overlapping rows in formsets on mobile */
