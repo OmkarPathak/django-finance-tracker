@@ -11,6 +11,10 @@ python manage.py migrate
 echo "Collecting static files..."
 python manage.py collectstatic --noinput
 
+# Compile translation messages
+echo "Compiling translation messages..."
+python manage.py compilemessages
+
 # Setup Demo User
 echo "Setting up Demo User..."
 python manage.py setup_demo_user

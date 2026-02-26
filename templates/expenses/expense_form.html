@@ -220,11 +220,20 @@
 
                 const userCurrency = document.getElementById('formset-table').dataset.userCurrency;
                 const inputs = newForm.querySelectorAll('input, select');
+                
+                // Get values from template row for sticky fields
+                const templateCategory = templateRow.querySelector('select[name$="category"]')?.value;
+                const templatePaymentMethod = templateRow.querySelector('select[name$="payment_method"]')?.value;
+
                 inputs.forEach(input => {
                     if (input.name.includes('date')) {
                         input.value = new Date().toISOString().split('T')[0];
                     } else if (input.name.includes('currency')) {
                         input.value = userCurrency;
+                    } else if (input.name.includes('category') && templateCategory) {
+                        input.value = templateCategory;
+                    } else if (input.name.includes('payment_method') && templatePaymentMethod) {
+                        input.value = templatePaymentMethod;
                     } else {
                         input.value = '';
                     }

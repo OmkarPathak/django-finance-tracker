@@ -1256,8 +1256,10 @@ class ExpenseListView(LoginRequiredMixin, RecurringTransactionMixin, ListView):
         years_dates = user_expenses.dates('date', 'year', order='DESC')
         years = sorted(list(set([d.year for d in years_dates] + [datetime.now().year])), reverse=True)
         # Python-side deduplication to handle whitespace variants (e.g. "Goa" vs "Goa ")
-        raw_categories = user_expenses.values_list('category', flat=True)
-        categories = sorted(list(set([c.strip() for c in raw_categories if c and c.strip()])), key=str.lower)
+        raw_used_categories = user_expenses.values_list('category', flat=True)
+        raw_defined_categories = Category.objects.filter(user=self.request.user).values_list('name', flat=True)
+        all_cats = set([c.strip() for c in raw_used_categories if c and c.strip()]) | set([c.strip() for c in raw_defined_categories if c and c.strip()])
+        categories = sorted(list(all_cats), key=str.lower)
         
         context['years'] = years
         context['categories'] = categories
@@ -1395,6 +1397,38 @@ class ExpenseBulkDeleteView(LoginRequiredMixin, View):
             messages.success(request, f'{deleted_count} expenses deleted successfully.')
         else:
             messages.warning(request, 'No valid expenses found to delete.')
+            
+        return redirect('expense-list')
+
+class ExpenseBulkUpdateView(LoginRequiredMixin, View):
+    def post(self, request, *args, **kwargs):
+        expense_ids = request.POST.getlist('expense_ids')
+        category = request.POST.get('bulk_category')
+        payment_method = request.POST.get('bulk_payment_method')
+        
+        if not expense_ids:
+            messages.error(request, _('No expenses selected for update.'))
+            return redirect('expense-list')
+            
+        update_data = {}
+        if category:
+            update_data['category'] = category
+        if payment_method:
+            update_data['payment_method'] = payment_method
+            
+        if not update_data:
+            messages.warning(request, _('No fields selected to update.'))
+            return redirect('expense-list')
+            
+        # Filter by IDs and ensure they belong to the current user
+        expenses_to_update = Expense.objects.filter(id__in=expense_ids, user=request.user)
+        updated_count = expenses_to_update.count()
+        
+        if updated_count > 0:
+            expenses_to_update.update(**update_data)
+            messages.success(request, _(f'{updated_count} expenses updated successfully.'))
+        else:
+            messages.warning(request, _('No valid expenses found to update.'))
             
         return redirect('expense-list')
 
