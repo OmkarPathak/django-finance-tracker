@@ -156,11 +156,16 @@
                 </a>
             </div>
 
-            <!-- Bulk Delete -->
+            <!-- Bulk Actions -->
             <div class="d-none d-md-block col-md-auto">
-                 <button type="button" class="btn btn-outline-danger btn-sm w-100 w-md-auto bulk-delete-btn" id="bulkDeleteBtn" disabled data-bs-toggle="modal" data-bs-target="#bulkDeleteModal">
-                    <i class="bi bi-trash me-1"></i> {% trans "Delete Selected" %}
-                </button>
+                <div class="d-flex gap-2">
+                    <button type="button" class="btn btn-outline-primary btn-sm bulk-edit-btn" id="bulkEditBtn" disabled data-bs-toggle="modal" data-bs-target="#bulkEditModal">
+                        <i class="bi bi-pencil me-1"></i> {% trans "Edit Selected" %}
+                    </button>
+                    <button type="button" class="btn btn-outline-danger btn-sm bulk-delete-btn" id="bulkDeleteBtn" disabled data-bs-toggle="modal" data-bs-target="#bulkDeleteModal">
+                        <i class="bi bi-trash me-1"></i> {% trans "Delete Selected" %}
+                    </button>
+                </div>
             </div>
 
 
@@ -191,14 +196,16 @@
         document.addEventListener('DOMContentLoaded', function() {
             const selectAllCheckbox = document.getElementById('selectAll');
             const expenseCheckboxes = document.querySelectorAll('.expense-checkbox');
-            const bulkDeleteBtns = document.querySelectorAll('.bulk-delete-btn'); // Class based
+            const bulkDeleteBtns = document.querySelectorAll('.bulk-delete-btn');
+            const bulkEditBtns = document.querySelectorAll('.bulk-edit-btn');
             const mobileBulkActions = document.getElementById('mobileBulkActions');
 
-            function updateDeleteButtonState() {
+            function updateBulkButtonsState() {
                 const anyChecked = Array.from(expenseCheckboxes).some(cb => cb.checked);
                 
-                // Toggle all delete buttons
+                // Toggle all bulk action buttons
                 bulkDeleteBtns.forEach(btn => btn.disabled = !anyChecked);
+                bulkEditBtns.forEach(btn => btn.disabled = !anyChecked);
                 
                 // Toggle mobile actions bar visibility
                 if (mobileBulkActions) {
@@ -219,20 +226,42 @@
                     expenseCheckboxes.forEach(cb => {
                         cb.checked = isChecked;
                     });
-                    updateDeleteButtonState();
+                    updateBulkButtonsState();
                 });
             }
 
             // Handle Individual Checkboxes
             expenseCheckboxes.forEach(cb => {
                 cb.addEventListener('change', function() {
-                    updateDeleteButtonState();
+                    updateBulkButtonsState();
                     // Update Select All state
                     if (!this.checked) {
                         selectAllCheckbox.checked = false;
                     } else {
                         const allChecked = Array.from(expenseCheckboxes).every(cb => cb.checked);
                         selectAllCheckbox.checked = allChecked;
+                    }
+                });
+            });
+
+            // Handle Bulk Edit - collect IDs
+            bulkEditBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const selectedIds = Array.from(expenseCheckboxes)
+                        .filter(cb => cb.checked)
+                        .map(cb => cb.value);
+                    
+                    const hiddenIdsField = document.getElementById('bulkEditIds');
+                    if (hiddenIdsField) {
+                        // Clear existing
+                        hiddenIdsField.innerHTML = '';
+                        selectedIds.forEach(id => {
+                            const input = document.createElement('input');
+                            input.type = 'hidden';
+                            input.name = 'expense_ids';
+                            input.value = id;
+                            hiddenIdsField.appendChild(input);
+                        });
                     }
                 });
             });
@@ -280,8 +309,11 @@
             <!-- Mobile Bulk Actions (Hidden by default, shown via JS) -->
             <div id="mobileBulkActions" class="d-md-none p-2 bg-body-tertiary border-bottom d-none justify-content-end align-items-center gap-2">
                 <span class="small text-muted me-auto">{% trans "Items Selected" %}</span>
+                <button type="button" class="btn btn-outline-primary btn-sm bulk-edit-btn" disabled data-bs-toggle="modal" data-bs-target="#bulkEditModal">
+                    <i class="bi bi-pencil me-1"></i> {% trans "Edit" %}
+                </button>
                 <button type="button" class="btn btn-outline-danger btn-sm bulk-delete-btn" disabled data-bs-toggle="modal" data-bs-target="#bulkDeleteModal">
-                    <i class="bi bi-trash me-1"></i> {% trans "Delete Selected" %}
+                    <i class="bi bi-trash me-1"></i> {% trans "Delete" %}
                 </button>
             </div>
 
@@ -427,6 +459,52 @@
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{% trans "Cancel" %}</button>
                     <button type="button" class="btn btn-danger" onclick="setButtonLoading(this, '{% trans 'Deleting...' %}'); document.getElementById('bulkDeleteForm').submit()">{% trans "Delete Selected" %}</button>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bulk Edit Modal -->
+    <div class="modal fade" id="bulkEditModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <form id="bulkEditForm" method="post" action="{% url 'expense-bulk-edit' %}">
+                    {% csrf_token %}
+                    <div id="bulkEditIds"></div> <!-- Hidden inputs will be injected here -->
+                    
+                    <div class="modal-header">
+                        <h5 class="modal-title">{% trans "Bulk Edit Expenses" %}</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body text-start">
+                        <p class="small text-muted mb-3">{% trans "Select the fields you want to update for all selected records. Leave blank to keep existing values." %}</p>
+                        
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold">{% trans "Category" %}</label>
+                            <select name="bulk_category" class="form-select">
+                                <option value="">--- {% trans "Keep existing" %} ---</option>
+                                {% for cat in categories %}
+                                    <option value="{{ cat }}">{{ cat }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold">{% trans "Payment Method" %}</label>
+                            <select name="bulk_payment_method" class="form-select">
+                                <option value="">--- {% trans "Keep existing" %} ---</option>
+                                <option value="Cash">{% trans "Cash" %}</option>
+                                <option value="Credit Card">{% trans "Credit Card" %}</option>
+                                <option value="Debit Card">{% trans "Debit Card" %}</option>
+                                <option value="UPI">{% trans "UPI" %}</option>
+                                <option value="NetBanking">{% trans "NetBanking" %}</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{% trans "Cancel" %}</button>
+                        <button type="submit" class="btn btn-primary" onclick="setButtonLoading(this, '{% trans 'Updating...' %}')">{% trans "Save Changes" %}</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>

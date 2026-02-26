@@ -25,18 +25,8 @@ ENV PATH="/opt/venv/bin:$PATH"
 COPY requirements.txt /app/
 RUN pip install --upgrade pip && pip install --no-cache-dir -r requirements.txt
 
-
 # Copy project
 COPY . /app/
-
-# Compile translation messages
-RUN python manage.py compilemessages
-
-# Migrate database
-RUN python manage.py migrate
-
-# Collect static files
-RUN python manage.py collectstatic --noinput
 
 # Set entrypoint
 ENTRYPOINT ["/app/entrypoint.sh"]
