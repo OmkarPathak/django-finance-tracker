@@ -30,3 +30,4 @@ bleach==6.1.0
 django-recaptcha==4.0.0
 django-webpush==0.3.6
 coverage
+gunicorn
