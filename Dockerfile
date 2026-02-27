@@ -28,6 +28,8 @@ RUN pip install --upgrade pip && pip install --no-cache-dir -r requirements.txt
 # Copy project
 COPY . /app/
 
+RUN chmod +x /app/entrypoint.sh
+
 # Set entrypoint
 ENTRYPOINT ["/app/entrypoint.sh"]
 

@@ -1,14 +1,30 @@
 version: '3.8'
 
-ENV DEBIAN_FRONTEND=noninteractive
-
 services:
   web:
     build: .
-    command: python manage.py runserver 0.0.0.0:8000
+    command: gunicorn --workers 2 --bind 0.0.0.0:8000 finance_tracker.wsgi:application
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 400M
+        reservations:
+          memory: 128M
     volumes:
       - .:/app
     ports:
       - "8000:8000"
     env_file:
       - .env
+    networks:
+      - proxy-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+networks:
+  proxy-network:
+    external: true
