@@ -5,7 +5,7 @@ charset-normalizer==3.4.4
 crispy-bootstrap5==2025.6
 cryptography==46.0.3
 dj-database-url==3.0.1
-Django==4.2.27
+Django==4.2.28
 django-allauth==65.13.1
 django-crispy-forms==2.5
 et_xmlfile==2.0.0
