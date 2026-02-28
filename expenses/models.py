@@ -247,7 +247,9 @@ class UserProfile(models.Model):
         if self.tier == 'PRO':
             if self.is_lifetime:
                 return True
-            if self.subscription_end_date and self.subscription_end_date > timezone.now():
+            if not self.subscription_end_date:
+                return True # Assume active if no end date set manually
+            if self.subscription_end_date > timezone.now():
                 return True
         return False
     
@@ -257,7 +259,9 @@ class UserProfile(models.Model):
         if self.tier in ['PLUS', 'PRO']:
             if self.is_lifetime:
                 return True
-            if self.subscription_end_date and self.subscription_end_date > timezone.now():
+            if not self.subscription_end_date:
+                return True # Assume active if no end date set manually
+            if self.subscription_end_date > timezone.now():
                 return True
         return False
 

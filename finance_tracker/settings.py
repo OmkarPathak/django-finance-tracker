@@ -278,8 +278,8 @@ EMAIL_USE_SSL = os.environ.get('EMAIL_USE_SSL', 'False') == 'True'
 EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '')
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
 # Default Sender
-DEFAULT_FROM_EMAIL = "TrackMyRupee <no-reply@trackmyrupee.com>"
-SERVER_EMAIL = "no-reply@trackmyrupee.com"
+DEFAULT_FROM_EMAIL = os.environ.get('EMAIL_HOST_USER', "TrackMyRupee <no-reply@trackmyrupee.com>")
+SERVER_EMAIL = os.environ.get('EMAIL_HOST_USER', "no-reply@trackmyrupee.com")
 
 # Production Security Settings
 if not DEBUG:
