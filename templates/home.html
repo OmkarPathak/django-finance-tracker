@@ -61,6 +61,46 @@
         min-height: 250px;
         padding: 2rem;
     }
+
+    /* SVG Animations */
+    @keyframes bar-grow { 0% { transform: scaleY(0.3); } 100% { transform: scaleY(1); } }
+    .anim-bar { transform-origin: bottom; animation: bar-grow 2s ease-in-out infinite alternate; }
+
+    @keyframes pie-spin { 0% { stroke-dashoffset: 50; } 100% { stroke-dashoffset: 0; } }
+    .anim-pie { stroke-dasharray: 50; animation: pie-spin 3s ease-in-out infinite alternate; }
+
+    @keyframes card-tap { 0%,100% { transform: rotate(0); } 50% { transform: rotate(-5deg); } }
+    .anim-card { animation: card-tap 3s ease-in-out infinite; transform-origin: center; }
+
+    @keyframes card-slide { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(5px); } }
+    .anim-card-empty { animation: card-slide 3s ease-in-out infinite; }
+
+    @keyframes trend-draw { 0% { stroke-dasharray: 0 40; } 100% { stroke-dasharray: 40 40; } }
+    .anim-trend { animation: trend-draw 3s ease-in-out infinite alternate; }
+
+    @keyframes trend-up-empty { 0% { stroke-dashoffset: 24; opacity: 0; } 50% { opacity: 1; } 100% { stroke-dashoffset: 0; opacity: 0; } }
+    .anim-trend-empty { stroke-dasharray: 24; animation: trend-up-empty 3s linear infinite; }
+
+    @keyframes clock-tick { 0%,100% { transform: rotate(0); } 50% { transform: rotate(15deg); } }
+    .anim-clk { animation: clock-tick 2s ease-in-out infinite; transform-origin: 12px 12px; }
+
+    @keyframes receipt-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+    .anim-receipt { animation: receipt-float 3s ease-in-out infinite; }
+
+    @keyframes donut-rotate { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    .anim-donut { animation: donut-rotate 12s linear infinite; transform-origin: center; }
+
+    @keyframes donut-pulse { 0%, 100% { transform: scale(1); opacity: 0.3; } 50% { transform: scale(1.05); opacity: 0.6; } }
+    .anim-donut-empty { animation: donut-pulse 3s ease-in-out infinite; transform-origin: center; }
+
+    @keyframes tag-bounce { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-2px); } }
+    .anim-tag { animation: tag-bounce 3s ease-in-out infinite; }
+
+    @keyframes inbox-drop { 0%, 100% { transform: translateY(0); opacity: 0.5; } 50% { transform: translateY(4px); opacity: 1; } }
+    .anim-inbox-arrow { animation: inbox-drop 2.5s ease-in-out infinite; }
+
+    @keyframes vs-scale { 0%,100% { transform: scale(1); } 50% { transform: scale(1.15); } }
+    .anim-vs { animation: vs-scale 4s ease-in-out infinite; }
 </style>
 <div class="d-flex flex-column flex-md-row justify-content-between align-items-center mb-4 gap-3 fade-in" style="position: relative; z-index: 100;">
     <!-- Mobile Header (One Line) -->
@@ -526,7 +566,7 @@ document.addEventListener('DOMContentLoaded', function() {
     <div class="col-md-4">
         <div class="card shadow-lg border-0 h-100 hover-lift fade-in" style="animation-delay: 0.3s">
             <div class="card-header bg-transparent border-bottom">
-                <span class="fw-bold"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1 text-muted" style="vertical-align: -2px;"><style>@keyframes vs-scale { 0%,100% { transform: scale(1); } 50% { transform: scale(1.15); } } .anim-vs { animation: vs-scale 4s ease-in-out infinite; }</style><circle cx="7" cy="12" r="5" class="anim-vs"/><circle cx="17" cy="12" r="5" class="anim-vs" style="animation-delay: 0.5s;"/></svg> {% trans "Income vs Expenses" %}</span>
+                <span class="fw-bold"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1 text-muted" style="vertical-align: -2px;"><circle cx="7" cy="12" r="5" class="anim-vs"/><circle cx="17" cy="12" r="5" class="anim-vs" style="animation-delay: 0.5s;"/></svg> {% trans "Income vs Expenses" %}</span>
             </div>
             <div class="card-body d-flex align-items-center justify-content-center p-4">
                 <div class="position-relative d-flex align-items-center justify-content-center" style="height: 180px; width: 180px;">
@@ -553,7 +593,7 @@ document.addEventListener('DOMContentLoaded', function() {
     <div class="col-md-4" id="tour-budget-card">
         <div class="card shadow-lg border-0 h-100 hover-lift fade-in" style="animation-delay: 0.4s">
             <div class="card-header bg-transparent border-bottom">
-                <span class="fw-bold"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1 text-muted" style="vertical-align: -2px;"><style>@keyframes bar-grow { 0% { transform: scaleY(0.3); } 100% { transform: scaleY(1); } } .anim-bar { transform-origin: bottom; animation: bar-grow 2s ease-in-out infinite alternate; }</style><rect x="3" y="10" width="4" height="12" rx="1" class="anim-bar"/><rect x="10" y="6" width="4" height="16" rx="1" class="anim-bar" style="animation-delay: 0.3s;"/><rect x="17" y="2" width="4" height="20" rx="1" class="anim-bar" style="animation-delay: 0.6s;"/></svg> {% trans "Budget vs Spent" %}</span>
+                <span class="fw-bold"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1 text-muted" style="vertical-align: -2px;"><rect x="3" y="10" width="4" height="12" rx="1" class="anim-bar"/><rect x="10" y="6" width="4" height="16" rx="1" class="anim-bar" style="animation-delay: 0.3s;"/><rect x="17" y="2" width="4" height="20" rx="1" class="anim-bar" style="animation-delay: 0.6s;"/></svg> {% trans "Budget vs Spent" %}</span>
             </div>
             <div class="card-body px-3 pb-4">
                 {% if has_any_budget %}
@@ -592,10 +632,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     <div class="empty-state-container">
                         <div class="mb-3 text-primary opacity-50">
                             <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                                <style>
-                                    @keyframes pie-spin { 0% { stroke-dashoffset: 50; } 100% { stroke-dashoffset: 0; } }
-                                    .anim-pie { stroke-dasharray: 50; animation: pie-spin 3s ease-in-out infinite alternate; }
-                                </style>
                                 <circle cx="12" cy="12" r="10" opacity="0.2" fill="currentColor"/>
                                 <path d="M12 2a10 10 0 0 1 10 10h-10z" class="anim-pie" fill="currentColor" fill-opacity="0.3"/>
                                 <line x1="12" y1="2" x2="12" y2="12"/>
@@ -615,7 +651,7 @@ document.addEventListener('DOMContentLoaded', function() {
     <div class="col-md-4">
         <div class="card shadow-lg border-0 h-100 hover-lift fade-in" style="animation-delay: 0.5s">
             <div class="card-header bg-transparent border-bottom fw-bold">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1 text-muted" style="vertical-align: -2px;"><style>@keyframes card-tap { 0%,100% { transform: rotate(0); } 50% { transform: rotate(-5deg); } } .anim-card { animation: card-tap 3s ease-in-out infinite; transform-origin: center; }</style><rect x="2" y="5" width="20" height="14" rx="2" class="anim-card"/><line x1="2" y1="10" x2="22" y2="10" class="anim-card"/></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1 text-muted" style="vertical-align: -2px;"><rect x="2" y="5" width="20" height="14" rx="2" class="anim-card"/><line x1="2" y1="10" x2="22" y2="10" class="anim-card"/></svg>
                 {% trans "Payment Method Distribution" %}
             </div>
             <div class="card-body">
@@ -627,10 +663,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 <div class="empty-state-container" style="min-height: 250px;">
                     <div class="mb-3 text-muted opacity-50">
                         <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                            <style>
-                                @keyframes card-slide { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(5px); } }
-                                .anim-card-empty { animation: card-slide 3s ease-in-out infinite; }
-                            </style>
                             <rect x="2" y="5" width="20" height="14" rx="2" class="anim-card-empty"/>
                             <line x1="2" y1="10" x2="22" y2="10" class="anim-card-empty"/>
                             <path d="M7 15h2" class="anim-card-empty"/>
@@ -650,7 +682,7 @@ document.addEventListener('DOMContentLoaded', function() {
     <div class="col-md-6">
         <div class="card shadow-lg border-0 h-100">
             <div class="card-header bg-transparent border-bottom fw-bold d-flex justify-content-between">
-                <span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1 text-muted" style="vertical-align: -2px;"><style>@keyframes trend-draw { 0% { stroke-dasharray: 0 40; } 100% { stroke-dasharray: 40 40; } } .anim-trend { animation: trend-draw 3s ease-in-out infinite alternate; }</style><polyline points="4 18 8 12 14 16 20 6" class="anim-trend"/></svg> {{ trend_title }} {% trans "(Stacked by Category)" %}</span>
+                <span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1 text-muted" style="vertical-align: -2px;"><polyline points="4 18 8 12 14 16 20 6" class="anim-trend"/></svg> {{ trend_title }} {% trans "(Stacked by Category)" %}</span>
             </div>
             <div class="card-body">
                 {% if trend_datasets %}
@@ -661,10 +693,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 <div class="empty-state-container" style="min-height: 350px;">
                     <div class="mb-3 text-muted opacity-50">
                         <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                            <style>
-                                @keyframes trend-up-empty { 0% { stroke-dashoffset: 24; opacity: 0; } 50% { opacity: 1; } 100% { stroke-dashoffset: 0; opacity: 0; } }
-                                .anim-trend-empty { stroke-dasharray: 24; animation: trend-up-empty 3s linear infinite; }
-                            </style>
                             <path d="M3 3v18h18" opacity="0.2"/>
                             <path d="M7 14l4-4 4 4 3-8" class="anim-trend-empty"/>
                         </svg>
@@ -680,7 +708,7 @@ document.addEventListener('DOMContentLoaded', function() {
     <div class="col-md-6">
         <div class="card shadow-lg border-0 h-100">
             <div class="card-header bg-transparent border-bottom d-flex justify-content-between align-items-center">
-                <span class="fw-bold"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1 text-muted" style="vertical-align: -2px;"><style>@keyframes clock-tick { 0%,100% { transform: rotate(0); } 50% { transform: rotate(15deg); } } .anim-clk { animation: clock-tick 2s ease-in-out infinite; transform-origin: 12px 12px; }</style><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14" class="anim-clk"/></svg> {% trans "Recent Transactions" %}</span>
+                <span class="fw-bold"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1 text-muted" style="vertical-align: -2px;"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14" class="anim-clk"/></svg> {% trans "Recent Transactions" %}</span>
                 <a href="{% url 'expense-list' %}" class="btn btn-sm btn-link text-decoration-none fw-bold">{% trans "View All" %}</a>
             </div>
             <div class="card-body p-0">
@@ -716,10 +744,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     <div class="empty-state-container" style="min-height: 350px;">
                         <div class="mb-3 text-muted opacity-50">
                             <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                                <style>
-                                    @keyframes receipt-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
-                                    .anim-receipt { animation: receipt-float 3s ease-in-out infinite; }
-                                </style>
                                 <path class="anim-receipt" d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1z"/>
                                 <line class="anim-receipt" x1="8" y1="7" x2="16" y2="7"/>
                                 <line class="anim-receipt" x1="8" y1="11" x2="14" y2="11"/>
@@ -741,7 +765,7 @@ document.addEventListener('DOMContentLoaded', function() {
     <div class="col-md-6">
         <div class="card shadow-lg border-0 h-100">
             <div class="card-header bg-transparent border-bottom fw-bold">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1 text-muted" style="vertical-align: -2px;"><style>@keyframes donut-rotate { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } } .anim-donut { animation: donut-rotate 12s linear infinite; transform-origin: center; }</style><circle cx="12" cy="12" r="10" class="anim-donut" stroke-dasharray="15 8 8 8"/></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1 text-muted" style="vertical-align: -2px;"><circle cx="12" cy="12" r="10" class="anim-donut" stroke-dasharray="15 8 8 8"/></svg>
                 {% trans "Category Distribution" %}
             </div>
             <div class="card-body">
@@ -753,10 +777,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 <div class="empty-state-container" style="min-height: 320px;">
                     <div class="mb-3 text-muted opacity-50">
                         <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                            <style>
-                                @keyframes donut-pulse { 0%, 100% { transform: scale(1); opacity: 0.3; } 50% { transform: scale(1.05); opacity: 0.6; } }
-                                .anim-donut-empty { animation: donut-pulse 3s ease-in-out infinite; transform-origin: center; }
-                            </style>
                             <circle cx="12" cy="12" r="10" class="anim-donut-empty" stroke-dasharray="15 8 8 8"/>
                             <circle cx="12" cy="12" r="4" opacity="0.2"/>
                         </svg>
@@ -772,7 +792,7 @@ document.addEventListener('DOMContentLoaded', function() {
     <div class="col-md-6">
         <div class="card shadow-lg border-0 h-100">
             <div class="card-header bg-transparent border-bottom d-flex justify-content-between align-items-center">
-                <span class="fw-bold mb-0"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1 text-muted" style="vertical-align: -2px;"><style>@keyframes tag-bounce { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-2px); } } .anim-tag { animation: tag-bounce 3s ease-in-out infinite; }</style><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z" class="anim-tag"/><line x1="7" y1="7" x2="7.01" y2="7" class="anim-tag"/></svg> {% trans "Top Categories" %}</span>
+                <span class="fw-bold mb-0"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1 text-muted" style="vertical-align: -2px;"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z" class="anim-tag"/><line x1="7" y1="7" x2="7.01" y2="7" class="anim-tag"/></svg> {% trans "Top Categories" %}</span>
                 <a href="{% url 'category-list' %}" class="btn btn-sm btn-link text-decoration-none fw-bold">{% trans "View All" %}</a>
             </div>
             <div class="card-body px-3 pb-4">
@@ -819,10 +839,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     <div class="empty-state-container" style="min-height: 320px;">
                         <div class="mb-3 text-muted opacity-50">
                             <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                                <style>
-                                    @keyframes inbox-drop { 0%, 100% { transform: translateY(0); opacity: 0.5; } 50% { transform: translateY(4px); opacity: 1; } }
-                                    .anim-inbox-arrow { animation: inbox-drop 2.5s ease-in-out infinite; }
-                                </style>
                                 <polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/>
                                 <path d="M5.45 5.11L2 12v6a2 2 0 002 2h16a2 2 0 002-2v-6l-3.45-6.89A2 2 0 0016.76 4H7.24a2 2 0 00-1.79 1.11z"/>
                                 <path class="anim-inbox-arrow" d="M12 3v6M9 6l3 3 3-3" stroke-width="2"/>

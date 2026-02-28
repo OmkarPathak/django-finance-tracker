@@ -44,21 +44,74 @@
             min-width: 700px;
         }
     }
+
+    /* Card View Styles */
+    .expense-card {
+        transition: all 0.2s ease;
+        border-radius: 16px !important;
+        border: 1px solid var(--bs-border-color-translucent) !important;
+        background-color: var(--bs-body-bg);
+    }
+    .expense-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(0,0,0,0.06) !important;
+        border-color: var(--bs-primary-border-subtle) !important;
+    }
+    .delete-btn-card {
+        transition: all 0.2s ease;
+    }
+    .delete-btn-card:hover i {
+        opacity: 1 !important;
+        transform: scale(1.1);
+    }
+    .view-toggle-btn {
+        width: 36px;
+        height: 36px;
+        padding: 0;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 8px !important;
+        color: var(--bs-secondary);
+        border: 1px solid var(--bs-border-color);
+        background: transparent;
+    }
+    .view-toggle-btn.active {
+        background: var(--primary-gradient) !important;
+        color: white !important;
+        border: none !important;
+        box-shadow: 0 4px 12px rgba(5, 117, 230, 0.2) !important;
+    }
+    
+    [data-bs-theme="dark"] .expense-card {
+        border-color: rgba(255,255,255,0.1) !important;
+    }
+    [data-bs-theme="dark"] .bg-soft-pink { background-color: rgba(255, 77, 109, 0.15); }
+    [data-bs-theme="dark"] .bg-soft-blue { background-color: rgba(67, 97, 238, 0.15); }
+    [data-bs-theme="dark"] .bg-soft-green { background-color: rgba(43, 147, 72, 0.15); }
+    [data-bs-theme="dark"] .bg-soft-purple { background-color: rgba(114, 9, 183, 0.15); }
+    [data-bs-theme="dark"] .bg-soft-orange { background-color: rgba(240, 140, 0, 0.15); }
 </style>
 <div class="fade-in">
     <!-- Mobile Header -->
     <div class="card-header bg-transparent d-md-none py-3">
         <div class="d-flex justify-content-between align-items-center">
             <h2 class="h4 mb-0 fw-bold">{% trans "Expenses" %}</h2>
-            <div class="d-flex align-items-center gap-3">
+            <div class="d-flex align-items-center gap-2">
+                <!-- View Toggle -->
+                <div class="d-flex gap-1 me-1">
+                    <button class="view-toggle-btn active" id="mobileTableToggle" title="Table View">
+                        <i class="bi bi-list-ul"></i>
+                    </button>
+                    <button class="view-toggle-btn" id="mobileGridToggle" title="Card View">
+                        <i class="bi bi-grid-fill" style="font-size: 0.85rem;"></i>
+                    </button>
+                </div>
                 <a href="{% url 'expense-create' %}" class="btn btn-primary btn-sm d-flex align-items-center gap-1">
-                    <i class="bi bi-plus-lg"></i> <span>{% trans "Add" %}<span class="d-none d-sm-inline"> {% trans "Expense" %}</span></span>
-                </a>
-                <a href="{% url 'export-expenses' %}?{{ request.GET.urlencode }}" class="btn btn-sm btn-link text-success text-decoration-none p-0 border-0 no-loader" title="Export">
-                    <i class="bi bi-download fs-5"></i>
+                    <i class="bi bi-plus-lg"></i> <span>{% trans "Add" %}</span>
                 </a>
                 <button class="btn btn-sm btn-link text-decoration-none text-muted p-0 border-0 fs-6" type="button" data-bs-toggle="collapse" data-bs-target="#expenseFilters" aria-expanded="false" aria-controls="expenseFilters">
-                    <i class="bi bi-funnel me-1"></i> {% trans "Filters" %}
+                    <i class="bi bi-funnel"></i>
                 </button>
             </div>
         </div>
@@ -70,6 +123,15 @@
         <div class="d-flex justify-content-between align-items-center">
             <h2 class="h4 mb-0 fw-bold">{% trans "Expenses" %}</h2>
             <div class="d-flex align-items-center gap-2">
+                <!-- View Toggle -->
+                <div class="d-flex gap-1 me-2">
+                    <button class="view-toggle-btn active" id="desktopTableToggle" title="Table View">
+                        <i class="bi bi-list-ul"></i>
+                    </button>
+                    <button class="view-toggle-btn" id="desktopGridToggle" title="Card View">
+                        <i class="bi bi-grid-fill" style="font-size: 0.85rem;"></i>
+                    </button>
+                </div>
                 <a href="{% url 'expense-create' %}" class="btn btn-primary btn-sm d-inline-flex align-items-center text-nowrap">
                     <i class="bi bi-plus-lg me-1"></i> {% trans "Add Expense" %}
                 </a>
@@ -175,7 +237,7 @@
 
     <!-- Stats Row -->
     <div class="mb-3 mt-3 mt-md-0">
-        <div class="row g-2">
+        <div class="row">
             <div class="col-6 col-md-auto">
                 <div class="p-2 border rounded bg-body-tertiary shadow-sm text-center text-md-start">
                     <small class="text-muted d-block text-uppercase" style="font-size: 0.7rem; letter-spacing: 0.5px;">{% trans "Total Records" %}</small>
@@ -194,7 +256,8 @@
     <script>
         // Bulk Delete Logic
         document.addEventListener('DOMContentLoaded', function() {
-            const selectAllCheckbox = document.getElementById('selectAll');
+            const selectAllTable = document.getElementById('selectAll');
+            const selectAllGrid = document.getElementById('selectAllGrid');
             const expenseCheckboxes = document.querySelectorAll('.expense-checkbox');
             const bulkDeleteBtns = document.querySelectorAll('.bulk-delete-btn');
             const bulkEditBtns = document.querySelectorAll('.bulk-edit-btn');
@@ -219,28 +282,29 @@
                 }
             }
 
-            // Handle Select All
-            if (selectAllCheckbox) {
-                selectAllCheckbox.addEventListener('change', function() {
-                    const isChecked = this.checked;
-                    expenseCheckboxes.forEach(cb => {
-                        cb.checked = isChecked;
-                    });
-                    updateBulkButtonsState();
+            function handleSelectAll(e) {
+                const isChecked = e.target.checked;
+                expenseCheckboxes.forEach(cb => {
+                    cb.checked = isChecked;
                 });
+                // Keep both selectAll checkboxes in sync
+                if (selectAllTable) selectAllTable.checked = isChecked;
+                if (selectAllGrid) selectAllGrid.checked = isChecked;
+                updateBulkButtonsState();
             }
+
+            // Handle Select All (Table and Grid)
+            if (selectAllTable) selectAllTable.addEventListener('change', handleSelectAll);
+            if (selectAllGrid) selectAllGrid.addEventListener('change', handleSelectAll);
 
             // Handle Individual Checkboxes
             expenseCheckboxes.forEach(cb => {
                 cb.addEventListener('change', function() {
                     updateBulkButtonsState();
                     // Update Select All state
-                    if (!this.checked) {
-                        selectAllCheckbox.checked = false;
-                    } else {
-                        const allChecked = Array.from(expenseCheckboxes).every(cb => cb.checked);
-                        selectAllCheckbox.checked = allChecked;
-                    }
+                    const allChecked = Array.from(expenseCheckboxes).every(cb => cb.checked);
+                    if (selectAllTable) selectAllTable.checked = allChecked;
+                    if (selectAllGrid) selectAllGrid.checked = allChecked;
                 });
             });
 
@@ -296,12 +360,42 @@
                     observer.observe(btnGroup, { attributes: true, subtree: true, attributeFilter: ['class'] });
                 });
             }
+
+            // View Toggle Persistence
+            const tableToggles = [document.getElementById('mobileTableToggle'), document.getElementById('desktopTableToggle')];
+            const gridToggles = [document.getElementById('mobileGridToggle'), document.getElementById('desktopGridToggle')];
+            const tableView = document.getElementById('tableView');
+            const gridView = document.getElementById('gridView');
+            const storageKey = 'trackmyrupee_expense_view_mode';
+            const defaultMode = 'grid';
+
+            function setViewMode(mode) {
+                if (mode === 'grid') {
+                    tableView.classList.add('d-none');
+                    gridView.classList.remove('d-none');
+                    gridToggles.forEach(t => t.classList.add('active'));
+                    tableToggles.forEach(t => t.classList.remove('active'));
+                } else {
+                    gridView.classList.add('d-none');
+                    tableView.classList.remove('d-none');
+                    tableToggles.forEach(t => t.classList.add('active'));
+                    gridToggles.forEach(t => t.classList.remove('active'));
+                }
+                localStorage.setItem(storageKey, mode);
+            }
+
+            tableToggles.forEach(btn => btn && btn.addEventListener('click', () => setViewMode('table')));
+            gridToggles.forEach(btn => btn && btn.addEventListener('click', () => setViewMode('grid')));
+
+            // Initial Load
+            const savedMode = localStorage.getItem(storageKey);
+            setViewMode(savedMode || defaultMode);
         });
     </script>
     
 
 
-    <!-- Table -->
+    <!-- Views Container -->
     <div class="card-body p-0">
         <form id="bulkDeleteForm" method="post" action="{% url 'expense-bulk-delete' %}">
             {% csrf_token %}
@@ -317,7 +411,8 @@
                 </button>
             </div>
 
-            <div class="table-responsive">
+            <!-- 1. Table View -->
+            <div id="tableView" class="table-responsive">
                 <table class="table table-hover table-striped mb-0 text-start align-middle">
                     <thead>
                         <tr>
@@ -413,6 +508,85 @@
                         {% endfor %}
                     </tbody>
                 </table>
+            </div>
+
+            <!-- 2. Grid/Card View -->
+            <div id="gridView">
+                <div class="d-flex justify-content-between align-items-center mb-3 px-1">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="selectAllGrid">
+                        <label class="form-check-label small text-muted" for="selectAllGrid">{% trans "Select All" %}</label>
+                    </div>
+                    <div class="small text-muted">{{ expenses|length|translate_digits }} {% trans "items" %}</div>
+                </div>
+                <div class="row g-3">
+                    {% for expense in expenses %}
+                    <div class="col-12 col-md-6 col-lg-4">
+                        <div class="card expense-card h-100 shadow-sm border-0 position-relative">
+                            <div class="card-body p-3">
+                                <div class="d-flex align-items-center">
+                                    <!-- Selection -->
+                                    <div class="form-check mb-0 z-2 position-relative me-2">
+                                        <input class="form-check-input expense-checkbox" type="checkbox" name="expense_ids" value="{{ expense.pk }}" style="width: 18px; height: 18px; cursor: pointer;">
+                                    </div>
+
+                                    <!-- Content -->
+                                    <div class="flex-grow-1 min-w-0 ps-2">
+                                        <!-- Date (Top) -->
+                                        <div class="text-muted mb-1" style="font-size: 0.75rem; font-weight: 500;">
+                                            <i class="bi bi-calendar3 opacity-50 me-1" style="font-size: 0.7rem;"></i>
+                                            {{ expense.date|date:"d F, Y"|translate_digits }}
+                                        </div>
+                                        
+                                        <!-- Description (Middle) -->
+                                        <h6 class="mb-1 fw-bold text-body-emphasis text-truncate" style="font-size: 1.05rem; letter-spacing: -0.01em;">{{ expense.description }}</h6>
+                                        
+                                        <!-- Category (Bottom) -->
+                                        <div class="text-muted" style="font-size: 0.75rem; opacity: 0.8;">
+                                            {{ expense.category }}
+                                        </div>
+                                    </div>
+
+                                    <!-- Right Side: Amount -->
+                                    <div class="text-end px-3">
+                                        <div class="fw-bold text-body-emphasis" style="font-size: 1.3rem; line-height: 1;">{{ profile.currency }}{{ expense.base_amount|translate_digits }}</div>
+                                        <small class="text-muted d-block opacity-75" style="font-size: 0.7rem; font-weight: 500;">{{ expense.payment_method }}</small>
+                                    </div>
+
+                                    <!-- Actions -->
+                                    <div class="d-flex align-items-center gap-1 z-2 position-relative">
+                                        <button type="button" class="btn btn-sm btn-link text-decoration-none p-1 delete-btn-card" 
+                                                title="{% trans 'Delete' %}"
+                                                data-bs-toggle="modal" data-bs-target="#deleteModal" 
+                                                data-url="{% url 'expense-delete' expense.pk %}"
+                                                data-message="{% trans 'Are you sure you want to delete' %} '{{ expense.description }}'?">
+                                            <i class="bi bi-trash text-danger opacity-25"></i>
+                                        </button>
+                                        <i class="bi bi-chevron-right text-muted opacity-25 d-none d-sm-block"></i>
+                                    </div>
+
+                                    <!-- Edit Link -->
+                                    <a href="{% url 'expense-edit' expense.pk %}?next={{ request.get_full_path|urlencode }}" class="stretched-link"></a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="col-12 text-center py-5">
+                         <div class="py-4">
+                            <i class="bi bi-receipt text-muted display-1 mb-3 d-block"></i>
+                            <h4 class="fw-bold text-muted">{% trans "No Expenses Found" %}</h4>
+                            <p class="text-muted mb-4">
+                                {% if request.GET.search or request.GET.start_date or request.GET.end_date or request.GET.category or request.GET.year or request.GET.month %}
+                                    {% trans "We couldn't find any expenses matching your filters." %}
+                                {% else %}
+                                    {% trans "You haven't added any expenses yet." %}
+                                {% endif %}
+                            </p>
+                         </div>
+                    </div>
+                    {% endfor %}
+                </div>
             </div>
         </form>
     </div>
