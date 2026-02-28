@@ -91,6 +91,15 @@
     [data-bs-theme="dark"] .bg-soft-green { background-color: rgba(43, 147, 72, 0.15); }
     [data-bs-theme="dark"] .bg-soft-purple { background-color: rgba(114, 9, 183, 0.15); }
     [data-bs-theme="dark"] .bg-soft-orange { background-color: rgba(240, 140, 0, 0.15); }
+
+    .description-clamp {
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        min-height: 2.8em;
+    }
 </style>
 <div class="fade-in">
     <!-- Mobile Header -->
@@ -148,7 +157,7 @@
     <!-- Filter Form -->
     <div class="collapse d-md-block" id="expenseFilters" style="z-index: 1040; position: relative;">
         <form method="get" class="mb-4 bg-body-tertiary p-3 rounded shadow-sm" id="filter-form">
-        <div class="row g-2 align-items-end flex-lg-nowrap">
+        <div class="row g-3 align-items-end flex-lg-nowrap">
             <!-- Search -->
             <div class="col-12 col-md-auto filter-w-search">
                 <label for="search" class="form-label small text-muted">{% trans "Search" %}</label>
@@ -237,7 +246,7 @@
 
     <!-- Stats Row -->
     <div class="mb-3 mt-3 mt-md-0">
-        <div class="row">
+        <div class="row g-3">
             <div class="col-6 col-md-auto">
                 <div class="p-2 border rounded bg-body-tertiary shadow-sm text-center text-md-start">
                     <small class="text-muted d-block text-uppercase" style="font-size: 0.7rem; letter-spacing: 0.5px;">{% trans "Total Records" %}</small>
@@ -511,13 +520,15 @@
             </div>
 
             <!-- 2. Grid/Card View -->
-            <div id="gridView">
-                <div class="d-flex justify-content-between align-items-center mb-3 px-1">
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" id="selectAllGrid">
-                        <label class="form-check-label small text-muted" for="selectAllGrid">{% trans "Select All" %}</label>
+            <div id="gridView" class="py-3">
+                <div class="row g-3 mb-3 align-items-center">
+                    <div class="col-12 d-flex justify-content-between align-items-center">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="selectAllGrid">
+                            <label class="form-check-label small text-muted" for="selectAllGrid">{% trans "Select All" %}</label>
+                        </div>
+                        <div class="small text-muted">{{ expenses|length|translate_digits }} {% trans "items" %}</div>
                     </div>
-                    <div class="small text-muted">{{ expenses|length|translate_digits }} {% trans "items" %}</div>
                 </div>
                 <div class="row g-3">
                     {% for expense in expenses %}
@@ -539,7 +550,7 @@
                                         </div>
                                         
                                         <!-- Description (Middle) -->
-                                        <h6 class="mb-1 fw-bold text-body-emphasis text-truncate" style="font-size: 1.05rem; letter-spacing: -0.01em;">{{ expense.description }}</h6>
+                                        <h6 class="mb-1 fw-bold text-body-emphasis description-clamp" style="font-size: 1.05rem; letter-spacing: -0.01em;">{{ expense.description }}</h6>
                                         
                                         <!-- Category (Bottom) -->
                                         <div class="text-muted" style="font-size: 0.75rem; opacity: 0.8;">
