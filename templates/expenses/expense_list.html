@@ -64,23 +64,72 @@
         opacity: 1 !important;
         transform: scale(1.1);
     }
-    .view-toggle-btn {
-        width: 36px;
+    .view-toggle-btn, .filter-toggle-btn, .header-action-btn {
         height: 36px;
-        padding: 0;
         display: inline-flex;
         align-items: center;
         justify-content: center;
         border-radius: 8px !important;
-        color: var(--bs-secondary);
+        transition: all 0.2s ease;
         border: 1px solid var(--bs-border-color);
         background: transparent;
     }
-    .view-toggle-btn.active {
+    .view-toggle-btn, .filter-toggle-btn {
+        width: 36px;
+        padding: 0;
+        color: var(--bs-secondary);
+    }
+    .header-action-btn {
+        padding: 0 0.75rem;
+        font-size: 0.875rem;
+        text-decoration: none;
+        color: var(--bs-body-color);
+    }
+    .header-action-btn.btn-primary {
         background: var(--primary-gradient) !important;
         color: white !important;
         border: none !important;
-        box-shadow: 0 4px 12px rgba(5, 117, 230, 0.2) !important;
+    }
+    .header-action-btn.btn-outline-success {
+        border-color: var(--bs-success);
+        color: var(--bs-success);
+    }
+    .header-action-btn.btn-outline-success:hover {
+        background-color: var(--bs-success);
+        color: white;
+    }
+    .view-toggle-btn.active, .filter-toggle-btn[aria-expanded="true"] {
+        background: rgba(2, 48, 71, 0.08) !important;
+        color: #023047 !important;
+        border-color: rgba(2, 48, 71, 0.3) !important;
+        box-shadow: none !important;
+    }
+    .filter-toggle-btn:hover, .header-action-btn:hover {
+        opacity: 0.9;
+    }
+    .filter-toggle-btn[aria-expanded="true"]:hover {
+        opacity: 0.8;
+    }
+
+    /* Filter Bar Standardization */
+    #filter-form .form-control,
+    #filter-form .form-select,
+    #filter-form .input-group-text,
+    #filter-form .btn {
+        height: 36px !important;
+        font-size: 0.875rem !important;
+        display: flex;
+        align-items: center;
+    }
+
+    #filter-form .multiselect.dropdown-toggle {
+        height: 36px !important;
+        font-size: 0.875rem !important;
+    }
+
+    #filter-form .btn {
+        padding: 0 0.75rem;
+        white-space: nowrap;
     }
     
     [data-bs-theme="dark"] .expense-card {
@@ -92,6 +141,27 @@
     [data-bs-theme="dark"] .bg-soft-purple { background-color: rgba(114, 9, 183, 0.15); }
     [data-bs-theme="dark"] .bg-soft-orange { background-color: rgba(240, 140, 0, 0.15); }
 
+    /* Light Mode Soft Backgrounds */
+    .bg-soft-blue-light { background-color: rgba(5, 117, 230, 0.08); }
+    .bg-soft-green-light { background-color: rgba(43, 147, 72, 0.08); }
+    
+    .stats-card {
+        transition: all 0.2s ease;
+        border: 1px solid var(--bs-border-color-translucent) !important;
+    }
+    .stats-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05) !important;
+    }
+    .stats-icon {
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 8px;
+    }
+
     .description-clamp {
         display: -webkit-box;
         -webkit-line-clamp: 2;
@@ -99,6 +169,30 @@
         -webkit-box-orient: vertical;
         overflow: hidden;
         min-height: 2.8em;
+        transition: all 0.3s ease;
+    }
+    .description-clamp.expanded {
+        -webkit-line-clamp: unset;
+        line-clamp: unset;
+        min-height: unset;
+    }
+    .expand-desc-btn {
+        display: none;
+        padding: 0;
+        width: 20px;
+        height: 20px;
+        align-items: center;
+        justify-content: center;
+        border-radius: 0;
+        transition: transform 0.3s ease;
+        background: transparent;
+        border: none;
+        color: var(--bs-secondary);
+        box-shadow: none !important;
+    }
+    .expand-desc-btn.active {
+        transform: rotate(180deg);
+        background: transparent;
     }
 </style>
 <div class="fade-in">
@@ -116,12 +210,12 @@
                         <i class="bi bi-grid-fill" style="font-size: 0.85rem;"></i>
                     </button>
                 </div>
-                <a href="{% url 'expense-create' %}" class="btn btn-primary btn-sm d-flex align-items-center gap-1">
-                    <i class="bi bi-plus-lg"></i> <span>{% trans "Add" %}</span>
-                </a>
-                <button class="btn btn-sm btn-link text-decoration-none text-muted p-0 border-0 fs-6" type="button" data-bs-toggle="collapse" data-bs-target="#expenseFilters" aria-expanded="false" aria-controls="expenseFilters">
+                <button class="filter-toggle-btn" type="button" data-bs-toggle="collapse" data-bs-target="#expenseFilters" aria-expanded="false" aria-controls="expenseFilters" title="{% trans 'Toggle Filters' %}">
                     <i class="bi bi-funnel"></i>
                 </button>
+                <a href="{% url 'expense-create' %}" class="header-action-btn btn-primary d-flex align-items-center gap-1">
+                    <i class="bi bi-plus-lg"></i> <span>{% trans "Add" %}</span>
+                </a>
             </div>
         </div>
         <p class="text-muted small mb-0 mt-1">{% trans "Tracking every penny is the first step to financial freedom." %}</p>
@@ -141,10 +235,13 @@
                         <i class="bi bi-grid-fill" style="font-size: 0.85rem;"></i>
                     </button>
                 </div>
-                <a href="{% url 'expense-create' %}" class="btn btn-primary btn-sm d-inline-flex align-items-center text-nowrap">
+                <button class="filter-toggle-btn me-1" type="button" data-bs-toggle="collapse" data-bs-target="#expenseFilters" aria-expanded="true" aria-controls="expenseFilters" title="{% trans 'Toggle Filters' %}">
+                    <i class="bi bi-funnel"></i>
+                </button>
+                <a href="{% url 'expense-create' %}" class="header-action-btn btn-primary d-inline-flex align-items-center text-nowrap">
                     <i class="bi bi-plus-lg me-1"></i> {% trans "Add Expense" %}
                 </a>
-                <a href="{% url 'export-expenses' %}?{{ request.GET.urlencode }}" class="btn btn-outline-success btn-sm d-inline-flex align-items-center no-loader">
+                <a href="{% url 'export-expenses' %}?{{ request.GET.urlencode }}" class="header-action-btn btn-outline-success d-inline-flex align-items-center no-loader ms-1">
                     <i class="bi bi-download me-1"></i> {% trans "Export" %}
                 </a>
             </div>
@@ -155,7 +252,7 @@
 
 
     <!-- Filter Form -->
-    <div class="collapse d-md-block" id="expenseFilters" style="z-index: 1040; position: relative;">
+    <div class="collapse" id="expenseFilters" style="z-index: 1040; position: relative;">
         <form method="get" class="mb-4 bg-body-tertiary p-3 rounded shadow-sm" id="filter-form">
         <div class="row g-3 align-items-end flex-lg-nowrap">
             <!-- Search -->
@@ -214,28 +311,26 @@
                 </select>
             </div>
 
-            <!-- Buttons -->
-            <div class="col-6 col-md-auto">
-                <button type="submit" class="btn btn-primary btn-sm w-100 w-md-auto" onclick="showLoader()">
-                    <i class="bi bi-filter me-1"></i> {% trans "Apply" %}
-                </button>
-            </div>
-            <!-- Reset -->
-            <div class="col-6 col-md-auto">
-                <a href="{% url 'expense-list' %}" class="btn btn-outline-secondary btn-sm w-100 w-md-auto" onclick="showLoader()">
-                    <i class="bi bi-arrow-counterclockwise me-1"></i> {% trans "Reset" %}
-                </a>
-            </div>
+            <!-- Action Buttons (Unified Alignment & Spacing) -->
+            <div class="col-12 col-md-auto flex-grow-1 flex-lg-grow-0 mt-3 mt-md-0">
+                <div class="d-flex flex-wrap flex-md-nowrap gap-2 align-items-end">
+                    <button type="submit" class="btn btn-primary btn-sm flex-fill flex-md-grow-0" onclick="showLoader()">
+                        <i class="bi bi-filter me-1"></i> {% trans "Apply" %}
+                    </button>
+                    
+                    <a href="{% url 'expense-list' %}" class="btn btn-outline-secondary btn-sm flex-fill flex-md-grow-0" onclick="showLoader()">
+                        <i class="bi bi-arrow-counterclockwise me-1"></i> {% trans "Reset" %}
+                    </a>
 
-            <!-- Bulk Actions -->
-            <div class="d-none d-md-block col-md-auto">
-                <div class="d-flex gap-2">
-                    <button type="button" class="btn btn-outline-primary btn-sm bulk-edit-btn" id="bulkEditBtn" disabled data-bs-toggle="modal" data-bs-target="#bulkEditModal">
-                        <i class="bi bi-pencil me-1"></i> {% trans "Edit Selected" %}
-                    </button>
-                    <button type="button" class="btn btn-outline-danger btn-sm bulk-delete-btn" id="bulkDeleteBtn" disabled data-bs-toggle="modal" data-bs-target="#bulkDeleteModal">
-                        <i class="bi bi-trash me-1"></i> {% trans "Delete Selected" %}
-                    </button>
+                    <!-- Bulk Actions (Desktop) -->
+                    <div class="d-none d-md-flex gap-2">
+                        <button type="button" class="btn btn-outline-primary btn-sm bulk-edit-btn" id="bulkEditBtn" disabled data-bs-toggle="modal" data-bs-target="#bulkEditModal">
+                            <i class="bi bi-pencil me-1"></i> {% trans "Edit Selected" %}
+                        </button>
+                        <button type="button" class="btn btn-outline-danger btn-sm bulk-delete-btn" id="bulkDeleteBtn" disabled data-bs-toggle="modal" data-bs-target="#bulkDeleteModal">
+                            <i class="bi bi-trash me-1"></i> {% trans "Delete Selected" %}
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -245,18 +340,28 @@
     </div>
 
     <!-- Stats Row -->
-    <div class="mb-3 mt-3 mt-md-0">
+    <div class="mb-4 mt-3 mt-md-0">
         <div class="row g-3">
             <div class="col-6 col-md-auto">
-                <div class="p-2 border rounded bg-body-tertiary shadow-sm text-center text-md-start">
-                    <small class="text-muted d-block text-uppercase" style="font-size: 0.7rem; letter-spacing: 0.5px;">{% trans "Total Records" %}</small>
-                    <span class="fw-bold">{{ filtered_count|translate_digits }}</span>
+                <div class="p-2 px-3 border rounded bg-body-tertiary stats-card h-100 d-flex align-items-center gap-3">
+                    <div class="stats-icon text-primary">
+                        <i class="bi bi-layers" style="font-size: 1.1rem;"></i>
+                    </div>
+                    <div>
+                        <small class="text-muted d-block text-uppercase fw-semibold" style="font-size: 0.65rem; letter-spacing: 0.5px;">{% trans "Total Records" %}</small>
+                        <span class="fw-bold fs-6 mb-0 text-body-emphasis">{{ filtered_count|translate_digits }}</span>
+                    </div>
                 </div>
             </div>
             <div class="col-6 col-md-auto">
-                <div class="p-2 border rounded bg-body-tertiary shadow-sm text-center text-md-start">
-                    <small class="text-muted d-block text-uppercase" style="font-size: 0.7rem; letter-spacing: 0.5px;">{% trans "Total Amount" %}</small>
-                    <span class="fw-bold text-success">₹{{ filtered_amount|floatformat:2|translate_digits }}</span>
+                <div class="p-2 px-3 border rounded bg-body-tertiary stats-card h-100 d-flex align-items-center gap-3">
+                    <div class="stats-icon text-success">
+                        <i class="bi bi-wallet2" style="font-size: 1.1rem;"></i>
+                    </div>
+                    <div>
+                        <small class="text-muted d-block text-uppercase fw-semibold" style="font-size: 0.65rem; letter-spacing: 0.5px;">{% trans "Total Amount" %}</small>
+                        <span class="fw-bold fs-6 mb-0 text-success">₹{{ filtered_amount|floatformat:2|translate_digits }}</span>
+                    </div>
                 </div>
             </div>
         </div>
@@ -384,6 +489,7 @@
                     gridView.classList.remove('d-none');
                     gridToggles.forEach(t => t.classList.add('active'));
                     tableToggles.forEach(t => t.classList.remove('active'));
+                    checkDescriptionOverflow();
                 } else {
                     gridView.classList.add('d-none');
                     tableView.classList.remove('d-none');
@@ -399,7 +505,46 @@
             // Initial Load
             const savedMode = localStorage.getItem(storageKey);
             setViewMode(savedMode || defaultMode);
+            
+            // Check overflow on initial load if grid is default
+            if ((savedMode || defaultMode) === 'grid') {
+                checkDescriptionOverflow();
+            }
+
+            // Show filters by default on desktop
+            if (window.innerWidth >= 768) {
+                const filters = document.getElementById('expenseFilters');
+                if (filters) filters.classList.add('show');
+            }
         });
+
+        function checkDescriptionOverflow() {
+            // Need a slight delay to ensure DOM is rendered and visible
+            setTimeout(() => {
+                document.querySelectorAll('.description-clamp').forEach(el => {
+                    const btn = el.closest('.d-flex').querySelector('.expand-desc-btn');
+                    if (btn) {
+                        // Overflow check: scrollHeight > offsetHeight
+                        if (el.scrollHeight > el.offsetHeight + 1) {
+                            btn.style.display = 'inline-flex';
+                        } else {
+                            btn.style.display = 'none';
+                        }
+                    }
+                });
+            }, 50);
+        }
+
+        function toggleDescription(btn, event) {
+            event.preventDefault();
+            event.stopPropagation();
+            const container = btn.closest('.d-flex');
+            const desc = container.querySelector('.description-clamp');
+            if (desc) {
+                desc.classList.toggle('expanded');
+                btn.classList.toggle('active');
+            }
+        }
     </script>
     
 
@@ -550,7 +695,12 @@
                                         </div>
                                         
                                         <!-- Description (Middle) -->
-                                        <h6 class="mb-1 fw-bold text-body-emphasis description-clamp" style="font-size: 1.05rem; letter-spacing: -0.01em;">{{ expense.description }}</h6>
+                                        <div class="d-flex align-items-start gap-1">
+                                            <h6 class="mb-1 fw-bold text-body-emphasis description-clamp flex-grow-1" style="font-size: 1.05rem; letter-spacing: -0.01em;">{{ expense.description }}</h6>
+                                            <button type="button" class="btn expand-desc-btn z-3 position-relative d-md-none" onclick="toggleDescription(this, event)" title="{% trans 'Show more' %}">
+                                                <i class="bi bi-chevron-down" style="font-size: 0.75rem;"></i>
+                                            </button>
+                                        </div>
                                         
                                         <!-- Category (Bottom) -->
                                         <div class="text-muted" style="font-size: 0.75rem; opacity: 0.8;">
