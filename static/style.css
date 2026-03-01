@@ -738,3 +738,32 @@ a:hover {
 
 
 
+
+/* --- Mobile App Specific Styles --- */
+/* These classes are toggled via JavaScript when running inside Capacitor */
+.is-mobile-app .non-mobile-app {
+  display: none !important;
+}
+
+.mobile-app-only {
+  display: none;
+}
+
+.is-mobile-app .mobile-app-only {
+  display: block;
+}
+
+/* Safe area padding for the navbar with a 44px fallback for iOS notches */
+.is-mobile-app .navbar {
+  padding-top: calc(env(safe-area-inset-top, 44px) + 0.5rem) !important;
+}
+
+/* Ensure the body has bottom padding for the home indicator */
+.is-mobile-app body {
+  padding-bottom: calc(env(safe-area-inset-bottom) + 1rem) !important;
+}
+
+/* Adjust sticky top position if needed - though native overlay usually handles this */
+.is-mobile-app .navbar.sticky-top {
+  top: 0;
+}

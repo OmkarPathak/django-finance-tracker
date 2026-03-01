@@ -32,7 +32,7 @@
     {% endif %}
 
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <link rel="icon" type="image/svg+xml" href="{% static 'icon.svg' %}">
     <link rel="icon" type="image/png" href="{% static 'img/pwa-icon-512.png' %}">
     <script>
@@ -67,6 +67,17 @@
             };
             return String(value).replace(/[0-9]/g, w => arabicToDevanagari[w]);
         };
+
+        // Robust Mobile App / Capacitor Detection
+        (function() {
+            const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+            const isCapacitor = window.Capacitor || (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.bridge);
+            const isStandalone = window.navigator.standalone || window.matchMedia('(display-mode: standalone)').matches;
+            
+            if (isMobile && (isCapacitor || isStandalone)) {
+                document.documentElement.classList.add('is-mobile-app');
+            }
+        })();
     </script>
     <title>{% block title %}TrackMyRupee - Know Exactly Where Every Rupee Goes{% endblock %}</title>
     <link rel="canonical" href="{{ request.scheme }}://{{ request.get_host }}{{ request.path }}">

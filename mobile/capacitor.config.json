@@ -1,0 +1,9 @@
+{
+  "appId": "com.trackmyrupee.app",
+  "appName": "TrackMyRupee",
+  "webDir": "www",
+  "server": {
+    "url": "https://trackmyrupee.com",
+    "cleartext": true
+  }
+}
