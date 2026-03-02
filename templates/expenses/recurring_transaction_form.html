@@ -72,10 +72,34 @@
                     {% endif %}
                 </div>
                 <div class="col-12" id="paymentMethodGroup">
-                    <label class="form-label">{% trans "Payment Source Method" %}</label>
-                    {{ form.payment_method }}
+                    <label class="form-label text-muted">{% trans "Payment Source Method" %}</label>
+                    <div class="d-none">
+                        {{ form.payment_method }}
+                    </div>
+                    <div class="payment-method-selector" data-target-id="{{ form.payment_method.id_for_label }}">
+                        <div class="payment-method-item" data-value="Cash">
+                            <div class="icon-wrapper"><i class="bi bi-cash-stack"></i></div>
+                            <div class="label">{% trans "Cash" %}</div>
+                        </div>
+                        <div class="payment-method-item" data-value="Credit Card">
+                            <div class="icon-wrapper"><i class="bi bi-credit-card"></i></div>
+                            <div class="label">{% trans "Credit Card" %}</div>
+                        </div>
+                        <div class="payment-method-item" data-value="Debit Card">
+                            <div class="icon-wrapper"><i class="bi bi-card-checklist"></i></div>
+                            <div class="label">{% trans "Debit Card" %}</div>
+                        </div>
+                        <div class="payment-method-item" data-value="UPI">
+                            <div class="icon-wrapper"><i class="bi bi-qr-code-scan"></i></div>
+                            <div class="label">{% trans "UPI" %}</div>
+                        </div>
+                        <div class="payment-method-item" data-value="NetBanking">
+                            <div class="icon-wrapper"><i class="bi bi-bank"></i></div>
+                            <div class="label">{% trans "NetBanking" %}</div>
+                        </div>
+                    </div>
                     {% if form.payment_method.errors %}
-                        <div class="text-danger small">{{ form.payment_method.errors|first }}</div>
+                        <div class="text-danger small mt-1">{{ form.payment_method.errors|first }}</div>
                     {% endif %}
                 </div>
                 <div class="col-12">
@@ -125,6 +149,46 @@
 
     // Run on load
     document.addEventListener('DOMContentLoaded', toggleFields);
+</script>
+
+<script>
+    // Payment Method Visual Selector Logic
+    document.addEventListener('DOMContentLoaded', function() {
+        const selectors = document.querySelectorAll('.payment-method-selector');
+        
+        selectors.forEach(selector => {
+            const targetId = selector.dataset.targetId;
+            const targetSelect = document.getElementById(targetId);
+            const items = selector.querySelectorAll('.payment-method-item');
+            
+            // Set initial active state
+            if (targetSelect) {
+                const currentValue = targetSelect.value;
+                items.forEach(item => {
+                    if (item.dataset.value === currentValue) {
+                        item.classList.add('active');
+                    }
+                });
+            }
+            
+            items.forEach(item => {
+                item.addEventListener('click', function() {
+                    const value = this.dataset.value;
+                    
+                    // Update visual state
+                    items.forEach(i => i.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // Update hidden select
+                    if (targetSelect) {
+                        targetSelect.value = value;
+                        // Trigger change event for any listeners
+                        targetSelect.dispatchEvent(new Event('change'));
+                    }
+                });
+            });
+        });
+    });
 </script>
     </div>
 </div>

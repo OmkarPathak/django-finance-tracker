@@ -135,6 +135,12 @@
     [data-bs-theme="dark"] .expense-card {
         border-color: rgba(255,255,255,0.1) !important;
     }
+    [data-bs-theme="dark"] .view-toggle-btn.active, 
+    [data-bs-theme="dark"] .filter-toggle-btn[aria-expanded="true"] {
+        background: rgba(255, 255, 255, 0.1) !important;
+        color: #fff !important;
+        border-color: rgba(255, 255, 255, 0.2) !important;
+    }
     [data-bs-theme="dark"] .bg-soft-pink { background-color: rgba(255, 77, 109, 0.15); }
     [data-bs-theme="dark"] .bg-soft-blue { background-color: rgba(67, 97, 238, 0.15); }
     [data-bs-theme="dark"] .bg-soft-green { background-color: rgba(43, 147, 72, 0.15); }
@@ -227,7 +233,7 @@
             <h2 class="h4 mb-0 fw-bold">{% trans "Expenses" %}</h2>
             <div class="d-flex align-items-center gap-2">
                 <!-- View Toggle -->
-                <div class="d-flex gap-1 me-2">
+                <div class="d-flex gap-1">
                     <button class="view-toggle-btn active" id="desktopTableToggle" title="Table View">
                         <i class="bi bi-list-ul"></i>
                     </button>
@@ -235,13 +241,13 @@
                         <i class="bi bi-grid-fill" style="font-size: 0.85rem;"></i>
                     </button>
                 </div>
-                <button class="filter-toggle-btn me-1" type="button" data-bs-toggle="collapse" data-bs-target="#expenseFilters" aria-expanded="true" aria-controls="expenseFilters" title="{% trans 'Toggle Filters' %}">
+                <button class="filter-toggle-btn" type="button" data-bs-toggle="collapse" data-bs-target="#expenseFilters" aria-expanded="true" aria-controls="expenseFilters" title="{% trans 'Toggle Filters' %}">
                     <i class="bi bi-funnel"></i>
                 </button>
                 <a href="{% url 'expense-create' %}" class="header-action-btn btn-primary d-inline-flex align-items-center text-nowrap">
                     <i class="bi bi-plus-lg me-1"></i> {% trans "Add Expense" %}
                 </a>
-                <a href="{% url 'export-expenses' %}?{{ request.GET.urlencode }}" class="header-action-btn btn-outline-success d-inline-flex align-items-center no-loader ms-1">
+                <a href="{% url 'export-expenses' %}?{{ request.GET.urlencode }}" class="header-action-btn btn-outline-success d-inline-flex align-items-center no-loader">
                     <i class="bi bi-download me-1"></i> {% trans "Export" %}
                 </a>
             </div>
@@ -547,6 +553,46 @@
         }
     </script>
     
+    <script>
+        // Initialize Payment Method Selector for Bulk Edit Modal
+        document.addEventListener('DOMContentLoaded', function() {
+            if (typeof initPaymentMethodSelector === 'function') {
+                initPaymentMethodSelector(document.getElementById('bulkEditModal'));
+            }
+        });
+
+        // Re-use logic from base if needed, but here we define it if not present
+        if (typeof initPaymentMethodSelector !== 'function') {
+            function initPaymentMethodSelector(container = document) {
+                const selectors = container.querySelectorAll('.payment-method-selector');
+                selectors.forEach(selector => {
+                    const targetId = selector.dataset.targetId;
+                    const targetSelect = document.getElementById(targetId);
+                    const items = selector.querySelectorAll('.payment-method-item');
+                    
+                    if (targetSelect) {
+                        const currentValue = targetSelect.value;
+                        items.forEach(item => {
+                            if (item.dataset.value === currentValue) item.classList.add('active');
+                        });
+                    }
+                    
+                    items.forEach(item => {
+                        item.addEventListener('click', function() {
+                            const value = this.dataset.value;
+                            items.forEach(i => i.classList.remove('active'));
+                            this.classList.add('active');
+                            if (targetSelect) {
+                                targetSelect.value = value;
+                                targetSelect.dispatchEvent(new Event('change'));
+                            }
+                        });
+                    });
+                });
+            }
+        }
+    </script>
+    
 
 
     <!-- Views Container -->
@@ -612,8 +658,8 @@
                             </td>
                             <td>{{ expense.payment_method }}</td>
                             <td class="fw-bold">
-                                {{ profile.currency }}{{ expense.base_amount|translate_digits }}
-                                {% if expense.currency != profile.currency %}
+                                {{ user.profile.currency }}{{ expense.base_amount|translate_digits }}
+                                {% if expense.currency != user.profile.currency %}
                                 <div class="text-muted small fw-normal" style="font-size: 0.75rem;">
                                     ({{ expense.currency }}{{ expense.amount|translate_digits }})
                                 </div>
@@ -686,44 +732,54 @@
                                         <input class="form-check-input expense-checkbox" type="checkbox" name="expense_ids" value="{{ expense.pk }}" style="width: 18px; height: 18px; cursor: pointer;">
                                     </div>
 
-                                    <!-- Content -->
+                                    <!-- Content Stack -->
                                     <div class="flex-grow-1 min-w-0 ps-2">
-                                        <!-- Date (Top) -->
-                                        <div class="text-muted mb-1" style="font-size: 0.75rem; font-weight: 500;">
-                                            <i class="bi bi-calendar3 opacity-50 me-1" style="font-size: 0.7rem;"></i>
-                                            {{ expense.date|date:"d F, Y"|translate_digits }}
+                                        <!-- Top Row: Date & Category -->
+                                        <div class="d-flex justify-content-between align-items-center mb-1">
+                                            <div class="text-muted" style="font-size: 0.75rem; font-weight: 500;">
+                                                <i class="bi bi-calendar3 opacity-50 me-1" style="font-size: 0.7rem;"></i>
+                                                {{ expense.date|date:"d F, Y"|translate_digits }}
+                                            </div>
+                                            <div class="text-muted pe-1" style="font-size: 0.75rem; opacity: 0.8; font-weight: 500;">
+                                                {{ expense.category|truncatechars:15 }}
+                                            </div>
                                         </div>
                                         
-                                        <!-- Description (Middle) -->
-                                        <div class="d-flex align-items-start gap-1">
-                                            <h6 class="mb-1 fw-bold text-body-emphasis description-clamp flex-grow-1" style="font-size: 1.05rem; letter-spacing: -0.01em;">{{ expense.description }}</h6>
-                                            <button type="button" class="btn expand-desc-btn z-3 position-relative d-md-none" onclick="toggleDescription(this, event)" title="{% trans 'Show more' %}">
-                                                <i class="bi bi-chevron-down" style="font-size: 0.75rem;"></i>
-                                            </button>
-                                        </div>
-                                        
-                                        <!-- Category (Bottom) -->
-                                        <div class="text-muted" style="font-size: 0.75rem; opacity: 0.8;">
-                                            {{ expense.category }}
-                                        </div>
-                                    </div>
+                                        <!-- Main Row: Description, Amount, Actions -->
+                                        <div class="d-flex align-items-center">
+                                            <!-- Description -->
+                                            <div class="flex-grow-1">
+                                                <div class="d-flex align-items-start gap-1">
+                                                    <h6 class="mb-1 fw-bold text-body-emphasis description-clamp flex-grow-1" style="font-size: 1.05rem; letter-spacing: -0.01em;">{{ expense.description }}</h6>
+                                                    <button type="button" class="btn expand-desc-btn z-3 position-relative d-md-none" onclick="toggleDescription(this, event)" title="{% trans 'Show more' %}">
+                                                        <i class="bi bi-chevron-down" style="font-size: 0.75rem;"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
 
-                                    <!-- Right Side: Amount -->
-                                    <div class="text-end px-3">
-                                        <div class="fw-bold text-body-emphasis" style="font-size: 1.3rem; line-height: 1;">{{ profile.currency }}{{ expense.base_amount|translate_digits }}</div>
-                                        <small class="text-muted d-block opacity-75" style="font-size: 0.7rem; font-weight: 500;">{{ expense.payment_method }}</small>
-                                    </div>
+                                            <!-- Amount -->
+                                            <div class="text-end px-3">
+                                                <div class="fw-bold text-body-emphasis" style="font-size: 1.3rem; line-height: 1;">{{ user.profile.currency }}{{ expense.base_amount|translate_digits }}</div>
+                                                {% if expense.currency != user.profile.currency %}
+                                                <div class="text-muted small fw-normal" style="font-size: 0.75rem;">
+                                                    ({{ expense.currency }}{{ expense.amount|translate_digits }})
+                                                </div>
+                                                {% endif %}
+                                                <small class="text-muted d-block opacity-75" style="font-size: 0.7rem; font-weight: 500;">{{ expense.payment_method }}</small>
+                                            </div>
 
-                                    <!-- Actions -->
-                                    <div class="d-flex align-items-center gap-1 z-2 position-relative">
-                                        <button type="button" class="btn btn-sm btn-link text-decoration-none p-1 delete-btn-card" 
-                                                title="{% trans 'Delete' %}"
-                                                data-bs-toggle="modal" data-bs-target="#deleteModal" 
-                                                data-url="{% url 'expense-delete' expense.pk %}"
-                                                data-message="{% trans 'Are you sure you want to delete' %} '{{ expense.description }}'?">
-                                            <i class="bi bi-trash text-danger opacity-25"></i>
-                                        </button>
-                                        <i class="bi bi-chevron-right text-muted opacity-25 d-none d-sm-block"></i>
+                                            <!-- Actions -->
+                                            <div class="d-flex align-items-center gap-1 z-2 position-relative">
+                                                <button type="button" class="btn btn-sm btn-link text-decoration-none p-1 delete-btn-card" 
+                                                        title="{% trans 'Delete' %}"
+                                                        data-bs-toggle="modal" data-bs-target="#deleteModal" 
+                                                        data-url="{% url 'expense-delete' expense.pk %}"
+                                                        data-message="{% trans 'Are you sure you want to delete' %} '{{ expense.description }}'?">
+                                                    <i class="bi bi-trash text-danger opacity-25"></i>
+                                                </button>
+                                                <i class="bi bi-chevron-right text-muted opacity-25 d-none d-sm-block"></i>
+                                            </div>
+                                        </div>
                                     </div>
 
                                     <!-- Edit Link -->
@@ -824,15 +880,39 @@
                         </div>
 
                         <div class="mb-3">
-                            <label class="form-label small fw-bold">{% trans "Payment Method" %}</label>
-                            <select name="bulk_payment_method" class="form-select">
-                                <option value="">--- {% trans "Keep existing" %} ---</option>
-                                <option value="Cash">{% trans "Cash" %}</option>
-                                <option value="Credit Card">{% trans "Credit Card" %}</option>
-                                <option value="Debit Card">{% trans "Debit Card" %}</option>
-                                <option value="UPI">{% trans "UPI" %}</option>
-                                <option value="NetBanking">{% trans "NetBanking" %}</option>
-                            </select>
+                            <label class="form-label small fw-bold text-muted">{% trans "Payment Method" %}</label>
+                            <div class="d-none">
+                                <select name="bulk_payment_method" id="id_bulk_payment_method" class="form-select">
+                                    <option value="">--- {% trans "Keep existing" %} ---</option>
+                                    <option value="Cash">{% trans "Cash" %}</option>
+                                    <option value="Credit Card">{% trans "Credit Card" %}</option>
+                                    <option value="Debit Card">{% trans "Debit Card" %}</option>
+                                    <option value="UPI">{% trans "UPI" %}</option>
+                                    <option value="NetBanking">{% trans "NetBanking" %}</option>
+                                </select>
+                            </div>
+                            <div class="payment-method-selector" data-target-id="id_bulk_payment_method">
+                                <div class="payment-method-item" data-value="Cash">
+                                    <div class="icon-wrapper"><i class="bi bi-cash-stack"></i></div>
+                                    <div class="label">{% trans "Cash" %}</div>
+                                </div>
+                                <div class="payment-method-item" data-value="Credit Card">
+                                    <div class="icon-wrapper"><i class="bi bi-credit-card"></i></div>
+                                    <div class="label">{% trans "Credit Card" %}</div>
+                                </div>
+                                <div class="payment-method-item" data-value="Debit Card">
+                                    <div class="icon-wrapper"><i class="bi bi-card-checklist"></i></div>
+                                    <div class="label">{% trans "Debit Card" %}</div>
+                                </div>
+                                <div class="payment-method-item" data-value="UPI">
+                                    <div class="icon-wrapper"><i class="bi bi-qr-code-scan"></i></div>
+                                    <div class="label">{% trans "UPI" %}</div>
+                                </div>
+                                <div class="payment-method-item" data-value="NetBanking">
+                                    <div class="icon-wrapper"><i class="bi bi-bank"></i></div>
+                                    <div class="label">{% trans "NetBanking" %}</div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     <div class="modal-footer">

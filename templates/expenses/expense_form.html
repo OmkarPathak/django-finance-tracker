@@ -2,12 +2,12 @@
 {% load i18n %}
 
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-10">
-        <div class="card shadow-lg border-0">
-            <div class="card-header fw-bold py-3">
+<div class="row">
+    <div class="col-12">
+        <div>
+            <div class="mb-4">
                 <div class="d-flex align-items-center">
-                    <h4 class="card-title mb-0 h5">
+                    <h4 class="card-title mb-0 h5 fw-bold">
                         {% if object %}{% trans "Edit Expense" %}{% else %}{% trans "New Expense" %}{% endif %}
                     </h4>
                     <button type="button" class="btn btn-outline-primary btn-sm ms-auto" id="header-add-category-btn"
@@ -16,7 +16,7 @@
                     </button>
                 </div>
             </div>
-            <div class="card-body p-4">
+            <div>
                 <form method="post">
                     {% csrf_token %}
 
@@ -30,121 +30,197 @@
                     
                     {% if formset %}
                         {{ formset.management_form }}
-                        <div class="table-responsive-xl" style="overflow-y: visible;">
-                            <table class="table table-borderless align-top" id="formset-table" data-user-currency="{{ request.user.profile.currency }}">
-                                <thead>
-                            <tr>
-                                <th style="width: 16%;">{% trans "Date" %}</th>
-                                <th style="width: 16%;">{% trans "Amount" %}</th>
-                                <th style="width: 16%;">{% trans "Currency" %}</th>
-                                <th style="width: 16%;">{% trans "Description" %}</th>
-                                <th style="width: 16%;">{% trans "Category" %}</th>
-                                <th style="width: 16%;">{% trans "Payment method" %}</th>
-                                <th style="width: 4%;"></th>
-                            </tr>
-                        </thead>
-                                <tbody id="formset-container">
-                                    {% for form in formset %}
-                                    <tr class="form-row">
-                                        <td class="p-1">
-                                            {% for hidden in form.hidden_fields %}{{ hidden }}{% endfor %}
-                                            <input type="date" name="{{ form.date.html_name }}" class="form-control" 
-                                                value="{{ form.date.value|date:'Y-m-d'|default:form.date.value }}" required id="{{ form.date.id_for_label }}">
-                                            {% if form.date.errors %}<div class="text-danger small" style="font-size: 0.7rem;">{{ form.date.errors.0 }}</div>{% endif %}
-                                        </td>
-                                        <td class="p-1">
-                                            <input type="number" name="{{ form.amount.html_name }}" class="form-control" 
-                                                value="{{ form.amount.value|default:'' }}" required id="{{ form.amount.id_for_label }}" step="0.01" placeholder="{% trans 'Amount' %}">
-                                            {% if form.amount.errors %}<div class="text-danger small" style="font-size: 0.7rem;">{{ form.amount.errors.0 }}</div>{% endif %}
-                                        </td>
-                                        <td class="p-1">
-                                            {{ form.currency }}
-                                            {% if form.currency.errors %}<div class="text-danger small" style="font-size: 0.7rem;">{{ form.currency.errors.0 }}</div>{% endif %}
-                                        </td>
-                                        <td class="p-1">
-                                            <input type="text" name="{{ form.description.html_name }}" class="form-control" 
-                                                value="{{ form.description.value|default:'' }}" id="{{ form.description.id_for_label }}" placeholder="{% trans 'Description' %}">
-                                            {% if form.description.errors %}<div class="text-danger small" style="font-size: 0.7rem;">{{ form.description.errors.0 }}</div>{% endif %}
-                                        </td>
-                                        <td class="p-1">
-                                            {{ form.category }}
-                                            {% if form.category.errors %}<div class="text-danger small" style="font-size: 0.7rem;">{{ form.category.errors.0 }}</div>{% endif %}
-                                        </td>
-                                        <td class="p-1">
-                                            {{ form.payment_method }}
-                                            {% if form.payment_method.errors %}<div class="text-danger small" style="font-size: 0.7rem;">{{ form.payment_method.errors.0 }}</div>{% endif %}
-                                        </td>
-                                        <td class="text-center">
-                                            {% if form.instance.pk %}
-                                                <div class="d-none">{{ form.DELETE }}</div>
-                                                <button type="button" class="btn btn-sm btn-link text-danger p-0 delete-row" 
-                                                        title="Delete existing expense">
-                                                    <i class="bi bi-trash"></i>
-                                                </button>
-                                            {% else %}
-                                                <button type="button" class="btn btn-sm btn-link text-danger p-0 remove-row" 
-                                                        title="Remove row">
-                                                    <i class="bi bi-x-circle"></i>
-                                                </button>
-                                            {% endif %}
-                                        </td>
-                                    </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
+                        <div id="formset-container" data-user-currency="{{ request.user.profile.currency }}">
+                            {% for form in formset %}
+                            <div class="form-card form-row mb-4">
+                                {% for hidden in form.hidden_fields %}{{ hidden }}{% endfor %}
+                                
+                                <!-- Row 1: Date, Amount, Currency -->
+                                <div class="row g-2 mb-3">
+                                    <div class="col-md-4">
+                                        <label class="form-label">{% trans "Date" %}</label>
+                                        <input type="date" name="{{ form.date.html_name }}" class="form-control" 
+                                            value="{{ form.date.value|date:'Y-m-d'|default:form.date.value }}" required id="{{ form.date.id_for_label }}">
+                                        {% if form.date.errors %}<div class="text-danger small mt-1">{{ form.date.errors.0 }}</div>{% endif %}
+                                    </div>
+                                    <div class="col-md-4 col-6">
+                                        <label class="form-label">{% trans "Amount" %}</label>
+                                        <input type="number" name="{{ form.amount.html_name }}" class="form-control" 
+                                            value="{{ form.amount.value|default:'' }}" required id="{{ form.amount.id_for_label }}" step="0.01" placeholder="0.00">
+                                        {% if form.amount.errors %}<div class="text-danger small mt-1">{{ form.amount.errors.0 }}</div>{% endif %}
+                                    </div>
+                                    <div class="col-md-4 col-6">
+                                        <label class="form-label">{% trans "Currency" %}</label>
+                                        {{ form.currency }}
+                                        {% if form.currency.errors %}<div class="text-danger small mt-1">{{ form.currency.errors.0 }}</div>{% endif %}
+                                    </div>
+                                </div>
+
+                                <!-- Row 2: Description, Category, Payment Method -->
+                                <div class="row g-2 mb-3">
+                                    <div class="col-md-4">
+                                        <label class="form-label">{% trans "Description" %}</label>
+                                        <input type="text" name="{{ form.description.html_name }}" class="form-control" 
+                                            value="{{ form.description.value|default:'' }}" id="{{ form.description.id_for_label }}" placeholder="{% trans 'What did you spend on?' %}">
+                                        {% if form.description.errors %}<div class="text-danger small mt-1">{{ form.description.errors.0 }}</div>{% endif %}
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label">{% trans "Category" %}</label>
+                                        {{ form.category }}
+                                        {% if form.category.errors %}<div class="text-danger small mt-1">{{ form.category.errors.0 }}</div>{% endif %}
+                                    </div>
+                                    <div class="col-md-4 d-none d-md-block">
+                                        <label class="form-label">{% trans "Payment Method" %}</label>
+                                        {{ form.payment_method }}
+                                    </div>
+                                </div>
+
+                                <!-- Row 3: Payment Method (Mobile Only) -->
+                                <div class="d-md-none mb-2">
+                                    <label class="form-label">{% trans "Payment Method" %}</label>
+                                    <div class="payment-method-selector" data-target-id="{{ form.payment_method.id_for_label }}">
+                                        <div class="payment-method-item" data-value="Cash">
+                                            <div class="icon-wrapper"><i class="bi bi-cash-stack"></i></div>
+                                            <div class="label">{% trans "Cash" %}</div>
+                                        </div>
+                                        <div class="payment-method-item" data-value="Credit Card">
+                                            <div class="icon-wrapper"><i class="bi bi-credit-card"></i></div>
+                                            <div class="label">{% trans "Credit Card" %}</div>
+                                        </div>
+                                        <div class="payment-method-item" data-value="Debit Card">
+                                            <div class="icon-wrapper"><i class="bi bi-card-checklist"></i></div>
+                                            <div class="label">{% trans "Debit Card" %}</div>
+                                        </div>
+                                        <div class="payment-method-item" data-value="UPI">
+                                            <div class="icon-wrapper"><i class="bi bi-qr-code-scan"></i></div>
+                                            <div class="label">{% trans "UPI" %}</div>
+                                        </div>
+                                        <div class="payment-method-item" data-value="NetBanking">
+                                            <div class="icon-wrapper"><i class="bi bi-bank"></i></div>
+                                            <div class="label">{% trans "NetBanking" %}</div>
+                                        </div>
+                                    </div>
+                                    {% if form.payment_method.errors %}<div class="text-danger small mt-1">{{ form.payment_method.errors.0 }}</div>{% endif %}
+                                </div>
+
+                                <!-- Remove Action -->
+                                <div class="remove-item-container mt-3">
+                                    {% if form.instance.pk %}
+                                        <div class="d-none">{{ form.DELETE }}</div>
+                                        <a href="javascript:void(0)" class="remove-item-btn delete-row">
+                                            <i class="bi bi-trash"></i> {% trans "Delete Item" %}
+                                        </a>
+                                    {% else %}
+                                        <a href="javascript:void(0)" class="remove-item-btn remove-row">
+                                            <i class="bi bi-x-circle"></i> {% trans "Remove Item" %}
+                                        </a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            {% endfor %}
                         </div>
-                        <button type="button" class="btn btn-sm btn-outline-primary mb-3" id="add-form">
-                            <i class="bi bi-plus-lg me-1"></i> {% trans "Add Row" %}
-                        </button>
+
+                        <div class="text-center mb-4">
+                            <button type="button" class="btn btn-outline-primary" id="add-form">
+                                <i class="bi bi-plus-lg me-1"></i> {% trans "Add Expense" %}
+                            </button>
+                        </div>
+
+                        <div class="sticky-action-bar">
+                            <div class="action-bar-content">
+                                <button type="submit" class="btn btn-primary px-4">
+                                    <i class="bi bi-check-lg me-1"></i> {% trans "Save All" %}
+                                </button>
+                                
+                                <input type="hidden" name="next" value="{{ next_url }}">
+                                <a href="{% if next_url %}{{ next_url }}{% else %}{% url 'expense-list' %}{% endif %}" class="btn btn-outline-secondary px-4">{% trans "Cancel" %}</a>
+                            </div>
+                        </div>
                     
                     {% else %}
-                    
-                        <div class="mb-3">
-                            <label class="form-label text-muted">{{ form.date.label }}</label>
-                            <input type="date" name="{{ form.date.name }}" class="form-control" 
-                                value="{{ form.date.value|date:'Y-m-d'|default:form.date.value }}" required>
-                            {% if form.date.errors %}<div class="text-danger small mt-1">{{ form.date.errors.0 }}</div>{% endif %}
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label text-muted">{{ form.amount.label }}</label>
-                            <input type="number" name="{{ form.amount.name }}" class="form-control" 
-                                value="{{ form.amount.value|default:'' }}" required step="0.01">
-                            {% if form.amount.errors %}<div class="text-danger small mt-1">{{ form.amount.errors.0 }}</div>{% endif %}
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label text-muted">{{ form.currency.label }}</label>
-                            {{ form.currency }}
-                            {% if form.currency.errors %}<div class="text-danger small mt-1">{{ form.currency.errors.0 }}</div>{% endif %}
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label text-muted">{{ form.description.label }}</label>
-                            <input type="text" name="{{ form.description.name }}" class="form-control" 
-                                value="{{ form.description.value|default:'' }}">
-                            {% if form.description.errors %}<div class="text-danger small mt-1">{{ form.description.errors.0 }}</div>{% endif %}
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label text-muted">{{ form.category.label }}</label>
-                            {{ form.category }}
-                            {% if form.category.errors %}<div class="text-danger small mt-1">{{ form.category.errors.0 }}</div>{% endif %}
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label text-muted">{{ form.payment_method.label }}</label>
-                            {{ form.payment_method }}
-                            {% if form.payment_method.errors %}<div class="text-danger small mt-1">{{ form.payment_method.errors.0 }}</div>{% endif %}
+                        <div class="form-card form-row mb-4">
+                            {% for hidden in form.hidden_fields %}{{ hidden }}{% endfor %}
+                            
+                            <!-- Row 1: Date, Amount, Currency -->
+                            <div class="row g-2 mb-3">
+                                <div class="col-md-4">
+                                    <label class="form-label">{% trans "Date" %}</label>
+                                    <input type="date" name="{{ form.date.name }}" class="form-control" 
+                                        value="{{ form.date.value|date:'Y-m-d'|default:form.date.value }}" required id="{{ form.date.id_for_label }}">
+                                    {% if form.date.errors %}<div class="text-danger small mt-1">{{ form.date.errors.0 }}</div>{% endif %}
+                                </div>
+                                <div class="col-md-4 col-6">
+                                    <label class="form-label">{% trans "Amount" %}</label>
+                                    <input type="number" name="{{ form.amount.name }}" class="form-control" 
+                                        value="{{ form.amount.value|default:'' }}" required id="{{ form.amount.id_for_label }}" step="0.01" placeholder="0.00">
+                                    {% if form.amount.errors %}<div class="text-danger small mt-1">{{ form.amount.errors.0 }}</div>{% endif %}
+                                </div>
+                                <div class="col-md-4 col-6">
+                                    <label class="form-label">{% trans "Currency" %}</label>
+                                    {{ form.currency }}
+                                    {% if form.currency.errors %}<div class="text-danger small mt-1">{{ form.currency.errors.0 }}</div>{% endif %}
+                                </div>
+                            </div>
+
+                            <!-- Row 2: Description, Category, Payment Method -->
+                            <div class="row g-2 mb-3">
+                                <div class="col-md-4">
+                                    <label class="form-label">{% trans "Description" %}</label>
+                                    <input type="text" name="{{ form.description.name }}" class="form-control" 
+                                        value="{{ form.description.value|default:'' }}" id="{{ form.description.id_for_label }}" placeholder="{% trans 'What did you spend on?' %}">
+                                    {% if form.description.errors %}<div class="text-danger small mt-1">{{ form.description.errors.0 }}</div>{% endif %}
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">{% trans "Category" %}</label>
+                                    {{ form.category }}
+                                    {% if form.category.errors %}<div class="text-danger small mt-1">{{ form.category.errors.0 }}</div>{% endif %}
+                                </div>
+                                <div class="col-md-4 d-none d-md-block">
+                                    <label class="form-label">{% trans "Payment Method" %}</label>
+                                    {{ form.payment_method }}
+                                </div>
+                            </div>
+
+                            <!-- Row 3: Payment Method (Mobile Only) -->
+                            <div class="d-md-none mb-2">
+                                <label class="form-label">{% trans "Payment Method" %}</label>
+                                <div class="payment-method-selector" data-target-id="{{ form.payment_method.id_for_label }}">
+                                    <div class="payment-method-item" data-value="Cash">
+                                        <div class="icon-wrapper"><i class="bi bi-cash-stack"></i></div>
+                                        <div class="label">{% trans "Cash" %}</div>
+                                    </div>
+                                    <div class="payment-method-item" data-value="Credit Card">
+                                        <div class="icon-wrapper"><i class="bi bi-credit-card"></i></div>
+                                        <div class="label">{% trans "Credit Card" %}</div>
+                                    </div>
+                                    <div class="payment-method-item" data-value="Debit Card">
+                                        <div class="icon-wrapper"><i class="bi bi-card-checklist"></i></div>
+                                        <div class="label">{% trans "Debit Card" %}</div>
+                                    </div>
+                                    <div class="payment-method-item" data-value="UPI">
+                                        <div class="icon-wrapper"><i class="bi bi-qr-code-scan"></i></div>
+                                        <div class="label">{% trans "UPI" %}</div>
+                                    </div>
+                                    <div class="payment-method-item" data-value="NetBanking">
+                                        <div class="icon-wrapper"><i class="bi bi-bank"></i></div>
+                                        <div class="label">{% trans "NetBanking" %}</div>
+                                    </div>
+                                </div>
+                                {% if form.payment_method.errors %}<div class="text-danger small mt-1">{{ form.payment_method.errors.0 }}</div>{% endif %}
+                            </div>
                         </div>
 
+                        <div class="mt-4 pb-4">
+                            <div class="d-flex gap-2">
+                                <button type="submit" class="btn btn-primary px-4">
+                                    <i class="bi bi-check-lg me-1"></i> {% trans "Save" %}
+                                </button>
+                                
+                                <input type="hidden" name="next" value="{{ next_url }}">
+                                <a href="{% if next_url %}{{ next_url }}{% else %}{% url 'expense-list' %}{% endif %}" class="btn btn-outline-secondary px-4">{% trans "Cancel" %}</a>
+                            </div>
+                        </div>
                     {% endif %}
-
-                </button>
-
-                <div class="d-flex justify-content-start gap-2 mt-4">
-                    <button type="submit" class="btn btn-primary px-4">
-                        <i class="bi bi-check-lg me-1"></i> {% trans "Save All Expenses" %}
-                    </button>
-                    
-                    <input type="hidden" name="next" value="{{ next_url }}">
-                    <a href="{% if next_url %}{{ next_url }}{% else %}{% url 'expense-list' %}{% endif %}" class="btn btn-outline-secondary px-4">{% trans "Cancel" %}</a>
-                </div>
                 </form>
             </div>
         </div>
@@ -203,22 +279,20 @@
                 
                 // Cleanup cloned Multiselect UI from the new row
                 // The clone includes the generated button-group and hidden select. We need to revert to a clean select.
-                const categoryCell = newForm.querySelector('td:nth-child(5)'); // Category is 5th column
-                if (categoryCell) {
+                const categoryWrapper = newForm.querySelector('select[name$="category"]')?.closest('.mb-3');
+                if (categoryWrapper) {
                     // Remove the generated btn-group
-                    const btnGroup = categoryCell.querySelector('.btn-group');
+                    const btnGroup = categoryWrapper.querySelector('.btn-group');
                     if (btnGroup) btnGroup.remove();
                     
                     // Reset the select element
-                    const select = categoryCell.querySelector('select');
+                    const select = categoryWrapper.querySelector('select');
                     if (select) {
                         select.style.display = ''; // Unhide
-                        // Remove any multiselect references/data if jQuery attached them (cloneNode doesn't copy event listeners but might copy some attributes)
-                        // Actually, we just need to re-init.
                     }
                 }
 
-                const userCurrency = document.getElementById('formset-table').dataset.userCurrency;
+                const userCurrency = container.dataset.userCurrency;
                 const inputs = newForm.querySelectorAll('input, select');
                 
                 // Get values from template row for sticky fields
@@ -245,19 +319,26 @@
                 newForm.querySelectorAll('.text-danger').forEach(el => el.remove());
 
                 // Change delete button to remove button
-                const actionCell = newForm.querySelector('td.text-center');
-                actionCell.innerHTML = `
-                    <button type="button" class="btn btn-sm btn-link text-danger p-0 remove-row" title="Remove row">
-                        <i class="bi bi-x-circle"></i>
-                    </button>
+                const actionContainer = newForm.querySelector('.remove-item-container');
+                actionContainer.innerHTML = `
+                    <a href="javascript:void(0)" class="remove-item-btn remove-row">
+                        <i class="bi bi-x-circle"></i> {% trans "Remove Item" %}
+                    </a>
                 `;
 
                 container.appendChild(newForm);
                 totalForms.value = currentFormCount + 1;
 
+                updateRemoveButtonsVisibility();
+
+                // Re-initialize Payment Method Selector for the new row
+                if (typeof initPaymentMethodSelector === 'function') {
+                    initPaymentMethodSelector(newForm);
+                }
+
                 // Re-init multiselect for the new row
-                if (categoryCell) {
-                    const newSelect = categoryCell.querySelector('select');
+                if (categoryWrapper) {
+                    const newSelect = categoryWrapper.querySelector('select');
                     if (newSelect && $(newSelect).hasClass('django-multi-select')) {
                          // Check size
                          const isSmall = $(newSelect).hasClass('form-select-sm') || $(newSelect).hasClass('form-control-sm');
@@ -295,31 +376,47 @@
         }
 
         // Delegate click for remove/delete
-        container.addEventListener('click', function(e) {
-            // Handle Remove (New Row)
-            if (e.target.closest('.remove-row')) {
-                const row = e.target.closest('tr');
-                row.remove();
-                updateFormIndices();
-            }
-            
-            // Handle Delete (Existing Row)
-            if (e.target.closest('.delete-row')) {
-                const row = e.target.closest('tr');
-                const deleteInput = row.querySelector('input[name$="-DELETE"]');
-                if (deleteInput) {
-                    deleteInput.checked = true;
-                    row.style.display = 'none';
-                    // We don't verify fields on hidden rows, but good execution would require bypassing required attrs.
-                    // However, standard browser form submission might block if hidden inputs are required. 
-                    // Django forms usually don't put 'required' on fields if it's conditional, but we rely on browser.
-                    // Let's remove 'required' from inputs in this row to avoid submission errors.
-                    row.querySelectorAll('input, select').forEach(input => {
-                        input.removeAttribute('required');
-                    });
+        if (container) {
+            container.addEventListener('click', function(e) {
+                // Handle Remove (New Row)
+                if (e.target.closest('.remove-row')) {
+                    const row = e.target.closest('.form-row');
+                    row.remove();
+                    updateFormIndices();
+                    updateRemoveButtonsVisibility();
                 }
-            }
-        });
+                
+                // Handle Delete (Existing Row)
+                if (e.target.closest('.delete-row')) {
+                    const row = e.target.closest('.form-row');
+                    const deleteInput = row.querySelector('input[name$="-DELETE"]');
+                    if (deleteInput) {
+                        deleteInput.checked = true;
+                        row.style.display = 'none';
+                        // We don't verify fields on hidden rows, but good execution would require bypassing required attrs.
+                        // However, standard browser form submission might block if hidden inputs are required. 
+                        // Django forms usually don't put 'required' on fields if it's conditional, but we rely on browser.
+                        // Let's remove 'required' from inputs in this row to avoid submission errors.
+                        row.querySelectorAll('input, select').forEach(input => {
+                            input.removeAttribute('required');
+                        });
+                    }
+                    updateRemoveButtonsVisibility();
+                }
+            });
+        }
+
+        function updateRemoveButtonsVisibility() {
+            if (!container) return;
+            const rows = Array.from(container.querySelectorAll('.form-row')).filter(row => row.style.display !== 'none');
+            const show = rows.length > 1;
+            rows.forEach(row => {
+                const removeBtn = row.querySelector('.remove-item-container');
+                if (removeBtn) {
+                    removeBtn.style.display = show ? '' : 'none';
+                }
+            });
+        }
 
         function updateFormIndices() {
             // Re-index all forms to avoid validation errors with ManagementForm
@@ -352,6 +449,8 @@
                 // The above generic input handler covers typical django form fields.
             });
         }
+
+        updateRemoveButtonsVisibility();
     });
 </script>
 <script>
@@ -589,23 +688,71 @@
             }
         });
 
-        // Debugging: Log form submissions to console (invisible to user but verifies logic if we could see logs)
+        // Debugging: Log form submissions to console
         const form = document.querySelector('form');
         if (form) {
             form.addEventListener('submit', function(e) {
-                // If the submitter is NOT the save button, prevent it?
-                // `e.submitter` is the element that triggered the submit (button or form itself if Enter)
-                // If triggered by Enter, `submitter` might be null or the first button.
-                
-                // Chrome/Firefox: if Enter pressed, submitter is usually the first submit button in the form.
-                // In this form, it's the "Save Changes" button.
-                
-                // But we BLOCKED Enter on inputs.
-                // So if we are here, it should only be from a CLICK on the button.
-                
                 console.log('Form submitting...', e.submitter);
             });
         }
+    });
+</script>
+
+<script>
+    // Payment Method Visual Selector Logic
+    function initPaymentMethodSelector(container = document) {
+        const selectors = container.querySelectorAll('.payment-method-selector');
+        
+        selectors.forEach(selector => {
+            const targetId = selector.dataset.targetId;
+            const targetSelect = document.getElementById(targetId);
+            const items = selector.querySelectorAll('.payment-method-item');
+            
+            // Set initial active state
+            if (targetSelect) {
+                const currentValue = targetSelect.value;
+                items.forEach(item => {
+                    item.classList.remove('active');
+                    if (item.dataset.value === currentValue) {
+                        item.classList.add('active');
+                    }
+                });
+
+                // Bidirectional Sync: Update icons when dropdown changes (desktop sync)
+                targetSelect.addEventListener('change', function() {
+                    const newVal = this.value;
+                    items.forEach(item => {
+                        item.classList.toggle('active', item.dataset.value === newVal);
+                    });
+                });
+            }
+            
+            items.forEach(item => {
+                // Remove existing listeners if re-initializing (for Bulk Add "Add Row")
+                const newItem = item.cloneNode(true);
+                item.parentNode.replaceChild(newItem, item);
+                
+                newItem.addEventListener('click', function() {
+                    const value = this.dataset.value;
+                    
+                    // Update visual state
+                    const sibs = newItem.parentNode.querySelectorAll('.payment-method-item');
+                    sibs.forEach(i => i.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // Update hidden/visible select
+                    if (targetSelect) {
+                        targetSelect.value = value;
+                        // Avoid infinite loop: only dispatch if value actually changed
+                        targetSelect.dispatchEvent(new Event('change'));
+                    }
+                });
+            });
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        initPaymentMethodSelector();
     });
 </script>
 

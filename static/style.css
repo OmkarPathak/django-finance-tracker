@@ -435,11 +435,6 @@ a:hover {
     gap: 0.5rem;
     font-size: 0.9rem;
   }
-
-  .remove-row::after,
-  .delete-row::after {
-    content: "Remove Item";
-  }
 }
 /* --- Driver.js Tutorial Theme Customization --- */
 
@@ -766,4 +761,363 @@ a:hover {
 /* Adjust sticky top position if needed - though native overlay usually handles this */
 .is-mobile-app .navbar.sticky-top {
   top: 0;
+}
+
+/* --- Visual Payment Method Selector --- */
+.payment-method-selector {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.payment-method-item {
+  flex: 0 0 calc(20% - 12px);
+  min-width: 90px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 16px 8px;
+  border: none;
+  border-radius: 16px;
+  cursor: pointer;
+  background: var(--surface-color);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  user-select: none;
+}
+
+.payment-method-item:hover {
+  background: rgba(0,0,0,0.02);
+  transform: translateY(-2px);
+}
+
+.payment-method-item .icon-wrapper {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  background: #f0f2f5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.6rem;
+  margin-bottom: 8px;
+  transition: all 0.3s ease;
+}
+
+.payment-method-item .label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-color);
+  text-align: center;
+}
+
+/* Selected State */
+.payment-method-item.active {
+  background: var(--surface-color);
+}
+
+.payment-method-item.active .icon-wrapper {
+  background: var(--primary-gradient);
+  color: white;
+  transform: scale(1.1);
+}
+
+.payment-method-item.active .label {
+  color: var(--color-primary);
+  font-weight: 600;
+}
+
+[data-bs-theme="dark"] .payment-method-item {
+  border-color: rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.03);
+}
+
+[data-bs-theme="dark"] .payment-method-item .icon-wrapper {
+  background: rgba(255,255,255,0.1);
+}
+
+[data-bs-theme="dark"] .payment-method-item:hover {
+  background: rgba(255,255,255,0.06);
+}
+
+[data-bs-theme="dark"] .payment-method-item.active {
+  background: rgba(255,255,255,0.08);
+}
+
+/* Responsive adjustment for small screens */
+@media (max-width: 576px) {
+  .payment-method-item {
+    flex: 1 1 calc(33.333% - 12px);
+  }
+}
+
+/* --- Compact Version for Formsets --- */
+.payment-method-selector.compact {
+  gap: 4px;
+  justify-content: flex-start;
+}
+
+.payment-method-selector.compact .payment-method-item {
+  flex: 0 0 auto;
+  min-width: 40px;
+  padding: 6px;
+  border-radius: 8px;
+}
+
+.payment-method-selector.compact .icon-wrapper {
+  width: 28px;
+  height: 28px;
+  font-size: 1rem;
+  margin-bottom: 2px;
+}
+
+.payment-method-selector.compact .label {
+  display: none; /* Hide label in compact mode to save space */
+}
+
+/* Tooltip for compact mode */
+.payment-method-selector.compact .payment-method-item:hover::after {
+  content: attr(data-value);
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0,0,0,0.8);
+  color: #fff;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.65rem;
+  white-space: nowrap;
+  z-index: 10;
+}
+
+/* --- Card-based Bulk Add Layout --- */
+#formset-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.form-card {
+  background: var(--surface-color);
+  border: 1px solid rgba(0,0,0,0.08);
+  border-radius: 16px;
+  padding: 1rem;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.form-card:hover {
+  box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+  border-color: rgba(5, 117, 230, 0.2);
+}
+
+.form-card .form-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-bottom: 0.25rem;
+}
+
+.form-card .form-control, 
+.form-card .form-select {
+  border-radius: 10px;
+  padding: 0.5rem 0.8rem;
+  font-size: 0.9rem;
+  border: 1.5px solid rgba(0,0,0,0.05);
+  background-color: #fcfdfe;
+}
+
+.form-card .form-control:focus,
+.form-card .form-select:focus {
+  border-color: #0575e6;
+  background-color: #fff;
+  box-shadow: 0 0 0 4px rgba(5, 117, 230, 0.1);
+}
+
+.remove-item-container {
+  border-top: 1px dashed rgba(0,0,0,0.1);
+  margin-top: 1rem;
+  padding-top: 1rem;
+  text-align: center;
+}
+
+.remove-item-btn {
+  color: #ff4d6d;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.2s ease;
+}
+
+.remove-item-btn:hover {
+  color: #ff0033;
+  transform: scale(1.05);
+}
+
+[data-bs-theme="dark"] .form-card {
+  border-color: rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.03);
+}
+
+[data-bs-theme="dark"] .form-card .form-control,
+[data-bs-theme="dark"] .form-card .form-select {
+  background: rgba(255,255,255,0.05);
+  border-color: rgba(255,255,255,0.1);
+}
+
+/* --- Mobile Optimizations for Bulk Add --- */
+@media (max-width: 576px) {
+  #formset-container {
+    gap: 1rem;
+  }
+
+  .form-card {
+    padding: 1rem;
+    border-radius: 16px;
+  }
+
+  .form-card .form-label {
+    font-size: 0.75rem;
+    margin-bottom: 0.25rem;
+  }
+
+  .form-card .form-control, 
+  .form-card .form-select {
+    padding: 0.5rem 0.75rem;
+    font-size: 16px; /* Prevents iOS/Mobile zoom on focus */
+    border-radius: 10px;
+  }
+
+  .remove-item-btn {
+    font-size: 0.8rem;
+  }
+}
+
+/* --- Compact Payment Selector for Cards (Desktop & Mobile Sync) --- */
+.form-card .payment-method-selector {
+  gap: 8px;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.form-card .payment-method-selector::-webkit-scrollbar {
+  display: none;
+}
+
+.form-card .payment-method-item {
+  flex: 1;
+  min-width: 80px;
+  padding: 10px 4px;
+  border-radius: 12px;
+  box-shadow: none;
+  border: none;
+}
+
+.form-card .payment-method-item .icon-wrapper {
+  width: 40px;
+  height: 40px;
+  font-size: 1.2rem;
+  border-radius: 10px;
+  margin-bottom: 4px;
+}
+
+.form-card .payment-method-item .label {
+  font-size: 0.7rem;
+  white-space: nowrap;
+}
+
+@media (max-width: 576px) {
+  .form-card .payment-method-item {
+    min-width: 60px;
+    padding: 8px 2px;
+  }
+  
+  .form-card .payment-method-item .icon-wrapper {
+    width: 32px;
+    height: 32px;
+    font-size: 1rem;
+    border-radius: 8px;
+  }
+  
+  .form-card .payment-method-item .label {
+    font-size: 0.6rem;
+  }
+}
+
+/* --- Sticky Action Bar --- */
+.sticky-action-bar {
+  position: sticky;
+  bottom: 1.5rem;
+  margin: 2rem 0 1rem;
+  z-index: 1020;
+  display: flex;
+  justify-content: center;
+}
+
+.sticky-action-bar .action-bar-content {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  padding: 0.75rem 1.5rem;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  border-radius: 100px;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+}
+
+[data-bs-theme="dark"] .sticky-action-bar .action-bar-content {
+  background: rgba(18, 18, 18, 0.85);
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+@media (max-width: 576px) {
+  .sticky-action-bar {
+    bottom: 0;
+    margin: 2rem calc(var(--bs-gutter-x) * -0.5) 0;
+    justify-content: stretch;
+  }
+  
+  .sticky-action-bar .action-bar-content {
+    width: 100%;
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
+    border-bottom: none;
+    padding: 1rem;
+    justify-content: center;
+  }
+  
+  .sticky-action-bar .btn {
+    flex: 1;
+    padding: 0.75rem 0.5rem;
+    font-size: 0.9rem;
+  }
+}
+
+/* --- Global Mobile Input Zoom Prevention --- */
+@media screen and (max-width: 768px) {
+  input[type="text"],
+  input[type="number"],
+  input[type="date"],
+  input[type="email"],
+  input[type="password"],
+  select,
+  textarea,
+  .form-control,
+  .form-select {
+    font-size: 16px !important; /* Force 16px to prevent auto-zoom on mobile focus */
+  }
 }
