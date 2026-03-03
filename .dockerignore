@@ -11,3 +11,5 @@ venv
 .env
 db.sqlite3
 .DS_Store
+staticfiles/
+.gemini/
