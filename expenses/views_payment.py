@@ -23,6 +23,7 @@ def start_trial(request):
         profile.tier = 'PRO'
         profile.subscription_end_date = timezone.now() + timedelta(days=7)
         profile.has_used_trial = True
+        profile.expiry_reminder_sent = False
         profile.save()
         
         return JsonResponse({'success': True, 'message': '7-Day Pro Trial activated successfully!'})
@@ -120,6 +121,7 @@ def verify_payment(request):
                 profile.subscription_end_date = timezone.now() + timedelta(days=30)
             else:
                 profile.subscription_end_date = timezone.now() + timedelta(days=365)
+            profile.expiry_reminder_sent = False
             profile.save()
 
             return JsonResponse({'success': True})

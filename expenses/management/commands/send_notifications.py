@@ -4,7 +4,7 @@ from django.utils import timezone
 from django.core.mail import send_mail
 from django.template.loader import render_to_string
 from django.conf import settings
-from expenses.models import RecurringTransaction, Notification
+from expenses.models import RecurringTransaction, Notification, UserProfile
 from webpush import send_user_notification
 from datetime import timedelta
 
@@ -138,7 +138,58 @@ class Command(BaseCommand):
 
         self.stdout.write(self.style.SUCCESS(f"Successfully processed {count} new notifications"))
 
-        # 5. Cleanup Old Notifications (Older than 90 days/3 months)
+        # 5. Check for Subscription Expiries (2 days prior)
+        self.stdout.write("Checking for upcoming subscription expiries (2 days out)...")
+        expiry_date_target = today + timedelta(days=2)
+        
+        profiles_to_notify = UserProfile.objects.filter(
+            tier__in=['PLUS', 'PRO'],
+            is_lifetime=False,
+            subscription_end_date__date=expiry_date_target,
+            expiry_reminder_sent=False
+        ).select_related('user')
+
+        expiry_count = 0
+        for profile in profiles_to_notify:
+            user = profile.user
+            if not user.email:
+                continue
+
+            try:
+                subject = "Your Subscription is Expiring Soon"
+                context = {
+                    'user': user,
+                    'tier': profile.get_tier_display(),
+                    'expiry_date': profile.subscription_end_date.strftime("%b %d, %Y"),
+                }
+                html_message = render_to_string('email/subscription_expiry_reminder.html', context)
+                
+                send_mail(
+                    subject=subject,
+                    message=f"Your {profile.get_tier_display()} subscription is ending on {context['expiry_date']}. Upgrade to keep your premium features!",
+                    from_email=settings.DEFAULT_FROM_EMAIL,
+                    recipient_list=[user.email],
+                    html_message=html_message
+                )
+                
+                profile.expiry_reminder_sent = True
+                profile.save(update_fields=['expiry_reminder_sent'])
+                
+                # Also create a UI notification
+                Notification.objects.create(
+                    user=user,
+                    title="Subscription Expiring Soon",
+                    message=f"Your {profile.get_tier_display()} plan ends in 2 days ({context['expiry_date']})."
+                )
+                
+                self.stdout.write(self.style.SUCCESS(f"Sent expiry reminder to {user.email}"))
+                expiry_count += 1
+            except Exception as e:
+                self.stdout.write(self.style.ERROR(f"Failed to send expiry reminder to {user.email}: {e}"))
+
+        self.stdout.write(self.style.SUCCESS(f"Successfully sent {expiry_count} expiry reminders"))
+
+        # 6. Cleanup Old Notifications (Older than 90 days/3 months)
         cutoff_date = timezone.now() - timedelta(days=90)
         deleted_count, _ = Notification.objects.filter(created_at__lt=cutoff_date).delete()
         self.stdout.write(self.style.SUCCESS(f"Cleaned up {deleted_count} notifications older than 90 days"))

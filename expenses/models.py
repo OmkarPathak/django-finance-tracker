@@ -240,6 +240,7 @@ class UserProfile(models.Model):
 
     # Lifecycle email drip tracking
     last_drip_email_day = models.IntegerField(default=0)
+    expiry_reminder_sent = models.BooleanField(default=False)
 
     @property
     def is_pro(self):

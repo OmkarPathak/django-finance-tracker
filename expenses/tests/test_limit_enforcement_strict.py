@@ -77,7 +77,7 @@ class StrictLimitEnforcementTest(TestCase):
         self.assertEqual(Expense.objects.filter(user=self.user).count(), 1)
 
     def test_downgrade_notification_logic(self):
-        # Setup expired subscription
+        # ... (existing test)
         p = self.user.profile
         p.tier = 'PRO'
         p.subscription_end_date = timezone.now() - timedelta(days=1)
@@ -87,6 +87,38 @@ class StrictLimitEnforcementTest(TestCase):
         self.assertTrue(self.user.profile.subscription_expired)
         self.assertEqual(self.user.profile.last_tier_display, 'Pro')
         self.assertEqual(self.user.profile.active_tier, 'FREE')
+
+    def test_subscription_expiry_reminder_command(self):
+        from django.core.management import call_command
+        from django.core import mail
+        from expenses.models import Notification
+        
+        # Setup user expiring in 2 days
+        p = self.user.profile
+        p.tier = 'PRO'
+        p.subscription_end_date = timezone.now() + timedelta(days=2)
+        p.expiry_reminder_sent = False
+        p.save()
+        
+        self.user.email = 'test@example.com'
+        self.user.save()
+        
+        # Clear outbox
+        mail.outbox = []
+        
+        # Run command
+        call_command('send_notifications')
+        
+        # Verify email sent
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertIn("Your Subscription is Expiring Soon", mail.outbox[0].subject)
+        
+        # Verify flag updated
+        p.refresh_from_db()
+        self.assertTrue(p.expiry_reminder_sent)
+        
+        # Verify UI notification created
+        self.assertTrue(Notification.objects.filter(user=self.user, title="Subscription Expiring Soon").exists())
 
     def test_savings_goal_locked_status(self):
         from django.test import RequestFactory
