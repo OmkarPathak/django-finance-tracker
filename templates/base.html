@@ -122,6 +122,12 @@
                     .catch(error => {
                         console.log('SW registration failed:', error);
                     });
+
+                // Listen for the controlling service worker changing and reload the page
+                // to ensure the user always has the latest version of the app.
+                navigator.serviceWorker.addEventListener('controllerchange', () => {
+                    window.location.reload();
+                });
             });
         }
     </script>
