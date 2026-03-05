@@ -85,7 +85,7 @@
              <div class="col-6 col-md-auto">
                 <div class="p-2 border rounded bg-body-tertiary shadow-sm text-center text-md-start">
                     <small class="text-muted d-block text-uppercase" style="font-size: 0.7rem; letter-spacing: 0.5px;">{% trans "Total Amount" %}</small>
-                    <span class="fw-bold text-info">{{ profile.currency }}{{ filtered_amount|floatformat:2|translate_digits }}</span>
+                    <span class="fw-bold text-info">{{ profile.currency }}{{ filtered_amount|compact_amount:profile.currency|translate_digits }}</span>
                 </div>
             </div>
         </div>
@@ -114,10 +114,10 @@
                         </td>
                         <td>{{ income.description|default:"-"|truncatechars:30 }}</td>
                         <td class="fw-bold text-success">
-                            {{ profile.currency }}{{ income.base_amount|floatformat:2|translate_digits }}
+                            {{ profile.currency }}{{ income.base_amount|compact_amount:profile.currency|translate_digits }}
                             {% if income.currency != profile.currency %}
                             <div class="text-muted small fw-normal" style="font-size: 0.75rem;">
-                                ({{ income.currency }}{{ income.amount|floatformat:2|translate_digits }})
+                                ({{ income.currency }}{{ income.amount|compact_amount:income.currency|translate_digits }})
                             </div>
                             {% endif %}
                         </td>

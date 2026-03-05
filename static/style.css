@@ -862,6 +862,28 @@ a:hover {
   justify-content: flex-start;
 }
 
+/* One-line layout inside modals */
+.modal .payment-method-selector {
+  flex-wrap: nowrap;
+  gap: 6px;
+}
+
+.modal .payment-method-item {
+  min-width: 0;
+  flex: 1 1 0;
+  padding: 10px 4px;
+}
+
+.modal .payment-method-item .icon-wrapper {
+  width: 38px;
+  height: 38px;
+  font-size: 1.1rem;
+}
+
+.modal .payment-method-item .label {
+  font-size: 0.7rem;
+}
+
 .payment-method-selector.compact .payment-method-item {
   flex: 0 0 auto;
   min-width: 40px;
@@ -1291,4 +1313,8 @@ a:hover {
 [data-bs-theme="dark"] .mobile-bottom-sheet {
   background: rgba(30, 34, 38, 0.98) !important;
   box-shadow: 0 -20px 60px rgba(0,0,0,0.5);
+}
+
+.no-caret::after {
+    display: none !important;
 }

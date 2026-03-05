@@ -19,3 +19,32 @@ def translate_digits(value):
     }
     
     return ''.join(arabic_to_devanagari.get(char, char) for char in value_str)
+
+@register.filter
+def compact_amount(value, currency=''):
+    try:
+        num = float(value)
+    except (ValueError, TypeError):
+        return value
+
+    # Only abbreviate if the number is 100,000 or greater (more than 5 digits)
+    if num < 100000:
+        return value
+
+    # Currency-aware formatting
+    if str(currency).upper() in ['INR', '₹']:
+        # Indian Numbering System (Lakhs, Crores)
+        if num >= 10000000:  # 1 Crore
+            return f"{num / 10000000:.1f}Cr".replace('.0Cr', 'Cr')
+        elif num >= 100000:  # 1 Lakh
+            return f"{num / 100000:.1f}L".replace('.0L', 'L')
+    else:
+        # International Numbering System (Millions, Billions)
+        if num >= 1000000000:  # 1 Billion
+            return f"{num / 1000000000:.1f}B".replace('.0B', 'B')
+        elif num >= 1000000:  # 1 Million
+            return f"{num / 1000000:.1f}M".replace('.0M', 'M')
+        elif num >= 1000:    # 1 Thousand (only if >= 100k as per user rule)
+            return f"{num / 1000:.0f}k"
+    
+    return value

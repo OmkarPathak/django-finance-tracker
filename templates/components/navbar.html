@@ -281,7 +281,7 @@
 <!-- Mobile Bottom Navigation -->
 <div class="mobile-bottom-nav d-lg-none">
     <a href="{% url 'home' %}" class="mobile-nav-item {% if request.resolver_match.url_name == 'home' %}active{% endif %}">
-        <i class="bi bi-house-door{% if request.resolver_match.url_name == 'home' %}-fill{% endif %}"></i>
+        <i class="bi bi-speedometer2"></i>
         <span>{% trans "Dashboard" %}</span>
     </a>
     <a href="{% url 'expense-list' %}" class="mobile-nav-item {% if 'expense' in request.resolver_match.url_name %}active{% endif %}">
