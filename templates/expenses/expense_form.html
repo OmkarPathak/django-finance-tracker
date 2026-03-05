@@ -32,7 +32,7 @@
                         {{ formset.management_form }}
                         <div id="formset-container" data-user-currency="{{ request.user.profile.currency }}">
                             {% for form in formset %}
-                            <div class="form-card form-row mb-4">
+                            <div class="form-card form-row">
                                 {% for hidden in form.hidden_fields %}{{ hidden }}{% endfor %}
                                 
                                 <!-- Row 1: Date, Amount, Currency -->
@@ -77,7 +77,7 @@
 
                                 <!-- Row 3: Payment Method (Mobile Only) -->
                                 <div class="d-md-none mb-2">
-                                    <label class="form-label">{% trans "Payment Method" %}</label>
+                                    <label class="form-label mb-1">{% trans "Payment Method" %}</label>
                                     <div class="payment-method-selector" data-target-id="{{ form.payment_method.id_for_label }}">
                                         <div class="payment-method-item" data-value="Cash">
                                             <div class="icon-wrapper"><i class="bi bi-cash-stack"></i></div>
@@ -120,20 +120,21 @@
                             {% endfor %}
                         </div>
 
-                        <div class="text-center mb-4">
-                            <button type="button" class="btn btn-outline-primary" id="add-form">
-                                <i class="bi bi-plus-lg me-1"></i> {% trans "Add Expense" %}
-                            </button>
-                        </div>
-
-                        <div class="sticky-action-bar">
-                            <div class="action-bar-content">
-                                <button type="submit" class="btn btn-primary px-4">
-                                    <i class="bi bi-check-lg me-1"></i> {% trans "Save All" %}
+                        <div class="d-flex align-items-center gap-2 mt-4 mb-5 pb-5 flex-wrap">
+                            <div>
+                                <button type="button" class="btn btn-outline-primary px-3" id="add-form">
+                                    <i class="bi bi-plus-lg me-1"></i> {% trans "Add" %}
                                 </button>
-                                
+                            </div>
+                            
+                            <div class="vr mx-2 d-none d-md-block" style="height: 24px; opacity: 0.2;"></div>
+                            
+                            <div class="d-flex gap-2 ms-auto">
                                 <input type="hidden" name="next" value="{{ next_url }}">
-                                <a href="{% if next_url %}{{ next_url }}{% else %}{% url 'expense-list' %}{% endif %}" class="btn btn-outline-secondary px-4">{% trans "Cancel" %}</a>
+                                <a href="{% if next_url %}{{ next_url }}{% else %}{% url 'expense-list' %}{% endif %}" class="btn btn-outline-secondary px-3 px-md-4">{% trans "Cancel" %}</a>
+                                <button type="submit" class="btn btn-primary px-3 px-md-4">
+                                    <i class="bi bi-check-lg me-1"></i> {% trans "Save" %}
+                                </button>
                             </div>
                         </div>
                     
@@ -210,14 +211,13 @@
                             </div>
                         </div>
 
-                        <div class="mt-4 pb-4">
-                            <div class="d-flex gap-2">
+                        <div class="mt-4 mb-5 pb-5">
+                            <div class="d-flex justify-content-end gap-2">
+                                <input type="hidden" name="next" value="{{ next_url }}">
+                                <a href="{% if next_url %}{{ next_url }}{% else %}{% url 'expense-list' %}{% endif %}" class="btn btn-outline-secondary px-4">{% trans "Cancel" %}</a>
                                 <button type="submit" class="btn btn-primary px-4">
                                     <i class="bi bi-check-lg me-1"></i> {% trans "Save" %}
                                 </button>
-                                
-                                <input type="hidden" name="next" value="{{ next_url }}">
-                                <a href="{% if next_url %}{{ next_url }}{% else %}{% url 'expense-list' %}{% endif %}" class="btn btn-outline-secondary px-4">{% trans "Cancel" %}</a>
                             </div>
                         </div>
                     {% endif %}

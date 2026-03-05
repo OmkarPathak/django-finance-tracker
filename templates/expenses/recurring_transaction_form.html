@@ -22,49 +22,57 @@
             {% endif %}
 
             <div class="row g-3">
-                <div class="col-md-6">
+                <!-- Row 1: Type and Frequency -->
+                <div class="col-6">
                     <label class="form-label">{% trans "Type" %}</label>
                     {{ form.transaction_type }}
                     {% if form.transaction_type.errors %}
                         <div class="text-danger small">{{ form.transaction_type.errors|first }}</div>
                     {% endif %}
                 </div>
-                <div class="col-md-6">
+                <div class="col-6">
                     <label class="form-label">{% trans "Frequency" %}</label>
                     {{ form.frequency }}
                     {% if form.frequency.errors %}
                         <div class="text-danger small">{{ form.frequency.errors|first }}</div>
                     {% endif %}
                 </div>
-                <div class="col-md-3">
+
+                <!-- Row 2: Amount and Currency -->
+                <div class="col-6">
                     <label class="form-label">{% trans "Amount" %}</label>
                     {{ form.amount }}
                     {% if form.amount.errors %}
                         <div class="text-danger small">{{ form.amount.errors|first }}</div>
                     {% endif %}
                 </div>
-                <div class="col-md-3">
+                <div class="col-6">
                     <label class="form-label">{% trans "Currency" %}</label>
                     {{ form.currency }}
                     {% if form.currency.errors %}
                         <div class="text-danger small">{{ form.currency.errors|first }}</div>
                     {% endif %}
                 </div>
-                <div class="col-md-6">
+
+                <!-- Row 3: Start Date -->
+                <div class="col-6">
                     <label class="form-label">{% trans "Start Date" %}</label>
-                    {{ form.start_date }}
+                    <input type="date" name="{{ form.start_date.name }}" class="form-control" 
+                        value="{{ form.start_date.value|date:'Y-m-d'|default:'' }}{% if not form.start_date.value %}{% now 'Y-m-d' %}{% endif %}" required id="{{ form.start_date.id_for_label }}">
                     {% if form.start_date.errors %}
                         <div class="text-danger small">{{ form.start_date.errors|first }}</div>
                     {% endif %}
                 </div>
-                <div class="col-12" id="categoryGroup">
-                    <label class="form-label">{% trans "Category (For Expense)" %}</label>
+
+                <!-- Row 4: Category / Source / Payment Method -->
+                <div class="col-6" id="categoryGroup">
+                    <label class="form-label">{% trans "Category" %}</label>
                     {{ form.category }}
                     {% if form.category.errors %}
                         <div class="text-danger small">{{ form.category.errors|first }}</div>
                     {% endif %}
                 </div>
-                <div class="col-12" id="sourceGroup" style="display: none;">
+                <div class="col-6" id="sourceGroup" style="display: none;">
                     <label class="form-label">{% trans "Source (For Income)" %}</label>
                     {{ form.source }}
                     {% if form.source.errors %}
@@ -72,11 +80,11 @@
                     {% endif %}
                 </div>
                 <div class="col-12" id="paymentMethodGroup">
-                    <label class="form-label text-muted">{% trans "Payment Source Method" %}</label>
+                    <label class="form-label">{% trans "Payment Source Method" %}</label>
                     <div class="d-none">
                         {{ form.payment_method }}
                     </div>
-                    <div class="payment-method-selector" data-target-id="{{ form.payment_method.id_for_label }}">
+                    <div class="payment-method-selector horizontal" data-target-id="{{ form.payment_method.id_for_label }}">
                         <div class="payment-method-item" data-value="Cash">
                             <div class="icon-wrapper"><i class="bi bi-cash-stack"></i></div>
                             <div class="label">{% trans "Cash" %}</div>
@@ -102,6 +110,8 @@
                         <div class="text-danger small mt-1">{{ form.payment_method.errors|first }}</div>
                     {% endif %}
                 </div>
+
+                <!-- Row 5: Description -->
                 <div class="col-12">
                     <label class="form-label">{% trans "Description" %}</label>
                     {{ form.description }}
@@ -117,13 +127,13 @@
                 </div>
             </div>
 
-            <div class="mt-4">
-                <button type="submit" class="btn btn-primary px-4">
-                    <i class="bi bi-check-lg me-1"></i> {% trans "Save Task" %}
-                </button>
-                
+            <div class="mt-4 d-flex justify-content-end gap-2">
                 <input type="hidden" name="next" value="{{ next_url }}">
-                <a href="{% if next_url %}{{ next_url }}{% else %}{% url 'recurring-list' %}{% endif %}" class="btn btn-outline-secondary px-4 ms-2">{% trans "Cancel" %}</a>
+                <a href="{% if next_url %}{{ next_url }}{% else %}{% url 'recurring-list' %}{% endif %}" class="btn btn-outline-secondary px-4">{% trans "Cancel" %}</a>
+
+                <button type="submit" class="btn btn-primary px-4">
+                    <i class="bi bi-check-lg me-1"></i> {% trans "Save" %}
+                </button>
             </div>
         </form>
     </div>

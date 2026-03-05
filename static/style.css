@@ -696,14 +696,7 @@ a:hover {
 
 /* Fix for Mobile Dropdown Clipping */
 @media (max-width: 768px) {
-  .table-responsive,
-  .table-responsive-sm,
-  .table-responsive-md,
-  .table-responsive-lg,
-  .table-responsive-xl,
-  .table-responsive-xxl {
-    overflow: visible !important;
-  }
+  /* Removed overflow: visible override for general .table-responsive to allow scrolling */
 
   #formset-table tr {
     position: static !important; /* Allow absolute dropdowns to escape the row/card */
@@ -1027,56 +1020,90 @@ a:hover {
 }
 
 /* --- Compact Payment Selector for Cards (Desktop & Mobile Sync) --- */
-.form-card .payment-method-selector {
-  gap: 8px;
+.form-card .payment-method-selector,
+.payment-method-selector.horizontal {
+  gap: 0;
   flex-wrap: nowrap;
-  overflow-x: auto;
-  padding-bottom: 4px;
+  overflow-x: hidden;
+  padding-bottom: 0;
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
 
-.form-card .payment-method-selector::-webkit-scrollbar {
+.form-card .payment-method-selector::-webkit-scrollbar,
+.payment-method-selector.horizontal::-webkit-scrollbar {
   display: none;
 }
 
-.form-card .payment-method-item {
+.form-card .payment-method-item,
+.payment-method-selector.horizontal .payment-method-item {
   flex: 1;
-  min-width: 80px;
-  padding: 10px 4px;
+  min-width: 0;
+  padding: 10px 2px;
   border-radius: 12px;
   box-shadow: none;
   border: none;
 }
 
-.form-card .payment-method-item .icon-wrapper {
+.form-card .payment-method-item .icon-wrapper,
+.payment-method-selector.horizontal .payment-method-item .icon-wrapper {
   width: 40px;
   height: 40px;
   font-size: 1.2rem;
   border-radius: 10px;
-  margin-bottom: 4px;
+  margin-bottom: 8px;
 }
 
-.form-card .payment-method-item .label {
+.form-card .payment-method-item .label,
+.payment-method-selector.horizontal .payment-method-item .label {
   font-size: 0.7rem;
-  white-space: nowrap;
+  white-space: normal;
+  word-break: break-word;
+  line-height: 1.1;
+  text-align: center;
 }
 
 @media (max-width: 576px) {
+  .form-card .payment-method-selector {
+    overflow-x: hidden;
+  }
+
   .form-card .payment-method-item {
-    min-width: 60px;
-    padding: 8px 2px;
+    min-width: 0;
+    flex: 1;
+    padding: 6px 2px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+  
+  .form-card .payment-method-item:hover {
+    background: transparent !important;
+    transform: none;
+  }
+  
+  .form-card .payment-method-item.active {
+    background: transparent !important;
   }
   
   .form-card .payment-method-item .icon-wrapper {
-    width: 32px;
-    height: 32px;
-    font-size: 1rem;
-    border-radius: 8px;
+    width: 40px;
+    height: 40px;
+    font-size: 1.25rem;
+    border-radius: 12px;
+    margin-bottom: 6px;
   }
   
   .form-card .payment-method-item .label {
-    font-size: 0.6rem;
+    font-size: 0.7rem;
+    margin-top: 0;
+    font-weight: 700;
+    white-space: normal;
+    line-height: 1.1;
+    word-break: break-word;
   }
 }
 

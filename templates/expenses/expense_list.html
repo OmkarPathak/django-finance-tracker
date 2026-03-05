@@ -728,7 +728,6 @@
                                                 <span>{% trans "Edit" %}</span>
                                             </a>
                                         </li>
-                                        <li><hr class="dropdown-divider"></li>
                                         <li>
                                             <button class="dropdown-item d-flex align-items-center gap-2 py-2 text-danger delete-btn" type="button" 
                                                     data-bs-toggle="modal" data-bs-target="#deleteModal" 
@@ -788,18 +787,22 @@
                     {% for expense in expenses %}
                     <div class="col-12 col-md-6 col-lg-4">
                         <div class="card expense-card h-100 shadow-sm border-0 position-relative">
-                            <div class="card-body px-3 py-2">
-                                <!-- Row 1: Checkbox + Date + Category + Actions -->
+                            <div class="card-body px-3 py-3">
+                                <!-- Row 1: Checkbox + Description + Amount + Menu -->
                                 <div class="d-flex align-items-center">
                                     <div class="form-check mb-0 z-2 position-relative me-2 flex-shrink-0">
                                         <input class="form-check-input expense-checkbox" type="checkbox" name="expense_ids" value="{{ expense.pk }}" style="width: 16px; height: 16px; cursor: pointer;">
                                     </div>
-                                    <div class="text-muted flex-grow-1 text-truncate" style="font-size: 0.8rem; font-weight: 500;">
-                                        {{ expense.date|date:"d M, Y"|translate_digits }}
-                                        <span class="opacity-50 mx-1">•</span>
-                                        {{ expense.category|truncatechars:30 }}
+                                    <div class="flex-grow-1 text-truncate fw-semibold" style="font-size: 0.93rem; color: #333;">{{ expense.description }}</div>
+                                    <div class="flex-shrink-0 fw-bold text-body-emphasis ms-3 text-end" style="font-size: 1.02rem;">
+                                        {{ user.profile.currency }}{{ expense.base_amount|compact_amount:user.profile.currency|translate_digits }}
+                                        {% if expense.currency != user.profile.currency %}
+                                        <div class="text-muted fw-normal" style="font-size: 0.72rem;">
+                                            ({{ expense.currency }}{{ expense.amount|compact_amount:expense.currency|translate_digits }})
+                                        </div>
+                                        {% endif %}
                                     </div>
-                                    <div class="dropdown flex-shrink-0 position-relative" style="z-index: 10;">
+                                    <div class="dropdown flex-shrink-0 position-relative ms-1" style="z-index: 10;">
                                         <button class="btn btn-link text-decoration-none p-0 no-caret" type="button" data-bs-toggle="dropdown" aria-expanded="false" data-bs-boundary="viewport">
                                             <i class="bi bi-three-dots-vertical text-muted opacity-50"></i>
                                         </button>
@@ -810,7 +813,6 @@
                                                     <span>{% trans "Edit" %}</span>
                                                 </a>
                                             </li>
-                                            <li><hr class="dropdown-divider"></li>
                                             <li>
                                                 <button class="dropdown-item d-flex align-items-center gap-2 py-2 text-danger delete-btn-card" type="button" 
                                                         data-bs-toggle="modal" data-bs-target="#deleteModal" 
@@ -823,25 +825,15 @@
                                         </ul>
                                     </div>
                                 </div>
-                                <!-- Row 2: Description + Amount + Payment -->
-                                <div class="d-flex align-items-center justify-content-between gap-2 ps-4">
-                                    <div class="flex-grow-1 min-w-0">
-                                        <div class="d-flex align-items-start gap-1">
-                                            <h6 class="mb-0 fw-bold text-body-emphasis description-clamp flex-grow-1" style="font-size: 0.95rem;">{{ expense.description }}</h6>
-                                            <button type="button" class="btn expand-desc-btn no-loader z-3 position-relative" onclick="toggleDescription(this, event)" title="{% trans 'Show more' %}">
-                                                <i class="bi bi-chevron-down" style="font-size: 0.7rem;"></i>
-                                            </button>
-                                        </div>
+                                
+                                <!-- Row 2: Date • Category (left) + Payment (right) -->
+                                <div class="d-flex justify-content-between align-items-center" style="font-size: 0.75rem; margin-top: 2px; padding-left: 26px;">
+                                    <div class="text-muted text-truncate me-2">
+                                        {{ expense.date|date:"d M, Y"|translate_digits }}
+                                        <span class="opacity-50 mx-1">•</span>
+                                        {{ expense.category|truncatechars:20 }}
                                     </div>
-                                    <div class="text-end flex-shrink-0">
-                                        <span class="fw-bold text-body-emphasis" style="font-size: 1.1rem;">{{ user.profile.currency }}{{ expense.base_amount|compact_amount:user.profile.currency|translate_digits }}</span>
-                                        {% if expense.currency != user.profile.currency %}
-                                        <div class="text-muted fw-normal" style="font-size: 0.72rem;">
-                                            ({{ expense.currency }}{{ expense.amount|compact_amount:expense.currency|translate_digits }})
-                                        </div>
-                                        {% endif %}
-                                        <span class="d-inline-block" style="font-size: 0.68rem; padding: 1px 8px; border-radius: 10px; background: {{ expense.payment_method|payment_bg }}; color: {{ expense.payment_method|payment_color }};">{{ expense.payment_method }}</span>
-                                    </div>
+                                    <span class="flex-shrink-0" style="padding: 0 5px; border-radius: 6px; background: {{ expense.payment_method|payment_bg }}; color: {{ expense.payment_method|payment_color }}; font-size: 0.7rem;">{{ expense.payment_method }}</span>
                                 </div>
                             </div>
                         </div>
@@ -888,15 +880,22 @@
                         </div>
                         <!-- Day's Expenses -->
                         {% for expense in group.list %}
-                        <div class="card expense-card shadow-sm border-0 position-relative mb-2">
-                            <div class="card-body px-3 py-2">
+                        <div class="card expense-card shadow-sm border-0 position-relative mb-3">
+                            <div class="card-body px-3 py-3">
                                 <!-- Line 1: Checkbox + Description + Amount + Menu -->
                                 <div class="d-flex align-items-center">
                                     <div class="form-check mb-0 z-2 position-relative me-2 flex-shrink-0">
                                         <input class="form-check-input expense-checkbox" type="checkbox" name="expense_ids" value="{{ expense.pk }}" style="width: 16px; height: 16px; cursor: pointer;">
                                     </div>
                                     <div class="flex-grow-1 text-truncate fw-semibold" style="font-size: 0.93rem; color: #333;">{{ expense.description }}</div>
-                                    <div class="flex-shrink-0 fw-bold text-body-emphasis ms-3" style="font-size: 1.02rem;">{{ user.profile.currency }}{{ expense.base_amount|compact_amount:user.profile.currency|translate_digits }}</div>
+                                    <div class="flex-shrink-0 fw-bold text-body-emphasis ms-3 text-end" style="font-size: 1.02rem;">
+                                        {{ user.profile.currency }}{{ expense.base_amount|compact_amount:user.profile.currency|translate_digits }}
+                                        {% if expense.currency != user.profile.currency %}
+                                        <div class="text-muted fw-normal" style="font-size: 0.72rem;">
+                                            ({{ expense.currency }}{{ expense.amount|compact_amount:expense.currency|translate_digits }})
+                                        </div>
+                                        {% endif %}
+                                    </div>
                                     <div class="dropdown flex-shrink-0 position-relative ms-1" style="z-index: 10;">
                                         <button class="btn btn-link text-decoration-none p-0 no-caret" type="button" data-bs-toggle="dropdown" aria-expanded="false" data-bs-boundary="viewport">
                                             <i class="bi bi-three-dots-vertical text-muted opacity-50"></i>
@@ -908,7 +907,6 @@
                                                     <span>{% trans "Edit" %}</span>
                                                 </a>
                                             </li>
-                                            <li><hr class="dropdown-divider"></li>
                                             <li>
                                                 <button class="dropdown-item d-flex align-items-center gap-2 py-2 text-danger delete-btn-card" type="button"
                                                         data-bs-toggle="modal" data-bs-target="#deleteModal"
@@ -921,8 +919,11 @@
                                         </ul>
                                     </div>
                                 </div>
-                                <!-- Line 2: Category • Payment badge -->
-                                <div class="text-muted" style="font-size: 0.75rem; margin-top: 1px; padding-left: 0;">{{ expense.category|truncatechars:20 }} <span class="mx-0">•</span> <span style="padding: 0 5px; border-radius: 6px; background: {{ expense.payment_method|payment_bg }}; color: {{ expense.payment_method|payment_color }};">{{ expense.payment_method }}</span></div>
+                                <!-- Line 2: Category (left) • Payment badge (right) -->
+                                <div class="d-flex justify-content-between align-items-center" style="font-size: 0.75rem; margin-top: 1px;">
+                                    <span class="text-muted">{{ expense.category|truncatechars:20 }}</span>
+                                    <span style="padding: 0 5px; border-radius: 6px; background: {{ expense.payment_method|payment_bg }}; color: {{ expense.payment_method|payment_color }}; font-size: 0.7rem;">{{ expense.payment_method }}</span>
+                                </div>
                             </div>
                         </div>
                         {% endfor %}

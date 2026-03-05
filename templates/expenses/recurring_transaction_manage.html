@@ -24,27 +24,27 @@
                 <table class="table table-hover table-striped mb-0 text-start align-middle">
                     <thead>
                         <tr>
-                            <th class="ps-4">Description</th>
-                            <th>Type</th>
-                            <th>Amount</th>
-                            <th>Frequency</th>
-                            <th>Next Due</th>
-                            <th>Status</th>
-                            <th class="text-end pe-4">Actions</th>
+                            <th class="ps-4">{% trans "Description" %}</th>
+                            <th>{% trans "Type" %}</th>
+                            <th>{% trans "Amount" %}</th>
+                            <th class="d-none d-md-table-cell">{% trans "Frequency" %}</th>
+                            <th>{% trans "Next Due" %}</th>
+                            <th class="d-none d-lg-table-cell">{% trans "Status" %}</th>
+                            <th class="text-end pe-4">{% trans "Actions" %}</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for sub in active_subs %}
                         <tr>
                             <td class="ps-4">
-                                <div class="fw-bold">{{ sub.description }}</div>
+                                <div class="fw-bold text-wrap" style="min-width: 120px;">{{ sub.description }}</div>
                                 <div class="text-muted small">{{ sub.category }}</div>
                             </td>
                             <td>
                                 {% if sub.transaction_type == 'EXPENSE' %}
-                                    <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill">Expense</span>
+                                    <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill">{% trans "Expense" %}</span>
                                 {% else %}
-                                    <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill">Income</span>
+                                    <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill">{% trans "Income" %}</span>
                                 {% endif %}
                             </td>
                             <td class="fw-bold">
@@ -55,44 +55,46 @@
                                 </div>
                                 {% endif %}
                             </td>
-                            <td>{{ sub.get_frequency_display }}</td>
+                            <td class="d-none d-md-table-cell">{{ sub.get_frequency_display }}</td>
                             <td>
-                                <div>{{ sub.annotated_next_date|date:"M d, Y"|translate_digits }}</div>
+                                <div class="text-nowrap">{{ sub.annotated_next_date|date:"M d, Y"|translate_digits }}</div>
                                 {% if sub.annotated_days_until <= 30 and sub.transaction_type == 'EXPENSE' %}
                                     <div class="small fw-bold {% if sub.annotated_days_until <= 3 %}text-danger{% elif sub.annotated_days_until <= 7 %}text-warning{% else %}text-muted{% endif %}">
-                                        {% if sub.annotated_days_until == 0 %}Today{% elif sub.annotated_days_until == 1 %}Tomorrow{% else %}In {{ sub.annotated_days_until|translate_digits }} days{% endif %}
+                                        {% if sub.annotated_days_until == 0 %}{% trans "Today" %}{% elif sub.annotated_days_until == 1 %}{% trans "Tomorrow" %}{% else %}{% blocktrans with days=sub.annotated_days_until|translate_digits %}In {{ days }} days{% endblocktrans %}{% endif %}
                                     </div>
                                 {% endif %}
                             </td>
-                            <td>
-                                <span class="badge bg-success rounded-pill px-3">Active</span>
+                            <td class="d-none d-lg-table-cell">
+                                <span class="badge bg-success rounded-pill px-3">{% trans "Active" %}</span>
                             </td>
                             <td class="text-end pe-4">
-                                <a href="{% url 'recurring-edit' sub.pk %}?next={{ request.path }}" class="btn btn-sm btn-link text-decoration-none p-0 me-2" title="Edit">
-                                    <i class="bi bi-pencil-square text-primary"></i>
-                                </a>
-                                <button type="button" class="btn btn-sm btn-link text-decoration-none p-0 delete-btn" 
-                                        data-bs-toggle="modal" data-bs-target="#deleteModal" 
-                                        data-url="{% url 'recurring-delete' sub.pk %}"
-                                        data-message="Are you sure you want to delete subscription '{{ sub.description }}'? This will stop all future tracking for this item.">
-                                    <i class="bi bi-trash text-danger"></i>
-                                </button>
+                                <div class="d-flex justify-content-end gap-2">
+                                    <a href="{% url 'recurring-edit' sub.pk %}?next={{ request.path }}" class="btn btn-sm btn-link text-decoration-none p-0" title="{% trans 'Edit' %}">
+                                        <i class="bi bi-pencil-square text-primary fs-5"></i>
+                                    </a>
+                                    <button type="button" class="btn btn-sm btn-link text-decoration-none p-0 delete-btn" 
+                                            data-bs-toggle="modal" data-bs-target="#deleteModal" 
+                                            data-url="{% url 'recurring-delete' sub.pk %}"
+                                            data-message="{% trans 'Are you sure you want to delete subscription' %} '{{ sub.description }}'? {% trans 'This will stop all future tracking for this item.' %}">
+                                        <i class="bi bi-trash text-danger fs-5"></i>
+                                    </button>
+                                </div>
                             </td>
                         </tr>
                         {% endfor %}
                         
-                        <!-- Cancelled Subscriptions (Optional) -->
+                        <!-- Cancelled Subscriptions -->
                         {% for sub in cancelled_subs %}
                         <tr class="opacity-50">
                             <td class="ps-4">
-                                <div class="fw-bold text-decoration-line-through">{{ sub.description }}</div>
+                                <div class="fw-bold text-decoration-line-through text-wrap" style="min-width: 120px;">{{ sub.description }}</div>
                                 <div class="text-muted small">{{ sub.category }}</div>
                             </td>
                             <td>
                                 {% if sub.transaction_type == 'EXPENSE' %}
-                                    <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle rounded-pill">Expense</span>
+                                    <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle rounded-pill">{% trans "Expense" %}</span>
                                 {% else %}
-                                    <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle rounded-pill">Income</span>
+                                    <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle rounded-pill">{% trans "Income" %}</span>
                                 {% endif %}
                             </td>
                             <td class="fw-bold text-muted">
@@ -103,21 +105,23 @@
                                 </div>
                                 {% endif %}
                             </td>
-                            <td>{{ sub.get_frequency_display }}</td>
+                            <td class="d-none d-md-table-cell">{{ sub.get_frequency_display }}</td>
                             <td>-</td>
-                            <td>
-                                <span class="badge bg-secondary rounded-pill px-3">Cancelled</span>
+                            <td class="d-none d-lg-table-cell">
+                                <span class="badge bg-secondary rounded-pill px-3">{% trans "Cancelled" %}</span>
                             </td>
                             <td class="text-end pe-4">
-                                <a href="{% url 'recurring-edit' sub.pk %}?next={{ request.path }}" class="btn btn-sm btn-outline-primary py-0" style="font-size: 0.75rem;">
-                                    Reactivate
-                                </a>
-                                <button type="button" class="btn btn-sm btn-link text-decoration-none p-0 delete-btn ms-2" 
-                                        data-bs-toggle="modal" data-bs-target="#deleteModal" 
-                                        data-url="{% url 'recurring-delete' sub.pk %}"
-                                        data-message="Are you sure you want to delete subscription '{{ sub.description }}'? This will permanently remove it.">
-                                    <i class="bi bi-trash text-danger"></i>
-                                </button>
+                                <div class="d-flex justify-content-end gap-2">
+                                    <a href="{% url 'recurring-edit' sub.pk %}?next={{ request.path }}" class="btn btn-sm btn-outline-primary py-0" style="font-size: 0.75rem;">
+                                        {% trans "Reactivate" %}
+                                    </a>
+                                    <button type="button" class="btn btn-sm btn-link text-decoration-none p-0 delete-btn" 
+                                            data-bs-toggle="modal" data-bs-target="#deleteModal" 
+                                            data-url="{% url 'recurring-delete' sub.pk %}"
+                                            data-message="{% trans 'Are you sure you want to delete subscription' %} '{{ sub.description }}'? {% trans 'This will permanently remove it.' %}">
+                                        <i class="bi bi-trash text-danger fs-5"></i>
+                                    </button>
+                                </div>
                             </td>
                         </tr>
                         {% endfor %}
