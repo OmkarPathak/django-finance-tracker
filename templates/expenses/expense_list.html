@@ -215,6 +215,31 @@
     .expense-card .dropdown-menu {
         z-index: 1061 !important;
     }
+
+    /* Tag/Badge Overrides */
+    .payment-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 2px 8px;
+        border-radius: 6px;
+        font-size: 0.7rem;
+        font-weight: 500;
+        text-transform: capitalize;
+    }
+
+    /* Light Theme Payment Tags */
+    .pay-cash { background-color: #e8f5e9; color: #2e7d32; }
+    .pay-credit-card { background-color: #e3f2fd; color: #1565c0; }
+    .pay-debit-card { background-color: #f3e5f5; color: #6a1b9a; }
+    .pay-upi { background-color: #fff3e0; color: #e65100; }
+    .pay-netbanking { background-color: #e0f7fa; color: #00838f; }
+
+    /* Dark Theme Payment Tags Updates */
+    [data-bs-theme="dark"] .pay-cash { background-color: rgba(46, 125, 50, 0.15); color: #81c784; }
+    [data-bs-theme="dark"] .pay-credit-card { background-color: rgba(21, 101, 192, 0.15); color: #64b5f6; }
+    [data-bs-theme="dark"] .pay-debit-card { background-color: rgba(106, 27, 154, 0.15); color: #ba68c8; }
+    [data-bs-theme="dark"] .pay-upi { background-color: rgba(230, 81, 0, 0.15); color: #ffb74d; }
+    [data-bs-theme="dark"] .pay-netbanking { background-color: rgba(0, 131, 143, 0.15); color: #4dd0e1; }
 </style>
 <div class="fade-in">
     <!-- Mobile Header -->
@@ -793,7 +818,7 @@
                                     <div class="form-check mb-0 z-2 position-relative me-2 flex-shrink-0">
                                         <input class="form-check-input expense-checkbox" type="checkbox" name="expense_ids" value="{{ expense.pk }}" style="width: 16px; height: 16px; cursor: pointer;">
                                     </div>
-                                    <div class="flex-grow-1 text-truncate fw-semibold" style="font-size: 0.93rem; color: #333;">{{ expense.description }}</div>
+                                    <div class="flex-grow-1 text-truncate fw-semibold text-body-emphasis" style="font-size: 0.93rem;">{{ expense.description }}</div>
                                     <div class="flex-shrink-0 fw-bold text-body-emphasis ms-3 text-end" style="font-size: 1.02rem;">
                                         {{ user.profile.currency }}{{ expense.base_amount|compact_amount:user.profile.currency|translate_digits }}
                                         {% if expense.currency != user.profile.currency %}
@@ -828,12 +853,12 @@
                                 
                                 <!-- Row 2: Date • Category (left) + Payment (right) -->
                                 <div class="d-flex justify-content-between align-items-center" style="font-size: 0.75rem; margin-top: 2px; padding-left: 26px;">
-                                    <div class="text-muted text-truncate me-2">
+                                    <div class="text-body-secondary text-truncate me-2">
                                         {{ expense.date|date:"d M, Y"|translate_digits }}
                                         <span class="opacity-50 mx-1">•</span>
                                         {{ expense.category|truncatechars:20 }}
                                     </div>
-                                    <span class="flex-shrink-0" style="padding: 0 5px; border-radius: 6px; background: {{ expense.payment_method|payment_bg }}; color: {{ expense.payment_method|payment_color }}; font-size: 0.7rem;">{{ expense.payment_method }}</span>
+                                    <span class="flex-shrink-0 payment-badge pay-{{ expense.payment_method|lower|slugify }}">{{ expense.payment_method }}</span>
                                 </div>
                             </div>
                         </div>
@@ -871,10 +896,10 @@
                     <div class="mb-3">
                         <!-- Day Header -->
                         <div class="d-flex justify-content-between align-items-center px-1 mb-2">
-                            <div class="text-muted fw-semibold" style="font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.03em;">
+                            <div class="text-body-secondary fw-semibold" style="font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.03em;">
                                 {{ group.grouper|date:"d M, Y"|translate_digits }}
                             </div>
-                            <div class="fw-bold text-muted" style="font-size: 0.78rem;">
+                            <div class="fw-bold text-body-secondary" style="font-size: 0.78rem;">
                                 {{ user.profile.currency }}{{ group.list|sum_base_amounts|compact_amount:user.profile.currency|translate_digits }}
                             </div>
                         </div>
@@ -887,18 +912,18 @@
                                     <div class="form-check mb-0 z-2 position-relative me-2 flex-shrink-0">
                                         <input class="form-check-input expense-checkbox" type="checkbox" name="expense_ids" value="{{ expense.pk }}" style="width: 16px; height: 16px; cursor: pointer;">
                                     </div>
-                                    <div class="flex-grow-1 text-truncate fw-semibold" style="font-size: 0.93rem; color: #333;">{{ expense.description }}</div>
+                                    <div class="flex-grow-1 text-truncate fw-semibold text-body-emphasis" style="font-size: 0.93rem;">{{ expense.description }}</div>
                                     <div class="flex-shrink-0 fw-bold text-body-emphasis ms-3 text-end" style="font-size: 1.02rem;">
                                         {{ user.profile.currency }}{{ expense.base_amount|compact_amount:user.profile.currency|translate_digits }}
                                         {% if expense.currency != user.profile.currency %}
-                                        <div class="text-muted fw-normal" style="font-size: 0.72rem;">
+                                        <div class="text-body-secondary fw-normal" style="font-size: 0.72rem;">
                                             ({{ expense.currency }}{{ expense.amount|compact_amount:expense.currency|translate_digits }})
                                         </div>
                                         {% endif %}
                                     </div>
                                     <div class="dropdown flex-shrink-0 position-relative ms-1" style="z-index: 10;">
                                         <button class="btn btn-link text-decoration-none p-0 no-caret" type="button" data-bs-toggle="dropdown" aria-expanded="false" data-bs-boundary="viewport">
-                                            <i class="bi bi-three-dots-vertical text-muted opacity-50"></i>
+                                            <i class="bi bi-three-dots-vertical text-body-secondary opacity-50"></i>
                                         </button>
                                         <ul class="dropdown-menu dropdown-menu-end shadow border-0" style="border-radius: 12px;">
                                             <li>
@@ -921,8 +946,8 @@
                                 </div>
                                 <!-- Line 2: Category (left) • Payment badge (right) -->
                                 <div class="d-flex justify-content-between align-items-center" style="font-size: 0.75rem; margin-top: 1px;">
-                                    <span class="text-muted">{{ expense.category|truncatechars:20 }}</span>
-                                    <span style="padding: 0 5px; border-radius: 6px; background: {{ expense.payment_method|payment_bg }}; color: {{ expense.payment_method|payment_color }}; font-size: 0.7rem;">{{ expense.payment_method }}</span>
+                                    <span class="text-body-secondary">{{ expense.category|truncatechars:20 }}</span>
+                                    <span class="payment-badge pay-{{ expense.payment_method|lower|slugify }}">{{ expense.payment_method }}</span>
                                 </div>
                             </div>
                         </div>
