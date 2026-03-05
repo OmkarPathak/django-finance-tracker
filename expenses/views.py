@@ -2959,50 +2959,227 @@ class AnalyticsView(LoginRequiredMixin, TemplateView):
         health_color = ""
         insights = []
         
-        # Score Logic
+        # Currency symbol for formatting
+        currency = user.profile.currency if hasattr(user, 'profile') else '₹'
+        savings_ytd = float(ytd_income_agg) - float(ytd_expense_agg)
+        income_f = float(ytd_income_agg)
+        expense_f = float(ytd_expense_agg)
+        
+        # Top category context (used across insights)
+        top_cat_name = cat_labels[0] if cat_data else None
+        top_cat_pct = 0
+        if top_cat_name and income_f > 0:
+            top_cat_pct = (cat_data[0] / income_f) * 100
+        
+        # Score Logic with dynamic messages
         if balance_rate < 0:
             health_score = 10
-            health_label = _("Critical")
+            health_label = _("At Risk")
             health_color = "danger"
-            insights.append(_("You are spending more than you earn. Review your recurring expenses immediately."))
+            overspend_pct = abs(balance_rate)
+            msg = _("You spent %(currency)s%(expense)s against %(currency)s%(income)s income (%(pct)s%% overspend).") % {
+                'currency': currency,
+                'expense': f"{expense_f:,.0f}",
+                'income': f"{income_f:,.0f}",
+                'pct': f"{overspend_pct:.0f}",
+            }
+            if top_cat_name:
+                msg += " " + _("Review '%(cat)s' which accounts for %(cat_pct)s%% of your spending.") % {
+                    'cat': escape(top_cat_name),
+                    'cat_pct': f"{top_cat_pct:.0f}",
+                }
+            insights.append(msg)
         elif balance_rate < 10:
             health_score = 40
-            health_label = _("Vulnerable")
+            health_label = _("Caution")
             health_color = "warning"
-            insights.append(_("Your savings buffer is thin. Try to cut down on discretionary spending."))
+            msg = _("You saved %(currency)s%(savings)s out of %(currency)s%(income)s (%(rate)s%%).") % {
+                'currency': currency,
+                'savings': f"{savings_ytd:,.0f}",
+                'income': f"{income_f:,.0f}",
+                'rate': f"{balance_rate:.0f}",
+            }
+            if top_cat_name and cat_data:
+                potential_saving = cat_data[0] * 0.2
+                msg += " " + _("Cutting '%(cat)s' by 20%% could save %(currency)s%(amount)s more.") % {
+                    'cat': escape(top_cat_name),
+                    'currency': currency,
+                    'amount': f"{potential_saving:,.0f}",
+                }
+            insights.append(msg)
         elif balance_rate < 30:
             health_score = 70
-            health_label = _("Healthy")
+            health_label = _("Stable")
             health_color = "info"
-            insights.append(_("You're doing well! Aim for a 30% savings rate to accelerate your goals."))
+            gap_to_30 = (0.30 * income_f) - savings_ytd if income_f > 0 else 0
+            msg = _("You saved %(currency)s%(savings)s out of %(currency)s%(income)s (%(rate)s%%).") % {
+                'currency': currency,
+                'savings': f"{savings_ytd:,.0f}",
+                'income': f"{income_f:,.0f}",
+                'rate': f"{balance_rate:.0f}",
+            }
+            if gap_to_30 > 0:
+                msg += " " + _("Just %(currency)s%(gap)s more to hit the 30%% savings benchmark.") % {
+                    'currency': currency,
+                    'gap': f"{gap_to_30:,.0f}",
+                }
+            insights.append(msg)
         else:
             health_score = 95
-            health_label = _("Excellent")
+            health_label = _("Wealth Builder")
             health_color = "success"
-            insights.append(_("Outstanding! You're a master saver. Consider investing your surplus."))
-            
-        # Category Insight
-        if cat_data:
-            top_cat = cat_labels[0]
-            top_cat_amount = cat_data[0] # float
-            
-            # Use ytd_income_agg only if it is > 0
-            if ytd_income_agg > 0:
-                # Type cast check: top_cat_amount is float (from cat_data list cast above)
-                # ytd_income_agg comes from aggregate Sum(...) so it is Decimal
+            insights.append(
+                _("You saved %(currency)s%(savings)s out of %(currency)s%(income)s (%(rate)s%%). That's top-tier financial discipline.") % {
+                    'currency': currency,
+                    'savings': f"{savings_ytd:,.0f}",
+                    'income': f"{income_f:,.0f}",
+                    'rate': f"{balance_rate:.0f}",
+                }
+            )
+
+        # Category Insight (high concentration warning)
+        if cat_data and top_cat_name:
+            if income_f > 0:
                 try:
-                    denominator = float(ytd_income_agg)
-                    cat_percent = (top_cat_amount / denominator) * 100
-                    if cat_percent > 30:
-                         safe_top_cat = escape(top_cat)
-                         insights.append(_(f"Caution: '{safe_top_cat}' is consuming {cat_percent:.0f}% of your income."))
+                    if top_cat_pct > 30:
+                        safe_top_cat = escape(top_cat_name)
+                        insights.append(
+                            _("'%(cat)s' is consuming %(pct)s%% of your income (%(currency)s%(amount)s). Consider setting a budget limit.") % {
+                                'cat': safe_top_cat,
+                                'pct': f"{top_cat_pct:.0f}",
+                                'currency': currency,
+                                'amount': f"{cat_data[0]:,.0f}",
+                            }
+                        )
                 except (ValueError, TypeError):
                     pass
-            
+
+        # Spending Trend Projection (uses 3-month avg calculated earlier)
+        if avg_expense > 0 and expense_f > 0 and selected_year == today.year:
+            avg_expense_f = float(avg_expense)
+            # Compare current year monthly average to historical
+            months_elapsed = today.month
+            current_monthly_avg = expense_f / months_elapsed if months_elapsed > 0 else 0
+            if current_monthly_avg > avg_expense_f * 1.15:  # 15% higher than historical
+                pct_increase = ((current_monthly_avg - avg_expense_f) / avg_expense_f) * 100
+                next_month_name = (today.replace(day=28) + timedelta(days=4)).strftime('%B')
+                projected = current_monthly_avg
+                insights.append(
+                    _("Spending is trending %(pct)s%% above your 3-month average. %(month)s may reach %(currency)s%(projected)s at this pace.") % {
+                        'pct': f"{pct_increase:.0f}",
+                        'month': next_month_name,
+                        'currency': currency,
+                        'projected': f"{projected:,.0f}",
+                    }
+                )
+        # ---------------------------------------------------------
+        # 5b. Health Breakdown Panel (Expandable Metrics)
+        # ---------------------------------------------------------
+        health_breakdown = []
+        
+        # 1. Savings Rate
+        savings_rate_val = round(balance_rate, 1)
+        if savings_rate_val >= 20:
+            sr_status, sr_icon = 'success', 'check-circle-fill'
+        elif savings_rate_val > 0:
+            sr_status, sr_icon = 'warning', 'exclamation-triangle-fill'
+        else:
+            sr_status, sr_icon = 'danger', 'x-circle-fill'
+        health_breakdown.append({
+            'label': _('Savings Rate'),
+            'value': f"{savings_rate_val}%",
+            'status': sr_status,
+            'icon': sr_icon,
+        })
+        
+        # 2. Expense Growth (current monthly avg vs 3-month historical avg)
+        avg_expense_f = float(avg_expense) if avg_expense > 0 else 0
+        months_elapsed = today.month if selected_year == today.year else 12
+        current_monthly_avg = expense_f / months_elapsed if months_elapsed > 0 else 0
+        
+        if avg_expense_f > 0:
+            expense_growth_pct = round(((current_monthly_avg - avg_expense_f) / avg_expense_f) * 100, 1)
+        else:
+            expense_growth_pct = 0
+        
+        eg_prefix = '+' if expense_growth_pct > 0 else ''
+        if expense_growth_pct <= 0:
+            eg_status, eg_icon = 'success', 'check-circle-fill'
+        elif expense_growth_pct <= 15:
+            eg_status, eg_icon = 'warning', 'exclamation-triangle-fill'
+        else:
+            eg_status, eg_icon = 'danger', 'x-circle-fill'
+        health_breakdown.append({
+            'label': _('Expense Growth'),
+            'value': f"{eg_prefix}{expense_growth_pct}%",
+            'status': eg_status,
+            'icon': eg_icon,
+        })
+        
+        # 3. Consistency (months with positive savings out of last 10)
+        consistency_count = 0
+        consistency_total = 10
+        for i in range(1, consistency_total + 1):
+            c_year = today.year
+            c_month = today.month - i
+            while c_month < 1:
+                c_month += 12
+                c_year -= 1
+            c_inc = Income.objects.filter(user=user, date__year=c_year, date__month=c_month).aggregate(Sum('base_amount'))['base_amount__sum'] or 0
+            c_exp = Expense.objects.filter(user=user, date__year=c_year, date__month=c_month).aggregate(Sum('base_amount'))['base_amount__sum'] or 0
+            if c_inc > c_exp and c_inc > 0:
+                consistency_count += 1
+        
+        if consistency_count >= 7:
+            cs_status, cs_icon = 'success', 'check-circle-fill'
+        elif consistency_count >= 4:
+            cs_status, cs_icon = 'warning', 'exclamation-triangle-fill'
+        else:
+            cs_status, cs_icon = 'danger', 'x-circle-fill'
+        health_breakdown.append({
+            'label': _('Consistency'),
+            'value': f"{consistency_count}/{consistency_total}",
+            'status': cs_status,
+            'icon': cs_icon,
+        })
+        
+        # 4. Risk Buffer (months of runway = total savings / avg monthly expense)
+        if avg_expense_f > 0 and savings_ytd > 0:
+            risk_buffer_months = round(savings_ytd / avg_expense_f, 1)
+        else:
+            risk_buffer_months = 0
+        
+        if risk_buffer_months >= 6:
+            rb_status, rb_icon = 'success', 'check-circle-fill'
+        elif risk_buffer_months >= 3:
+            rb_status, rb_icon = 'warning', 'exclamation-triangle-fill'
+        else:
+            rb_status, rb_icon = 'danger', 'x-circle-fill'
+        health_breakdown.append({
+            'label': _('Risk Buffer'),
+            'value': _("%(months)s months") % {'months': f"{risk_buffer_months:.0f}"},
+            'status': rb_status,
+            'icon': rb_icon,
+        })
+        
+        # Health Summary sentence (combine best + worst)
+        status_order = {'success': 2, 'warning': 1, 'danger': 0}
+        best = max(health_breakdown, key=lambda x: status_order[x['status']])
+        worst = min(health_breakdown, key=lambda x: status_order[x['status']])
+        
+        summary_parts = []
+        if best['status'] == 'success':
+            summary_parts.append(_("Your %(label)s is excellent.") % {'label': best['label'].lower()})
+        if worst['status'] != 'success' and worst != best:
+            summary_parts.append(_("However, %(label)s needs attention (%(value)s).") % {'label': worst['label'].lower(), 'value': worst['value']})
+        health_summary = ' '.join(str(p) for p in summary_parts) if summary_parts else ''
+
         context['health_score'] = health_score
         context['health_label'] = health_label
         context['health_color'] = health_color
         context['insights'] = insights
+        context['health_breakdown'] = health_breakdown
+        context['health_summary'] = health_summary
             
 
 

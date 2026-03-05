@@ -882,7 +882,7 @@
                             <div class="text-muted fw-semibold" style="font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.03em;">
                                 {{ group.grouper|date:"d M, Y"|translate_digits }}
                             </div>
-                            <div class="fw-bold" style="font-size: 0.78rem;">
+                            <div class="fw-bold text-muted" style="font-size: 0.78rem;">
                                 {{ user.profile.currency }}{{ group.list|sum_base_amounts|compact_amount:user.profile.currency|translate_digits }}
                             </div>
                         </div>
@@ -895,8 +895,8 @@
                                     <div class="form-check mb-0 z-2 position-relative me-2 flex-shrink-0">
                                         <input class="form-check-input expense-checkbox" type="checkbox" name="expense_ids" value="{{ expense.pk }}" style="width: 16px; height: 16px; cursor: pointer;">
                                     </div>
-                                    <div class="flex-grow-1 text-truncate fw-semibold text-body-emphasis" style="font-size: 0.95rem;">{{ expense.description }}</div>
-                                    <div class="flex-shrink-0 fw-bold text-body-emphasis ms-3" style="font-size: 1rem;">{{ user.profile.currency }}{{ expense.base_amount|compact_amount:user.profile.currency|translate_digits }}</div>
+                                    <div class="flex-grow-1 text-truncate fw-semibold" style="font-size: 0.93rem; color: #333;">{{ expense.description }}</div>
+                                    <div class="flex-shrink-0 fw-bold text-body-emphasis ms-3" style="font-size: 1.02rem;">{{ user.profile.currency }}{{ expense.base_amount|compact_amount:user.profile.currency|translate_digits }}</div>
                                     <div class="dropdown flex-shrink-0 position-relative ms-1" style="z-index: 10;">
                                         <button class="btn btn-link text-decoration-none p-0 no-caret" type="button" data-bs-toggle="dropdown" aria-expanded="false" data-bs-boundary="viewport">
                                             <i class="bi bi-three-dots-vertical text-muted opacity-50"></i>

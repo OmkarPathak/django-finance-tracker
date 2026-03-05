@@ -58,6 +58,7 @@
                         margin-left: 2rem; padding-left: 2rem; 
                     } 
                 }
+                [aria-expanded="true"] .bi-chevron-down { transform: rotate(180deg); }
             </style>
             <div class="card-body p-4">
                 <div class="d-flex flex-column flex-md-row align-items-start align-items-md-center">
@@ -98,6 +99,39 @@
                     </div>
                 </div>
             </div>
+            <!-- Expandable Health Breakdown -->
+            {% if health_breakdown %}
+            <div class="border-top" style="border-color: rgba(var(--bs-{{ health_color }}-rgb), 0.1) !important;">
+                <div class="px-4 py-2">
+                    <a class="text-decoration-none small fw-semibold d-flex align-items-center gap-1 no-loader" data-bs-toggle="collapse" href="#healthBreakdown" role="button" aria-expanded="false" aria-controls="healthBreakdown" style="color: var(--bs-{{ health_color }});">
+                        <i class="bi bi-chevron-down" style="transition: transform 0.3s;"></i>
+                        {% trans "View Breakdown" %}
+                    </a>
+                </div>
+                <div class="collapse" id="healthBreakdown">
+                    <div class="px-4 pb-3">
+                        <div class="row g-3">
+                            {% for metric in health_breakdown %}
+                            <div class="col-6 col-md-3">
+                                <div class="d-flex align-items-center gap-2">
+                                    <i class="bi bi-{{ metric.icon }} text-{{ metric.status }}" style="font-size: 1rem;"></i>
+                                    <div>
+                                        <div class="text-muted small" style="font-size: 0.7rem; line-height: 1.2;">{{ metric.label }}</div>
+                                        <div class="fw-bold" style="font-size: 0.95rem;">{{ metric.value }}</div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% if health_summary %}
+                        <div class="mt-3 px-2 py-2 rounded-2" style="background: rgba(var(--bs-{{ health_color }}-rgb), 0.06);">
+                            <p class="mb-0 small text-muted"><i class="bi bi-lightbulb text-{{ health_color }} me-1"></i>{{ health_summary }}</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
         </div>
     </div>
 </div>
