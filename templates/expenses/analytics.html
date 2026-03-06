@@ -362,10 +362,11 @@
 {{ recurring_split_labels|json_script:"recurring-split-labels" }}
 {{ recurring_split_data|json_script:"recurring-split-data" }}
 {{ burn_down_labels|json_script:"burn-down-labels" }}
-{{ burn_down_spent|json_script:"burn-down-spent" }}
-{{ burn_down_budget|json_script:"burn-down-budget" }}
-
-<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+        {{ burn_down_spent|json_script:"burn-down-spent" }}
+        {{ burn_down_budget|json_script:"burn-down-budget" }}
+        {{ burn_down_projection|json_script:"burn-down-projection" }}
+        
+        <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
 <script type="text/javascript">
   google.charts.load("current", {packages:["sankey"]});
   google.charts.setOnLoadCallback(drawSankeyChart);
@@ -742,9 +743,14 @@
         const burnLabels = JSON.parse(document.getElementById('burn-down-labels').textContent);
         const burnSpent = JSON.parse(document.getElementById('burn-down-spent').textContent);
         const burnBudget = JSON.parse(document.getElementById('burn-down-budget').textContent);
+        const burnProjection = JSON.parse(document.getElementById('burn-down-projection').textContent);
         
         if (burnSpent && burnSpent.length > 0) {
             const ctxBurn = document.getElementById('burnDownChart').getContext('2d');
+            
+            // Helper to get budget at any index
+            const getBudget = (ctx) => burnBudget[ctx.p0DataIndex];
+
             new Chart(ctxBurn, {
                 type: 'line',
                 data: {
@@ -757,23 +763,64 @@
                             backgroundColor: 'rgba(124, 58, 237, 0.1)',
                             fill: true,
                             tension: 0.2,
-                            pointRadius: 2
+                            pointRadius: 3,
+                            segment: {
+                                borderColor: ctx => {
+                                    const val = burnSpent[ctx.p0DataIndex];
+                                    const budget = burnBudget[ctx.p0DataIndex];
+                                    return (val > budget) ? '#dc3545' : '#7c3aed';
+                                }
+                            }
+                        },
+                        {
+                            label: '{% trans "Projected Path" %}',
+                            data: burnProjection,
+                            borderColor: '#7c3aed',
+                            borderDash: [5, 5],
+                            pointRadius: 0,
+                            fill: false,
+                            tension: 0.2,
+                            spanGaps: true
                         },
                         {
                             label: '{% trans "Ideal Budget Line" %}',
                             data: burnBudget,
                             borderColor: '#38f9d7',
-                            borderDash: [5, 5],
+                            borderDash: [3, 3],
                             fill: false,
-                            pointRadius: 0
+                            pointRadius: 0,
+                            borderWidth: 2
                         }
                     ]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
+                    interaction: { mode: 'index', intersect: false },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) label += ': ';
+                                    if (context.parsed.y !== null) {
+                                        label += '₹' + translateDigits(context.parsed.y.toLocaleString());
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    },
                     scales: {
-                        y: { beginAtZero: true, grid: { color: gridColor } },
+                        y: { 
+                            beginAtZero: true, 
+                            grid: { color: gridColor },
+                            ticks: {
+                                callback: function(value) {
+                                    return '₹' + translateDigits(value.toLocaleString());
+                                }
+                            }
+                        },
                         x: { grid: { display: false } }
                     }
                 }

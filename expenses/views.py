@@ -3214,6 +3214,7 @@ class AnalyticsView(LoginRequiredMixin, TemplateView):
         this_month_labels = []
         this_month_spent = []
         this_month_budget_line = []
+        this_month_projection = []
         
         if today.year == selected_year:
             # Current Month Cumulative
@@ -3228,20 +3229,38 @@ class AnalyticsView(LoginRequiredMixin, TemplateView):
             total_monthly_limit = float(total_monthly_limit)
             
             cumulative = 0
+            this_month_projection = [None] * days_in_month
+            
             for day in range(1, days_in_month + 1):
                 this_month_labels.append(str(day))
-                cumulative += daily_map.get(day, 0)
-                this_month_spent.append(round(cumulative, 2))
+                
+                # Only add actual spent data up to today
+                if day <= today.day:
+                    cumulative += daily_map.get(day, 0)
+                    this_month_spent.append(round(cumulative, 2))
+                else:
+                    this_month_spent.append(None)
                 
                 # Ideal line (pro-rated budget)
                 if total_monthly_limit > 0:
                     this_month_budget_line.append(round((total_monthly_limit / days_in_month) * day, 2))
                 else:
                     this_month_budget_line.append(0)
+
+            # Calculation for Projection (Burn Rate)
+            if today.day > 0 and cumulative > 0:
+                burn_rate = cumulative / today.day
+                proj_cumulative = cumulative
+                # Start projection from today
+                this_month_projection[today.day - 1] = round(cumulative, 2)
+                for day in range(today.day + 1, days_in_month + 1):
+                    proj_cumulative += burn_rate
+                    this_month_projection[day - 1] = round(proj_cumulative, 2)
         
         context['burn_down_labels'] = this_month_labels
         context['burn_down_spent'] = this_month_spent
         context['burn_down_budget'] = this_month_budget_line
+        context['burn_down_projection'] = this_month_projection
 
 
 
