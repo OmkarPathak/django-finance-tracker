@@ -13,3 +13,11 @@ db.sqlite3
 .DS_Store
 staticfiles/
 .gemini/
+
+# Mobile and Node.js
+node_modules/
+mobile/node_modules/
+mobile/www/
+mobile/android/
+mobile/ios/
+.gradle/
