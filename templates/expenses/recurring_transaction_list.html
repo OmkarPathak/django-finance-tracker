@@ -189,7 +189,7 @@
                                     <!-- Larger Amount -->
                                     <h4 class="fw-bold mb-0">
                                         {{ currency_symbol }}{{ sub.base_amount|floatformat:0|translate_digits }}
-                                        {% if sub.currency != profile.currency %}
+                                        {% if sub.currency != user.profile.currency %}
                                         <div class="text-muted small fw-normal text-end" style="font-size: 0.75rem;">
                                             ({{ sub.currency }}{{ sub.amount|floatformat:0|translate_digits }})
                                         </div>
@@ -259,7 +259,7 @@
                                 <div class="text-end">
                                     <h4 class="fw-bold mb-1">
                                         {{ currency_symbol }}{{ sub.base_amount|floatformat:0|translate_digits }}
-                                        {% if sub.currency != profile.currency %}
+                                        {% if sub.currency != user.profile.currency %}
                                         <div class="text-muted small fw-normal" style="font-size: 0.75rem;">
                                             ({{ sub.currency }}{{ sub.amount|floatformat:0|translate_digits }})
                                         </div>
@@ -299,7 +299,7 @@
                                 <div class="text-end">
                                     <h5 class="fw-bold mb-1 text-muted">
                                         {{ currency_symbol }}{{ sub.base_amount|floatformat:0|translate_digits }}
-                                        {% if sub.currency != profile.currency %}
+                                        {% if sub.currency != user.profile.currency %}
                                         <div class="text-muted small fw-normal" style="font-size: 0.75rem;">
                                             ({{ sub.currency }}{{ sub.amount|floatformat:0|translate_digits }})
                                         </div>

@@ -85,7 +85,7 @@
              <div class="col-6 col-md-auto">
                 <div class="p-2 border rounded bg-body-tertiary shadow-sm text-center text-md-start">
                     <small class="text-muted d-block text-uppercase" style="font-size: 0.7rem; letter-spacing: 0.5px;">{% trans "Total Amount" %}</small>
-                    <span class="fw-bold text-info">{{ profile.currency }}{{ filtered_amount|compact_amount:profile.currency|translate_digits }}</span>
+                    <span class="fw-bold text-info">{{ user.profile.currency }}{{ filtered_amount|compact_amount:user.profile.currency|translate_digits }}</span>
                 </div>
             </div>
         </div>
@@ -114,8 +114,8 @@
                         </td>
                         <td>{{ income.description|default:"-"|truncatechars:30 }}</td>
                         <td class="fw-bold text-success">
-                            {{ profile.currency }}{{ income.base_amount|compact_amount:profile.currency|translate_digits }}
-                            {% if income.currency != profile.currency %}
+                            {{ user.profile.currency }}{{ income.base_amount|compact_amount:user.profile.currency|translate_digits }}
+                            {% if income.currency != user.profile.currency %}
                             <div class="text-muted small fw-normal" style="font-size: 0.75rem;">
                                 ({{ income.currency }}{{ income.amount|compact_amount:income.currency|translate_digits }})
                             </div>
@@ -244,7 +244,7 @@
                                 <div class="mb-4">
                                     <label for="edit_amount" class="form-label text-muted small text-uppercase">{% trans "Amount" %}</label>
                                     <div class="input-group">
-                                        <span class="input-group-text bg-transparent border-end-0 text-muted">{{ profile.currency }}</span>
+                                        <span class="input-group-text bg-transparent border-end-0 text-muted">{{ user.profile.currency }}</span>
                                         <input type="number" class="form-control border-start-0 ps-0" id="edit_amount" name="amount" step="0.01" required>
                                     </div>
                                 </div>
