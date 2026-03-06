@@ -58,7 +58,7 @@
             </div>
         {% endif %}
 
-        <button class="navbar-toggler border-0 shadow-none d-none" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent" aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
+        <button class="navbar-toggler border-0 shadow-none {% if user.is_authenticated %}d-none{% endif %}" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent" aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
 
@@ -390,10 +390,30 @@
                 <i class="bi bi-gear text-secondary"></i>
                 <span>{% trans "Settings" %}</span>
             </a>
+            
+            <!-- About & Support Trigger -->
+            <button class="list-group-item list-group-item-action d-flex justify-content-between align-items-center" type="button" data-bs-toggle="offcanvas" data-bs-target="#aboutSupportSheet">
+                <div class="d-flex align-items-center gap-3">
+                    <i class="bi bi-info-circle text-primary"></i>
+                    <span>{% trans "About & Support" %}</span>
+                </div>
+                <i class="bi bi-chevron-right small text-muted"></i>
+            </button>
+
+            <!-- Legal Trigger -->
+            <button class="list-group-item list-group-item-action d-flex justify-content-between align-items-center" type="button" data-bs-toggle="offcanvas" data-bs-target="#legalSheet">
+                <div class="d-flex align-items-center gap-3">
+                    <i class="bi bi-shield-lock text-muted"></i>
+                    <span>{% trans "Legal" %}</span>
+                </div>
+                <i class="bi bi-chevron-right small text-muted"></i>
+            </button>
+
             <button class="list-group-item list-group-item-action theme-toggle-btn">
                 <i class="bi bi-moon-stars-fill theme-icon-active text-primary"></i>
                 <span>{% trans "Change Theme" %}</span>
             </button>
+
             <form action="{% url 'account_logout' %}" method="post" class="m-0">
                 {% csrf_token %}
                 <button type="submit" class="list-group-item list-group-item-action text-danger w-100 text-start">
@@ -401,6 +421,68 @@
                     <span>{% trans "Logout" %}</span>
                 </button>
             </form>
+        </div>
+    </div>
+</div>
+
+<!-- Mobile About & Support Bottom Sheet -->
+<div class="offcanvas offcanvas-bottom mobile-bottom-sheet d-lg-none" tabindex="-1" id="aboutSupportSheet" aria-labelledby="aboutSupportSheetLabel">
+    <div class="offcanvas-header border-bottom py-3">
+        <div class="d-flex align-items-center gap-2">
+            <button type="button" class="btn btn-link p-0 text-decoration-none me-2" data-bs-toggle="offcanvas" data-bs-target="#moreMenuSheet">
+                <i class="bi bi-arrow-left fs-4"></i>
+            </button>
+            <h5 class="offcanvas-title fw-bold mb-0" id="aboutSupportSheetLabel">{% trans "About & Support" %}</h5>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body p-0">
+        <div class="list-group list-group-flush pb-1 mt-2">
+            <a href="{% url 'about' %}" class="list-group-item list-group-item-action">
+                <i class="bi bi-info-circle text-primary"></i>
+                <span>{% trans "About" %}</span>
+            </a>
+            <a href="{% url 'contact' %}" class="list-group-item list-group-item-action">
+                <i class="bi bi-envelope text-success"></i>
+                <span>{% trans "Contact Us" %}</span>
+            </a>
+            <a href="{% url 'blog_list' %}" class="list-group-item list-group-item-action">
+                <i class="bi bi-journal-text text-info"></i>
+                <span>{% trans "Blog" %}</span>
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Mobile Legal Bottom Sheet -->
+<div class="offcanvas offcanvas-bottom mobile-bottom-sheet d-lg-none" tabindex="-1" id="legalSheet" aria-labelledby="legalSheetLabel">
+    <div class="offcanvas-header border-bottom py-3">
+        <div class="d-flex align-items-center gap-2">
+            <button type="button" class="btn btn-link p-0 text-decoration-none me-2" data-bs-toggle="offcanvas" data-bs-target="#moreMenuSheet">
+                <i class="bi bi-arrow-left fs-4"></i>
+            </button>
+            <h5 class="offcanvas-title fw-bold mb-0" id="legalSheetLabel">{% trans "Legal" %}</h5>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body p-0">
+        <div class="list-group list-group-flush pb-3 mt-2">
+            <a href="{% url 'privacy-policy' %}" class="list-group-item list-group-item-action">
+                <i class="bi bi-shield-lock text-muted"></i>
+                <span>{% trans "Privacy Policy" %}</span>
+            </a>
+            <a href="{% url 'terms-of-service' %}" class="list-group-item list-group-item-action">
+                <i class="bi bi-file-earmark-text text-muted"></i>
+                <span>{% trans "Terms of Service" %}</span>
+            </a>
+            <a href="{% url 'refund-policy' %}" class="list-group-item list-group-item-action">
+                <i class="bi bi-cash-stack text-muted"></i>
+                <span>{% trans "Refund & Cancellation" %}</span>
+            </a>
+            <a href="{% url 'security' %}" class="list-group-item list-group-item-action">
+                <i class="bi bi-safe text-muted"></i>
+                <span>{% trans "Security" %}</span>
+            </a>
         </div>
     </div>
 </div>
