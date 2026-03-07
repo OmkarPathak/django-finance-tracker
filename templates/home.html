@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load currency_filters i18n digit_filters %}
+{% load currency_filters i18n digit_filters expense_extras %}
 
 {% block content %}
 <style>
@@ -591,8 +591,9 @@ document.addEventListener('DOMContentLoaded', function() {
     <!-- Budget vs Spent List -->
     <div class="col-md-4" id="tour-budget-card">
         <div class="card shadow-lg border-0 h-100 hover-lift fade-in" style="animation-delay: 0.4s">
-            <div class="card-header bg-transparent border-bottom">
+            <div class="card-header bg-transparent border-bottom d-flex justify-content-between align-items-center">
                 <span class="fw-bold"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1 text-muted" style="vertical-align: -2px;"><rect x="3" y="10" width="4" height="12" rx="1" class="anim-bar"/><rect x="10" y="6" width="4" height="16" rx="1" class="anim-bar" style="animation-delay: 0.3s;"/><rect x="17" y="2" width="4" height="20" rx="1" class="anim-bar" style="animation-delay: 0.6s;"/></svg> {% trans "Budget vs Spent" %}</span>
+                <a href="{% url 'budget' %}" class="btn btn-sm text-decoration-none opacity-25"><i class="bi bi-box-arrow-up-right"></i></a>
             </div>
             <div class="card-body px-3 pb-4">
                 {% if has_any_budget %}
@@ -708,15 +709,15 @@ document.addEventListener('DOMContentLoaded', function() {
         <div class="card shadow-lg border-0 h-100">
             <div class="card-header bg-transparent border-bottom d-flex justify-content-between align-items-center">
                 <span class="fw-bold"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1 text-muted" style="vertical-align: -2px;"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14" class="anim-clk"/></svg> {% trans "Recent Transactions" %}</span>
-                <a href="{% url 'expense-list' %}" class="btn btn-sm btn-link text-decoration-none fw-bold">{% trans "View All" %}</a>
+                <a href="{% url 'expense-list' %}" class="btn btn-sm text-decoration-none opacity-25"><i class="bi bi-box-arrow-up-right"></i></a>
             </div>
             <div class="card-body p-0">
                 <div class="list-group list-group-flush">
                     {% for expense in recent_transactions %}
                     <div class="list-group-item border-0 d-flex align-items-center py-3 px-2 px-md-3 hover-bg-light position-relative">
                         <!-- Icon / Avatar -->
-                        <div class="icon-shape icon-shape-md rounded-circle bg-primary-subtle text-primary fw-bold fs-5 me-2 me-md-3 d-flex align-items-center justify-content-center flex-shrink-0" style="width: 45px; height: 45px;">
-                            {{ expense.category|first|upper }}
+                        <div class="icon-shape icon-shape-md fw-bold fs-5 me-2 me-md-3 d-flex align-items-center justify-content-center flex-shrink-0" style="width: 45px; height: 45px;">
+                            <i class="bi {% category_icon expense.category user %}"></i>
                         </div>
                         
                         <!-- Middle Content -->
@@ -727,7 +728,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             </small>
                         </div>
                         
-                        <div class="text-end flex-shrink-0">
+                        <div class="text-end flex-shrink-0 me-2">
                             <span class="d-block fw-bold fs-6">{{ currency_symbol }}{{ expense.base_amount|translate_digits }}</span>
                             {% if expense.currency != currency_symbol %}
                             <small class="text-muted d-block" style="font-size: 0.7rem;">
@@ -792,7 +793,7 @@ document.addEventListener('DOMContentLoaded', function() {
         <div class="card shadow-lg border-0 h-100">
             <div class="card-header bg-transparent border-bottom d-flex justify-content-between align-items-center">
                 <span class="fw-bold mb-0"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1 text-muted" style="vertical-align: -2px;"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z" class="anim-tag"/><line x1="7" y1="7" x2="7.01" y2="7" class="anim-tag"/></svg> {% trans "Top Categories" %}</span>
-                <a href="{% url 'category-list' %}" class="btn btn-sm btn-link text-decoration-none fw-bold">{% trans "View All" %}</a>
+                <a href="{% url 'category-list' %}" class="btn btn-sm text-decoration-none opacity-25"><i class="bi bi-box-arrow-up-right"></i></a>
             </div>
             <div class="card-body px-3 pb-4">
                 <div class="d-flex flex-column gap-1">
