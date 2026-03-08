@@ -39,6 +39,7 @@ def get_exchange_rate(from_curr, to_curr):
         return Decimal(str(cached_rate))
 
     try:
+        # Primary: Frankfurter API
         url = f"https://api.frankfurter.app/latest?from={from_code}&to={to_code}"
         response = requests.get(url, timeout=5)
         response.raise_for_status()
@@ -49,9 +50,24 @@ def get_exchange_rate(from_curr, to_curr):
         cache.set(cache_key, rate, 60*60*24)
         return Decimal(str(rate))
     except Exception as e:
-        print(f"Error fetching exchange rate: {e}")
-        # Return 1.0 as fallback to avoid breaking calculations
-        return Decimal('1.0')
+        print(f"Frankfurter API error: {e}. Trying fallback...")
+        
+        try:
+            # Fallback: ExchangeRate-API (v4 - free tier, no key needed for simple pairs)
+            # Standard URL: https://api.exchangerate-api.com/v4/latest/{base}
+            fallback_url = f"https://api.exchangerate-api.com/v4/latest/{from_code}"
+            fb_response = requests.get(fallback_url, timeout=5)
+            fb_response.raise_for_status()
+            fb_data = fb_response.json()
+            rate = fb_data['rates'][to_code]
+            
+            # Cache for 24 hours
+            cache.set(cache_key, rate, 60*60*24)
+            return Decimal(str(rate))
+        except Exception as fb_e:
+            print(f"Fallback API error: {fb_e}")
+            # Final fallback to 1.0 to avoid breaking app
+            return Decimal('1.0')
 
 
 def generate_year_in_review_data(user, year):

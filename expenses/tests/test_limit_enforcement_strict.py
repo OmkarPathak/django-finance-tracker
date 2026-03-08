@@ -32,8 +32,8 @@ class StrictLimitEnforcementTest(TestCase):
     def test_category_limit_enforcement(self):
         # By default, profile is FREE
         self.user.refresh_from_db()
-        # Signals create 6 default categories. We created 6 more. Total 12.
-        self.assertEqual(Category.objects.filter(user=self.user).count(), 12)
+        # Signals create 5 default categories. We created 6 more. Total 11.
+        self.assertEqual(Category.objects.filter(user=self.user).count(), 11)
         
         form = ExpenseForm(user=self.user)
         choices = list(form.fields['category'].widget.choices)
