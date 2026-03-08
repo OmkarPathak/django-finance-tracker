@@ -9,6 +9,9 @@ class BaseFeatureTest(TestCase):
         self.user = User.objects.create_user(username='testuser', password='password')
         self.client = Client()
         self.client.login(username='testuser', password='password')
+        profile = self.user.profile
+        profile.tier = 'PLUS'
+        profile.save()
 
 class SettingsViewTest(BaseFeatureTest):
     def test_currency_update(self):

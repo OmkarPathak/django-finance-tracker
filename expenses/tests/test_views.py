@@ -16,6 +16,7 @@ class BaseViewTest(TestCase):
         # Mark tutorial as seen to avoid onboarding redirect in general view tests
         profile = self.user.profile
         profile.has_seen_tutorial = True
+        profile.tier = 'PLUS'
         profile.save()
 
 class DashboardViewTest(BaseViewTest):

@@ -1,0 +1,1403 @@
+from datetime import datetime, date, timedelta
+import calendar
+from decimal import Decimal
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.views.generic import TemplateView
+from django.db.models import Sum, Count, Q
+from django.db.models.functions import TruncMonth, TruncDay, ExtractWeekDay
+from django.urls import reverse
+from django.utils.translation import gettext as _
+from django.utils.html import mark_safe, escape, format_html, format_html_join
+from django.http import JsonResponse
+from django.utils import timezone
+from django.utils.formats import date_format
+from django.contrib import messages
+
+from ..models import Expense, Income, Category, UserProfile, RecurringTransaction
+from ..utils import get_exchange_rate, generate_year_in_review_data
+from .mixins import process_user_recurring_transactions
+
+@login_required
+def home_view(request):
+    """
+    Dashboard view with filters and multiple charts.
+    """
+    # Defensive check: Redirect to onboarding if user has NO data AND hasn't finished the flow
+    try:
+        if not request.user.profile.has_seen_tutorial:
+            has_any_data = Expense.objects.filter(user=request.user).exists() or Income.objects.filter(user=request.user).exists()
+            if not has_any_data:
+                return redirect('onboarding')
+    except UserProfile.DoesNotExist:
+        # Ensure profile exists, then redirect
+        UserProfile.objects.get_or_create(user=self.request.user if hasattr(self, 'request') else request.user)
+        return redirect('onboarding')
+
+    # Process recurring transactions
+    process_user_recurring_transactions(request.user)
+
+    # Base QuerySet
+    expenses = Expense.objects.filter(user=request.user).order_by('-date')
+    
+    # Filter Logic
+    selected_years = request.GET.getlist('year')
+    selected_months = request.GET.getlist('month')
+    selected_categories = request.GET.getlist('category')
+    start_date = request.GET.get('start_date')
+    end_date = request.GET.get('end_date')
+
+    # Remove empty strings from lists
+    selected_years = [y for y in selected_years if y]
+    selected_months = [m for m in selected_months if m]
+    selected_categories = [c for c in selected_categories if c]
+
+    # Date Range takes precedence
+    if start_date or end_date:
+        if start_date:
+            expenses = expenses.filter(date__gte=start_date)
+        if end_date:
+            expenses = expenses.filter(date__lte=end_date)
+        
+        # Reset lists for UI clarity since we are in range mode
+        selected_years = []
+        selected_months = []
+        
+        trend_title = _("Expenses Trend (Custom Range)")
+    else:
+        # Default to current month/year ONLY on initial land (no params)
+        if not request.GET and not (selected_years or selected_months):
+            selected_years = [str(datetime.now().year)]
+            selected_months = [str(datetime.now().month)]
+        
+        if selected_years:
+            expenses = expenses.filter(date__year__in=selected_years)
+        if selected_months:
+            expenses = expenses.filter(date__month__in=selected_months)
+            
+        if len(selected_months) == 1 and len(selected_years) == 1:
+            trend_title = _("Daily Expenses for %(month)s/%(year)s") % {'month': selected_months[0], 'year': selected_years[0]}
+        else:
+            trend_title = _("Monthly Expenses Trend")
+
+    if selected_categories:
+        expenses = expenses.filter(category__in=selected_categories)
+        
+    # Income Logic (Mirroring Expense Filters)
+    incomes = Income.objects.filter(user=request.user)
+    if start_date or end_date:
+        if start_date:
+            incomes = incomes.filter(date__gte=start_date)
+        if end_date:
+            incomes = incomes.filter(date__lte=end_date)
+    else:
+        if selected_years:
+            incomes = incomes.filter(date__year__in=selected_years)
+        if selected_months:
+            incomes = incomes.filter(date__month__in=selected_months)
+    
+    total_income = incomes.aggregate(Sum('base_amount'))['base_amount__sum'] or 0
+    all_dates = Expense.objects.filter(user=request.user).dates('date', 'year', order='DESC')
+    years = sorted(list(set([d.year for d in all_dates] + [datetime.now().year])), reverse=True)
+    all_categories = Expense.objects.filter(user=request.user).values_list('category', flat=True).distinct().order_by('category')
+
+    # 1. Category Chart Data (Distribution) & Summary Table
+    # We need to fetch raw values and merge them in Python to handle whitespace duplicates
+    raw_category_data = expenses.values('category').annotate(total=Sum('base_amount'))
+    
+    # Process and merge duplicates
+    merged_category_map = {}
+    for item in raw_category_data:
+        # Strip whitespace to normalize
+        cat_name = item['category'].strip()
+        amount = float(item['total'])
+        
+        if cat_name in merged_category_map:
+            merged_category_map[cat_name] += amount
+        else:
+            merged_category_map[cat_name] = amount
+            
+    # Convert back to list of dicts for template/charts, sorted by total
+    # This replaces the DB-ordered queryset with a sorted list
+    category_data = [
+        {'category': cat, 'total': amt} 
+        for cat, amt in merged_category_map.items()
+    ]
+    category_data.sort(key=lambda x: x['total'], reverse=True)
+
+    # Compute limits and usage per category for chart display
+    # Compute limits and usage per category for chart display
+    category_limits = []
+    # Optimization: Pre-fetch all categories for the user to avoid N+1 queries in the loop
+    user_categories = {c.name: c for c in Category.objects.filter(user=request.user)}
+
+    for item in category_data:
+        cat_name = item['category']
+        cat_obj = user_categories.get(cat_name)
+        
+        limit = float(cat_obj.limit) if (cat_obj and cat_obj.limit) else None
+        
+        used_percent = round((item['total'] / limit * 100), 1) if limit else None
+        category_limits.append({
+            'name': cat_name,
+            'total': item['total'],
+            'limit': limit,
+            'used_percent': used_percent,
+        })
+    
+    categories = [item['category'] for item in category_data]
+    category_amounts = [item['total'] for item in category_data]
+    
+    # 2. Time Trend (Stacked) Data
+    
+    # Determine Labels (X-Axis)
+    # Determine Labels (X-Axis)
+    if start_date or end_date:
+        # For custom range, if range < 60 days, show daily. Else monthly.
+        # Simple heuristic: Always show daily for custom range for now, or let logic decide.
+        # Let's stick to: if explicit month selected -> daily. If range -> daily (usually granular).
+        trend_qs = expenses.annotate(period=TruncDay('date'))
+        date_format = '%d %b'
+    elif len(selected_months) == 1 and len(selected_years) == 1:
+        # Daily view
+        trend_qs = expenses.annotate(period=TruncDay('date'))
+        date_format = '%d %b'
+    else:
+        # Monthly view
+        trend_qs = expenses.annotate(period=TruncMonth('date'))
+        date_format = '%b %Y'
+
+    # Aggregate by Period AND Category for Stacking
+    stacked_data = trend_qs.values('period', 'category').annotate(total=Sum('base_amount')).order_by('period')
+    
+    # Process into Chart.js Datasets
+    # 1. Get unique sorted periods
+    periods = sorted(list(set(item['period'] for item in stacked_data)))
+    trend_labels = [p.strftime(date_format) for p in periods]
+    
+    # 2. Build datasets map: { 'CategoryA': [0, 10, 0...], 'CategoryB': ... }
+    # Initialize with zeros for all unique NORMALIZED categories found in expenses
+    normalized_all_categories = sorted(list(merged_category_map.keys()))
+    dataset_map = { cat: [0] * len(periods) for cat in normalized_all_categories }
+    
+    for item in stacked_data:
+        p_idx = periods.index(item['period'])
+        # Strip to match our normalized keys
+        cat = item['category'].strip()
+        if cat in dataset_map:
+            dataset_map[cat][p_idx] += float(item['total']) # Add += in case multiple unstripped cats map to same striped cat in same period
+            
+    # 3. Convert map to list of dataset objects for Chart.js
+    trend_datasets = []
+    # Define a color palette (Light Blue, Blue Green, Prussian Blue, Honey Yellow, Orange)
+    colors = ['#219EBC', '#023047', '#8ECAE6', '#FFB703', '#0575E6']
+    
+    for i, (cat, data) in enumerate(dataset_map.items()):
+        # Only include non-zero datasets
+        if sum(data) > 0:
+             trend_datasets.append({
+                 'label': cat,
+                 'data': data,
+                 'backgroundColor': colors[i % len(colors)],
+                 'borderRadius': 2
+             })
+
+    # 3. Top 5 Expenses
+    top_expenses_qs = expenses.order_by('-base_amount')[:5]
+    top_labels = [
+        (e.description.decode('utf-8', errors='replace') if isinstance(e.description, bytes) else str(e.description))[:20] + '...' 
+        if len(str(e.description)) > 20 else str(e.description) 
+        for e in top_expenses_qs
+    ]
+    top_amounts = [float(e.base_amount) for e in top_expenses_qs]
+
+    # --- NEW: Income vs Expenses Trend Data ---
+    # Re-use the truncation logic determined above
+    if start_date or end_date or (len(selected_months) == 1 and len(selected_years) == 1):
+        trunc_func = TruncDay
+    else:
+        trunc_func = TruncMonth
+        
+    inc_trend = incomes.annotate(period=trunc_func('date')).values('period').annotate(total=Sum('base_amount')).order_by('period')
+    exp_trend = expenses.annotate(period=trunc_func('date')).values('period').annotate(total=Sum('base_amount')).order_by('period')
+    
+    # Merge periods
+    inc_periods = set(i['period'] for i in inc_trend)
+    exp_periods = set(e['period'] for e in exp_trend)
+    all_periods_sorted = sorted(list(inc_periods.union(exp_periods)))
+    
+    ie_labels = [p.strftime(date_format) for p in all_periods_sorted]
+    
+    # Optimization: Use dict lookup instead of filter inside loop
+    inc_map = {i['period']: float(i['total']) for i in inc_trend}
+    exp_map = {e['period']: float(e['total']) for e in exp_trend}
+    
+    ie_income_data = [inc_map.get(p, 0.0) for p in all_periods_sorted]
+    ie_expense_data = [exp_map.get(p, 0.0) for p in all_periods_sorted]
+    ie_savings_data = [inc_map.get(p, 0.0) - exp_map.get(p, 0.0) for p in all_periods_sorted]
+
+    # --- NEW: Payment Method Distribution ---
+    raw_payment_data = expenses.values('payment_method').annotate(total=Sum('base_amount')).order_by('payment_method')
+    payment_map = {}
+    for item in raw_payment_data:
+        pm_name = item['payment_method'] or 'Unknown'
+        payment_map[pm_name] = float(item['total'])
+    
+    # Sort by total desc
+    sorted_payment_items = sorted(payment_map.items(), key=lambda x: x[1], reverse=True)
+    payment_labels = [item[0] for item in sorted_payment_items]
+    payment_data = [item[1] for item in sorted_payment_items]
+
+
+    # 4. Summary Stats
+    total_expenses = expenses.aggregate(Sum('base_amount'))['base_amount__sum'] or 0
+    transaction_count = expenses.count()
+    top_category = category_data[0] if category_data else None
+    
+    savings = total_income - total_expenses
+
+    # --- NEW: Savings Projection (Linear Extrapolation) ---
+    current_date = date.today()
+    current_year = current_date.year
+    current_month = current_date.month 
+
+    # 1. Calculate YTD Savings (Strictly for current year, regardless of filters)
+    ytd_income = Income.objects.filter(user=request.user, date__year=current_year, date__month__lte=current_month).aggregate(Sum('base_amount'))['base_amount__sum'] or 0
+    ytd_expenses = Expense.objects.filter(user=request.user, date__year=current_year, date__month__lte=current_month).aggregate(Sum('base_amount'))['base_amount__sum'] or 0
+    ytd_savings = ytd_income - ytd_expenses
+    
+    projected_savings = 0
+    
+    # Only project if we have data and positive savings
+    if ytd_savings > 0:
+        # Avoid division by zero if it's January (month 1)
+        # Actually, even in Jan, months_passed is 1. So we are good.
+        months_passed = current_month
+        avg_monthly_savings = ytd_savings / months_passed
+        
+        months_remaining = 12 - months_passed
+        projected_additional = avg_monthly_savings * months_remaining
+        
+        projected_savings = ytd_savings + projected_additional
+    else:
+        # If savings are negative or zero, projection is effectively "0" or "current state"
+        # We might handle this in template
+        projected_savings = 0
+
+    # Calculate MoM Changes ONLY if exactly one year and one month are selected
+    prev_month_data = None
+    if len(selected_years) == 1 and len(selected_months) == 1:
+        try:
+            sel_year = int(selected_years[0])
+            sel_month = int(selected_months[0])
+            
+            # Calculate previous month and year
+            if sel_month == 1:
+                prev_month = 12
+                prev_year = sel_year - 1
+            else:
+                prev_month = sel_month - 1
+                prev_year = sel_year
+
+            prev_expenses = Expense.objects.filter(user=request.user, date__year=prev_year, date__month=prev_month).aggregate(Sum('base_amount'))['base_amount__sum'] or 0
+            prev_income = Income.objects.filter(user=request.user, date__year=prev_year, date__month=prev_month).aggregate(Sum('base_amount'))['base_amount__sum'] or 0
+            prev_savings = prev_income - prev_expenses
+
+            def calc_pct(current, previous):
+                if previous == 0:
+                    return None
+                return ((current - previous) / previous) * 100
+
+            prev_month_data = {
+                'income_pct': calc_pct(total_income, prev_income),
+                'expense_pct': calc_pct(total_expenses, prev_expenses),
+                'savings_pct': calc_pct(savings, prev_savings),
+            }
+            # Add absolute values for template display
+            for key in list(prev_month_data.keys()):
+                val = prev_month_data[key]
+                if val is not None:
+                    prev_month_data[f'{key}_abs'] = abs(val)
+        except (ValueError, IndexError):
+            pass
+
+    # Prepare display labels for the template
+    display_year = None
+    display_month = None
+    
+    if len(selected_years) == 1:
+        display_year = selected_years[0]
+        
+    if len(selected_months) == 1:
+        try:
+            m_idx = int(selected_months[0])
+            display_month = _(calendar.month_name[m_idx])
+        except (ValueError, IndexError):
+            pass
+
+    # NEW: Calculate Previous/Next Month URLs
+    prev_month_url = None
+    next_month_url = None
+
+    if len(selected_years) == 1 and len(selected_months) == 1:
+        try:
+            curr_year = int(selected_years[0])
+            curr_month = int(selected_months[0])
+            
+            # Previous Month
+            if curr_month == 1:
+                pm = 12
+                py = curr_year - 1
+            else:
+                pm = curr_month - 1
+                py = curr_year
+            
+            # Next Month
+            if curr_month == 12:
+                nm = 1
+                ny = curr_year + 1
+            else:
+                nm = curr_month + 1
+                ny = curr_year
+
+            # Construct Query String (Preserve Categories)
+            base_qs = []
+            for c in selected_categories:
+                base_qs.append(f'category={c}')
+            
+            qs_prev = base_qs + [f'year={py}', f'month={pm}']
+            qs_next = base_qs + [f'year={ny}', f'month={nm}']
+            
+            prev_month_url = f"{reverse('home')}?{'&'.join(qs_prev)}"
+            next_month_url = f"{reverse('home')}?{'&'.join(qs_next)}"
+            
+        except ValueError:
+            pass
+    
+    # --- Emotional Feedback / Insights Logic (Enhanced) ---
+    
+    insights = []
+    
+    # helper for streaks
+    def get_monthly_savings_status(u, y, m):
+        inc = Income.objects.filter(user=u, date__year=y, date__month=m).aggregate(Sum('base_amount'))['base_amount__sum'] or 0
+        exp = Expense.objects.filter(user=u, date__year=y, date__month=m).aggregate(Sum('base_amount'))['base_amount__sum'] or 0
+        return inc > exp
+
+    # Construct date params for deep linking
+    date_params = ""
+    for y in selected_years:
+        date_params += f"&year={y}"
+    for m in selected_months:
+        date_params += f"&month={m}"
+
+    # helper for category links
+    def link_cats(cats):
+        links_html = format_html_join(
+            mark_safe(', '),
+            '<a href="{}" class="alert-link text-decoration-underline">{}</a>',
+            ((reverse('expense-list') + f"?category={c}{date_params}", c) for c in cats[:2])
+        )
+        if len(cats) > 2:
+            return format_html('{}, etc.', links_html)
+        return links_html
+
+    # 0. Anomaly Detection (Spending Spike)
+    # Only if viewing current month (or default view)
+    is_current_month_view = False
+    now = datetime.now()
+    if not request.GET or (len(selected_months) == 1 and str(now.month) in selected_months and str(now.year) in selected_years):
+         is_current_month_view = True
+    
+    if is_current_month_view and total_expenses > 0:
+        # Calculate last 3 months average
+        last_3_months_total = 0
+        months_counted = 0
+        for i in range(1, 4):
+            # Calculate past month/year
+            y = now.year
+            m = now.month - i
+            while m < 1:
+                m += 12
+                y -= 1
+            
+            m_total = Expense.objects.filter(user=request.user, date__year=y, date__month=m).aggregate(Sum('base_amount'))['base_amount__sum'] or 0
+            if m_total > 0:
+                last_3_months_total += m_total
+                months_counted += 1
+        
+        if months_counted > 0:
+            avg_past_spend = last_3_months_total / months_counted
+            
+            # Project current month
+            days_in_month = calendar.monthrange(now.year, now.month)[1]
+            days_passed = now.day
+            if days_passed > 0:
+                projected_spend = (float(total_expenses) / days_passed) * days_in_month
+                avg_past_spend_float = float(avg_past_spend)
+                
+                if projected_spend > avg_past_spend_float * 1.25 and float(total_expenses) > 1000: # 25% Higher + Min Threshold
+                    pct_higher = int(((projected_spend - avg_past_spend_float) / avg_past_spend_float) * 100)
+                    insights.append({
+                        'type': 'warning',
+                        'icon': 'graph-up-arrow',
+                        'title': _('Traffic Alert 🚦'),
+                        'message': _("You're pacing %(pct_higher)s%% higher than usual. Slow down to stay on track!") % {'pct_higher': pct_higher},
+                        'allow_share': False
+                    })
+
+    # 1. Budget Warnings (High Priority)
+
+    over_budget_cats = [c['name'] for c in category_limits if c['used_percent'] is not None and c['used_percent'] > 100]
+    near_budget_cats = [c['name'] for c in category_limits if c['used_percent'] is not None and 90 <= c['used_percent'] <= 100]
+    
+    # Check savings rate for "Softener" context
+    savings_rate = (savings / total_income * 100) if total_income > 0 else 0
+    
+    if over_budget_cats:
+        cats_str = link_cats(over_budget_cats)
+        
+        if savings_rate >= 20:
+            # Contextualized Warning for High Savers
+            msg = format_html(_("Even strong months have leaks. You crossed limits in {cats_str} — catching this keeps you on track."), cats_str=cats_str)
+        else:
+            # Standard Coaching Warning - "Warning" type (Yellow) instead of Danger (Red) for empathy
+            msg = format_html(_("⚠️ Budget crossed in {cats_str} — let’s rebalance to stay safe."), cats_str=cats_str)
+
+        insights.append({
+            'type': 'warning', # Changed from danger
+            'icon': 'exclamation-octagon-fill',
+            'title': _('Budget Breached'),
+            'message': msg,
+            'allow_share': False
+        })
+    elif near_budget_cats:
+        cats_str = link_cats(near_budget_cats)
+        insights.append({
+            'type': 'warning',
+            'icon': 'exclamation-triangle-fill',
+            'title': _('Approaching Limit'),
+            'message': format_html(_("Heads up! You're close to overspending on {cats_str}."), cats_str=cats_str),
+            'allow_share': False
+        })
+
+    # 2. Wins & Cause-Based Praise (Specific & Celebratory)
+    if prev_month_data:
+        # Calculate Category Savings (Cause of the win)
+        # We need prev month category breakdown
+        prev_cat_qs = Expense.objects.filter(user=request.user, date__year=prev_year, date__month=prev_month).values('category').annotate(total=Sum('base_amount'))
+        prev_cat_map = {item['category'].strip(): float(item['total']) for item in prev_cat_qs}
+        
+        savings_contributors = []
+        for cat, curr_total in merged_category_map.items():
+            prev_total = prev_cat_map.get(cat, 0)
+            if prev_total > curr_total:
+                diff = prev_total - curr_total
+                if diff > 100: # Threshold to mention
+                    savings_contributors.append((cat, diff))
+        savings_contributors.sort(key=lambda x: x[1], reverse=True)
+        top_savers = [c[0] for c in savings_contributors[:2]]
+        
+        # Savings Win
+        if total_income > 0 and savings > 0:
+            savings_rate = (savings / total_income) * 100
+            if savings_rate >= 20:
+                msg_text = _("You've saved %(savings_rate)s%% of your income this month.") % {'savings_rate': f"{savings_rate:.0f}"}
+                share_text = _("I saved %(savings_rate)s%% of my income this month using TrackMyRupee! 🏆") % {'savings_rate': f"{savings_rate:.0f}"}
+                
+                if top_savers:
+                    cats_link = link_cats(top_savers)
+                    msg = format_html(_("{msg_text} You spent less on {cats_link} — that's where the magic happened."), msg_text=msg_text, cats_link=cats_link)
+                else:
+                    msg = msg_text
+
+                insights.append({
+                    'type': 'success',
+                    'icon': 'trophy-fill',
+                    'title': _('Super Saver Status! 🏆'),
+                    'message': msg,
+                    'allow_share': True,
+                    'share_text': share_text
+                })
+            elif prev_month_data['savings_pct'] and prev_month_data['savings_pct'] > 0:
+                 insights.append({
+                    'type': 'success',
+                    'icon': 'graph-up-arrow',
+                    'title': _('Momentum Building 🚀'),
+                    'message': _("Your savings grew by %(savings_pct_abs)s%% vs last month. You're getting better at this!") % {'savings_pct_abs': f"{prev_month_data['savings_pct_abs']:.0f}"},
+                    'allow_share': True,
+                    'share_text': _("My savings grew by %(savings_pct_abs)s%% this month! 🚀 via TrackMyRupee") % {'savings_pct_abs': f"{prev_month_data['savings_pct_abs']:.0f}"}
+                })
+        
+        # Expense Control Win (if we haven't already praised savings)
+        if len(insights) == 0: 
+            if prev_month_data['expense_pct'] and prev_month_data['expense_pct'] < -5:
+                 msg_text = _("You've cut spending by %(expense_pct_abs)s%%.") % {'expense_pct_abs': f"{prev_month_data['expense_pct_abs']:.0f}"}
+                 share_text = _("I cut my spending by %(expense_pct_abs)s%% this month! 👍 via TrackMyRupee") % {'expense_pct_abs': f"{prev_month_data['expense_pct_abs']:.0f}"}
+                 
+                 if top_savers:
+                     cats_link = link_cats(top_savers)
+                     msg = format_html(_("{msg_text} {cats_link} saw the biggest drops."), msg_text=msg_text, cats_link=cats_link)
+                 else:
+                     msg = msg_text
+                 
+                 insights.append({
+                    'type': 'success',
+                    'icon': 'check-circle-fill',
+                    'title': _('You’re in Control 👍'),
+                    'message': msg,
+                    'allow_share': True,
+                    'share_text': _("I cut my spending by %(expense_pct_abs)s%% this month! 👍 via TrackMyRupee") % {'expense_pct_abs': f"{prev_month_data['expense_pct_abs']:.0f}"}
+                })
+
+    # 3. Streak & Identity (Reassuring / Habit Forming)
+    # Only calculate if current status is good
+    if savings > 0 and len(selected_years) == 1 and len(selected_months) == 1:
+        streak = 1 # Current month counts
+        check_to_go = 5 # check max 5 months back
+        curr_y_calc, curr_m_calc = int(selected_years[0]), int(selected_months[0])
+        
+        for i in range(check_to_go):
+            # Go back one month
+            if curr_m_calc == 1:
+                curr_m_calc = 12
+                curr_y_calc -= 1
+            else:
+                curr_m_calc -= 1
+            
+            if get_monthly_savings_status(request.user, curr_y_calc, curr_m_calc):
+                streak += 1
+            else:
+                break
+        
+        if streak > 1:
+            insights.append({
+                'type': 'info', # Use Info for "Identity/Streak"
+                'icon': 'fire',
+                'title': _('On a Roll!'),
+                'message': _("🔥 This is your %(streak)s month in a row staying under budget.") % {'streak': streak},
+                'allow_share': True,
+                'share_text': _("🔥 I've stayed under budget for %(streak)s months in a row! via TrackMyRupee") % {'streak': streak}
+            })
+
+    # 4. Fallback
+    if not insights and savings > 0:
+        insights.append({
+            'type': 'info',
+            'icon': 'piggy-bank-fill',
+            'title': _('In the Green'),
+            'message': _("You've saved %(savings)s so far. Keep it up!") % {'savings': savings},
+            'allow_share': False
+        })
+    elif not insights:
+        insights.append({
+            'type': 'secondary',
+            'icon': 'stars',
+            'title': _('Fresh Start'),
+            'message': _("Small steps today lead to big results tomorrow. Let's track some expenses!"),
+            'allow_share': False
+        })
+
+    # Limit to top 2 insights to avoid clutter
+    insights = insights[:2]
+
+    # Check for onboarding (True if user has NO data at all)
+    has_any_data = Expense.objects.filter(user=request.user).exists() or Income.objects.filter(user=request.user).exists()
+
+    # Logic for "Year in Review" Banner
+    show_year_in_review = False
+    year_in_review_year = None
+    if has_any_data:
+        # Show last year's review in Jan/Feb
+        if now.month <= 2:
+            year_in_review_year = now.year - 1
+        # Show this year's review in Nov/Dec
+        elif now.month >= 11:
+            year_in_review_year = now.year
+            
+        if year_in_review_year:
+            show_year_in_review = Expense.objects.filter(user=request.user, date__year=year_in_review_year).exists()
+
+    context = {
+        'is_new_user': not has_any_data,
+        'insights': insights[::-1],
+        'total_income': total_income,
+        'savings': savings,
+        'recent_transactions': expenses.order_by('-date')[:5],
+        'categories': categories,
+        'category_amounts': category_amounts,
+        'category_data': category_data, # Passing full queryset for the summary table
+        'category_limits': category_limits,
+        'trend_labels': trend_labels,
+        'trend_datasets': trend_datasets,
+        'trend_title': trend_title,
+        'top_labels': top_labels,
+        'top_amounts': top_amounts,
+        # New Context
+        'ie_labels': ie_labels,
+        'ie_income_data': ie_income_data,
+        'ie_expense_data': ie_expense_data,
+        'ie_savings_data': ie_savings_data,
+        'payment_labels': payment_labels,
+        'payment_data': payment_data,
+        'years': years,
+        'all_categories': all_categories,
+        'selected_years': selected_years,
+        'selected_months': selected_months,
+        'selected_year': display_year,    # NEW: For template display labels
+        'selected_month': display_month,  # NEW: For template display labels
+        'selected_categories': selected_categories,
+        'months_list': [(i, calendar.month_name[i]) for i in range(1, 13)],
+        'total_expenses': total_expenses,
+        'transaction_count': transaction_count,
+        'top_category': top_category,
+        'projected_savings': projected_savings, # NEW
+        'start_date': start_date,
+        'end_date': end_date,
+        'prev_month_data': prev_month_data,
+        'prev_month_url': prev_month_url,
+        'next_month_url': next_month_url,
+        'show_tutorial': not request.user.profile.has_seen_tutorial or request.GET.get('tour') == 'true',
+        'has_any_budget': any((c.get('limit') or 0) > 0 for c in category_limits),
+        'show_year_in_review': show_year_in_review,
+        'year_in_review_year': year_in_review_year,
+    }
+    return render(request, 'home.html', context)
+
+@login_required
+def complete_tutorial(request):
+    if request.method == 'POST':
+        profile = request.user.profile
+        profile.has_seen_tutorial = True
+        profile.save()
+        return JsonResponse({'success': True})
+    return JsonResponse({'success': False}, status=400)
+
+class AnalyticsView(LoginRequiredMixin, TemplateView):
+    template_name = 'expenses/analytics.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user = self.request.user
+        
+        # Check for Pro Access
+        if not hasattr(user, 'profile') or not user.profile.is_pro:
+            context['is_locked'] = True
+            return context
+        
+        today = timezone.now().date()
+        
+        # Get Available Years from User Data
+        expense_years = list(Expense.objects.filter(user=user).dates('date', 'year').values_list('date__year', flat=True))
+        income_years = list(Income.objects.filter(user=user).dates('date', 'year').values_list('date__year', flat=True))
+        available_years = sorted(list(set(expense_years + income_years)), reverse=True)
+        
+        if not available_years:
+            available_years = [today.year]
+            
+        # Determine Selected Year
+        selected_year_str = self.request.GET.get('year')
+        if selected_year_str and selected_year_str.isdigit():
+            selected_year = int(selected_year_str)
+        else:
+            selected_year = today.year
+            
+        context['available_years'] = available_years
+        context['selected_year'] = selected_year
+        context['is_current_year'] = (selected_year == today.year)
+        
+        # 1. Monthly Trends (Selected Year)
+        labels = []
+        income_data = []
+        expense_data = []
+        balance_rate_data = []
+        
+        # Determine the start and end date for the selected year
+        start_date = date(selected_year, 1, 1)
+        end_date = date(selected_year, 12, 31)
+        
+        # Fetch data grouped by Month for the selected year
+        monthly_income = Income.objects.filter(
+            user=user, date__gte=start_date, date__lte=end_date
+        ).annotate(month=TruncMonth('date')).values('month').annotate(total=Sum('base_amount')).order_by('month')
+        
+        monthly_expenses = Expense.objects.filter(
+            user=user, date__gte=start_date, date__lte=end_date
+        ).annotate(month=TruncMonth('date')).values('month').annotate(total=Sum('base_amount')).order_by('month')
+        
+        # Merge data into a map {date: {income: 0, expense: 0}}
+        data_map = {}
+        
+        # Initialize map with all 12 months to ensure 0s for missing months
+        # Iterate from start_date to today month by month
+        curr = start_date
+        while curr <= today:
+            d = curr.replace(day=1)
+            data_map[d] = {'income': 0, 'expense': 0}
+            # Move to next month
+            # Carefully handle month increment
+            next_month = curr.month + 1
+            next_year = curr.year
+            if next_month > 12:
+                next_month = 1
+                next_year += 1
+            curr = date(next_year, next_month, 1)
+
+        # Fill with DB data
+        # Fill with DB data
+        for item in monthly_income:
+            if item['month']:
+                d = item['month']
+                if isinstance(d, datetime):
+                    d = d.date()
+                d = d.replace(day=1)
+                if d in data_map:
+                    data_map[d]['income'] = float(item['total'])
+                
+        for item in monthly_expenses:
+             if item['month']:
+                d = item['month']
+                if isinstance(d, datetime):
+                    d = d.date()
+                d = d.replace(day=1)
+                if d in data_map:
+                    data_map[d]['expense'] = float(item['total'])
+                
+        # Sort and prepare lists
+        sorted_keys = sorted(data_map.keys())
+        # Limit to last 12 months if while loop went over
+        sorted_keys = sorted_keys[-12:]
+        
+        for k in sorted_keys:
+            labels.append(date_format(k, 'M Y'))
+            inc = data_map[k]['income']
+            exp = data_map[k]['expense']
+            income_data.append(inc)
+            expense_data.append(exp)
+            
+            # Balance Rate = (Income - Expense) / Income * 100
+            if inc > 0:
+                rate = ((inc - exp) / inc) * 100
+            else:
+                rate = 0
+            balance_rate_data.append(round(rate, 1))
+
+        context['chart_labels'] = labels
+        context['income_data'] = income_data
+        context['expense_data'] = expense_data
+        context['balance_rate_data'] = balance_rate_data
+        
+        # 2. Category Breakdown (Selected Year)
+        category_stats = Expense.objects.filter(
+            user=user, date__year=selected_year
+        ).values('category').annotate(total=Sum('base_amount')).order_by('-total')
+        
+        cat_labels = [_(x['category']) for x in category_stats]
+        cat_data = [float(x['total']) for x in category_stats]
+        
+        context['cat_labels'] = cat_labels
+        context['cat_data'] = cat_data
+        
+        # 3. Key Metrics (YTD / Full Year depending on selection)
+        if selected_year == today.year:
+            # For current year, limit to today so future recurring entries don't skew YTD
+            ytd_income_agg = Income.objects.filter(user=user, date__year=selected_year, date__lte=today).aggregate(Sum('base_amount'))['base_amount__sum'] or 0
+            ytd_expense_agg = Expense.objects.filter(user=user, date__year=selected_year, date__lte=today).aggregate(Sum('base_amount'))['base_amount__sum'] or 0
+        else:
+            # For past years, show the full year's total
+            ytd_income_agg = Income.objects.filter(user=user, date__year=selected_year).aggregate(Sum('base_amount'))['base_amount__sum'] or 0
+            ytd_expense_agg = Expense.objects.filter(user=user, date__year=selected_year).aggregate(Sum('base_amount'))['base_amount__sum'] or 0
+        
+        context['total_income_ytd'] = ytd_income_agg
+        context['total_expense_ytd'] = ytd_expense_agg
+        context['total_balance_ytd'] = ytd_income_agg - ytd_expense_agg
+        
+        if ytd_income_agg > 0:
+            context['avg_balance_rate'] = round(((ytd_income_agg - ytd_expense_agg) / ytd_income_agg) * 100, 1)
+        else:
+            context['avg_balance_rate'] = 0
+            
+        # ---------------------------------------------------------
+        # 4. Sankey Data (Income -> Expenses/Savings) YTD
+        # ---------------------------------------------------------
+        sankey_data = []
+        if ytd_income_agg > 0 or ytd_expense_agg > 0:
+            top_cats = list(category_stats[:8])
+            other_cats = list(category_stats[8:])
+            
+            for cat in top_cats:
+                sankey_data.append([_('Income'), _(cat['category']), float(cat['total'])])
+                
+            if other_cats:
+                other_total = sum(float(cat['total']) for cat in other_cats)
+                if other_total > 0:
+                    sankey_data.append([_('Income'), _('Other Expenses'), other_total])
+                    
+            savings = ytd_income_agg - ytd_expense_agg
+            if savings > 0:
+                sankey_data.append([_('Income'), _('Savings'), float(savings)])
+            elif savings < 0:
+                # If deficit, flow deficit into Income so Google Chart balances it as money source
+                sankey_data.append([_('Deficit (Overspending)'), _('Income'), abs(float(savings))])
+                
+        context['sankey_data'] = sankey_data
+            
+        # ---------------------------------------------------------
+        # 5. Cashflow Forecasting (Next 6 Months)
+        # ---------------------------------------------------------
+        
+        # A. Calculate Historical Average (Last 3 completed months)
+        # We need completed months to avoid partial data skewing
+        avg_income = 0
+        avg_expense = 0
+        months_counted = 0
+        
+        # Iterate back 3 months
+        for i in range(1, 4):
+            # Calculate past month/year
+            # e.g. If now is May, we want April, March, Feb
+            past_date = today.replace(day=1) - timedelta(days=20*i) # rough jump back
+            # normalize to 1st of that month
+            past_date = past_date.replace(day=1)
+            
+            # Re-calculate cleanly
+            # If today is 2023-05-15
+            # i=1 -> 2023-04-01
+            # i=2 -> 2023-03-01
+            # i=3 -> 2023-02-01
+            year = today.year
+            month = today.month - i
+            while month < 1:
+                month += 12
+                year -= 1
+            
+            p_income = Income.objects.filter(user=user, date__year=year, date__month=month).aggregate(Sum('base_amount'))['base_amount__sum'] or 0
+            p_expense = Expense.objects.filter(user=user, date__year=year, date__month=month).aggregate(Sum('base_amount'))['base_amount__sum'] or 0
+            
+            avg_income += p_income
+            avg_expense += p_expense
+            months_counted += 1
+            
+        if months_counted > 0:
+            avg_income /= months_counted
+            avg_expense /= months_counted
+
+        # ---------------------------------------------------------
+        # 5. Financial Health Score & Insights
+        # ---------------------------------------------------------
+        balance_rate = context.get('avg_balance_rate', 0)
+        health_score = 0
+        health_label = ""
+        health_color = ""
+        insights = []
+        
+        # Currency symbol for formatting
+        currency = user.profile.currency if hasattr(user, 'profile') else '₹'
+        savings_ytd = float(ytd_income_agg) - float(ytd_expense_agg)
+        income_f = float(ytd_income_agg)
+        expense_f = float(ytd_expense_agg)
+        
+        # Top category context (used across insights)
+        top_cat_name = cat_labels[0] if cat_data else None
+        top_cat_pct = 0
+        if top_cat_name and income_f > 0:
+            top_cat_pct = (cat_data[0] / income_f) * 100
+        
+        # Score Logic with dynamic messages
+        if balance_rate < 0:
+            health_score = 10
+            health_label = _("At Risk")
+            health_color = "danger"
+            overspend_pct = abs(balance_rate)
+            msg = _("You spent %(currency)s%(expense)s against %(currency)s%(income)s income (%(pct)s%% overspend).") % {
+                'currency': currency,
+                'expense': f"{expense_f:,.0f}",
+                'income': f"{income_f:,.0f}",
+                'pct': f"{overspend_pct:.0f}",
+            }
+            if top_cat_name:
+                msg += " " + _("Review '%(cat)s' which accounts for %(cat_pct)s%% of your spending.") % {
+                    'cat': escape(top_cat_name),
+                    'cat_pct': f"{top_cat_pct:.0f}",
+                }
+            insights.append(msg)
+        elif balance_rate < 10:
+            health_score = 40
+            health_label = _("Caution")
+            health_color = "warning"
+            msg = _("You saved %(currency)s%(savings)s out of %(currency)s%(income)s (%(rate)s%%).") % {
+                'currency': currency,
+                'savings': f"{savings_ytd:,.0f}",
+                'income': f"{income_f:,.0f}",
+                'rate': f"{balance_rate:.0f}",
+            }
+            if top_cat_name and cat_data:
+                potential_saving = cat_data[0] * 0.2
+                msg += " " + _("Cutting '%(cat)s' by 20%% could save %(currency)s%(amount)s more.") % {
+                    'cat': escape(top_cat_name),
+                    'currency': currency,
+                    'amount': f"{potential_saving:,.0f}",
+                }
+            insights.append(msg)
+        elif balance_rate < 30:
+            health_score = 70
+            health_label = _("Stable")
+            health_color = "info"
+            gap_to_30 = (0.30 * income_f) - savings_ytd if income_f > 0 else 0
+            msg = _("You saved %(currency)s%(savings)s out of %(currency)s%(income)s (%(rate)s%%).") % {
+                'currency': currency,
+                'savings': f"{savings_ytd:,.0f}",
+                'income': f"{income_f:,.0f}",
+                'rate': f"{balance_rate:.0f}",
+            }
+            if gap_to_30 > 0:
+                msg += " " + _("Just %(currency)s%(gap)s more to hit the 30%% savings benchmark.") % {
+                    'currency': currency,
+                    'gap': f"{gap_to_30:,.0f}",
+                }
+            insights.append(msg)
+        else:
+            health_score = 95
+            health_label = _("Wealth Builder")
+            health_color = "success"
+            insights.append(
+                _("You saved %(currency)s%(savings)s out of %(currency)s%(income)s (%(rate)s%%). That's top-tier financial discipline.") % {
+                    'currency': currency,
+                    'savings': f"{savings_ytd:,.0f}",
+                    'income': f"{income_f:,.0f}",
+                    'rate': f"{balance_rate:.0f}",
+                }
+            )
+
+        # Category Insight (high concentration warning)
+        if cat_data and top_cat_name:
+            if income_f > 0:
+                try:
+                    if top_cat_pct > 30:
+                        safe_top_cat = escape(top_cat_name)
+                        insights.append(
+                            _("'%(cat)s' is consuming %(pct)s%% of your income (%(currency)s%(amount)s). Consider setting a budget limit.") % {
+                                'cat': safe_top_cat,
+                                'pct': f"{top_cat_pct:.0f}",
+                                'currency': currency,
+                                'amount': f"{cat_data[0]:,.0f}",
+                            }
+                        )
+                except (ValueError, TypeError):
+                    pass
+
+        # Spending Trend Projection (uses 3-month avg calculated earlier)
+        if avg_expense > 0 and expense_f > 0 and selected_year == today.year:
+            avg_expense_f = float(avg_expense)
+            # Compare current year monthly average to historical
+            months_elapsed = today.month
+            current_monthly_avg = expense_f / months_elapsed if months_elapsed > 0 else 0
+            if current_monthly_avg > avg_expense_f * 1.15:  # 15% higher than historical
+                pct_increase = ((current_monthly_avg - avg_expense_f) / avg_expense_f) * 100
+                next_month_name = (today.replace(day=28) + timedelta(days=4)).strftime('%B')
+                projected = current_monthly_avg
+                insights.append(
+                    _("Spending is trending %(pct)s%% above your 3-month average. %(month)s may reach %(currency)s%(projected)s at this pace.") % {
+                        'pct': f"{pct_increase:.0f}",
+                        'month': next_month_name,
+                        'currency': currency,
+                        'projected': f"{projected:,.0f}",
+                    }
+                )
+        # ---------------------------------------------------------
+        # 5b. Health Breakdown Panel (Expandable Metrics)
+        # ---------------------------------------------------------
+        health_breakdown = []
+        
+        # 1. Savings Rate
+        savings_rate_val = round(balance_rate, 1)
+        if savings_rate_val >= 20:
+            sr_status, sr_icon = 'success', 'check-circle-fill'
+        elif savings_rate_val > 0:
+            sr_status, sr_icon = 'warning', 'exclamation-triangle-fill'
+        else:
+            sr_status, sr_icon = 'danger', 'x-circle-fill'
+        health_breakdown.append({
+            'label': _('Savings Rate'),
+            'value': f"{savings_rate_val}%",
+            'status': sr_status,
+            'icon': sr_icon,
+        })
+        
+        # 2. Expense Growth (current monthly avg vs 3-month historical avg)
+        avg_expense_f = float(avg_expense) if avg_expense > 0 else 0
+        months_elapsed = today.month if selected_year == today.year else 12
+        current_monthly_avg = expense_f / months_elapsed if months_elapsed > 0 else 0
+        
+        if avg_expense_f > 0:
+            expense_growth_pct = round(((current_monthly_avg - avg_expense_f) / avg_expense_f) * 100, 1)
+        else:
+            expense_growth_pct = 0
+        
+        eg_prefix = '+' if expense_growth_pct > 0 else ''
+        if expense_growth_pct <= 0:
+            eg_status, eg_icon = 'success', 'check-circle-fill'
+        elif expense_growth_pct <= 15:
+            eg_status, eg_icon = 'warning', 'exclamation-triangle-fill'
+        else:
+            eg_status, eg_icon = 'danger', 'x-circle-fill'
+        health_breakdown.append({
+            'label': _('Expense Growth'),
+            'value': f"{eg_prefix}{expense_growth_pct}%",
+            'status': eg_status,
+            'icon': eg_icon,
+        })
+        
+        # 3. Consistency (months with positive savings out of last 10)
+        consistency_count = 0
+        consistency_total = 10
+        for i in range(1, consistency_total + 1):
+            c_year = today.year
+            c_month = today.month - i
+            while c_month < 1:
+                c_month += 12
+                c_year -= 1
+            c_inc = Income.objects.filter(user=user, date__year=c_year, date__month=c_month).aggregate(Sum('base_amount'))['base_amount__sum'] or 0
+            c_exp = Expense.objects.filter(user=user, date__year=c_year, date__month=c_month).aggregate(Sum('base_amount'))['base_amount__sum'] or 0
+            if c_inc > c_exp and c_inc > 0:
+                consistency_count += 1
+        
+        if consistency_count >= 7:
+            cs_status, cs_icon = 'success', 'check-circle-fill'
+        elif consistency_count >= 4:
+            cs_status, cs_icon = 'warning', 'exclamation-triangle-fill'
+        else:
+            cs_status, cs_icon = 'danger', 'x-circle-fill'
+        health_breakdown.append({
+            'label': _('Consistency'),
+            'value': f"{consistency_count}/{consistency_total}",
+            'status': cs_status,
+            'icon': cs_icon,
+        })
+        
+        # 4. Risk Buffer (months of runway = total savings / avg monthly expense)
+        if avg_expense_f > 0 and savings_ytd > 0:
+            risk_buffer_months = round(savings_ytd / avg_expense_f, 1)
+        else:
+            risk_buffer_months = 0
+        
+        if risk_buffer_months >= 6:
+            rb_status, rb_icon = 'success', 'check-circle-fill'
+        elif risk_buffer_months >= 3:
+            rb_status, rb_icon = 'warning', 'exclamation-triangle-fill'
+        else:
+            rb_status, rb_icon = 'danger', 'x-circle-fill'
+        health_breakdown.append({
+            'label': _('Risk Buffer'),
+            'value': _("%(months)s months") % {'months': f"{risk_buffer_months:.0f}"},
+            'status': rb_status,
+            'icon': rb_icon,
+        })
+        
+        # Health Summary sentence (combine best + worst)
+        status_order = {'success': 2, 'warning': 1, 'danger': 0}
+        best = max(health_breakdown, key=lambda x: status_order[x['status']])
+        worst = min(health_breakdown, key=lambda x: status_order[x['status']])
+        
+        summary_parts = []
+        if best['status'] == 'success':
+            summary_parts.append(_("Your %(label)s is excellent.") % {'label': best['label'].lower()})
+        if worst['status'] != 'success' and worst != best:
+            summary_parts.append(_("However, %(label)s needs attention (%(value)s).") % {'label': worst['label'].lower(), 'value': worst['value']})
+        health_summary = ' '.join(str(p) for p in summary_parts) if summary_parts else ''
+
+        context['health_score'] = health_score
+        context['health_label'] = health_label
+        context['health_color'] = health_color
+        context['insights'] = insights
+        context['health_breakdown'] = health_breakdown
+        context['health_summary'] = health_summary
+            
+
+
+        # 4. Day-of-Week Spending (Selected Year)
+        dow_stats = Expense.objects.filter(
+            user=user, date__year=selected_year
+        ).annotate(weekday=ExtractWeekDay('date')).values('weekday').annotate(
+            total=Sum('base_amount')
+        ).order_by('weekday')
+        
+        # ExtractWeekDay: 1 (Sun) to 7 (Sat)
+        dow_labels = [_('Sun'), _('Mon'), _('Tue'), _('Wed'), _('Thu'), _('Fri'), _('Sat')]
+        dow_data = [0] * 7
+        for item in dow_stats:
+            # Handle possible key variations depending on DB backend
+            wd = item.get('weekday')
+            if wd is not None:
+                dow_data[wd - 1] = float(item['total'])
+        
+        context['dow_labels'] = dow_labels
+        context['dow_data'] = dow_data
+
+        # 5. Cumulative Burn-down (Current Month)
+        # Only relevant for the current month/year
+        this_month_labels = []
+        this_month_spent = []
+        this_month_budget_line = []
+        this_month_projection = []
+        
+        if today.year == selected_year:
+            # Current Month Cumulative
+            days_in_month = calendar.monthrange(today.year, today.month)[1]
+            daily_spending = Expense.objects.filter(
+                user=user, date__year=today.year, date__month=today.month
+            ).values('date__day').annotate(total=Sum('base_amount')).order_by('date__day')
+            
+            daily_map = {item['date__day']: float(item['total']) for item in daily_spending}
+            
+            total_monthly_limit = Category.objects.filter(user=user).aggregate(Sum('limit'))['limit__sum'] or 0
+            total_monthly_limit = float(total_monthly_limit)
+            
+            cumulative = 0
+            this_month_projection = [None] * days_in_month
+            
+            for day in range(1, days_in_month + 1):
+                this_month_labels.append(str(day))
+                
+                # Only add actual spent data up to today
+                if day <= today.day:
+                    cumulative += daily_map.get(day, 0)
+                    this_month_spent.append(round(cumulative, 2))
+                else:
+                    this_month_spent.append(None)
+                
+                # Ideal line (pro-rated budget)
+                if total_monthly_limit > 0:
+                    this_month_budget_line.append(round((total_monthly_limit / days_in_month) * day, 2))
+                else:
+                    this_month_budget_line.append(0)
+
+            # Calculation for Projection (Burn Rate)
+            if today.day > 0 and cumulative > 0:
+                burn_rate = cumulative / today.day
+                proj_cumulative = cumulative
+                # Start projection from today
+                this_month_projection[today.day - 1] = round(cumulative, 2)
+                for day in range(today.day + 1, days_in_month + 1):
+                    proj_cumulative += burn_rate
+                    this_month_projection[day - 1] = round(proj_cumulative, 2)
+        
+        context['burn_down_labels'] = this_month_labels
+        context['burn_down_spent'] = this_month_spent
+        context['burn_down_budget'] = this_month_budget_line
+        context['burn_down_projection'] = this_month_projection
+
+
+
+        # 7. Recurring vs One-time (Current Month)
+        recurring_sum = Expense.objects.filter(
+            user=user, 
+            date__year=today.year, 
+            date__month=today.month,
+            description__icontains='(Recurring)'
+        ).aggregate(Sum('base_amount'))['base_amount__sum'] or 0
+        
+        total_sum = Expense.objects.filter(
+            user=user, date__year=today.year, date__month=today.month
+        ).aggregate(Sum('base_amount'))['base_amount__sum'] or 1 # Avoid div by zero
+        
+        rec_val = float(recurring_sum)
+        one_time_val = float(total_sum) - rec_val
+        
+        context['recurring_split_labels'] = [_('Recurring'), _('One-time')]
+        context['recurring_split_data'] = [rec_val, max(0, one_time_val)]
+        # ---------------------------------------------------------
+        # 5. Cashflow Forecasting (Next 6 Months)
+        # ---------------------------------------------------------
+        
+        # A. Calculate Historical Average (Last 3 completed months)
+        avg_income = 0
+        avg_expense = 0
+        months_counted = 0
+        
+        for i in range(1, 4):
+            year = today.year
+            month = today.month - i
+            while month < 1:
+                month += 12
+                year -= 1
+            
+            p_income = Income.objects.filter(user=user, date__year=year, date__month=month).aggregate(Sum('base_amount'))['base_amount__sum'] or 0
+            p_expense = Expense.objects.filter(user=user, date__year=year, date__month=month).aggregate(Sum('base_amount'))['base_amount__sum'] or 0
+            
+            avg_income += p_income
+            avg_expense += p_expense
+            months_counted += 1
+            
+        if months_counted > 0:
+            avg_income /= months_counted
+            avg_expense /= months_counted
+
+        # B. Future Monthly Projection (incorporating recurring rules)
+        forecast_income = []
+        forecast_expenses = []
+        forecast_labels = []
+        
+        active_recurring = RecurringTransaction.objects.filter(user=user, is_active=True)
+        
+        # Calculate isolated monthly recurring to subtract from baseline
+        monthly_rec_income_baseline = 0
+        monthly_rec_expense_baseline = 0
+        for r in active_recurring:
+            if r.frequency == 'MONTHLY':
+                if r.transaction_type == 'INCOME':
+                    monthly_rec_income_baseline += float(r.amount)
+                else:
+                    monthly_rec_expense_baseline += float(r.amount)
+        
+        for i in range(1, 7):
+            forecast_year = today.year
+            forecast_month = today.month + i
+            while forecast_month > 12:
+                forecast_month -= 12
+                forecast_year += 1
+            
+            month_date = date(forecast_year, forecast_month, 1)
+            forecast_labels.append(date_format(month_date, 'M Y'))
+            
+            rec_income_for_month = 0
+            rec_expense_for_month = 0
+            
+            for r in active_recurring:
+                if r.frequency == 'MONTHLY':
+                    if r.transaction_type == 'INCOME':
+                        rec_income_for_month += float(r.amount)
+                    elif r.transaction_type == 'EXPENSE':
+                        rec_expense_for_month += float(r.amount)
+                elif r.frequency == 'YEARLY':
+                    # Only add if it happens in this specific month
+                    if r.start_date.month == forecast_month:
+                        if r.transaction_type == 'INCOME':
+                            rec_income_for_month += float(r.amount)
+                        elif r.transaction_type == 'EXPENSE':
+                            rec_expense_for_month += float(r.amount)
+            
+            # Combine Historical Avg (minus recurring) + Specific Month's Recurring
+            # We assume historical avg includes average recurring, so we substitute
+            projected_inc = max(float(avg_income), monthly_rec_income_baseline) + (rec_income_for_month - monthly_rec_income_baseline)
+            projected_exp = max(float(avg_expense), monthly_rec_expense_baseline) + (rec_expense_for_month - monthly_rec_expense_baseline)
+            
+            forecast_income.append(round(projected_inc, 0))
+            forecast_expenses.append(round(projected_exp, 0))
+            
+        context['forecast_income'] = forecast_income
+        context['forecast_expenses'] = forecast_expenses
+        context['forecast_labels'] = forecast_labels
+
+        return context
+
+class BudgetDashboardView(LoginRequiredMixin, TemplateView):
+    template_name = 'expenses/budget_dashboard.html'
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user = self.request.user
+        today = date.today()
+        
+        month_param = self.request.GET.get('month')
+        year_param = self.request.GET.get('year')
+        
+        month = int(month_param) if month_param else today.month
+        year = int(year_param) if year_param else today.year
+        
+        # Ensure context variables for filters are correct
+        context['current_month'] = month
+        context['current_year'] = year
+        
+        categories = Category.objects.filter(user=user)
+        budget_data = []
+        
+        total_budget = 0
+        categorized_spent = 0
+        
+        # Calculate total spending across ALL expenses for the month
+        grand_total_spent = Expense.objects.filter(
+            user=user,
+            date__year=year,
+            date__month=month
+        ).aggregate(Total=Sum('base_amount'))['Total'] or 0
+
+        for category in categories:
+            spent = Expense.objects.filter(
+                user=user,
+                category=category.name,
+                date__year=year,
+                date__month=month
+            ).aggregate(Total=Sum('base_amount'))['Total'] or 0
+            
+            percentage = (spent / category.limit * 100) if category.limit and category.limit > 0 else 0
+            
+            budget_data.append({
+                'category': category,
+                'spent': spent,
+                'limit': category.limit,
+                'percentage': min(percentage, 100),
+                'actual_percentage': percentage,
+                'remaining': (category.limit - spent) if category.limit and spent <= category.limit else 0,
+                'over_budget': (spent - category.limit) if category.limit and spent > category.limit else 0
+            })
+            
+            if category.limit:
+                total_budget += category.limit
+            categorized_spent += spent
+            
+        context.update({
+            'budget_data': budget_data,
+            'total_budget': total_budget,
+            'total_spent': grand_total_spent,
+            'total_remaining': (total_budget - grand_total_spent) if total_budget > grand_total_spent else 0,
+            'over_budget_amount': (grand_total_spent - total_budget) if grand_total_spent > total_budget else 0,
+            'total_percentage': min((grand_total_spent / total_budget * 100), 100) if total_budget else 0,
+            'actual_total_percentage': (grand_total_spent / total_budget * 100) if total_budget else 0,
+            'month_name': date(year, month, 1).strftime('%B'),
+        })
+
+        # MoM Calculation for Budget Dashboard
+        if month == 1:
+            prev_month = 12
+            prev_year = year - 1
+        else:
+            prev_month = month - 1
+            prev_year = year
+
+        prev_spent = Expense.objects.filter(
+            user=user,
+            date__year=prev_year,
+            date__month=prev_month
+        ).aggregate(Total=Sum('base_amount'))['Total'] or 0
+
+        if prev_spent > 0:
+            context['spent_mom_pct'] = ((grand_total_spent - prev_spent) / prev_spent) * 100
+            context['spent_mom_pct_abs'] = abs(context['spent_mom_pct'])
+        else:
+            context['spent_mom_pct'] = None
+            context['spent_mom_pct_abs'] = None
+
+        context.update({
+            'current_month': month,
+            'current_year': year,
+            'months': [(i, calendar.month_name[i]) for i in range(1, 13)],
+            'years': range(today.year - 2, today.year + 2),
+        })
+        return context
+
+class YearInReviewView(LoginRequiredMixin, TemplateView):
+    template_name = 'expenses/year_in_review.html'
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        year = int(self.request.GET.get('year', date.today().year))
+        context['review_data'] = generate_year_in_review_data(self.request.user, year)
+        return context
+
+    def dispatch(self, request, *args, **kwargs):
+        from django.contrib import messages
+        from django.shortcuts import redirect
+        if not request.user.profile.is_plus:
+            messages.info(request, "Year in Review is a Premium feature. Upgrade to Plus or Pro to unlock your personalized financial story!")
+            return redirect('pricing')
+        return super().dispatch(request, *args, **kwargs)

@@ -100,7 +100,7 @@ class Command(BaseCommand):
 
             # Feature Gate: Only for Plus and Pro users (using our fixed properties)
             if not hasattr(user, 'profile') or not user.profile.is_plus:
-                self.stdout.write(f"Skipping email for {user.username}: Free Tier (is_plus={user.profile.is_plus if hasattr(user, 'profile') else 'N/A'})")
+                self.stdout.write(f"Skipping email for {user.username} (Free Tier)")
                 continue
 
             self.stdout.write(f"Preparing consolidated email for {user.email} with {len(transactions)} items...")

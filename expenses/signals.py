@@ -25,7 +25,7 @@ def create_default_categories(sender, instance, created, **kwargs):
     if created:
         default_categories = [
             ('Food', 'bi-cup-hot'),
-            ('Groceries', 'bi-cart3'),
+            ('Shopping', 'bi-cart3'),
             ('Transport', 'bi-car-front'),
             ('Bills', 'bi-receipt'),
             ('Entertainment', 'bi-film'),

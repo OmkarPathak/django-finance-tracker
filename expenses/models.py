@@ -196,7 +196,7 @@ class RecurringTransaction(models.Model):
 
     @property
     def next_due_date(self):
-        if not self.last_processed_date:
+        if not self.last_processed_date or self.last_processed_date < self.start_date:
             return self.start_date
         return self.get_next_date(self.last_processed_date, self.frequency)
 
@@ -250,7 +250,7 @@ class UserProfile(models.Model):
             if self.is_lifetime:
                 return True
             if not self.subscription_end_date:
-                return True # Assume active if no end date set manually
+                return True
             if self.subscription_end_date > timezone.now():
                 return True
         return False

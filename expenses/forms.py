@@ -279,7 +279,7 @@ class GoalContributionForm(forms.ModelForm):
  
 class CategoryForm(forms.ModelForm):
     from .utils import BOOTSTRAP_ICONS
-    icon = forms.ChoiceField(choices=BOOTSTRAP_ICONS, widget=forms.Select(attrs={'class': 'form-select'}))
+    icon = forms.ChoiceField(choices=BOOTSTRAP_ICONS, widget=forms.Select(attrs={'class': 'form-select'}), required=False)
  
     class Meta:
         model = Category
