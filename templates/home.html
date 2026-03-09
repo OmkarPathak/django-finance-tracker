@@ -2,6 +2,7 @@
 {% load currency_filters i18n digit_filters expense_extras %}
 
 {% block content %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style>
     .icon-shape {
         display: inline-flex;
@@ -99,8 +100,13 @@
     @keyframes inbox-drop { 0%, 100% { transform: translateY(0); opacity: 0.5; } 50% { transform: translateY(4px); opacity: 1; } }
     .anim-inbox-arrow { animation: inbox-drop 2.5s ease-in-out infinite; }
 
-    @keyframes vs-scale { 0%,100% { transform: scale(1); } 50% { transform: scale(1.15); } }
-    .anim-vs { animation: vs-scale 4s ease-in-out infinite; }
+    @keyframes pulse-light {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.5; }
+    }
+    .animate-pulse-light {
+        animation: pulse-light 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
 </style>
 <div class="d-flex flex-column flex-md-row justify-content-between align-items-center mb-4 gap-3 fade-in" style="position: relative; z-index: 100;">
     <!-- Mobile Header (One Line) -->
@@ -261,79 +267,275 @@
     </form>
 </div>
 
-<!-- Emotional Insights Section -->
-{% if insights %}
-<!-- Collapsible Insight Bar (Mobile & Desktop) -->
-<div class="mb-4 fade-in">
-    <div class="accordion" id="insightsAccordion">
+<!-- Financial Intelligence Hub -->
+{% if salary_breakdown or insights %}
+<div class="mb-5 fade-in">
+    <div class="accordion mb-4" id="salaryAccordion">
         <div class="accordion-item border-0 shadow-sm overflow-hidden rounded-3">
-            <h2 class="accordion-header" id="headingInsights">
-                <button class="accordion-button collapsed bg-body-tertiary fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#insightsCollapse" aria-expanded="false" aria-controls="insightsCollapse">
+            <h2 class="accordion-header" id="headingSalary">
+                <button class="accordion-button collapsed bg-primary bg-opacity-10 fw-bold text-primary" type="button" data-bs-toggle="collapse" data-bs-target="#salaryCollapse" aria-expanded="false" aria-controls="salaryCollapse">
                     <div class="d-flex align-items-center w-100">
-                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-warning me-2 flex-shrink-0">
-                        <style>
-                            @keyframes bulb-pulse { 0%, 100% { filter: drop-shadow(0 0 2px rgba(255,193,7,0.4)); } 50% { filter: drop-shadow(0 0 8px rgba(255,193,7,0.8)); } }
-                            .anim-bulb { animation: bulb-pulse 3s ease-in-out infinite; }
-                        </style>
-                        <path class="anim-bulb" d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7V17h8v-2.3A7 7 0 0 0 12 2z" fill="currentColor" fill-opacity="0.15"/>
-                    </svg>
-                        <span class="fw-bold me-2">{% trans "This Month's Insights" %}</span>
-                        <span class="badge rounded-pill bg-primary opacity-75 ms-auto me-3">{{ insights|length|translate_digits }}</span>
+                        <i class="bi bi-stars me-2 text-warning animate-pulse-light"></i>
+                        <span class="fw-bold">{% trans "Your Financial Intelligence" %}</span>
                     </div>
                 </button>
             </h2>
-            <div id="insightsCollapse" class="accordion-collapse collapse" aria-labelledby="headingInsights" data-bs-parent="#insightsAccordion">
-                <div class="accordion-body p-3 bg-body bg-opacity-50">
-                    <div class="row g-3">
-                        {% for insight in insights %}
-                        <div class="col-12">
-                            <div class="alert alert-{{ insight.type }} border-0 shadow-sm d-flex align-items-center justify-content-between gap-3 mb-0" role="alert">
-                                <div class="d-flex align-items-center gap-3">
-                                    <div class="p-2 rounded-circle bg-white bg-opacity-25 d-flex align-items-center justify-content-center flex-shrink-0" style="width: 42px; height: 42px;">
-                                        <i class="bi bi-{{ insight.icon }} fs-5"></i>
-                                    </div>
-                                    <div>
-                                        <h6 class="alert-heading fw-bold mb-1 small">{{ insight.title }}</h6>
-                                        <p class="mb-0 small opacity-75">{{ insight.message|safe }}</p>
-                                    </div>
+            <div id="salaryCollapse" class="accordion-collapse collapse" aria-labelledby="headingSalary" data-bs-parent="#salaryAccordion">
+                <div class="accordion-body p-0 bg-primary bg-opacity-10">
+                    
+                    {% if salary_breakdown %}
+                    <!-- Salary Breakdown Section -->
+                    <div id="salary-breakdown-container" class="p-3 p-md-4 text-center">
+                        <div id="analyze-prompt">
+                            <i class="bi bi-magic fs-3 text-primary mb-2 d-block"></i>
+                            <h5 class="fw-bold text-primary mb-1">{% trans "Where Did My Salary Go?" %}</h5>
+                            <p class="text-muted small mb-3">{% trans "Discover your top spending habits with an AI-powered breakdown." %}</p>
+                            <button class="btn btn-primary rounded-pill px-4 fw-bold shadow-sm" onclick="analyzeSalary()">
+                                {% trans "Analyze My Salary" %}
+                            </button>
+                        </div>
+
+                        <div id="analyze-loading" style="display: none;">
+                            <div class="mb-3">
+                                <div class="spinner-border text-primary" role="status" style="width: 1.5rem; height: 1.5rem;">
+                                    <span class="visually-hidden">Loading...</span>
                                 </div>
                             </div>
+                            <h6 class="fw-bold text-primary animate-pulse-light small mb-0" id="loading-text">{% trans "Scanning transactions..." %}</h6>
+                            <div class="progress mt-3 mx-auto" style="height: 4px; max-width: 200px;">
+                                <div id="analyze-progress" class="progress-bar progress-bar-animated" role="progressbar" style="width: 0%"></div>
+                            </div>
                         </div>
-                        {% endfor %}
+
+                        <div id="analyze-results" style="display: none;">
+                                <div class="row g-0 g-md-4 text-start">
+                                    <!-- Left Column: Breakdown Summary & List -->
+                                    <div class="col-12 col-md-6">
+                                        <!-- Result Header -->
+                                        <div class="mb-4">
+                                            <h6 class="fw-bold mb-1 text-primary">{% trans "My Breakdown" %}</h6>
+                                            <div class="d-flex align-items-center justify-content-between gap-2 flex-wrap">
+                                                <div class="d-flex align-items-center gap-1 flex-wrap">
+                                                    <small class="text-muted">{{ salary_breakdown.month_name }} {{ salary_breakdown.year|translate_digits }}</small>
+                                                    <span class="badge bg-danger bg-opacity-10 text-danger border-0 rounded-pill" style="font-size: 0.75rem;">
+                                                        <i class="bi bi-fire me-1"></i>{{ currency_symbol }}{{ salary_breakdown.daily_burn|humanize_currency:currency_symbol|translate_digits }}/{% trans "day" %}
+                                                    </span>
+                                                </div>
+                                                <div class="text-end">
+                                                    <span class="badge bg-primary rounded-pill px-2 py-1 small shadow-sm">
+                                                         {{ salary_breakdown.savings_rate|translate_digits }}% {% trans "Saved" %}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Top Expenses List (Hybrid Layout) -->
+                                        <div class="mb-3">
+                                            <!-- Desktop View: Row-based List -->
+                                            <div class="d-none d-md-flex flex-column gap-2 mb-4">
+                                                {% for cat in salary_breakdown.top_categories %}
+                                                <div class="d-flex align-items-center justify-content-between">
+                                                    <div class="d-flex align-items-center gap-2">
+                                                        <div class="d-flex align-items-center justify-content-center flex-shrink-0" style="width: 24px; height: 24px;">
+                                                            <i class="bi {% category_icon cat.category user %} text-primary opacity-75" style="font-size: 1rem;"></i>
+                                                        </div>
+                                                        <span class="fw-semibold small text-body opacity-75">{{ cat.category }}</span>
+                                                    </div>
+                                                    <span class="fw-bold small">{{ currency_symbol }}{{ cat.total|humanize_currency:currency_symbol|translate_digits }}</span>
+                                                </div>
+                                                {% endfor %}
+                                            </div>
+
+                                            <!-- Mobile View: Card-based Grid -->
+                                            <div class="d-flex d-md-none flex-wrap gap-3 justify-content-center px-2 px-md-0">
+                                                {% for cat in salary_breakdown.top_categories %}
+                                                <div class="d-flex flex-column align-items-center text-center" style="width: 80px;">
+                                                    <div class="bg-primary bg-opacity-10 rounded-3 mb-2 d-flex align-items-center justify-content-center" style="width: 42px; height: 42px;">
+                                                        <i class="bi {% category_icon cat.category user %} text-primary opacity-75" style="font-size: 1.2rem;"></i>
+                                                    </div>
+                                                    <span class="fw-semibold text-body opacity-75 text-truncate w-100 mb-1" style="font-size: 0.7rem; line-height: 1.1;">{{ cat.category }}</span>
+                                                    <span class="fw-bold small text-primary" style="font-size: 0.8rem;">{{ currency_symbol }}{{ cat.total|humanize_currency:currency_symbol|translate_digits }}</span>
+                                                </div>
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+
+                                        <!-- Mobile-only section divider -->
+                                        <hr class="d-md-none my-4 opacity-10">
+                                    </div>
+
+                                    <!-- Right Column: Financial Intelligence Hub -->
+                                    <div class="col-12 col-md-6 border-start-md pt-0" style="border-left: 1px solid rgba(255,255,255,0.05);">
+                                        <!-- Smart Insights Container -->
+                                        <div class="mb-0 h-100">
+                                            <style>
+                                                @media (max-width: 767.98px) {
+                                                    .border-start-md { border-left: 0 !important; }
+                                                }
+                                                @media (min-width: 768px) {
+                                                    .border-start-md { border-left: 1px solid rgba(255,255,255,0.05) !important; }
+                                                }
+                                            </style>
+                                            
+                                            <!-- Sub-header only shown if needed, but we can rely on icons for a cleaner look -->
+                                            <div class="d-none d-md-flex align-items-center gap-2 mb-3">
+                                                <i class="bi bi-stars text-primary"></i>
+                                                <h6 class="mb-0 fw-bold small">{% trans "Financial Intelligence" %}</h6>
+                                            </div>
+
+                                            <!-- 1. Salary Analysis Insights (Only visible if results available) -->
+                                            <div id="salary-specific-insights" style="display: none;">
+                                                <div class="d-flex align-items-start gap-2 mb-3">
+                                                    <div class="d-flex align-items-center justify-content-center flex-shrink-0" style="width: 24px; height: 24px;">
+                                                        <i class="bi bi-magic text-primary opacity-75" style="font-size: 1rem;"></i>
+                                                    </div>
+                                                    <div class="flex-grow-1">
+                                                        <span class="fw-bold text-body" style="font-size: 0.9rem;">{% trans "Smart Insight" %}</span>
+                                                        <p class="mb-0 text-body-secondary lh-sm mt-1" style="font-size: 0.85rem;">
+                                                            {% if salary_breakdown.viral_insight %}
+                                                                {{ salary_breakdown.viral_insight }}
+                                                            {% else %}
+                                                                {% blocktrans with rate=salary_breakdown.savings_rate|translate_digits %}You're building solid wealth with a {{ rate }}% savings rate.{% endblocktrans %}
+                                                            {% endif %}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                                
+                                                {% if salary_breakdown.relatable_metric %}
+                                                <div class="d-flex align-items-start gap-2 mb-3">
+                                                    <div class="d-flex align-items-center justify-content-center flex-shrink-0" style="width: 24px; height: 24px;">
+                                                        <i class="bi bi-{{ salary_breakdown.relatable_metric.icon }} text-primary opacity-75" style="font-size: 1rem;"></i>
+                                                    </div>
+                                                    <div class="flex-grow-1">
+                                                        <span class="fw-bold text-body" style="font-size: 0.9rem;">{% trans "Fun Fact" %}</span>
+                                                        <p class="mb-0 text-body-secondary lh-sm mt-1 italic" style="font-size: 0.85rem; font-style: italic;">
+                                                            {{ salary_breakdown.relatable_metric.text }}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                                {% endif %}
+                                                
+                                                {% if insights %}
+                                                <hr class="my-3 opacity-10">
+                                                {% endif %}
+                                            </div>
+
+                                            <!-- 2. General Insights (Budget, Trends, Streaks) -->
+                                            {% if insights %}
+                                            <div class="d-flex flex-column gap-3">
+                                                {% for insight in insights %}
+                                                <div class="d-flex align-items-start gap-2">
+                                                    <div class="d-flex align-items-center justify-content-center flex-shrink-0" style="width: 24px; height: 24px;">
+                                                        <i class="bi bi-{{ insight.icon }} text-primary opacity-75" style="font-size: 1rem;"></i>
+                                                    </div>
+                                                    <div class="flex-grow-1">
+                                                        <div class="d-flex align-items-center justify-content-between">
+                                                            <span class="fw-bold text-body" style="font-size: 0.9rem;">{{ insight.title }}</span>
+                                                            {% if insight.allow_share %}
+                                                            <button class="btn btn-link p-0 text-muted opacity-25 hover-opacity-100 transition-all border-0" 
+                                                                    onclick="shareInsight('{{ insight.share_text|escapejs }}')"
+                                                                    title="{% trans 'Share insight' %}">
+                                                                <i class="bi bi-share-fill" style="font-size: 0.65rem;"></i>
+                                                            </button>
+                                                            {% endif %}
+                                                        </div>
+                                                        <p class="mb-0 text-body-secondary lh-sm mt-1" style="font-size: 0.85rem;">{{ insight.message|safe }}</p>
+                                                    </div>
+                                                </div>
+                                                {% endfor %}
+                                            </div>
+                                            {% elif not salary_breakdown %}
+                                            <div class="h-100 d-flex align-items-center justify-content-center">
+                                                <p class="mb-0 small text-muted opacity-50" style="font-size: 0.75rem;">
+                                                    {% trans "Track more expenses to unlock personalized financial insights." %}
+                                                </p>
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Action Buttons -->
+                                <div class="d-flex flex-wrap gap-2 justify-content-center mt-4">
+                                    <button class="btn btn-outline-primary btn-sm rounded-pill px-3 fw-bold" onclick="downloadBreakdown()">
+                                        <i class="bi bi-download me-1"></i> {% trans "Save Card" %}
+                                    </button>
+                                    <button class="btn btn-primary btn-sm rounded-pill px-3 fw-bold shadow-sm" onclick="shareToWhatsApp()">
+                                        <i class="bi bi-whatsapp me-1"></i> {% trans "WhatsApp" %}
+                                    </button>
+                                </div>
+                            </div>
+                    {% endif %}
+
+
+                    <!-- Hidden Shareable Card for Social Media -->
+                    <div id="capture-container" style="position: absolute; left: -9999px; top: -9999px;">
+                        <div id="salary-wrapped-card" style="width: 400px; padding: 40px; background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); color: #ffffff; border-radius: 0;">
+                            <div style="margin-bottom: 30px; display: flex; align-items: center; justify-content: space-between;">
+                                <div>
+                                    <h2 style="margin: 0; font-weight: 800; font-size: 24px; letter-spacing: -0.5px; color: #ffffff;">{% trans "My salary journey" %}</h2>
+                                    <div style="opacity: 0.8; font-size: 14px; color: #ffffff;">{{ salary_breakdown.month_name }} {{ salary_breakdown.year|translate_digits }} • TrackMyRupee</div>
+                                </div>
+                                <div style="background: rgba(255,255,255,0.2); padding: 6px 14px; border-radius: 20px; font-size: 14px; font-weight: 700; color: #ffffff;">
+                                     {{ salary_breakdown.savings_rate|translate_digits }}% {% trans "Saved" %}
+                                </div>
+                            </div>
+
+                            <div style="margin-bottom: 35px;">
+                                <div style="opacity: 0.7; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; color: #ffffff;">{% trans "Total Income" %}</div>
+                                <div style="font-size: 36px; font-weight: 800; color: #ffffff;">{{ currency_symbol }}{{ salary_breakdown.income|humanize_currency:currency_symbol|translate_digits }}</div>
+                            </div>
+
+                            <div style="margin-bottom: 40px;">
+                                <div style="opacity: 0.7; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 15px; color: #ffffff;">{% trans "Top Spending" %}</div>
+                                <div style="display: flex; flex-direction: column; gap: 14px;">
+                                    {% for cat in salary_breakdown.top_categories|slice:":3" %}
+                                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                                        <div style="display: flex; align-items: center; gap: 12px;">
+                                             <div style="width: 32px; height: 32px; background: rgba(255,255,255,0.15); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; color: #ffffff;">
+                                                <i class="bi {% category_icon cat.category user %}"></i>
+                                             </div>
+                                             <div style="font-weight: 600; font-size: 16px; color: #ffffff;">{{ cat.category }}</div>
+                                        </div>
+                                        <div style="font-weight: 700; font-size: 16px; color: #ffffff;">{{ currency_symbol }}{{ cat.total|humanize_currency:currency_symbol|translate_digits }}</div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+
+                            <div style="background: rgba(255,255,255,0.1); padding: 20px; border-radius: 15px; border-left: 4px solid #4facfe; margin-bottom: 25px;">
+                                 <div style="font-weight: 700; font-size: 14px; margin-bottom: 6px; color: #ffffff;">✨ {% trans "AI Insight" %}</div>
+                                 <div style="font-size: 14px; opacity: 0.9; line-height: 1.5; color: #ffffff;">
+                                    {% if salary_breakdown.viral_insight %}
+                                        {{ salary_breakdown.viral_insight }}
+                                    {% else %}
+                                        {% trans "You're consistently building wealth with a positive savings rate. That's a huge win!" %}
+                                    {% endif %}
+                                    {% if salary_breakdown.relatable_metric %}
+                                        <div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.2); font-style: italic; font-size: 12px; opacity: 0.8;">
+                                            {{ salary_breakdown.relatable_metric.text }}
+                                        </div>
+                                    {% endif %}
+                                 </div>
+                            </div>
+
+                            <div style="display: flex; align-items: center; justify-content: center; gap: 15px; opacity: 0.9;">
+                                <div style="text-align: center; background: rgba(255,255,255,0.05); padding: 15px 25px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.1);">
+                                    <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; color: #ffffff; opacity: 0.8; margin-bottom: 4px; font-weight: 700;">🔥 {% trans "Daily Burn Rate" %}</div>
+                                    <div style="font-size: 24px; font-weight: 900; color: #ffffff; letter-spacing: -0.5px;">{{ currency_symbol }}{{ salary_breakdown.daily_burn|humanize_currency:currency_symbol|translate_digits }}</div>
+                                </div>
+                            </div>
+
+                            <div style="margin-top: 40px; text-align: center; opacity: 0.4; font-size: 11px; font-weight: 600; color: #ffffff; letter-spacing: 0.5px;">
+                                TRACKMYRUPEE.COM • {% trans "MASTER YOUR MONEY" %}
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
-
-
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Insights Collapse Persistence
-        const collapseElement = document.getElementById('insightsCollapse');
-        const storageKey = 'trackmyrupee_insights_expanded';
-        
-        // 1. Restore State
-        if (collapseElement) {
-             const isExpanded = localStorage.getItem(storageKey) === 'true';
-             if (isExpanded) {
-                 const bsCollapse = new bootstrap.Collapse(collapseElement, { toggle: false });
-                 bsCollapse.show();
-             }
-        }
-
-        // 2. Listen for Toggles
-        if (collapseElement) {
-            collapseElement.addEventListener('shown.bs.collapse', function () {
-                localStorage.setItem(storageKey, 'true');
-            });
-            collapseElement.addEventListener('hidden.bs.collapse', function () {
-                localStorage.setItem(storageKey, 'false');
-            });
-        }
-    });
-</script>
 {% endif %}
 
 <!-- Year in Review Banner -->
@@ -1342,6 +1544,79 @@ document.addEventListener('DOMContentLoaded', function() {
         // Try init immediately if ready, AND on window load to be safe
         initPaymentChart();
         window.addEventListener('load', initPaymentChart);
+
+        // --- Viral Salary Breakdown JS Functions ---
+        window.analyzeSalary = function() {
+            const prompt = document.getElementById('analyze-prompt');
+            const loading = document.getElementById('analyze-loading');
+            const results = document.getElementById('analyze-results');
+            const progressBar = document.getElementById('analyze-progress');
+            const loadingText = document.getElementById('loading-text');
+
+            const phrases = [
+                "{% trans 'Scanning transactions...' %}",
+                "{% trans 'Categorizing expenses...' %}",
+                "{% trans 'Calculating savings rate...' %}",
+                "{% trans 'Comparing with past trends...' %}",
+                "{% trans 'Generating AI insights...' %}"
+            ];
+
+            if (!prompt || !loading || !results) return;
+
+            prompt.style.display = 'none';
+            loading.style.display = 'block';
+
+            let progress = 0;
+            let phraseIndex = 0;
+            
+            const interval = setInterval(() => {
+                progress += 2;
+                if (progressBar) progressBar.style.width = progress + '%';
+                
+                if (progress % 20 === 0 && phraseIndex < phrases.length - 1) {
+                    phraseIndex++;
+                    if (loadingText) loadingText.innerText = phrases[phraseIndex];
+                }
+
+                if (progress >= 100) {
+                    clearInterval(interval);
+                    loading.style.display = 'none';
+                    results.style.display = 'block';
+                    results.classList.add('fade-in');
+                    const specificInsights = document.getElementById('salary-specific-insights');
+                    if (specificInsights) {
+                        specificInsights.style.display = 'block';
+                        specificInsights.classList.add('fade-in');
+                    }
+                }
+            }, 30);
+        };
+
+        window.downloadBreakdown = function() {
+            const card = document.getElementById('salary-wrapped-card');
+            if (!card) return;
+
+            // Ensure html2canvas is loaded
+            if (typeof html2canvas === 'undefined') {
+                alert("{% trans 'Sharing engine still loading, please wait a second...' %}");
+                return;
+            }
+
+            html2canvas(card, {
+                backgroundColor: null,
+                scale: 2 
+            }).then(canvas => {
+                const link = document.createElement('a');
+                link.download = 'My-Salary-Wrapped-TrackMyRupee.png';
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+            });
+        };
+
+        window.shareToWhatsApp = function() {
+            const text = encodeURIComponent("{% trans 'I just analyzed where my salary went using TrackMyRupee! 🚀 Check out your financial story too: ' %}" + window.location.origin);
+            window.open(`https://wa.me/?text=${text}`, '_blank');
+        };
     });
 </script>
 

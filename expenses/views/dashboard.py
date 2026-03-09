@@ -442,10 +442,103 @@ def home_view(request):
                     insights.append({
                         'type': 'warning',
                         'icon': 'graph-up-arrow',
-                        'title': _('Traffic Alert 🚦'),
+                        'title': _('Traffic Alert'),
                         'message': _("You're pacing %(pct_higher)s%% higher than usual. Slow down to stay on track!") % {'pct_higher': pct_higher},
                         'allow_share': False
                     })
+        
+    # --- "Where Did My Salary Go?" Data ---
+    salary_breakdown = None
+    if total_income > 0 and total_expenses > 0:
+        # 1. Top 5 Categories
+        top_5_categories = category_data[:5]
+        
+        # 2. Savings Rate
+        savings_rate = (savings / total_income) * 100 if total_income > 0 else 0
+        
+        # 3. AI Insight (Trend analysis for top category)
+        viral_insight = None
+        if top_5_categories:
+            top_cat = top_5_categories[0]['category']
+            top_amount = top_5_categories[0]['total']
+            
+            # Calculate 3-month average for this specific top category
+            cat_3_month_total = 0
+            cat_months_counted = 0
+            for i in range(1, 4):
+                y_calc = now.year
+                m_calc = now.month - i
+                while m_calc < 1:
+                    m_calc += 12
+                    y_calc -= 1
+                
+                m_cat_total = Expense.objects.filter(user=request.user, date__year=y_calc, date__month=m_calc, category__iexact=top_cat).aggregate(Sum('base_amount'))['base_amount__sum'] or 0
+                if m_cat_total > 0:
+                    cat_3_month_total += m_cat_total
+                    cat_months_counted += 1
+            
+            if cat_months_counted > 0:
+                cat_avg = float(cat_3_month_total) / cat_months_counted
+                if float(top_amount) > cat_avg * 1.1: # 10% higher
+                    diff_pct = int(((float(top_amount) - cat_avg) / cat_avg) * 100)
+                    viral_insight = _("You spent %(diff_pct)s%% more on %(category)s than your 3-month average.") % {
+                        'diff_pct': diff_pct,
+                        'category': _(top_cat)
+                    }
+        
+        # 4. Daily Burn Rate
+        num_days = calendar.monthrange(now.year, now.month)[1]
+        if selected_months and len(selected_months) == 1:
+            try:
+                m = int(selected_months[0])
+                y = int(selected_years[0]) if selected_years else now.year
+                num_days = calendar.monthrange(y, m)[1]
+            except:
+                pass
+        
+        # If it's the current month, we might want to use days elapsed for a "live" feel
+        days_elapsed = now.day if (not selected_months or (len(selected_months) == 1 and int(selected_months[0]) == now.month)) else num_days
+        daily_burn = float(total_expenses) / days_elapsed if days_elapsed > 0 else 0
+
+        # 5. Relatable Metric (Fun/Viral)
+        relatable_metric = None
+        if top_5_categories:
+            top_amount = float(top_5_categories[0]['total'])
+            top_cat_name = top_5_categories[0]['category']
+            
+            # Simple mapping of relatable items
+            items = [
+                {'name': _('Netflix subscriptions'), 'price': 499, 'icon': 'play-btn-fill'},
+                {'name': _('Starbucks coffees'), 'price': 350, 'icon': 'cup-hot-fill'},
+                {'name': _('premium Gym memberships'), 'price': 2500, 'icon': 'bicycle'},
+            ]
+            
+            import random
+            item = random.choice(items)
+            count = int(top_amount / item['price'])
+            
+            if count > 1:
+                relatable_metric = {
+                    'text': _("Your %(category)s spend is equivalent to %(count)s %(item)s.") % {
+                        'category': _(top_cat_name),
+                        'count': count,
+                        'item': item['name']
+                    },
+                    'icon': item['icon']
+                }
+
+        salary_breakdown = {
+            'income': total_income,
+            'expenses': total_expenses,
+            'savings': savings,
+            'savings_rate': round(savings_rate, 1),
+            'daily_burn': round(daily_burn, 0),
+            'top_categories': top_5_categories,
+            'viral_insight': viral_insight,
+            'relatable_metric': relatable_metric,
+            'month_name': display_month if display_month else (calendar.month_name[now.month] if (selected_months and len(selected_months) == 1) else ""),
+            'year': display_year if display_year else (now.year if (selected_years and len(selected_years) == 1) else "")
+        }
 
     # 1. Budget Warnings (High Priority)
 
@@ -512,14 +605,16 @@ def home_view(request):
                 else:
                     msg = msg_text
 
-                insights.append({
-                    'type': 'success',
-                    'icon': 'trophy-fill',
-                    'title': _('Super Saver Status! 🏆'),
-                    'message': msg,
-                    'allow_share': True,
-                    'share_text': share_text
-                })
+                # Suppress "Super Saver" if Salary Breakdown is showing (as it's redundant)
+                if not salary_breakdown:
+                    insights.append({
+                        'type': 'success',
+                        'icon': 'trophy-fill',
+                        'title': _('Super Saver Status! 🏆'),
+                        'message': msg,
+                        'allow_share': True,
+                        'share_text': share_text
+                    })
             elif prev_month_data['savings_pct'] and prev_month_data['savings_pct'] > 0:
                  insights.append({
                     'type': 'success',
@@ -582,7 +677,7 @@ def home_view(request):
             })
 
     # 4. Fallback
-    if not insights and savings > 0:
+    if not insights and savings > 0 and not salary_breakdown:
         insights.append({
             'type': 'info',
             'icon': 'piggy-bank-fill',
@@ -590,7 +685,7 @@ def home_view(request):
             'message': _("You've saved %(savings)s so far. Keep it up!") % {'savings': savings},
             'allow_share': False
         })
-    elif not insights:
+    elif not insights and not salary_breakdown:
         insights.append({
             'type': 'secondary',
             'icon': 'stars',
@@ -662,6 +757,7 @@ def home_view(request):
         'has_any_budget': any((c.get('limit') or 0) > 0 for c in category_limits),
         'show_year_in_review': show_year_in_review,
         'year_in_review_year': year_in_review_year,
+        'salary_breakdown': salary_breakdown,
     }
     return render(request, 'home.html', context)
 
