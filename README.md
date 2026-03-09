@@ -6,8 +6,8 @@
 Unlike most money management apps, TrackMyRupee does not read SMS, connect to bank accounts, or sell user data.
 You manually track expenses, analyze spending, manage budgets, and stay in control — on your terms.
 
-**🌐 Try Live App:** https://trackmyrupee.com  
-**⭐ Star on GitHub:** https://github.com/OmkarPathak/django-finance-tracker
+**Try Live App:** https://trackmyrupee.com  
+**Star on GitHub:** https://github.com/OmkarPathak/django-finance-tracker
 
 <div align="center">
 
@@ -89,7 +89,7 @@ TrackMyRupee is designed for:
 
 ---
 
-### 🚀 Quick Start – Self-Hosted Expense Tracker (Docker)
+### Quick Start – Self-Hosted Expense Tracker (Docker)
 
 Run your own self-hosted personal finance tracker in minutes:
 
@@ -99,7 +99,7 @@ cd django-finance-tracker
 docker-compose up
 ```
 
-Open 👉 http://localhost:8000
+Open: http://localhost:8000
 
 ### Manual Setup (Django)
 
@@ -119,11 +119,11 @@ Detailed steps can be found in `SETUP.md`
 TrackMyRupee is an open-source personal finance tracker.
 Contributions are welcome — features, bug fixes, documentation, and UI improvements.
 
-👉 See `CONTRIBUTING.md`
+See `CONTRIBUTING.md`
 
 ---
 
-## 💬 What users say
+## What users say
 
 > “Finally a finance app that doesn’t read my SMS.”  
 > — Early user
@@ -133,7 +133,7 @@ Contributions are welcome — features, bug fixes, documentation, and UI improve
 
 ---
 
-## 🗺️ Roadmap
+## Roadmap
 
 - [ ] **WhatsApp Integration** – Chat directly to add expenses 💬
 - [ ] **Mobile Apps** – Native Android & iOS support 📱
@@ -141,7 +141,7 @@ Contributions are welcome — features, bug fixes, documentation, and UI improve
 
 ---
 
-## 🆕 Recent Updates
+## Recent Updates
 
 - **Enhanced Multi-Currency Subscriptions**: Subscriptions now dynamically convert to your base currency, providing accurate monthly and yearly projections even when tracking foreign services (Netflix, AWS, etc.).
 - **Full Settings Localization**: The entire settings interface, including Currency and Language preferences, is now fully translated into **Hindi** and **Marathi**.
@@ -163,6 +163,6 @@ Android & iOS builds are coming soon.
 
 ---
 
-## 📝 License
+## License
 
 TrackMyRupee is licensed under the MIT License.

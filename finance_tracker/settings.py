@@ -302,6 +302,9 @@ if not DEBUG:
     ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
 else:
     ACCOUNT_EMAIL_VERIFICATION = 'none'
+    SECURE_SSL_REDIRECT = False
+    SESSION_COOKIE_SECURE = False
+    CSRF_COOKIE_SECURE = False
 
 # Google reCAPTCHA v3 Settings
 RECAPTCHA_PUBLIC_KEY = os.environ.get('RECAPTCHA_PUBLIC_KEY', '')
