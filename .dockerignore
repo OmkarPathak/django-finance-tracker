@@ -21,3 +21,8 @@ mobile/www/
 mobile/android/
 mobile/ios/
 .gradle/
+
+# Logs
+*.log
+test_*.log
+final_*.log
