@@ -107,6 +107,44 @@
     .animate-pulse-light {
         animation: pulse-light 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
     }
+
+    /* New Empty State Animations */
+    @keyframes wallet-breathe {
+        0%, 100% { transform: scale(1); opacity: 0.3; }
+        50% { transform: scale(1.05); opacity: 0.6; }
+    }
+    .anim-wallet { animation: wallet-breathe 4s ease-in-out infinite; transform-origin: center; }
+
+    @keyframes star-twinkle {
+        0%, 100% { opacity: 0.2; transform: scale(0.9); }
+        50% { opacity: 0.8; transform: scale(1.1); }
+    }
+    .anim-twinkle { animation: star-twinkle 3s ease-in-out infinite; transform-origin: center; }
+
+    @keyframes shield-pulse {
+        0%, 100% { transform: scale(1); opacity: 0.4; }
+        50% { transform: scale(1.08); opacity: 0.8; }
+    }
+    .anim-shield { animation: shield-pulse 3.5s ease-in-out infinite; transform-origin: center; }
+
+    /* Card Header SVG Animations */
+    @keyframes heartbeat {
+        0%, 100% { transform: scale(1); }
+        15% { transform: scale(1.15); }
+        30% { transform: scale(1); }
+        45% { transform: scale(1.15); }
+        60% { transform: scale(1); }
+    }
+    .anim-heartbeat { animation: heartbeat 2s ease-in-out infinite; transform-origin: center; }
+
+    @keyframes speedometer-wiggle {
+        0%, 100% { transform: rotate(0deg); }
+        25% { transform: rotate(45deg); }
+        50% { transform: rotate(15deg); }
+        75% { transform: rotate(60deg); }
+    }
+    .anim-speedometer { animation: speedometer-wiggle 4s ease-in-out infinite; transform-origin: 12px 12px; }
+
 </style>
 <div class="d-flex flex-column flex-md-row justify-content-between align-items-center mb-4 gap-3 fade-in" style="position: relative; z-index: 100;">
     <!-- Mobile Header (One Line) -->
@@ -283,295 +321,275 @@
     </form>
 </div>
 
-<!-- Financial Intelligence Hub -->
-{% if salary_breakdown or insights %}
-<div class="mb-5 fade-in">
-    <div class="accordion mb-4" id="salaryAccordion">
-        <div class="accordion-item border-0 shadow-sm overflow-hidden rounded-3">
-            <h2 class="accordion-header" id="headingSalary">
-                <button class="accordion-button collapsed bg-primary bg-opacity-10 fw-bold text-primary" type="button" data-bs-toggle="collapse" data-bs-target="#salaryCollapse" aria-expanded="false" aria-controls="salaryCollapse">
-                    <div class="d-flex align-items-center w-100">
-                        <i class="bi bi-stars me-2 text-warning animate-pulse-light"></i>
-                        <span class="fw-bold">{% trans "Your Financial Intelligence" %}</span>
+<!-- FINANCIAL INTELLIGENCE HUB -->
+<div class="accordion mb-4" id="insightsAccordion">
+    <div class="accordion-item border-0 rounded-4 overflow-hidden">
+        <h2 class="accordion-header" id="headingInsights">
+            <button class="accordion-button collapsed px-4 py-2 fw-bold bg-transparent text-primary" type="button" data-bs-toggle="collapse" data-bs-target="#collapseInsights" aria-expanded="false" aria-controls="collapseInsights" style="font-size: 1rem; box-shadow: none;">
+                <div class="d-flex align-items-center gap-3 w-100">
+                    <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center flex-shrink-0" style="width: 40px; height: 40px;">
+                        <i class="bi bi-stars fs-5"></i>
                     </div>
-                </button>
-            </h2>
-            <div id="salaryCollapse" class="accordion-collapse collapse" aria-labelledby="headingSalary" data-bs-parent="#salaryAccordion">
-                <div class="accordion-body p-0 bg-primary bg-opacity-10">
-                    
-                    {% if salary_breakdown %}
-                    <!-- Salary Breakdown Section -->
-                    <div id="salary-breakdown-container" class="p-3 p-md-4 text-center">
-                        <div id="analyze-prompt">
-                            <i class="bi bi-magic fs-3 text-primary mb-2 d-block"></i>
-                            <h5 class="fw-bold text-primary mb-1">{% trans "Where Did My Salary Go?" %}</h5>
-                            <p class="text-muted small mb-3">{% trans "Discover your top spending habits with an AI-powered breakdown." %}</p>
-                            <button class="btn btn-primary rounded-pill px-4 fw-bold shadow-sm" onclick="analyzeSalary()">
-                                {% trans "Analyze My Salary" %}
-                            </button>
+                    <span>
+                        {% trans "Your Financial Insights" %}
+                        {% if salary_breakdown.month_name and salary_breakdown.year %}
+                            <span class="d-none d-md-inline text-muted fw-normal fs-6 pb-1"> — {{ salary_breakdown.month_name }} {{ salary_breakdown.year|translate_digits }}</span>
+                        {% endif %}
+                    </span>
+                </div>
+            </button>
+        </h2>
+        <div id="collapseInsights" class="accordion-collapse collapse" aria-labelledby="headingInsights" data-bs-parent="#insightsAccordion">
+            <div class="accordion-body p-3 p-md-4">
+            {% if has_any_budget or total_income > 0 %}
+            <div class="card shadow-lg border-0 mb-4 fade-in" id="tour-money-flow-card" style="animation-delay: 0.2s;">
+                <div class="card-header bg-transparent border-bottom py-2 px-4">
+                    <h6 class="mb-0 fw-bold text-uppercase text-muted" style="letter-spacing: 1px; font-size: 0.9rem;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="me-2 text-primary" style="vertical-align: -2px;">
+                            <path d="M21.21 15.89A10 10 0 1 1 8 2.83" class="anim-pie" fill="currentColor" fill-opacity="0.3"/>
+                            <path d="M22 12A10 10 0 0 0 12 2v10z"/>
+                        </svg> {% trans "Where Did My Salary Go?" %}
+                    </h6>
+                </div>
+                <div class="card-body p-3 p-md-4">
+                    {% if category_data or hero_metrics.saved > 0 %}
+                    <div class="row align-items-center g-4">
+                        
+                        <!-- Left: Ultra-Compact Stacked Bar -->
+                        <div class="col-12 col-lg-6 px-md-3">
+                            <div style="height: 100px; width: 100%; position: relative;">
+                                <canvas id="moneyFlowChart"></canvas>
+                            </div>
                         </div>
-
-                        <div id="analyze-loading" style="display: none;">
-                            <div class="mb-3">
-                                <div class="spinner-border text-primary" role="status" style="width: 1.5rem; height: 1.5rem;">
-                                    <span class="visually-hidden">Loading...</span>
-                                </div>
+                        
+                        <!-- Right: Financial Story -->
+                        <div class="col-12 col-lg-6 text-center text-lg-start px-md-4">
+                            {% if monthly_story %}
+                            <div class="position-relative border-start-lg border-opacity-10 ps-lg-4">
+                                <h4 class="fw-bold text-primary mb-3" style="letter-spacing: -0.5px;">{% trans "Your Financial Story" %}</h4>
+                                <p class="mb-0" style="position: relative; z-index: 1;">
+                                    {{ monthly_story|safe }}
+                                </p>
                             </div>
-                            <h6 class="fw-bold text-primary animate-pulse-light small mb-0" id="loading-text">{% trans "Scanning transactions..." %}</h6>
-                            <div class="progress mt-3 mx-auto" style="height: 4px; max-width: 200px;">
-                                <div id="analyze-progress" class="progress-bar progress-bar-animated" role="progressbar" style="width: 0%"></div>
+                            {% else %}
+                            <div class="text-muted opacity-75 border-start-lg border-opacity-10 ps-lg-4">
+                                <i class="bi bi-journal-text fs-1 mb-2"></i>
+                                <p class="mb-0">{% trans "Your story is still being written for this period." %}</p>
                             </div>
+                            {% endif %}
                         </div>
-
-                        <div id="analyze-results" style="display: none;">
-                                <div class="row g-0 g-md-4 text-start">
-                                    <!-- Left Column: Breakdown Summary & List -->
-                                    <div class="col-12 col-md-6">
-                                        <!-- Result Header -->
-                                        <div class="mb-4">
-                                            <h6 class="fw-bold mb-1 text-primary">{% trans "My Breakdown" %}</h6>
-                                            <div class="d-flex align-items-center justify-content-between gap-2 flex-wrap">
-                                                <div class="d-flex align-items-center gap-1 flex-wrap">
-                                                    <small class="text-muted">{{ salary_breakdown.month_name }} {{ salary_breakdown.year|translate_digits }}</small>
-                                                    <span class="badge bg-danger bg-opacity-10 text-danger border-0 rounded-pill" style="font-size: 0.75rem;">
-                                                        <i class="bi bi-fire me-1"></i>{{ currency_symbol }}{{ salary_breakdown.daily_burn|humanize_currency:currency_symbol|translate_digits }}/{% trans "day" %}
-                                                    </span>
-                                                </div>
-                                                <div class="text-end">
-                                                    <span class="badge bg-primary rounded-pill px-2 py-1 small shadow-sm">
-                                                         {{ salary_breakdown.savings_rate|translate_digits }}% {% trans "Saved" %}
-                                                    </span>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <!-- Top Expenses List (Hybrid Layout) -->
-                                        <div class="mb-3">
-                                            <!-- Desktop View: Row-based List -->
-                                            <div class="d-none d-md-flex flex-column gap-2 mb-4">
-                                                {% for cat in salary_breakdown.top_categories %}
-                                                <div class="d-flex align-items-center justify-content-between mb-2">
-                                                    <div class="d-flex align-items-center gap-2">
-                                                        <div class="d-flex align-items-center justify-content-center flex-shrink-0" style="width: 24px; height: 24px;">
-                                                            <i class="bi {% category_icon cat.name user %} text-primary opacity-75" style="font-size: 1rem;"></i>
-                                                        </div>
-                                                        <div class="d-flex flex-column">
-                                                            <div class="d-flex align-items-center">
-                                                                <span class="fw-semibold small text-body">{{ cat.name }}</span>
-                                                            </div>
-                                                            {% if cat.projected_total and cat.projected_percent > 100 and cat.used_percent <= 100 %}
-                                                                <small class="text-muted" style="font-size: 0.65rem; margin-top: -2px;">
-                                                                    {% blocktrans with total=cat.projected_total|humanize_currency:currency_symbol|translate_digits %}Est. {{ currency_symbol }}{{ total }} total{% endblocktrans %}
-                                                                </small>
-                                                            {% endif %}
-                                                        </div>
-                                                    </div>
-                                                    <span class="fw-bold small">{{ currency_symbol }}{{ cat.total|humanize_currency:currency_symbol|translate_digits }}</span>
-                                                </div>
-                                                {% endfor %}
-                                            </div>
-
-                                            <!-- Mobile View: Card-based Grid -->
-                                            <div class="d-flex d-md-none flex-wrap gap-3 justify-content-center px-2 px-md-0">
-                                                {% for cat in salary_breakdown.top_categories %}
-                                                <div class="d-flex flex-column align-items-center text-center" style="width: 85px;">
-                                                    <div class="bg-primary bg-opacity-10 rounded-3 mb-2 d-flex align-items-center justify-content-center position-relative" style="width: 42px; height: 42px;">
-                                                        <i class="bi {% category_icon cat.name user %} text-primary opacity-75" style="font-size: 1.2rem;"></i>
-                                                        {% if cat.projected_percent and cat.projected_percent > 100 and cat.used_percent <= 100 %}
-                                                            <span class="position-absolute top-0 start-100 translate-middle p-1 bg-warning border border-light rounded-circle" title="{% trans "Pacing to overspend" %}">
-                                                                <span class="visually-hidden">{% trans "Warning" %}</span>
-                                                            </span>
-                                                        {% endif %}
-                                                    </div>
-                                                    <span class="fw-semibold text-body text-truncate w-100 mb-1" style="font-size: 0.7rem; line-height: 1.1;">{{ cat.name }}</span>
-                                                    <span class="fw-bold small text-primary" style="font-size: 0.8rem;">{{ currency_symbol }}{{ cat.total|humanize_currency:currency_symbol|translate_digits }}</span>
-                                                    {% if cat.projected_total and cat.projected_percent > 100 and cat.used_percent <= 100 %}
-                                                        <small class="text-muted fw-bold mt-1" style="font-size: 0.6rem; transform: scale(0.9); white-space: nowrap;">
-                                                            {% blocktrans with total=cat.projected_total|humanize_currency:currency_symbol|translate_digits %}Est. {{ currency_symbol }}{{ total }}{% endblocktrans %}
-                                                        </small>
-                                                    {% endif %}
-                                                </div>
-                                                {% endfor %}
-                                            </div>
-                                        </div>
-
-                                        <!-- Mobile-only section divider -->
-                                        <hr class="d-md-none my-4 opacity-10">
-                                    </div>
-
-                                    <!-- Right Column: Financial Intelligence Hub -->
-                                    <div class="col-12 col-md-6 border-start-md pt-0" style="border-left: 1px solid rgba(255,255,255,0.05);">
-                                        <!-- Smart Insights Container -->
-                                        <div class="mb-0 h-100">
-                                            <style>
-                                                @media (max-width: 767.98px) {
-                                                    .border-start-md { border-left: 0 !important; }
-                                                }
-                                                @media (min-width: 768px) {
-                                                    .border-start-md { border-left: 1px solid rgba(255,255,255,0.05) !important; }
-                                                }
-                                            </style>
-                                            
-                                            <!-- Sub-header only shown if needed, but we can rely on icons for a cleaner look -->
-                                            <div class="d-none d-md-flex align-items-center gap-2 mb-3">
-                                                <i class="bi bi-stars text-primary"></i>
-                                                <h6 class="mb-0 fw-bold small">{% trans "Financial Intelligence" %}</h6>
-                                            </div>
-
-                                            <!-- 1. Salary Analysis Insights (Only visible if results available) -->
-                                            <div id="salary-specific-insights" style="display: none;">
-                                                <div class="d-flex align-items-start gap-2 mb-3">
-                                                    <div class="d-flex align-items-center justify-content-center flex-shrink-0" style="width: 24px; height: 24px;">
-                                                        <i class="bi bi-magic text-primary opacity-75" style="font-size: 1rem;"></i>
-                                                    </div>
-                                                    <div class="flex-grow-1">
-                                                        <span class="fw-bold text-body" style="font-size: 0.9rem;">{% trans "Smart Insight" %}</span>
-                                                        <p class="mb-0 text-body-secondary lh-sm mt-1" style="font-size: 0.85rem;">
-                                                            {% if salary_breakdown.viral_insight %}
-                                                                {{ salary_breakdown.viral_insight }}
-                                                            {% else %}
-                                                                {% blocktrans with rate=salary_breakdown.savings_rate|translate_digits %}You're building solid wealth with a {{ rate }}% savings rate.{% endblocktrans %}
-                                                            {% endif %}
-                                                        </p>
-                                                    </div>
-                                                </div>
-                                                
-                                                {% if salary_breakdown.relatable_metric %}
-                                                <div class="d-flex align-items-start gap-2 mb-3">
-                                                    <div class="d-flex align-items-center justify-content-center flex-shrink-0" style="width: 24px; height: 24px;">
-                                                        <i class="bi bi-{{ salary_breakdown.relatable_metric.icon }} text-primary opacity-75" style="font-size: 1rem;"></i>
-                                                    </div>
-                                                    <div class="flex-grow-1">
-                                                        <span class="fw-bold text-body" style="font-size: 0.9rem;">{% trans "Fun Fact" %}</span>
-                                                        <p class="mb-0 text-body-secondary lh-sm mt-1 italic" style="font-size: 0.85rem; font-style: italic;">
-                                                            {{ salary_breakdown.relatable_metric.text }}
-                                                        </p>
-                                                    </div>
-                                                </div>
-                                                {% endif %}
-                                                
-                                                {% if insights %}
-                                                <hr class="my-3 opacity-10">
-                                                {% endif %}
-                                            </div>
-
-                                            <!-- 2. General Insights (Budget, Trends, Streaks) -->
-                                            {% if insights %}
-                                            <div class="d-flex flex-column gap-3">
-                                                {% for insight in insights %}
-                                                <div class="d-flex align-items-start gap-2">
-                                                    <div class="d-flex align-items-center justify-content-center flex-shrink-0" style="width: 24px; height: 24px;">
-                                                        <i class="bi bi-{{ insight.icon }} text-primary opacity-75" style="font-size: 1rem;"></i>
-                                                    </div>
-                                                    <div class="flex-grow-1">
-                                                        <div class="d-flex align-items-center justify-content-between">
-                                                            <span class="fw-bold text-body" style="font-size: 0.9rem;">{{ insight.title }}</span>
-                                                            {% if insight.allow_share %}
-                                                            <button class="btn btn-link p-0 text-muted opacity-25 hover-opacity-100 transition-all border-0" 
-                                                                    onclick="shareInsight('{{ insight.share_text|escapejs }}')"
-                                                                    title="{% trans 'Share insight' %}">
-                                                                <i class="bi bi-share-fill" style="font-size: 0.65rem;"></i>
-                                                            </button>
-                                                            {% endif %}
-                                                        </div>
-                                                        <p class="mb-0 text-body-secondary lh-sm mt-1" style="font-size: 0.85rem;">{{ insight.message|safe }}</p>
-                                                    </div>
-                                                </div>
-                                                {% endfor %}
-                                            </div>
-                                            {% elif not salary_breakdown %}
-                                            <div class="h-100 d-flex align-items-center justify-content-center">
-                                                <p class="mb-0 small text-muted opacity-50" style="font-size: 0.75rem;">
-                                                    {% trans "Track more expenses to unlock personalized financial insights." %}
-                                                </p>
-                                            </div>
-                                            {% endif %}
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Action Buttons -->
-                                <div class="d-flex flex-wrap gap-2 justify-content-center mt-4">
-                                    <button class="btn btn-outline-primary btn-sm rounded-pill px-3 fw-bold" onclick="downloadBreakdown()">
-                                        <i class="bi bi-download me-1"></i> {% trans "Save Card" %}
-                                    </button>
-                                    <button class="btn btn-primary btn-sm rounded-pill px-3 fw-bold shadow-sm" onclick="shareToWhatsApp()">
-                                        <i class="bi bi-whatsapp me-1"></i> {% trans "WhatsApp" %}
-                                    </button>
-                                </div>
-                            </div>
+                        
+                    </div>
+                    {% else %}
+                    <div class="empty-state-container text-center py-5">
+                        <div class="mb-3 text-muted opacity-50">
+                            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M20 12V8H6a2 2 0 0 1-2-2c0-1.1.9-2 2-2h12v4" class="anim-wallet"/>
+                                <path d="M4 6v12c0 1.1.9 2 2 2h14v-4" class="anim-wallet"/>
+                                <path d="M18 12a2 2 0 0 0-2 2c0 1.1.9 2 2 2h4v-4h-4z" class="anim-wallet"/>
+                            </svg>
+                        </div>
+                        <p class="text-muted mb-0">{% trans "No data available yet." %}</p>
+                    </div>
                     {% endif %}
+                </div>
+            </div>
+            {% endif %}
 
-
-                    <!-- Hidden Shareable Card for Social Media -->
-                    <div id="capture-container" style="position: absolute; left: -9999px; top: -9999px;">
-                        <div id="salary-wrapped-card" style="width: 400px; padding: 40px; background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); color: #ffffff; border-radius: 0;">
-                            <div style="margin-bottom: 30px; display: flex; align-items: center; justify-content: space-between;">
-                                <div>
-                                    <h2 style="margin: 0; font-weight: 800; font-size: 24px; letter-spacing: -0.5px; color: #ffffff;">{% trans "My salary journey" %}</h2>
-                                    <div style="opacity: 0.8; font-size: 14px; color: #ffffff;">{{ salary_breakdown.month_name }} {{ salary_breakdown.year|translate_digits }} • TrackMyRupee</div>
-                                </div>
-                                <div style="background: rgba(255,255,255,0.2); padding: 6px 14px; border-radius: 20px; font-size: 14px; font-weight: 700; color: #ffffff;">
-                                     {{ salary_breakdown.savings_rate|translate_digits }}% {% trans "Saved" %}
-                                </div>
-                            </div>
-
-                            <div style="margin-bottom: 35px;">
-                                <div style="opacity: 0.7; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; color: #ffffff;">{% trans "Total Income" %}</div>
-                                <div style="font-size: 36px; font-weight: 800; color: #ffffff;">{{ currency_symbol }}{{ salary_breakdown.income|humanize_currency:currency_symbol|translate_digits }}</div>
-                            </div>
-
-                            <div style="margin-bottom: 40px;">
-                                <div style="opacity: 0.7; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 15px; color: #ffffff;">{% trans "Top Spending" %}</div>
-                                <div style="display: flex; flex-direction: column; gap: 14px;">
-                                    {% for cat in salary_breakdown.top_categories|slice:":3" %}
-                                    <div style="display: flex; align-items: center; justify-content: space-between;">
-                                        <div style="display: flex; align-items: center; gap: 12px;">
-                                             <div style="width: 32px; height: 32px; background: rgba(255,255,255,0.15); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; color: #ffffff;">
-                                                <i class="bi {% category_icon cat.category user %}"></i>
-                                             </div>
-                                             <div style="font-weight: 600; font-size: 16px; color: #ffffff;">{{ cat.category }}</div>
+            <!-- SMART INSIGHTS & ACTIONABLE ALERTS (Layers 3 & 4) -->
+            <div class="row g-4 mb-4">
+                <!-- SMART INSIGHTS (Layer 3) -->
+                <div class="col-12 col-md-6">
+                    <div class="card shadow-lg border-0 h-100 fade-in" id="tour-smart-insights-card" style="animation-delay: 0.3s;">
+                        <div class="card-header bg-transparent border-bottom py-3">
+                            <h6 class="mb-0 fw-bold text-uppercase text-muted" style="letter-spacing: 1px;">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="me-2 text-primary" style="vertical-align: -2px;">
+                                    <polyline points="22 7 13.5 15.5 8.5 10.5 2 17" class="anim-trend"/>
+                                    <polyline points="16 7 22 7 22 13" class="anim-trend"/>
+                                </svg> {% trans "Money Flow Analysis" %}
+                            </h6>
+                        </div>
+                        <div class="card-body p-4">
+                            {% if smart_insights or salary_breakdown.viral_insight or salary_breakdown.relatable_metric %}
+                            <div class="d-flex flex-column gap-4">
+                                {% if salary_breakdown.viral_insight %}
+                                    <div class="d-flex align-items-start gap-3">
+                                        <div class="d-flex align-items-center justify-content-center rounded-circle border flex-shrink-0" style="width: 42px; height: 42px; background-color: rgba(13, 110, 253, 0.1);">
+                                            <i class="bi bi-magic text-primary" style="font-size: 1.2rem;"></i>
                                         </div>
-                                        <div style="font-weight: 700; font-size: 16px; color: #ffffff;">{{ currency_symbol }}{{ cat.total|humanize_currency:currency_symbol|translate_digits }}</div>
+                                        <div class="flex-grow-1">
+                                            <h6 class="fw-bold mb-1 text-body">{% trans "Trend Alert" %}</h6>
+                                            <p class="mb-0 text-muted" style="font-size: 0.9rem;">{{ salary_breakdown.viral_insight }}</p>
+                                        </div>
                                     </div>
-                                    {% endfor %}
+                                {% endif %}
+                                
+                                {% for insight in smart_insights %}
+                                <div class="d-flex align-items-start gap-3">
+                                    <div class="d-flex align-items-center justify-content-center rounded-circle border flex-shrink-0" style="width: 42px; height: 42px; background-color: rgba(25, 135, 84, 0.1);">
+                                        <i class="bi bi-{{ insight.icon }} text-success" style="font-size: 1.2rem;"></i>
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <h6 class="fw-bold mb-1 text-body">{{ insight.title }}</h6>
+                                        <p class="mb-0 text-muted" style="font-size: 0.9rem;">{{ insight.message|safe }}</p>
+                                    </div>
                                 </div>
-                            </div>
-
-                            <div style="background: rgba(255,255,255,0.1); padding: 20px; border-radius: 15px; border-left: 4px solid #4facfe; margin-bottom: 25px;">
-                                 <div style="font-weight: 700; font-size: 14px; margin-bottom: 6px; color: #ffffff;">✨ {% trans "AI Insight" %}</div>
-                                 <div style="font-size: 14px; opacity: 0.9; line-height: 1.5; color: #ffffff;">
-                                    {% if salary_breakdown.viral_insight %}
-                                        {{ salary_breakdown.viral_insight }}
-                                    {% else %}
-                                        {% trans "You're consistently building wealth with a positive savings rate. That's a huge win!" %}
-                                    {% endif %}
-                                    {% if salary_breakdown.relatable_metric %}
-                                        <div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.2); font-style: italic; font-size: 12px; opacity: 0.8;">
-                                            {{ salary_breakdown.relatable_metric.text }}
+                                {% endfor %}
+                                
+                                {% if salary_breakdown.relatable_metric %}
+                                    <div class="d-flex align-items-start gap-3">
+                                        <div class="d-flex align-items-center justify-content-center rounded-circle border flex-shrink-0" style="width: 42px; height: 42px; background-color: rgba(255, 193, 7, 0.1);">
+                                            <i class="bi bi-{{ salary_breakdown.relatable_metric.icon }} text-warning" style="font-size: 1.2rem;"></i>
                                         </div>
-                                    {% endif %}
-                                 </div>
+                                        <div class="flex-grow-1">
+                                            <h6 class="fw-bold mb-1 text-body">{% trans "Fun Fact" %}</h6>
+                                            <p class="mb-0 text-muted fst-italic" style="font-size: 0.9rem;">{{ salary_breakdown.relatable_metric.text }}</p>
+                                        </div>
+                                    </div>
+                                {% endif %}
                             </div>
-
-                            <div style="display: flex; align-items: center; justify-content: center; gap: 15px; opacity: 0.9;">
-                                <div style="text-align: center; background: rgba(255,255,255,0.05); padding: 15px 25px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.1);">
-                                    <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; color: #ffffff; opacity: 0.8; margin-bottom: 4px; font-weight: 700;">🔥 {% trans "Daily Burn Rate" %}</div>
-                                    <div style="font-size: 24px; font-weight: 900; color: #ffffff; letter-spacing: -0.5px;">{{ currency_symbol }}{{ salary_breakdown.daily_burn|humanize_currency:currency_symbol|translate_digits }}</div>
+                            {% else %}
+                            <div class="h-100 d-flex flex-column align-items-center justify-content-center text-center py-4">
+                                <div class="mb-3 text-muted opacity-50">
+                                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" class="anim-twinkle" fill="currentColor" fill-opacity="0.2"/>
+                                    </svg>
                                 </div>
+                                <p class="text-muted mb-0">{% trans "Keep tracking to unlock personalized AI insights." %}</p>
                             </div>
-
-                            <div style="margin-top: 40px; text-align: center; opacity: 0.4; font-size: 11px; font-weight: 600; color: #ffffff; letter-spacing: 0.5px;">
-                                TRACKMYRUPEE.COM • {% trans "MASTER YOUR MONEY" %}
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- ACTIONABLE ALERTS (Layer 4) -->
+                <div class="col-12 col-md-6">
+                    <div class="card shadow-lg border-0 h-100 fade-in" id="tour-actionable-alerts-card" style="animation-delay: 0.4s;">
+                        <div class="card-header bg-transparent border-bottom py-3">
+                            <h6 class="mb-0 fw-bold text-uppercase text-muted" style="letter-spacing: 1px;">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="me-2 text-danger animate-pulse-light" style="vertical-align: -2px;">
+                                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                                    <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                                </svg> {% trans "Actionable Alerts" %}
+                            </h6>
+                        </div>
+                        <div class="card-body p-4">
+                            {% if actionable_alerts %}
+                            <div class="d-flex flex-column gap-4">
+                                {% for alert in actionable_alerts %}
+                                <div class="d-flex align-items-start gap-3">
+                                    <div class="d-flex align-items-center justify-content-center rounded-circle border border-danger border-opacity-25 flex-shrink-0 bg-danger bg-opacity-10" style="width: 42px; height: 42px;">
+                                        <i class="bi bi-{{ alert.icon }} text-danger" style="font-size: 1.2rem;"></i>
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <h6 class="fw-bold mb-1 text-danger">{{ alert.title }}</h6>
+                                        <p class="mb-0 text-muted" style="font-size: 0.9rem;">{{ alert.message|safe }}</p>
+                                    </div>
+                                </div>
+                                {% endfor %}
                             </div>
+                            {% else %}
+                            <div class="h-100 d-flex flex-column align-items-center justify-content-center text-center py-4">
+                                <div class="mb-3 text-success opacity-50">
+                                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" class="anim-shield" fill="currentColor" fill-opacity="0.2"/>
+                                        <path d="M9 12l2 2 4-4" class="anim-shield"/>
+                                    </svg>
+                                </div>
+                                <p class="text-muted mb-0">{% trans "You're all set! No urgent alerts right now." %}</p>
+                            </div>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
             </div>
+
+            <!-- SHAREABLE MONEY REPORT (Layer 6) -->
+            {% if salary_breakdown or total_income > 0 %}
+            <div class="card shadow-sm border-0 bg-transparent fade-in text-center" style="animation-delay: 0.5s;">
+                <div class="card-body">
+                    <h6 class="fw-bold text-muted text-uppercase mb-3" style="letter-spacing: 1px;">
+                        <i class="bi bi-share-fill text-primary me-2"></i> {% trans "Share Your Financial Snapshot" %}
+                    </h6>
+                    <div class="d-flex flex-wrap gap-3 justify-content-center">
+                        <button class="btn btn-primary rounded-pill px-4 py-2 fw-bold shadow-sm d-flex align-items-center gap-2 transition-all" onclick="downloadBreakdown()">
+                            <i class="bi bi-download"></i> {% trans "Save Image Report" %}
+                        </button>
+                        <button class="btn btn-success rounded-pill px-4 py-2 fw-bold shadow-sm d-flex align-items-center gap-2 transition-all" onclick="shareToWhatsApp()">
+                            <i class="bi bi-whatsapp"></i> {% trans "Share to WhatsApp" %}
+                        </button>
+                    </div>
+                    <p class="text-muted small mt-3 mb-0 opacity-75">{% trans "Generates a beautiful summary card of your financial health." %}</p>
+                </div>
+            </div>
+            {% endif %}
+
+            </div>
         </div>
     </div>
 </div>
-{% endif %}
+
+<!-- Hidden Shareable Card for Social Media -->
+<div id="capture-container" style="position: absolute; left: -9999px; top: -9999px;">
+    {% if salary_breakdown or total_income > 0 %}
+
+    <div id="salary-wrapped-card" style="width: 400px; padding: 40px; background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); color: #ffffff; border-radius: 0;">
+        <div style="margin-bottom: 30px; display: flex; align-items: center; justify-content: space-between;">
+            <div>
+                <h2 style="margin: 0; font-weight: 800; font-size: 24px; letter-spacing: -0.5px; color: #ffffff;">{% trans "My salary journey" %}</h2>
+                <div style="opacity: 0.8; font-size: 14px; color: #ffffff;">{{ salary_breakdown.month_name }} {{ salary_breakdown.year|translate_digits }} • TrackMyRupee</div>
+            </div>
+            <div style="background: rgba(255,255,255,0.2); padding: 6px 14px; border-radius: 20px; font-size: 14px; font-weight: 700; color: #ffffff;">
+                 {{ hero_metrics.savings_rate|translate_digits }}% {% trans "Saved" %}
+            </div>
+        </div>
+
+        <div style="margin-bottom: 35px;">
+            <div style="opacity: 0.7; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; color: #ffffff;">{% trans "Total Income" %}</div>
+            <div style="font-size: 36px; font-weight: 800; color: #ffffff;">{{ currency_symbol }}{{ hero_metrics.income|humanize_currency:currency_symbol|translate_digits }}</div>
+        </div>
+
+        <div style="margin-bottom: 40px;">
+            <div style="opacity: 0.7; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 15px; color: #ffffff;">{% trans "Top Spending" %}</div>
+            <div style="display: flex; flex-direction: column; gap: 14px;">
+                {% for cat in category_limits|slice:":3" %}
+                <div style="display: flex; align-items: center; justify-content: space-between;">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                         <div style="width: 32px; height: 32px; background: rgba(255,255,255,0.15); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; color: #ffffff;">
+                            <i class="bi {% category_icon cat.name user %}"></i>
+                         </div>
+                         <div style="font-weight: 600; font-size: 16px; color: #ffffff;">{{ cat.name }}</div>
+                    </div>
+                    <div style="font-weight: 700; font-size: 16px; color: #ffffff;">{{ currency_symbol }}{{ cat.total|humanize_currency:currency_symbol|translate_digits }}</div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div style="background: rgba(255,255,255,0.1); padding: 20px; border-radius: 15px; border-left: 4px solid #4facfe; margin-bottom: 25px;">
+             <div style="font-weight: 700; font-size: 14px; margin-bottom: 6px; color: #ffffff;">✨ {% trans "AI Insight" %}</div>
+             <div style="font-size: 14px; opacity: 0.9; line-height: 1.5; color: #ffffff;">
+                {% if salary_breakdown.viral_insight %}
+                    {{ salary_breakdown.viral_insight }}
+                {% else %}
+                    {% trans "You're consistently building wealth with a positive savings rate. That's a huge win!" %}
+                {% endif %}
+             </div>
+        </div>
+
+        <div style="display: flex; align-items: center; justify-content: center; opacity: 0.9;">
+            <div style="text-align: center; background: rgba(255,255,255,0.05); padding: 15px 25px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.1);">
+                <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; color: #ffffff; opacity: 0.8; margin-bottom: 4px; font-weight: 700;">🔥 {% trans "Daily Burn Rate" %}</div>
+                <div style="font-size: 24px; font-weight: 900; color: #ffffff; letter-spacing: -0.5px;">{{ currency_symbol }}{{ salary_breakdown.daily_burn|humanize_currency:currency_symbol|translate_digits }}</div>
+            </div>
+        </div>
+
+        <div style="margin-top: 40px; text-align: center; opacity: 0.4; font-size: 11px; font-weight: 600; color: #ffffff; letter-spacing: 0.5px;">
+            TRACKMYRUPEE.COM • {% trans "MASTER YOUR MONEY" %}
+        </div>
+    </div>
+    {% endif %}
+</div>
 
 <!-- Year in Review Banner -->
 {% if show_year_in_review %}
@@ -627,35 +645,35 @@ document.addEventListener('DOMContentLoaded', function() {
 <div class="d-md-none mb-4 fade-in">
     <div class="d-flex justify-content-between align-items-center px-1">
         <a href="{% url 'category-list' %}" class="d-flex flex-column align-items-center text-decoration-none flex-grow-1">
-            <div class="bg-body-secondary border rounded-circle d-flex align-items-center justify-content-center mb-1" style="width: 48px; height: 48px;">
+            <div class="bg-body border rounded-circle d-flex align-items-center justify-content-center mb-1" style="width: 48px; height: 48px;">
                 <i class="bi bi-tag fs-5 text-primary"></i>
             </div>
-            <span class="text-body-secondary" style="font-size: 0.65rem; font-weight: 600;">{% trans "Categories" %}</span>
+            <span class="text-body-secondary" style="font-size: 0.75rem;">{% trans "Categories" %}</span>
         </a>
         <a href="{% url 'budget' %}" class="d-flex flex-column align-items-center text-decoration-none flex-grow-1">
-            <div class="bg-body-secondary border rounded-circle d-flex align-items-center justify-content-center mb-1" style="width: 48px; height: 48px;">
+            <div class="bg-body border rounded-circle d-flex align-items-center justify-content-center mb-1" style="width: 48px; height: 48px;">
                 <i class="bi bi-speedometer2 fs-5 text-warning"></i>
             </div>
-            <span class="text-body-secondary" style="font-size: 0.65rem; font-weight: 600;">{% trans "Budget" %}</span>
+            <span class="text-body-secondary" style="font-size: 0.75rem;">{% trans "Budget" %}</span>
         </a>
-        <a href="{% url 'goal-list' %}" class="d-flex flex-column align-items-center text-decoration-none flex-grow-1">
-            <div class="bg-body-secondary border rounded-circle d-flex align-items-center justify-content-center mb-1" style="width: 48px; height: 48px;">
-                <i class="bi bi-bullseye fs-5 text-success"></i>
+        <a href="{% url 'recurring-list' %}" class="d-flex flex-column align-items-center text-decoration-none flex-grow-1">
+            <div class="bg-body border rounded-circle d-flex align-items-center justify-content-center mb-1" style="width: 48px; height: 48px;">
+                <i class="bi bi-arrow-repeat fs-5 text-success"></i>
             </div>
-            <span class="text-body-secondary" style="font-size: 0.65rem; font-weight: 600;">{% trans "Goals" %}</span>
+            <span class="text-body-secondary" style="font-size: 0.75rem;">{% trans "Subscriptions" %}</span>
         </a>
         <a href="{% url 'settings-home' %}" class="d-flex flex-column align-items-center text-decoration-none flex-grow-1">
-            <div class="bg-body-secondary border rounded-circle d-flex align-items-center justify-content-center mb-1" style="width: 48px; height: 48px;">
+            <div class="bg-body border rounded-circle d-flex align-items-center justify-content-center mb-1" style="width: 48px; height: 48px;">
                 <i class="bi bi-gear fs-5 text-secondary"></i>
             </div>
-            <span class="text-body-secondary" style="font-size: 0.65rem; font-weight: 600;">{% trans "Settings" %}</span>
+            <span class="text-body-secondary" style="font-size: 0.75rem;">{% trans "Settings" %}</span>
         </a>
         {% if user.profile.is_pro %}
         <a href="{% url 'analytics' %}" class="d-flex flex-column align-items-center text-decoration-none flex-grow-1">
-            <div class="bg-body-secondary border rounded-circle d-flex align-items-center justify-content-center mb-1" style="width: 48px; height: 48px;">
+            <div class="bg-body border rounded-circle d-flex align-items-center justify-content-center mb-1" style="width: 48px; height: 48px;">
                 <i class="bi bi-graph-up-arrow fs-5 text-info"></i>
             </div>
-            <span class="text-body-secondary" style="font-size: 0.65rem; font-weight: 600;">{% trans "Analytics" %}</span>
+            <span class="text-body-secondary" style="font-size: 0.75rem;">{% trans "Analytics" %}</span>
         </a>
         {% endif %}
     </div>
@@ -664,227 +682,243 @@ document.addEventListener('DOMContentLoaded', function() {
 <style>
     .no-scrollbar::-webkit-scrollbar { display: none; }
     .min-w-fit { min-width: fit-content; flex-shrink: 0; }
+    .hover-stats:hover { opacity: 0.7; transform: translateY(-2px); }
+    .hover-link:hover { text-decoration: underline !important; opacity: 0.8; }
+    .transition-all { transition: all 0.3s ease; }
 </style>
 
-<!-- Summary Cards Row -->
-<div class="row g-4 mb-4">
-    <!-- Total Income -->
-    <div class="col-6 col-md-3" id="tour-income-card">
-        <a href="{% url 'income-list' %}" class="text-decoration-none">
-            <div class="card shadow-lg border-0 h-100 hover-lift fade-in" style="animation-delay: 0.0s">
-                <div class="position-absolute top-0 end-0 p-2 mt-1 me-2 opacity-25">
-                    <i class="bi bi-box-arrow-up-right" style="font-size: 0.75rem;"></i>
-                </div>
-                <div class="card-body p-3">
-                    <div class="mb-2">
-                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-muted">
-                            <style>
-                                @keyframes dash-up { 0% { stroke-dashoffset: 15; opacity: 0;} 20% { opacity: 1; } 80% { stroke-dashoffset: 0; opacity: 1;} 100% { opacity: 0;} }
-                                .anim-arrow { stroke-dasharray: 15; stroke-dashoffset: 15; animation: dash-up 3s cubic-bezier(0.4, 0, 0.2, 1) infinite; }
-                                @keyframes glow { 0%, 100% { filter: drop-shadow(0 0 1px currentColor); opacity: 0.6; } 50% { filter: drop-shadow(0 0 4px currentColor); opacity: 1; } }
-                                .anim-glow { animation: glow 4s ease-in-out infinite; }
-                            </style>
-                            <circle cx="12" cy="12" r="9" class="anim-glow" fill="currentColor" fill-opacity="0.1"/>
-                            <path d="M12 16V8M9 11l3-3 3 3" class="anim-arrow"/>
-                        </svg>
-                    </div>
-                    <h5 class="card-title opacity-75 text-body mb-1" style="font-size: 0.95rem;">{% trans "Total Income" %}</h5>
-                    <div class="d-flex flex-wrap align-items-center mb-0 gap-2">
-                        <h2 class="h4 fw-bold mb-0 text-body">{{ currency_symbol }}{{ total_income|humanize_currency:currency_symbol|translate_digits }}</h2>
-                        {% if prev_month_data.income_pct is not None %}
-                            <span class="badge rounded-pill {% if prev_month_data.income_pct >= 0 %}bg-success{% else %}bg-danger{% endif %}" style="font-size: 0.75rem;" title="vs last month">
-                                <i class="bi bi-arrow-{% if prev_month_data.income_pct >= 0 %}up{% else %}down{% endif %}"></i>
-                                {{ prev_month_data.income_pct_abs|floatformat:1|translate_digits }}%
-                            </span>
-                        {% endif %}
-                    </div>
-                    <small class="text-muted" style="font-size: 0.80rem;">
-                        {% if start_date %}
-                            Custom Range
-                        {% elif selected_month and selected_year %}
-                            {% blocktrans with month=selected_month year=selected_year|translate_digits %}For {{ month }} {{ year }}{% endblocktrans %}
-                        {% elif selected_year %}
-                            {% blocktrans with year=selected_year|translate_digits %}For {{ year }}{% endblocktrans %}
-                        {% else %}
-                            {% trans "All Time" %}
-                        {% endif %}
-                    </small>
-                </div>
-            </div>
-        </a>
-    </div>
-    <!-- Total Expenses -->
-    <div class="col-6 col-md-3" id="tour-expenses-card">
-        <a href="{% url 'expense-list' %}" class="text-decoration-none">
-            <div class="card shadow-lg border-0 h-100 hover-lift fade-in" style="animation-delay: 0.1s">
-                <div class="position-absolute top-0 end-0 p-2 opacity-25 mt-1 me-2 ">
-                    <i class="bi bi-box-arrow-up-right" style="font-size: 0.75rem;"></i>
-                </div>
-                <div class="card-body p-3">
-                    <div class="mb-2">
-                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-muted">
-                            <style>
-                                @keyframes float-away { 0% { transform: translate(0, 0) scale(0.5); opacity: 0; } 20% { opacity: 1; transform: translate(3px, -3px) scale(1); } 80% { transform: translate(12px, -12px) scale(1); opacity: 0; } 100% { opacity: 0; } }
-                                .anim-fly { animation: float-away 3s ease-out infinite; }
-                                @keyframes wallet-pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(0.95); } }
-                                .anim-wallet { animation: wallet-pulse 3s ease-in-out infinite; transform-origin: center; }
-                            </style>
-                            <path class="anim-wallet" d="M20 12V8H6a2 2 0 0 1-2-2c0-1.1.9-2 2-2h12v4" fill="currentColor" fill-opacity="0.1"/>
-                            <path class="anim-wallet" d="M4 6v12c0 1.1.9 2 2 2h14v-4"/>
-                            <circle cx="18" cy="12" r="2" class="anim-wallet"/>
-                            <path d="M14 6h4M16 4v4" class="anim-fly" stroke-width="1.5" stroke="currentColor"/>
-                        </svg>
-                    </div>
-                    <h5 class="card-title opacity-75 text-body mb-1" style="font-size: 0.95rem;">{% trans "Total Expenses" %}</h5>
-                    <div class="d-flex flex-wrap align-items-center mb-0 gap-2">
-                        <h2 class="h4 fw-bold mb-0 text-body">{{ currency_symbol }}{{ total_expenses|humanize_currency:currency_symbol|translate_digits }}</h2>
-                        {% if prev_month_data.expense_pct is not None %}
-                            <span class="badge rounded-pill {% if prev_month_data.expense_pct > 0 %}bg-danger{% else %}bg-success{% endif %}" style="font-size: 0.75rem;" title="vs last month">
-                                <i class="bi bi-arrow-{% if prev_month_data.expense_pct > 0 %}up{% else %}down{% endif %}"></i>
-                                {{ prev_month_data.expense_pct_abs|floatformat:1|translate_digits }}%
-                            </span>
-                        {% endif %}
-                    </div>
-                    <small class="text-muted" style="font-size: 0.80rem;">
-                        {% if start_date %}
-                            Custom Range
-                        {% elif selected_month and selected_year %}
-                            {% blocktrans with month=selected_month year=selected_year|translate_digits %}For {{ month }} {{ year }}{% endblocktrans %}
-                        {% elif selected_year %}
-                            {% blocktrans with year=selected_year|translate_digits %}For {{ year }}{% endblocktrans %}
-                        {% else %}
-                            {% trans "All Time" %}
-                        {% endif %}
-                    </small>
-                </div>
-            </div>
-        </a>
-    </div>
-    
-    <!-- Savings -->
-    <div class="col-6 col-md-3">
-        <div class="card shadow-lg border-0 h-100 hover-lift fade-in" style="animation-delay: 0.2s">
-            <div class="card-body p-3">
-                <div class="mb-2">
-                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-muted">
-                        <style>
-                            @keyframes slide-down { 0% { transform: translateY(-8px); opacity: 0; } 20% { opacity: 1; transform: translateY(-4px); } 40%, 100% { transform: translateY(6px); opacity: 0; } }
-                            @keyframes scale-pig { 0%, 35%, 100% { transform: scale(1); } 40% { transform: scale(1.08) translateY(1px); } 50% { transform: scale(1); } }
-                            .anim-coin-drop { animation: slide-down 3s ease-in-out infinite; }
-                            .anim-pig-bump { animation: scale-pig 3s ease-in-out infinite; transform-origin: bottom center; }
-                        </style>
-                        <path class="anim-pig-bump" d="M20 16.5c0 1.4-1.1 2.5-2.5 2.5H6.5C5.1 19 4 17.9 4 16.5v-5C4 10.1 5.1 9 6.5 9H17l3-3v10.5M10 9V7m2 2V7" fill="currentColor" fill-opacity="0.1"/>
-                        <circle class="anim-pig-bump" cx="16" cy="14" r="1.5"/>
-                        <path d="M12 2v6" class="anim-coin-drop" stroke-width="3" stroke-linecap="round"/>
-                    </svg>
-                </div>
-                <h5 class="card-title opacity-75 mb-1" style="font-size: 0.95rem;">{% trans "Balance" %}</h5>
-                <div class="d-flex flex-wrap align-items-center mb-0 gap-2">
-                    <h2 class="h4 fw-bold mb-0">{{ currency_symbol }}{{ savings|humanize_currency:currency_symbol|translate_digits }}</h2>
-                    {% if prev_month_data.savings_pct is not None %}
-                        <span class="badge rounded-pill {% if prev_month_data.savings_pct >= 0 %}bg-success{% else %}bg-danger{% endif %}" style="font-size: 0.75rem;" title="vs last month">
-                            <i class="bi bi-arrow-{% if prev_month_data.savings_pct >= 0 %}up{% else %}down{% endif %}"></i>
-                            {{ prev_month_data.savings_pct_abs|floatformat:1|translate_digits }}%
-                        </span>
-                    {% endif %}
-                </div>
-                <small class="text-muted" style="font-size: 0.80rem;">
-                    {% if start_date %}
-                        {% trans "Custom Range" %}
-                    {% elif selected_month and selected_year %}
-                        {% blocktrans with month=selected_month year=selected_year %}For {{ month }} {{ year }}{% endblocktrans %}
-                    {% elif selected_year %}
-                        {% blocktrans with year=selected_year %}For {{ year }}{% endblocktrans %}
+<!-- LAYER 2: FINANCIAL HEALTH & SPENDING PACE -->
+<div class="row g-4 mb-4 fade-in" id="tour-hero-card" style="animation-delay: 0.1s;">
+    <!-- Financial Health Card -->
+    <div class="col-12 col-lg-8">
+        <div class="card shadow-lg border-0 rounded-4 h-100 overflow-hidden transition-all">
+            <div class="card-header bg-transparent border-bottom d-flex justify-content-between align-items-center">
+                <span class="fw-bold">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="me-1 text-muted" style="vertical-align: -2px;">
+                        <path d="M22 12h-4l-3 9L9 3l-3 9H2" class="anim-heartbeat"/>
+                    </svg> 
+                    {% trans "Financial Health" %} ({% if salary_breakdown.month_name %} {{ salary_breakdown.month_name }} {% else %} Custom Range {% endif %})
+                </span>
+                {% if hero_metrics.income > 0 or hero_metrics.spent > 0 %}
+                    {% if hero_metrics.status == 'excellent' %}
+                        <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-3 border border-success border-opacity-10"><i class="bi bi-star-fill me-1"></i> {% trans "Excellent" %}</span>
+                    {% elif hero_metrics.status == 'good' %}
+                        <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-3 border border-primary border-opacity-10"><i class="bi bi-check-circle-fill me-1"></i> {% trans "Good" %}</span>
                     {% else %}
-                        {% trans "All Time" %}
+                        <span class="badge bg-warning bg-opacity-10 text-warning rounded-pill px-3 border border-warning border-opacity-10"><i class="bi bi-exclamation-triangle-fill me-1"></i> {% trans "Needs Attention" %}</span>
                     {% endif %}
-                </small>
+                {% else %}
+                    <span class="badge bg-secondary bg-opacity-10 text-secondary rounded-pill px-3 border border-secondary border-opacity-10">{% trans "No Data" %}</span>
+                {% endif %}
             </div>
+            
+            {% if hero_metrics.income > 0 or hero_metrics.spent > 0 %}
+            <div class="card-body px-4 py-3 text-center">
+                <!-- Savings Rate Hero -->
+                <div class="mb-4 mt-2 px-3 text-center">
+                    <h1 class="fw-black mb-2 text-body-emphasis" style="font-family: 'Clash Display', sans-serif; font-size: 2rem; letter-spacing: -1px;">
+                        {{ hero_metrics.savings_rate|translate_digits }}<span class="fs-4 text-muted fw-bold">%</span>
+                    </h1>
+                    
+                    <div class="mx-auto mb-3" style="max-width: 240px;">
+                        <div class="progress rounded-pill bg-secondary bg-opacity-10 mb-2" style="height: 10px;">
+                            <div class="progress-bar rounded-pill {% if hero_metrics.savings_rate >= 20 %}bg-success{% elif hero_metrics.savings_rate > 0 %}bg-primary{% else %}bg-danger{% endif %}" 
+                                 role="progressbar" 
+                                 style="width: {% if hero_metrics.savings_rate < 0 %}0{% else %}{{ hero_metrics.savings_rate|translate_digits }}{% endif %}%; transition: width 1.5s ease-in-out;" 
+                                 aria-valuenow="{{ hero_metrics.savings_rate|translate_digits }}" aria-valuemin="0" aria-valuemax="100">
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-between text-muted fw-bold px-1" style="font-size: 0.7rem;">
+                            <span>{{ currency_symbol }}{{ hero_metrics.saved|humanize_currency:currency_symbol|translate_digits }} {% trans "saved" %}</span>
+                            <span>{{ currency_symbol }}{{ hero_metrics.income|humanize_currency:currency_symbol|translate_digits }} {% trans "income" %}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-3 text-center">
+                        <p class="text-muted small fw-bold text-uppercase mb-2" style="letter-spacing: 0.5px;">{% trans "Savings Rate" %}</p>
+                        {% if hero_metrics.trend_text %}
+                            <span class="badge {% if hero_metrics.trend_type == 'positive' %}bg-success{% elif hero_metrics.trend_type == 'negative' %}bg-danger{% else %}bg-secondary{% endif %} bg-opacity-10 {% if hero_metrics.trend_type == 'positive' %}text-success{% elif hero_metrics.trend_type == 'negative' %}text-danger{% else %}text-secondary{% endif %} rounded-pill px-3 py-1 fw-bold" style="font-size: 0.75rem;">
+                                {{ hero_metrics.trend_text }}
+                            </span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Stats Row -->
+                <div class="row g-0 py-3 border-top border-bottom">
+                    <a href="{% url 'income-list' %}" class="col-4 border-end px-2 text-decoration-none transition-all">
+                        <small class="text-muted text-uppercase fw-bold d-flex justify-content-center align-items-center mb-1" style="font-size: 0.65rem; letter-spacing: 0.5px;">{% trans "Income" %} <i class="bi bi-arrow-up-right ms-1 opacity-50" style="font-size: 0.55rem; transform: translateY(1px);"></i></small>
+                        <h4 class="fw-bold mb-0 text-body">{{ currency_symbol }}{{ hero_metrics.income|humanize_currency:currency_symbol|translate_digits }}</h4>
+                    </a>
+                    <a href="{% url 'expense-list' %}" class="col-4 border-end px-2 text-decoration-none transition-all">
+                        <small class="text-muted text-uppercase fw-bold d-flex justify-content-center align-items-center mb-1" style="font-size: 0.65rem; letter-spacing: 0.5px;">{% trans "Spent" %} <i class="bi bi-arrow-up-right ms-1 opacity-50" style="font-size: 0.55rem; transform: translateY(1px);"></i></small>
+                        <h4 class="fw-bold mb-0 text-body">{{ currency_symbol }}{{ hero_metrics.spent|humanize_currency:currency_symbol|translate_digits }}</h4>
+                    </a>
+                    <a href="{% url 'goal-list' %}" class="col-4 px-2 text-decoration-none transition-all">
+                        <small class="text-muted text-uppercase fw-bold d-flex justify-content-center align-items-center mb-1" style="font-size: 0.65rem; letter-spacing: 0.5px;">{% trans "Saved" %} <i class="bi bi-arrow-up-right ms-1 opacity-50" style="font-size: 0.55rem; transform: translateY(1px);"></i></small>
+                        <h4 class="fw-bold mb-0 text-success">{{ currency_symbol }}{{ hero_metrics.saved|humanize_currency:currency_symbol|translate_digits }}</h4>
+                    </a>
+                </div>
+
+                <!-- Intelligence Line -->
+                {% if hero_metrics.short_insight %}
+                    <div class="mt-3 pb-1 px-3">
+                        <div class="alert bg-secondary bg-opacity-10 border-0 py-2 rounded-pill d-inline-block mb-0">
+                            <span class="text-body-emphasis small">{{ hero_metrics.short_insight }}</span>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+            {% else %}
+            <div class="card-body p-4 d-flex flex-column justify-content-center align-items-center text-center">
+                <div class="empty-state-container py-4">
+                    <div class="mb-3 text-muted opacity-50">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M22 12h-4l-3 9L9 3l-3 9H2" class="anim-heartbeat"/>
+                        </svg>
+                    </div>
+                    <p class="text-muted small mb-0">{% trans "No financial data for this period." %}</p>
+                </div>
+            </div>
+            {% endif %}
         </div>
     </div>
 
-    <!-- Projected Savings (Replaces Top Category) -->
-    <div class="col-6 col-md-3">
-        <div class="card shadow-lg border-0 h-100 hover-lift fade-in" style="animation-delay: 0.3s">
-            <div class="card-body p-3">
-                <div class="mb-2">
-                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-muted">
-                        <style>
-                            @keyframes line-grow { 0%, 10% { stroke-dasharray: 0 50; } 60%, 100% { stroke-dasharray: 50 50; } }
-                            @keyframes dot-fade { 0%, 40% { opacity: 0; transform: scale(0.5); } 60%, 100% { opacity: 1; transform: scale(1); } }
-                            .anim-line { stroke-dasharray: 50 50; animation: line-grow 4s cubic-bezier(0.4, 0, 0.2, 1) infinite; }
-                            .anim-dot { animation: dot-fade 4s cubic-bezier(0.4, 0, 0.2, 1) infinite; transform-origin: 18px 6px; }
-                        </style>
-                        <path d="M3 3v18h18" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity="0.3"/>
-                        <path d="M7 14l4-4 4 4 3-8" class="anim-line"/>
-                        <circle cx="18" cy="6" r="2" class="anim-dot" fill="currentColor"/>
-                        <path d="M14 6h4v4" class="anim-dot"/>
-                    </svg>
-                </div>
-                <h5 class="card-title opacity-75 mb-1" style="font-size: 0.95rem;">{% trans "Projection" %}</h5>
-                <div class="d-flex flex-wrap align-items-center mb-0 gap-2">
-                    {% if projected_savings > 0 %}
-                        <h2 class="h4 fw-bold mb-0">{{ currency_symbol }}{{ projected_savings|humanize_currency:currency_symbol|translate_digits }}</h2>
-                        <span class="badge rounded-pill bg-success bg-opacity-10 text-success" style="font-size: 0.75rem;" title="Estimated by year end based on current avg">
-                            {% trans "Savings" %}
-                        </span>
+    <!-- Spending Pace Card -->
+    <div class="col-12 col-lg-4">
+        <div class="card shadow-lg border-0 h-100 glass-card rounded-4">
+            <div class="card-header bg-transparent border-bottom d-flex justify-content-between align-items-center">
+                <span class="fw-bold">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="me-1 text-muted" style="vertical-align: -2px;">
+                        <path d="M12 2a10 10 0 0 1 10 10"/>
+                        <circle cx="12" cy="12" r="10" opacity="0.2"/>
+                        <path d="M12 12l3-3" class="anim-speedometer"/>
+                    </svg> 
+                    {% trans "Spending Pace" %}
+                </span>
+                {% if hero_metrics.income > 0 or hero_metrics.spent > 0 %}
+                    {% if salary_breakdown.spending_pace.status == 'on_track' %}
+                        <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-2 py-1 small border border-success border-opacity-10">{% trans "On Track" %}</span>
+                    {% elif salary_breakdown.spending_pace.status == 'near_limit' %}
+                        <span class="badge bg-warning bg-opacity-10 text-warning rounded-pill px-2 py-1 small border border-warning border-opacity-10">{% trans "Near Limit" %}</span>
                     {% else %}
-                        <h2 class="display-6 fw-bold mb-0 text-muted">-</h2>
-                        <small class="text-muted">{% trans "Keep saving to see this!" %}</small>
+                        <span class="badge bg-danger bg-opacity-10 text-danger rounded-pill px-2 py-1 small border border-danger border-opacity-10">{% trans "Over Budget" %}</span>
+                    {% endif %}
+                {% else %}
+                    <span class="badge bg-secondary bg-opacity-10 text-secondary rounded-pill px-2 py-1 small border border-secondary border-opacity-10">{% trans "No Data" %}</span>
+                {% endif %}
+            </div>
+            {% if hero_metrics.income > 0 or hero_metrics.spent > 0 %}
+            <div class="card-body p-4 d-flex flex-column justify-content-center text-center">
+                <div class="mb-4">
+                    <h2 class="fw-black mb-1 p-0 text-body-emphasis">{{ currency_symbol }}{{ salary_breakdown.spending_pace.daily_spending_pace|floatformat:0|translate_digits }} <span class="fs-6 fw-normal text-muted">/ {% trans "day" %}</span></h2>
+                    <small class="text-muted text-uppercase fw-bold opacity-75" style="letter-spacing: 0.5px; font-size: 0.7rem;">{% trans "Daily Spend" %}</small>
+                </div>
+
+                <div class="bg-secondary bg-opacity-10 rounded-4 p-3 mb-3">
+                    <div class="text-center mb-3">
+                        <small class="text-muted text-uppercase fw-bold d-block mb-1" style="letter-spacing: 0.5px; font-size: 0.65rem;">{% trans "Projected Monthly Spend" %}</small>
+                        <h3 class="fw-black mb-1 text-body-emphasis lh-1">{{ currency_symbol }}{{ salary_breakdown.spending_pace.projected_month_spend|floatformat:0|humanize_currency:currency_symbol|translate_digits }}</h3>
+                        <small class="text-muted fw-bold" style="font-size: 0.75rem;">
+                            {% trans "of" %} {{ currency_symbol }}{{ salary_breakdown.total_monthly_budget|floatformat:0|humanize_currency:currency_symbol|translate_digits }} {% trans "budget" %}
+                        </small>
+                    </div>
+
+                    {% if salary_breakdown.spending_pace.status == 'over_budget' %}
+                        <div class="text-danger small fw-bold mt-3 pt-2 border-top border-danger border-opacity-10">
+                           <i class="bi bi-exclamation-triangle-fill me-1"></i> {{ salary_breakdown.spending_pace.budget_multiplier|translate_digits }}× {% trans "over budget" %}
+                        </div>
+                    {% elif salary_breakdown.spending_pace.status == 'near_limit' %}
+                        <div class="text-warning small fw-bold mt-3 pt-2 border-top border-warning border-opacity-10">
+                           <i class="bi bi-info-circle-fill me-1"></i> {% trans "Nearly at budget limit" %}
+                        </div>
+                    {% else %}
+                        <div class="text-success small fw-bold mt-3 pt-2 border-top border-success border-opacity-10">
+                           <i class="bi bi-check-circle-fill me-1"></i> {% trans "Within budget" %}
+                        </div>
                     {% endif %}
                 </div>
-                <small class="text-muted" style="font-size: 0.80rem;">
-                    {% trans "YTD Average" %}
-                </small>
+                </div>
             </div>
+            {% else %}
+            <div class="card-body p-4 d-flex flex-column justify-content-center align-items-center text-center">
+                <div class="empty-state-container py-4">
+                    <div class="mb-3 text-muted opacity-50">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 2a10 10 0 0 1 10 10"/>
+                            <circle cx="12" cy="12" r="10" opacity="0.2"/>
+                            <path d="M12 12l3-3" class="anim-speedometer"/>
+                        </svg>
+                    </div>
+                    <p class="text-muted small mb-0">{% trans "No spending data available." %}</p>
+                </div>
+            </div>
+            {% endif %}
         </div>
     </div>
 </div>
 
-<div class="row g-4 mb-4">
-    <!-- Income vs Expenses Chart -->
-    <div class="col-md-4">
-        <div class="card shadow-lg border-0 h-100 hover-lift fade-in" style="animation-delay: 0.3s">
-            <div class="card-header bg-transparent border-bottom">
-                <span class="fw-bold"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1 text-muted" style="vertical-align: -2px;"><circle cx="7" cy="12" r="5" class="anim-vs"/><circle cx="17" cy="12" r="5" class="anim-vs" style="animation-delay: 0.5s;"/></svg> {% trans "Income vs Expenses" %}</span>
+<!-- LAYER 3: SMART INSIGHTS, BUDGET VS SPENT, PAYMENT DIST -->
+<div class="row g-4 mb-4 fade-in" style="animation-delay: 0.6s;">
+    <!-- NEW: Smart Insights Card -->
+    <div class="col-lg-4">
+        <div class="card shadow-lg border-0 h-100 glass-card rounded-4">
+            <div class="card-header bg-transparent border-bottom d-flex justify-content-between align-items-center">
+                 <span class="fw-bold">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="me-1 text-muted" style="vertical-align: -2px;">
+                        <path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.9 1.2 1.5 1.5 2.5"/>
+                        <path d="M9 18h6"/>
+                        <path d="M10 22h4"/>
+                        <path d="M12 2v2" class="anim-twinkle" fill="currentColor"/>
+                        <path d="M12 6v2" class="anim-twinkle" fill="currentColor"/>
+                    </svg> 
+                    {% trans "Smart Insights" %} ({% if salary_breakdown.month_name %} {{ salary_breakdown.month_name }} {% else %} Custom Range {% endif %})
+                 </span>
             </div>
-            <div class="card-body d-flex align-items-center justify-content-center p-4">
-                <div class="position-relative d-flex align-items-center justify-content-center" style="height: 180px; width: 180px;">
-                    <svg viewBox="0 0 100 100" class="gauge-svg">
-                        <circle cx="50" cy="50" r="45" class="gauge-bg"></circle>
-                        <circle cx="50" cy="50" r="45" class="gauge-fill" id="gauge-fill-path"></circle>
-                    </svg>
-                    <div class="position-absolute text-center">
-                        <span class="h2 fw-bold mb-0" id="ie-percentage">0%</span>
+            <div class="card-body p-4 d-flex flex-column justify-content-center">
+                {% if smart_bullet_insights %}
+                    <div class="text-start mt-2">
+                        {% for insight in smart_bullet_insights %}
+                        <div class="d-flex align-items-start mb-4">
+                            <div class="rounded-circle bg-opacity-10 text-{{ insight.theme }} d-flex align-items-center justify-content-center me-1 mt-1 pb-1 flex-shrink-0" style="width: 28px; height: 28px;">
+                                <i class="bi {{ insight.icon }}" style="font-size: 0.95rem;"></i>
+                            </div>
+                            <p class="mb-0 text-body-emphasis lh-sm mt-1" style="font-size: 0.95rem; font-weight: 600;">{{ insight.text|safe }}</p>
+                        </div>
+                        {% endfor %}
                     </div>
-                </div>
-                <div class="ms-5">
-                    <h3 class="fw-bold mb-1">{% trans "Expenses" %}</h3>
-                    <p class="text-muted mb-0 h6">
-                        {% blocktrans with expense=total_expenses|floatformat:0|translate_digits income=total_income|floatformat:0|translate_digits %}<span class="fw-bold text-body-emphasis">{{ currency_symbol }}{{ expense }}</span> of {{ currency_symbol }}{{ income }} used{% endblocktrans %}
-                    </p>
-                </div>
+                {% else %}
+                    <div class="empty-state-container">
+                        <div class="mb-3 text-muted opacity-50">
+                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M12 2a10 10 0 0 0-9.09 14.09A10 10 0 0 0 12 22a10 10 0 0 0 9.09-14.09A10 10 0 0 0 12 2z" opacity="0.2"/>
+                                <path d="M12 18v-6l4 2" class="anim-clock-empty"/>
+                            </svg>
+                        </div>
+                        <p class="text-muted small mb-0">{% trans "No insights available yet." %}</p>
+                    </div>
+                {% endif %}
             </div>
         </div>
     </div>
 
     <!-- Budget vs Spent List -->
-    <div class="col-md-4" id="tour-budget-card">
-        <div class="card shadow-lg border-0 h-100 hover-lift fade-in" style="animation-delay: 0.4s">
+    <div class="col-lg-4" id="tour-budget-card">
+        <div class="card shadow-lg border-0 h-100 glass-card rounded-4">
             <div class="card-header bg-transparent border-bottom d-flex justify-content-between align-items-center">
                 <span class="fw-bold"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1 text-muted" style="vertical-align: -2px;"><rect x="3" y="10" width="4" height="12" rx="1" class="anim-bar"/><rect x="10" y="6" width="4" height="16" rx="1" class="anim-bar" style="animation-delay: 0.3s;"/><rect x="17" y="2" width="4" height="20" rx="1" class="anim-bar" style="animation-delay: 0.6s;"/></svg> {% trans "Budget vs Spent" %}</span>
                 <a href="{% url 'budget' %}" class="btn btn-sm text-decoration-none opacity-25"><i class="bi bi-box-arrow-up-right"></i></a>
             </div>
-            <div class="card-body px-3 pb-4">
+            <div class="card-body p-0">
                 {% if has_any_budget %}
-                    <div class="d-flex flex-column gap-1">
+                    <div class="d-flex flex-column">
                         {% for item in category_limits|slice:":5" %}
                             {% if item.limit %}
-                            <div class="category-list-item py-1 px-2 d-flex align-items-center gap-3 hover-bg-light rounded" style="cursor: pointer;" onclick="filterByCategory('{{ item.name|escapejs }}')">
+                            <div class="list-group-item border-0 d-flex align-items-center py-2 px-3 hover-bg-light position-relative" style="cursor: pointer;" onclick="filterByCategory('{{ item.name|escapejs }}')">
                                 <!-- Left: Name -->
                                 <div class="d-flex align-items-center gap-2" style="width: 35%; flex-shrink: 0;">
                                     <div class="text-truncate">
-                                        <h6 class="mb-0 fw-semibold text-truncate" title="{{ item.name }}">{{ item.name }}</h6>
+                                        <h6 class="mb-0 text-truncate" title="{{ item.name }}">{{ item.name }}</h6>
                                     </div>
                                 </div>
 
@@ -927,12 +961,12 @@ document.addEventListener('DOMContentLoaded', function() {
         </div>
     </div>
 
-    <!-- Payment Method Distribution (Moved to Row 1) -->
-    <div class="col-md-4">
-        <div class="card shadow-lg border-0 h-100 hover-lift fade-in" style="animation-delay: 0.5s">
+    <!-- Payment Method Distribution -->
+    <div class="col-lg-4">
+        <div class="card shadow-lg border-0 h-100 glass-card rounded-4" style="animation-delay: 0.5s">
             <div class="card-header bg-transparent border-bottom fw-bold">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1 text-muted" style="vertical-align: -2px;"><rect x="2" y="5" width="20" height="14" rx="2" class="anim-card"/><line x1="2" y1="10" x2="22" y2="10" class="anim-card"/></svg>
-                {% trans "Payment Method Distribution" %}
+                {% trans "Payment Method" %}
             </div>
             <div class="card-body">
                 {% if payment_data %}
@@ -957,12 +991,12 @@ document.addEventListener('DOMContentLoaded', function() {
 </div>
 
 <!-- Charts Row 2: Trend Chart + Recent Transactions -->
-<div class="row g-4 mb-4">
+<div class="row g-4 mb-4 fade-in" style="animation-delay: 0.7s;">
     <!-- Trend Chart -->
     <div class="col-md-6">
-        <div class="card shadow-lg border-0 h-100">
+        <div class="card shadow-lg border-0 h-100 rounded-4">
             <div class="card-header bg-transparent border-bottom fw-bold d-flex justify-content-between">
-                <span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1 text-muted" style="vertical-align: -2px;"><polyline points="4 18 8 12 14 16 20 6" class="anim-trend"/></svg> {{ trend_title }} {% trans "(Stacked by Category)" %}</span>
+                <span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1 text-muted" style="vertical-align: -2px;"><polyline points="4 18 8 12 14 16 20 6" class="anim-trend"/></svg> {{ trend_title }}</span>
             </div>
             <div class="card-body">
                 {% if trend_datasets %}
@@ -986,7 +1020,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     <!-- Recent Transactions Table -->
     <div class="col-md-6">
-        <div class="card shadow-lg border-0 h-100">
+        <div class="card shadow-lg border-0 h-100 rounded-4">
             <div class="card-header bg-transparent border-bottom d-flex justify-content-between align-items-center">
                 <span class="fw-bold"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1 text-muted" style="vertical-align: -2px;"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14" class="anim-clk"/></svg> {% trans "Recent Transactions" %}</span>
                 <a href="{% url 'expense-list' %}" class="btn btn-sm text-decoration-none opacity-25"><i class="bi bi-box-arrow-up-right"></i></a>
@@ -994,7 +1028,7 @@ document.addEventListener('DOMContentLoaded', function() {
             <div class="card-body p-0">
                 <div class="list-group list-group-flush">
                     {% for expense in recent_transactions %}
-                    <div class="list-group-item border-0 d-flex align-items-center py-3 px-2 px-md-3 hover-bg-light position-relative">
+                    <div class="list-group-item bg-transparent border-0 d-flex align-items-center py-3 px-2 px-md-3 hover-bg-light position-relative">
                         <!-- Icon / Avatar -->
                         <div class="icon-shape icon-shape-md fw-bold fs-5 me-2 me-md-3 d-flex align-items-center justify-content-center flex-shrink-0" style="width: 45px; height: 45px;">
                             <i class="bi {% category_icon expense.category user %}"></i>
@@ -1040,10 +1074,10 @@ document.addEventListener('DOMContentLoaded', function() {
 </div>
 
 <!-- Charts Row 3: Category Distribution + Top Categories -->
-<div class="row g-4 mb-4">
+<div class="row g-4 mb-4 fade-in" style="animation-delay: 0.8s;">
     <!-- Category Chart -->
     <div class="col-md-6">
-        <div class="card shadow-lg border-0 h-100">
+        <div class="card shadow-lg border-0 h-100 rounded-4">
             <div class="card-header bg-transparent border-bottom fw-bold">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1 text-muted" style="vertical-align: -2px;"><circle cx="12" cy="12" r="10" class="anim-donut" stroke-dasharray="15 8 8 8"/></svg>
                 {% trans "Category Distribution" %}
@@ -1070,19 +1104,24 @@ document.addEventListener('DOMContentLoaded', function() {
 
     <!-- Category Summary List -->
     <div class="col-md-6">
-        <div class="card shadow-lg border-0 h-100">
+        <div class="card shadow-lg border-0 h-100 rounded-4">
             <div class="card-header bg-transparent border-bottom d-flex justify-content-between align-items-center">
                 <span class="fw-bold mb-0"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1 text-muted" style="vertical-align: -2px;"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z" class="anim-tag"/><line x1="7" y1="7" x2="7.01" y2="7" class="anim-tag"/></svg> {% trans "Top Categories" %}</span>
                 <a href="{% url 'category-list' %}" class="btn btn-sm text-decoration-none opacity-25"><i class="bi bi-box-arrow-up-right"></i></a>
             </div>
-            <div class="card-body px-3 pb-4">
-                <div class="d-flex flex-column gap-1">
+            <div class="card-body p-0">
+                <div class="d-flex flex-column">
                     {% for item in category_limits|slice:":5" %}
-                    <div class="category-list-item py-1 px-2 d-flex align-items-center gap-3 hover-bg-light rounded" style="cursor: pointer;" onclick="filterByCategory('{{ item.name|escapejs }}')">
+                    <div class="list-group-item border-0 d-flex align-items-center py-2 px-4 hover-bg-light position-relative" style="cursor: pointer;" onclick="filterByCategory('{{ item.name|escapejs }}')">
                         <!-- Left: Name -->
-                        <div class="d-flex align-items-center gap-2" style="width: 35%; flex-shrink: 0;">
+                        <div class="d-flex align-items-center gap-2" style="width: 45%; flex-shrink: 0;">
                             <div class="text-truncate">
-                                <h6 class="mb-0 fw-semibold text-truncate" title="{{ item.name }}">{{ item.name }}</h6>
+                                <h6 class="mb-0 fw-semibold text-truncate py-1" title="{{ item.name }}">{{ item.name }}</h6>
+                                {% if item.trend_pct is not None %}
+                                    <small class="{% if item.trend_dir == 'down' %}text-success{% elif item.trend_dir == 'up' %}text-danger{% else %}text-muted{% endif %} d-block" style="font-size: 0.65rem; font-weight: 600; margin-top: -1px;">
+                                        {% if item.trend_dir == 'down' %}↓{% elif item.trend_dir == 'up' %}↑{% endif %} {{ item.trend_pct|translate_digits }}% {% trans "vs last mo" %}
+                                    </small>
+                                {% endif %}
                             </div>
                         </div>
 
@@ -1140,6 +1179,7 @@ document.addEventListener('DOMContentLoaded', function() {
 {{ categories|json_script:"categories-data" }}
 {{ category_amounts|json_script:"category-amounts-data" }}
 {{ trend_labels|json_script:"trend-labels" }}
+{{ trend_iso_dates|json_script:"trend-iso-dates" }}
 {{ trend_datasets|json_script:"trend-datasets" }}
 {{ top_labels|json_script:"top-labels" }}
 {{ top_amounts|json_script:"top-amounts" }}
@@ -1148,6 +1188,7 @@ document.addEventListener('DOMContentLoaded', function() {
 {{ selected_years|json_script:"selected-years-data" }}
 {{ payment_labels|json_script:"payment-labels" }}
 {{ payment_data|json_script:"payment-data" }}
+{{ selected_categories|json_script:"selected-categories-data" }}
 
 <script>
 
@@ -1184,7 +1225,9 @@ document.addEventListener('DOMContentLoaded', function() {
         const categories = safeParse('categories-data');
         const categoryAmounts = safeParse('category-amounts-data');
         const trendLabels = safeParse('trend-labels');
+        const trendIsoDates = safeParse('trend-iso-dates');
         const trendDatasets = safeParse('trend-datasets');
+        const selectedCategories = safeParse('selected-categories-data') || [];
         const topLabels = safeParse('top-labels');
         const topAmounts = safeParse('top-amounts');
         const sMonths = safeParse('selected-months-data');
@@ -1232,15 +1275,17 @@ document.addEventListener('DOMContentLoaded', function() {
         
         let chartColor = '#219EBC'; // Default Blue
 
-        if (iePercentage > 100) {
-            chartColor = '#E74C3C'; // Red
-            percentageText.classList.add('text-danger');
-        } else if (iePercentage > 80) {
-            chartColor = '#F39C12'; // Orange
-            percentageText.classList.add('text-warning');
-        } else {
-            chartColor = '#219EBC';
-            percentageText.classList.add('text-primary');
+        if (percentageText) {
+            if (iePercentage > 100) {
+                chartColor = '#E74C3C'; // Red
+                percentageText.classList.add('text-danger');
+            } else if (iePercentage > 80) {
+                chartColor = '#F39C12'; // Orange
+                percentageText.classList.add('text-warning');
+            } else {
+                chartColor = '#219EBC';
+                percentageText.classList.add('text-primary');
+            }
         }
 
         if (gaugeFill) {
@@ -1255,21 +1300,23 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         // Percentage Number Toggle/Count Up
-        let start = 0;
-        const duration = 1500;
-        const stepTime = 20;
-        const totalSteps = duration / stepTime;
-        const increment = iePercentage / totalSteps;
+        if (percentageText) {
+            let start = 0;
+            const duration = 1500;
+            const stepTime = 20;
+            const totalSteps = duration / stepTime;
+            const increment = iePercentage / totalSteps;
 
-        const timer = setInterval(() => {
-            start += increment;
-            if (start >= iePercentage) {
-                percentageText.innerText = (iePercentage > 100 ? '>' + translateDigits(100) : translateDigits(iePercentage)) + '%';
-                clearInterval(timer);
-            } else {
-                percentageText.innerText = translateDigits(Math.floor(start)) + '%';
-            }
-        }, stepTime);
+            const timer = setInterval(() => {
+                start += increment;
+                if (start >= iePercentage) {
+                    percentageText.innerText = (iePercentage > 100 ? '>' + translateDigits(100) : translateDigits(iePercentage)) + '%';
+                    clearInterval(timer);
+                } else {
+                    percentageText.innerText = translateDigits(Math.floor(start)) + '%';
+                }
+            }, stepTime);
+        }
 
         // --- 1. Trend Chart ---
         const ctxTrend = document.getElementById('trendChart').getContext('2d');
@@ -1295,9 +1342,29 @@ document.addEventListener('DOMContentLoaded', function() {
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 11 } } } },
+                onHover: (event, chartElement, chart) => {
+                    const points = chart.getElementsAtEventForMode(event, 'index', { intersect: false }, true);
+                    event.native.target.style.cursor = points[0] ? 'pointer' : 'default';
+                },
+                onClick: (evt, elements, chart) => {
+                    const points = chart.getElementsAtEventForMode(evt, 'index', { intersect: false }, true);
+                    if (points.length > 0) {
+                        const index = points[0].index;
+                        const dateStr = trendIsoDates[index];
+                        if (dateStr) {
+                            let url = `{% url 'expense-list' %}?start_date=${dateStr}&end_date=${dateStr}`;
+                            if (selectedCategories && selectedCategories.length > 0) {
+                                selectedCategories.forEach(cat => {
+                                    url += `&category=${encodeURIComponent(cat)}`;
+                                });
+                            }
+                            window.location.href = url;
+                        }
+                    }
+                },
                 scales: {
                     x: { 
-                        stacked: true, 
+                        stacked: false, 
                         grid: { display: false },
                         ticks: {
                             autoSkip: true,
@@ -1307,7 +1374,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         }
                     },
                     y: { 
-                        stacked: true, 
+                        stacked: false, 
                         grid: { color: currentColors.grid }, 
                         beginAtZero: true,
                         ticks: { callback: (val) => translateDigits(val) }
@@ -1316,45 +1383,207 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
 
-        // --- 2. Category Chart ---
-        if (categories.length > 0) {
-            const ctxCat = document.getElementById('categoryChart').getContext('2d');
+        // --- 2. Money Flow Chart (Layer 2) ---
+        const moneyFlowCanvas = document.getElementById('moneyFlowChart');
+        const savedAmount = parseFloat("{{ hero_metrics.saved|stringformat:'f'|default:'0' }}");
+
+        if (moneyFlowCanvas && (categories.length > 0 || savedAmount > 0)) {
+            const ctxFlow = moneyFlowCanvas.getContext('2d');
+            
+            // Prepare Data: Savings + Categories
+            const flowLabels = [];
+            const flowData = [];
+            const flowGradients = [];
+            
+            // Savings First (Green)
+            if (savedAmount > 0) {
+                flowLabels.push('{% trans "Unallocated" %}');
+                flowData.push(savedAmount);
+                flowGradients.push(createGradient(ctxFlow, '#11998e', '#38ef7d')); // Green
+            }
+            
+            // Then Categories
+            categories.forEach((cat, index) => {
+                flowLabels.push(cat);
+                flowData.push(categoryAmounts[index]);
+            });
+            
             const catGradients = [
-                 createGradient(ctxCat, '#00c6ff', '#0072ff'), // Blue
-                 createGradient(ctxCat, '#43e97b', '#38f9d7'), // Teal
-                 createGradient(ctxCat, '#a78bfa', '#7c3aed'), // Soft Violet
-                 createGradient(ctxCat, '#4facfe', '#00f2fe'), // Cyan
-                 createGradient(ctxCat, '#30cfd0', '#330867')  // Sea-Blue
+                 createGradient(ctxFlow, '#00c6ff', '#0072ff'), // Blue
+                 createGradient(ctxFlow, '#a78bfa', '#7c3aed'), // Soft Violet
+                 createGradient(ctxFlow, '#f7b733', '#fc4a1a'), // Orange
+                 createGradient(ctxFlow, '#4facfe', '#00f2fe'), // Cyan
+                 createGradient(ctxFlow, '#30cfd0', '#330867')  // Sea-Blue
+            ];
+            
+            for (let i = flowGradients.length; i < flowLabels.length; i++) {
+                flowGradients.push(catGradients[(i - (savedAmount > 0 ? 1 : 0)) % catGradients.length]);
+            }
+
+            // Convert structure for a single stacked horizontal bar
+            const flowDatasets = flowLabels.map((label, index) => ({
+                label: label,
+                data: [flowData[index]],
+                backgroundColor: flowGradients[index],
+                borderWidth: 2, 
+                borderColor: document.documentElement.getAttribute('data-bs-theme') === 'dark' ? '#212529' : '#ffffff', // subtle inner spacing
+                borderRadius: index === 0 ? {topLeft: 20, bottomLeft: 20} : (index === flowLabels.length - 1 ? {topRight: 20, bottomRight: 20} : 0),
+                barPercentage: 1.0,
+                categoryPercentage: 1.0
+            }));
+
+            // Compute exact sum to prevent Chart.js from artificially padding the right side
+            const totalWidth = flowData.reduce((a, b) => a + b, 0);
+
+            charts.moneyFlow = new Chart(ctxFlow, {
+                type: 'bar',
+                data: {
+                    labels: [''], // Only one row
+                    datasets: flowDatasets
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { 
+                        legend: { position: 'bottom', labels: { boxWidth: 12, font: {size: 11} }, display: true },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.dataset.label + ': {{ currency_symbol }}' + translateDigits(context.parsed.x.toLocaleString());
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: { 
+                            stacked: true, 
+                            display: false,
+                            max: totalWidth > 0 ? totalWidth : undefined 
+                        },
+                        y: { stacked: true, display: false }
+                    },
+                    onHover: (event, chartElement) => {
+                        event.native.target.style.cursor = chartElement[0] ? 'pointer' : 'default';
+                    },
+                    onClick: (evt, elements, chart) => {
+                        if (elements.length > 0) {
+                            const index = elements[0].datasetIndex;
+                            const label = chart.data.datasets[index].label;
+                            if (label === '{% trans "Unallocated" %}' || label === '{% trans "Balance" %}') return; // Don't redirect on balance click
+                            
+                            // Build Query Params for category click
+                            const queryParams = new URLSearchParams();
+                            queryParams.append('category', label);
+                            
+                            if (sMonths && sMonths.length) sMonths.forEach(m => queryParams.append('month', m));
+                            if (sYears && sYears.length) sYears.forEach(y => queryParams.append('year', y));
+                            
+                            showLoader();
+                            window.location.href = "{% url 'expense-list' %}?" + queryParams.toString();
+                        }
+                    }
+                },
+                plugins: [{
+                    id: 'stackLabels',
+                    afterDatasetsDraw(chart) {
+                        const { ctx } = chart;
+                        ctx.save();
+                        
+                        chart.data.datasets.forEach((dataset, i) => {
+                            const meta = chart.getDatasetMeta(i);
+                            if (meta.hidden) return;
+                            const bar = meta.data[0];
+                            const val = dataset.data[0];
+                            if (val <= 0) return;
+                            
+                            const total = totalWidth; 
+                            const percentage = Math.round((val / total) * 100);
+                            
+                            if (percentage >= 4) {
+                                ctx.font = 'bold 12px sans-serif';
+                                ctx.fillStyle = '#ffffff';
+                                ctx.textAlign = 'center';
+                                ctx.textBaseline = 'middle';
+                                
+                                const x = bar.x - (bar.width / 2);
+                                const y = bar.y;
+                                
+                                ctx.shadowColor = 'rgba(0, 0, 0, 0.4)';
+                                ctx.shadowBlur = 3;
+                                ctx.fillText(translateDigits(percentage) + '%', x, y);
+                                ctx.shadowBlur = 0;
+                            }
+                        });
+                        ctx.restore();
+                    }
+                }]
+            });
+        }
+
+        // --- 3. Category Distribution Chart (Layer 2/Row 3) ---
+        const categoryCanvas = document.getElementById('categoryChart');
+        if (categoryCanvas && categories.length > 0) {
+            const ctxCategory = categoryCanvas.getContext('2d');
+            
+            // Generate distinct gradients matching the old aesthetic
+            const doughnutGradients = [
+                 createGradient(ctxCategory, '#00c6ff', '#0072ff'), // Blue
+                 createGradient(ctxCategory, '#43e97b', '#38f9d7'), // Teal
+                 createGradient(ctxCategory, '#a78bfa', '#7c3aed'), // Soft Violet
+                 createGradient(ctxCategory, '#f7b733', '#fc4a1a'), // Orange
+                 createGradient(ctxCategory, '#4facfe', '#00f2fe'), // Cyan
+                 createGradient(ctxCategory, '#30cfd0', '#330867'), // Sea-Blue
+                 createGradient(ctxCategory, '#fa709a', '#fee140'), // Yellow-Red
+                 createGradient(ctxCategory, '#667eea', '#764ba2')  // Deep Purple
             ];
 
-            charts.category = new Chart(ctxCat, {
+            const bgGradients = categories.map((_, i) => doughnutGradients[i % doughnutGradients.length]);
+
+            charts.categoryChart = new Chart(ctxCategory, {
                 type: 'doughnut',
                 data: {
                     labels: categories,
                     datasets: [{
                         data: categoryAmounts,
-                        backgroundColor: catGradients,
-                        borderWidth: 0
+                        backgroundColor: bgGradients,
+                        borderWidth: 0,
+                        hoverOffset: 8
                     }]
                 },
                 plugins: [{
                     id: 'doughnutLabels',
                     afterDatasetsDraw(chart) {
-                        const { ctx } = chart;
+                        const { ctx, data } = chart;
                         ctx.save();
                         const meta = chart.getDatasetMeta(0);
+                        const total = data.datasets[0].data.reduce((a, b) => a + b, 0);
+                        
                         meta.data.forEach((arc, index) => {
                             const center = arc.getCenterPoint();
                             const value = categoryAmounts[index];
-                            const text = '{{ currency_symbol }}' + translateDigits(value.toLocaleString());
+                            const percentage = total > 0 ? ((value / total) * 100).toFixed(0) : 0;
+                            
+                            // Amount text
+                            const amountText = '{{ currency_symbol }}' + translateDigits(value.toLocaleString());
+                            // Percentage text
+                            const pctText = translateDigits(percentage) + '%';
+                            
+                            // Only draw text if the slice is large enough
                             if (arc.circumference > 0.25) {
-                                ctx.font = 'bold 10px sans-serif';
+                                ctx.font = 'bold 11px sans-serif';
                                 ctx.textAlign = 'center';
                                 ctx.textBaseline = 'middle';
                                 ctx.fillStyle = '#ffffff';
                                 ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
-                                ctx.shadowBlur = 3;
-                                ctx.fillText(text, center.x, center.y);
+                                ctx.shadowBlur = 4;
+                                
+                                // Draw amount slightly higher
+                                ctx.fillText(amountText, center.x, center.y - 7);
+                                // Draw percentage slightly lower
+                                ctx.font = '9px sans-serif';
+                                ctx.fillText(pctText, center.x, center.y + 7);
+                                
                                 ctx.shadowBlur = 0;
                             }
                         });
@@ -1364,7 +1593,24 @@ document.addEventListener('DOMContentLoaded', function() {
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: {size: 11} } } },
+                    cutout: '65%',
+                    plugins: { 
+                        legend: { position: 'bottom', labels: { boxWidth: 12, font: {size: 11} } },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed !== null) {
+                                        label += '{{ currency_symbol }}' + translateDigits(context.parsed.toLocaleString());
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    },
                     onHover: (event, chartElement) => {
                         event.native.target.style.cursor = chartElement[0] ? 'pointer' : 'default';
                     },
@@ -1373,14 +1619,13 @@ document.addEventListener('DOMContentLoaded', function() {
                             const index = elements[0].index;
                             const label = chart.data.labels[index];
                             
-                            // Build Query Params
+                            // Build Query Params for category click
                             const queryParams = new URLSearchParams();
                             queryParams.append('category', label);
                             
                             if (sMonths && sMonths.length) sMonths.forEach(m => queryParams.append('month', m));
                             if (sYears && sYears.length) sYears.forEach(y => queryParams.append('year', y));
                             
-                            // Show loader and redirect
                             showLoader();
                             window.location.href = "{% url 'expense-list' %}?" + queryParams.toString();
                         }
@@ -1388,8 +1633,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             });
         }
-
-        // --- 3. Top Expenses Chart (Removed) ---
 
         // --- 4. Budget vs Spent Chart ---
         const limitsData = JSON.parse(document.getElementById('category-limits-data').textContent);
@@ -1546,19 +1789,26 @@ document.addEventListener('DOMContentLoaded', function() {
                                  }]
                              },
                              options: {
-                                 indexAxis: 'y', // Horizontal Bar
-                                 responsive: true,
-                                 maintainAspectRatio: false,
-                                 scales: {
-                                     x: {
-                                         grid: { display: false, drawBorder: false },
-                                         ticks: { display: false } // Hide X axis labels for cleaner look
-                                     },
-                                     y: {
-                                         grid: { display: false, drawBorder: false },
-                                         ticks: {font: { weight: 'bold' } }
-                                     }
-                                 },
+                                indexAxis: 'y', // Horizontal Bar
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                layout: {
+                                    padding: {
+                                        right: 60 // Leave space for labels
+                                    }
+                                },
+                                scales: {
+                                    x: {
+                                        grid: { display: false, drawBorder: false },
+                                        ticks: { display: false }, // Hide X axis labels for cleaner look
+                                        beginAtZero: true,
+                                        grace: '15%' // Add extra space at the end of the scale
+                                    },
+                                    y: {
+                                        grid: { display: false, drawBorder: false },
+                                        ticks: {font: { weight: 'bold' } }
+                                    }
+                                },
                                  plugins: { 
                                      legend: { display: false }, // Legend redundant for bar chart with labels on Y axis
                                      tooltip: {
@@ -1671,24 +1921,37 @@ document.addEventListener('DOMContentLoaded', function() {
         };
 
         window.downloadBreakdown = function() {
-            const card = document.getElementById('salary-wrapped-card');
-            if (!card) return;
+            if (window.showLoader) window.showLoader();
 
-            // Ensure html2canvas is loaded
-            if (typeof html2canvas === 'undefined') {
-                alert("{% trans 'Sharing engine still loading, please wait a second...' %}");
-                return;
-            }
+            // Give the browser a moment to paint the loader before the heavy work starts
+            setTimeout(() => {
+                const card = document.getElementById('salary-wrapped-card');
+                if (!card) {
+                    if (window.hideLoader) window.hideLoader();
+                    return;
+                }
 
-            html2canvas(card, {
-                backgroundColor: null,
-                scale: 2 
-            }).then(canvas => {
-                const link = document.createElement('a');
-                link.download = 'My-Salary-Wrapped-TrackMyRupee.png';
-                link.href = canvas.toDataURL('image/png');
-                link.click();
-            });
+                // Ensure html2canvas is loaded
+                if (typeof html2canvas === 'undefined') {
+                    if (window.hideLoader) window.hideLoader();
+                    alert("{% trans 'Sharing engine still loading, please wait a second...' %}");
+                    return;
+                }
+
+                html2canvas(card, {
+                    backgroundColor: null,
+                    scale: 2 
+                }).then(canvas => {
+                    const link = document.createElement('a');
+                    link.download = 'My-Salary-Wrapped-TrackMyRupee.png';
+                    link.href = canvas.toDataURL('image/png');
+                    link.click();
+                    if (window.hideLoader) window.hideLoader();
+                }).catch(err => {
+                    console.error("Image generation failed:", err);
+                    if (window.hideLoader) window.hideLoader();
+                });
+            }, 50);
         };
 
         window.shareToWhatsApp = function() {

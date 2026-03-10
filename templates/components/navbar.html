@@ -278,6 +278,14 @@
 </nav>
 
 {% if user.is_authenticated %}
+<style>
+    /* Prevent mobile bottom nav from overlapping page content */
+    @media (max-width: 991.98px) {
+        body {
+            padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px)) !important;
+        }
+    }
+</style>
 <!-- Mobile Bottom Navigation -->
 <div class="mobile-bottom-nav d-lg-none">
     <a href="{% url 'home' %}" class="mobile-nav-item {% if request.resolver_match.url_name == 'home' %}active{% endif %}">

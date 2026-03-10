@@ -162,6 +162,8 @@ def home_view(request):
             'projected_percent': projected_percent,
         })
     
+    total_monthly_budget = sum([float(c.limit) for c in user_categories.values() if c.limit])
+    
     categories = [item['category'] for item in category_data]
     category_amounts = [item['total'] for item in category_data]
     
@@ -184,40 +186,22 @@ def home_view(request):
         trend_qs = expenses.annotate(period=TruncMonth('date'))
         date_format = '%b %Y'
 
-    # Aggregate by Period AND Category for Stacking
-    stacked_data = trend_qs.values('period', 'category').annotate(total=Sum('base_amount')).order_by('period')
+    # Aggregate by Period for Total Spend
+    total_data = trend_qs.values('period').annotate(total=Sum('base_amount')).order_by('period')
     
     # Process into Chart.js Datasets
-    # 1. Get unique sorted periods
-    periods = sorted(list(set(item['period'] for item in stacked_data)))
+    periods = [item['period'] for item in total_data]
     trend_labels = [p.strftime(date_format) for p in periods]
+    trend_iso_dates = [p.strftime('%Y-%m-%d') for p in periods]
     
-    # 2. Build datasets map: { 'CategoryA': [0, 10, 0...], 'CategoryB': ... }
-    # Initialize with zeros for all unique NORMALIZED categories found in expenses
-    normalized_all_categories = sorted(list(merged_category_map.keys()))
-    dataset_map = { cat: [0] * len(periods) for cat in normalized_all_categories }
+    trend_data = [float(item['total']) for item in total_data]
     
-    for item in stacked_data:
-        p_idx = periods.index(item['period'])
-        # Strip to match our normalized keys
-        cat = item['category'].strip()
-        if cat in dataset_map:
-            dataset_map[cat][p_idx] += float(item['total']) # Add += in case multiple unstripped cats map to same striped cat in same period
-            
-    # 3. Convert map to list of dataset objects for Chart.js
-    trend_datasets = []
-    # Define a color palette (Light Blue, Blue Green, Prussian Blue, Honey Yellow, Orange)
-    colors = ['#219EBC', '#023047', '#8ECAE6', '#FFB703', '#0575E6']
-    
-    for i, (cat, data) in enumerate(dataset_map.items()):
-        # Only include non-zero datasets
-        if sum(data) > 0:
-             trend_datasets.append({
-                 'label': cat,
-                 'data': data,
-                 'backgroundColor': colors[i % len(colors)],
-                 'borderRadius': 2
-             })
+    trend_datasets = [{
+        'label': str(_('Total Spent')),
+        'data': trend_data,
+        'backgroundColor': '#219EBC',
+        'borderRadius': 4
+    }]
 
     # 3. Top 5 Expenses
     top_expenses_qs = expenses.order_by('-base_amount')[:5]
@@ -269,7 +253,7 @@ def home_view(request):
     # 4. Summary Stats
     total_expenses = expenses.aggregate(Sum('base_amount'))['base_amount__sum'] or 0
     transaction_count = expenses.count()
-    top_category = category_data[0] if category_data else None
+    top_category = category_data[0]['category'] if category_data else None
     
     savings = total_income - total_expenses
 
@@ -326,17 +310,53 @@ def home_view(request):
                 return ((current - previous) / previous) * 100
 
             prev_month_data = {
+                'income': prev_income,
+                'expense': prev_expenses,
+                'savings': prev_savings,
                 'income_pct': calc_pct(total_income, prev_income),
                 'expense_pct': calc_pct(total_expenses, prev_expenses),
                 'savings_pct': calc_pct(savings, prev_savings),
+                'savings_rate': (prev_savings / prev_income * 100) if prev_income > 0 else 0
             }
             # Add absolute values for template display
             for key in list(prev_month_data.keys()):
                 val = prev_month_data[key]
-                if val is not None:
+                if val is not None and key.endswith('_pct'):
                     prev_month_data[f'{key}_abs'] = abs(val)
         except (ValueError, IndexError):
             pass
+
+    # Calculate Hero Metrics for the Ideal Layout
+    savings_rate_value = (savings / total_income * 100) if total_income > 0 else 0
+    hero_status = 'needs_attention'
+    if savings_rate_value >= 20:
+        hero_status = 'excellent'
+    elif savings_rate_value > 0:
+        hero_status = 'good'
+        
+    trend_text = None
+    trend_type = None
+    if prev_month_data and 'savings_rate' in prev_month_data:
+        rate_diff = savings_rate_value - prev_month_data['savings_rate']
+        if rate_diff > 0:
+            trend_text = f"Savings rate ↑ +{rate_diff:.1f}% vs last month"
+            trend_type = 'positive'
+        elif rate_diff < 0:
+            trend_text = f"Savings rate ↓ {rate_diff:.1f}% vs last month"
+            trend_type = 'negative'
+        else:
+            trend_text = "Savings rate unchanged vs last month"
+            trend_type = 'neutral'
+
+    hero_metrics = {
+        'income': total_income,
+        'spent': total_expenses,
+        'saved': savings,
+        'savings_rate': round(savings_rate_value, 1),
+        'status': hero_status,
+        'trend_text': trend_text,
+        'trend_type': trend_type
+    }
 
     # Prepare display labels for the template
     display_year = None
@@ -459,15 +479,29 @@ def home_view(request):
                     })
 
         # 0.6 Predictive Spending Speed Warning
+        speed_alert_categories = []
         for cat in category_limits:
             if cat['limit'] and cat['projected_percent'] and cat['projected_percent'] > 100 and (cat['used_percent'] or 0) <= 100:
-                insights.append({
-                    'type': 'warning',
-                    'icon': 'speedometer',
-                    'title': _('Spending Speed Alert'),
-                    'message': _("Trends show you might overspend on %(category)s soon. Take care!") % {'category': cat['name']},
-                    'allow_share': False
-                })
+                speed_alert_categories.append(cat['name'])
+                
+        if speed_alert_categories:
+            if len(speed_alert_categories) == 1:
+                msg = _("Trends show you might overspend on %(category)s soon. Take care!") % {'category': speed_alert_categories[0]}
+            elif len(speed_alert_categories) == 2:
+                msg = _("Trends show you might overspend on %(cat1)s and %(cat2)s soon.") % {'cat1': speed_alert_categories[0], 'cat2': speed_alert_categories[1]}
+            else:
+                msg = _("Trends show you might overspend on %(count)s categories soon (%(cats)s, etc).") % {
+                    'count': len(speed_alert_categories),
+                    'cats': ', '.join(speed_alert_categories[:2])
+                }
+                
+            insights.append({
+                'type': 'warning',
+                'icon': 'speedometer',
+                'title': _('Spending Speed Alert'),
+                'message': msg,
+                'allow_share': False
+            })
         
     # --- "Where Did My Salary Go?" Data ---
     salary_breakdown = None
@@ -549,6 +583,30 @@ def home_view(request):
                     'icon': item['icon']
                 }
 
+        spending_pace = {
+            'daily_spending_pace': round(daily_burn, 0),
+            'projected_month_spend': round(daily_burn * num_days, 0),
+            'status': 'on_track',
+            'diff_amount': max(0, round((daily_burn * num_days) - total_monthly_budget, 0)),
+            'budget_multiplier': round((daily_burn * num_days) / total_monthly_budget, 1) if total_monthly_budget > 0 else 0
+        }
+
+        short_insight = ""
+        if hero_metrics['status'] == 'excellent':
+            short_insight = _("🟢 Great month! You're saving more than usual.")
+        elif hero_metrics['status'] == 'good':
+            short_insight = _("🔵 Good progress. You're on the right track.")
+        else:
+            short_insight = _("🟠 Heads up. Expenses are slightly high this month.")
+
+        hero_metrics['short_insight'] = short_insight
+
+        if total_monthly_budget > 0:
+            if spending_pace['projected_month_spend'] > total_monthly_budget:
+                spending_pace['status'] = 'over_budget'
+            elif spending_pace['projected_month_spend'] >= total_monthly_budget * 0.9:
+                spending_pace['status'] = 'near_limit'
+
         salary_breakdown = {
             'income': total_income,
             'expenses': total_expenses,
@@ -559,26 +617,43 @@ def home_view(request):
             'viral_insight': viral_insight,
             'relatable_metric': relatable_metric,
             'month_name': display_month if display_month else (calendar.month_name[now.month] if (selected_months and len(selected_months) == 1) else ""),
-            'year': display_year if display_year else (now.year if (selected_years and len(selected_years) == 1) else "")
+            'year': display_year if display_year else (now.year if (selected_years and len(selected_years) == 1) else ""),
+            'spending_pace': spending_pace,
+            'total_monthly_budget': total_monthly_budget
         }
 
     # 1. Budget Warnings (High Priority)
 
-    over_budget_cats = [c['name'] for c in category_limits if c['used_percent'] is not None and c['used_percent'] > 100]
-    near_budget_cats = [c['name'] for c in category_limits if c['used_percent'] is not None and 90 <= c['used_percent'] <= 100]
+    over_budget_cats = [c for c in category_limits if c['used_percent'] is not None and c['used_percent'] > 100]
+    near_budget_cats = [c for c in category_limits if c['used_percent'] is not None and 90 <= c['used_percent'] <= 100]
     
     # Check savings rate for "Softener" context
-    savings_rate = (savings / total_income * 100) if total_income > 0 else 0
+    savings_rate_alert = (savings / total_income * 100) if total_income > 0 else 0
+    currency_symbol = request.user.profile.currency if hasattr(request.user, 'profile') else '₹'
     
     if over_budget_cats:
-        cats_str = link_cats(over_budget_cats)
-        
-        if savings_rate >= 20:
-            # Contextualized Warning for High Savers
-            msg = format_html(_("Even strong months have leaks. You crossed limits in {cats_str} — catching this keeps you on track."), cats_str=cats_str)
+        if len(over_budget_cats) == 1:
+            cat = over_budget_cats[0]
+            exceeded = float(cat['total']) - float(cat['limit'])
+            exceeded_str = "{:,.0f}".format(exceeded)
+            
+            if savings_rate_alert >= 20:
+                msg = format_html(_("Even strong months have leaks. {cat_name} exceeded by {currency}{exceeded}."), cat_name=format_html("<b>{}</b>", cat['name']), currency=currency_symbol, exceeded=exceeded_str)
+            else:
+                msg = format_html(_("{cat_name} exceeded by {currency}{exceeded} — let’s rebalance to stay safe."), cat_name=format_html("<b>{}</b>", cat['name']), currency=currency_symbol, exceeded=exceeded_str)
         else:
-            # Standard Coaching Warning - "Warning" type (Yellow) instead of Danger (Red) for empathy
-            msg = format_html(_("⚠️ Budget crossed in {cats_str} — let’s rebalance to stay safe."), cats_str=cats_str)
+            cat_details = []
+            for cat in over_budget_cats:
+                exceeded = float(cat['total']) - float(cat['limit'])
+                exceeded_str = "{:,.0f}".format(exceeded)
+                cat_details.append(format_html("<b>{}</b>: {}{}", cat['name'], currency_symbol, exceeded_str))
+            
+            cats_str = mark_safe(", ".join(cat_details))
+            
+            if savings_rate_alert >= 20:
+                msg = format_html(_("Even strong months have leaks. {count} categories exceeded limits: {cats_str}."), count=len(over_budget_cats), cats_str=cats_str)
+            else:
+                msg = format_html(_("{count} categories exceeded limits: {cats_str} — let’s rebalance to stay safe."), count=len(over_budget_cats), cats_str=cats_str)
 
         insights.append({
             'type': 'warning', # Changed from danger
@@ -588,7 +663,7 @@ def home_view(request):
             'allow_share': False
         })
     elif near_budget_cats:
-        cats_str = link_cats(near_budget_cats)
+        cats_str = link_cats([c['name'] for c in near_budget_cats])
         insights.append({
             'type': 'warning',
             'icon': 'exclamation-triangle-fill',
@@ -603,6 +678,15 @@ def home_view(request):
         # We need prev month category breakdown
         prev_cat_qs = Expense.objects.filter(user=request.user, date__year=prev_year, date__month=prev_month).values('category').annotate(total=Sum('base_amount'))
         prev_cat_map = {item['category'].strip(): float(item['total']) for item in prev_cat_qs}
+        
+        # Add micro trend indicators to category_limits
+        for cat_info in category_limits:
+            prev_total = prev_cat_map.get(cat_info['name'], 0)
+            curr_total = cat_info['total']
+            if prev_total > 0:
+                diff_pct = ((curr_total - prev_total) / prev_total) * 100
+                cat_info['trend_dir'] = 'up' if diff_pct > 0 else 'down' if diff_pct < 0 else 'flat'
+                cat_info['trend_pct'] = abs(round(diff_pct))
         
         savings_contributors = []
         for cat, curr_total in merged_category_map.items():
@@ -698,6 +782,29 @@ def home_view(request):
                 'share_text': _("🔥 I've stayed under budget for %(streak)s months in a row! via TrackMyRupee") % {'streak': streak}
             })
 
+    # NEW: Wealth Projection
+    if projected_savings > 0:
+        def format_indian_lakhs(amount):
+            if amount >= 100000:
+                return f"{amount/100000:.1f}L"
+            elif amount >= 1000:
+                return f"{amount/1000:.1f}k"
+            return f"{amount:.0f}"
+            
+        proj_str = format_indian_lakhs(projected_savings)
+        proj_bold = mark_safe(f"<b>{currency_symbol}{proj_str}</b>")
+        insights.append({
+            'type': 'success', 
+            'icon': 'graph-up-arrow',
+            'title': _('Wealth Projection'),
+            'message': format_html(
+                _("If you maintain this savings rate, you could accumulate {proj} this year. This reinforces future thinking."),
+                proj=proj_bold
+            ),
+            'allow_share': True,
+            'share_text': _("I'm on track to save big this year! 📈 via TrackMyRupee")
+        })
+
     # 4. Fallback
     if not insights and savings > 0 and not salary_breakdown:
         insights.append({
@@ -716,9 +823,91 @@ def home_view(request):
             'allow_share': False
         })
 
-    # Limit to top 2 insights to avoid clutter
-    insights = insights[:2]
+    # Split into Actionable Alerts and Smart Insights
+    smart_insights = []
+    actionable_alerts = []
+    
+    for insight in insights:
+        if insight.get('type') in ['warning', 'danger']:
+            actionable_alerts.append(insight)
+        else:
+            smart_insights.append(insight)
+            
+    # Add Upcoming Subscriptions to Alerts
+    active_recurring = RecurringTransaction.objects.filter(
+        user=request.user, 
+        is_active=True
+    )
+    
+    upcoming_payments = []
+    today_date = date.today()
+    seven_days_later = today_date + timedelta(days=7)
+    
+    for payment in active_recurring:
+        if payment.next_due_date and today_date <= payment.next_due_date <= seven_days_later:
+            upcoming_payments.append(payment)
+            
+    upcoming_payments.sort(key=lambda x: x.next_due_date)
+    upcoming_payments = upcoming_payments[:3]
+    
+    for payment in upcoming_payments:
+        days_left = (payment.next_due_date - date.today()).days
+        if days_left == 0:
+            when = _("Today")
+        elif days_left == 1:
+            when = _("Tomorrow")
+        else:
+            when = _("in %(days)s days") % {'days': days_left}
+            
+        actionable_alerts.append({
+            'type': 'warning',
+            'icon': 'calendar-event-fill',
+            'title': _('Upcoming Payment'),
+            'message': format_html(_("Your recurring payment for <b>{}</b> is due {}. ({})"), payment.description, when, f"{payment.amount}"),
+            'allow_share': False
+        })
+        
+    smart_insights = smart_insights[:3] # Limit to 3 (Layer 3 rule)
+    
+    # Layer 5: Monthly Story Generation
+    if len(selected_months) == 1 and len(selected_years) == 1:
+        story_month_name = calendar.month_name[int(selected_months[0])]
+    else:
+        story_month_name = _("This period")
 
+    income_bold = mark_safe(f"<b>{currency_symbol}{total_income:,.0f}</b>")
+    spent_bold = mark_safe(f"<b>{currency_symbol}{total_expenses:,.0f}</b>")
+    saved_bold = mark_safe(f"<b>{currency_symbol}{savings:,.0f}</b>")
+    rate_bold = mark_safe(f"<b>{round(savings_rate_value)}%</b>")
+
+    monthly_story = format_html(
+        _("In {month}, you brought in {income} and spent {expenses}."),
+        month=story_month_name,
+        income=income_bold,
+        expenses=spent_bold
+    )
+
+    if savings > 0:
+        monthly_story += format_html(
+            _(" You successfully saved {savings}, achieving a {rate} savings rate."),
+            savings=saved_bold,
+            rate=rate_bold
+        )
+        if prev_month_data and 'savings_rate' in prev_month_data and round(savings_rate_value) > prev_month_data['savings_rate']:
+            monthly_story = format_html("{} {}", monthly_story, _("That's an improvement from last month!"))
+    elif savings < 0:
+        deficit_bold = mark_safe(f"<b>{currency_symbol}{abs(savings):,.0f}</b>")
+        monthly_story += format_html(
+            _(" You outspent your income by {deficit}."),
+            deficit=deficit_bold
+        )
+
+    if projected_savings > 0:
+        proj_bold = mark_safe(f"<b>{currency_symbol}{int(projected_savings):,.0f}</b>")
+        monthly_story += format_html(
+            _(" If you keep this pace, you could save {proj} by year's end."),
+            proj=proj_bold
+        )
     # Check for onboarding (True if user has NO data at all)
     has_any_data = Expense.objects.filter(user=request.user).exists() or Income.objects.filter(user=request.user).exists()
 
@@ -736,9 +925,100 @@ def home_view(request):
         if year_in_review_year:
             show_year_in_review = Expense.objects.filter(user=request.user, date__year=year_in_review_year).exists()
 
+    # --- Smart Insights Bullets (New Card) ---
+    smart_bullet_insights = []
+    
+    # 1. Highest Spending Category
+    if top_category:
+        cat_url = f"{reverse('expense-list')}?category={top_category}"
+        cat_obj = user_categories.get(top_category)
+        icon_cls = cat_obj.icon if cat_obj else 'bi-tag'
+        smart_bullet_insights.append({
+            'text': format_html(_("<a href='{url}' class='text-decoration-none text-reset hover-link'>{cat}</a> is your top expense this month."), url=cat_url, cat=top_category),
+            'icon': icon_cls,
+            'theme': 'primary'
+        })
+
+    # 2. Budget Breaches (High Priority)
+    for cat in over_budget_cats:
+        if len(smart_bullet_insights) >= 4: break
+        over_amt = cat['total'] - cat['limit']
+        if over_amt > 0:
+            cat_url = f"{reverse('expense-list')}?category={cat['name']}"
+            cat_obj = user_categories.get(cat['name'])
+            icon_cls = cat_obj.icon if cat_obj else 'bi-tag'
+            smart_bullet_insights.append({
+                'text': format_html(_("<a href='{url}' class='text-decoration-none text-reset hover-link'>{cat}</a> category exceeded budget by <span class='text-danger fw-bold'>{sym}{amt}</span>"), url=cat_url, cat=cat['name'], sym=currency_symbol, amt=int(over_amt)),
+                'icon': icon_cls,
+                'theme': 'danger'
+            })
+            
+    # 3. Category MoM Spikes & Drops (Diverse insights)
+    if prev_month_data and len(selected_years) == 1 and len(selected_months) == 1:
+        # Fetch previous month category totals
+        prev_cat_data = Expense.objects.filter(
+            user=request.user, 
+            date__year=prev_year, 
+            date__month=prev_month
+        ).values('category').annotate(total=Sum('base_amount'))
+        
+        prev_cat_map = {item['category'].strip(): float(item['total']) for item in prev_cat_data}
+        
+        for item in category_data:
+            if len(smart_bullet_insights) >= 4: break
+            cat_name = item['category']
+            current_total = float(item['total'])
+            prev_total = prev_cat_map.get(cat_name, 0)
+            
+            if prev_total > 0:
+                diff_pct = ((current_total - prev_total) / prev_total) * 100
+                
+                # Check for significant spike (10%+)
+                if diff_pct >= 10:
+                    # Avoid redundancy if already in budget breaches or top category
+                    is_redundant = any(c.get('cat') == cat_name or c.get('text').find(cat_name) != -1 for c in smart_bullet_insights)
+                    if not is_redundant:
+                        cat_url = f"{reverse('expense-list')}?category={cat_name}"
+                        cat_obj = user_categories.get(cat_name)
+                        icon_cls = cat_obj.icon if cat_obj else 'bi-tag'
+                        smart_bullet_insights.append({
+                            'text': format_html(_("<a href='{url}' class='text-decoration-none text-reset hover-link'>{cat}</a> spending up <span class='text-danger fw-bold'>{pct}%</span> vs last month"), url=cat_url, cat=cat_name, pct=int(diff_pct)),
+                            'icon': icon_cls,
+                            'theme': 'warning'
+                        })
+                
+                # Check for significant drop (10%+)
+                elif diff_pct <= -10:
+                    is_redundant = any(c.get('text').find(cat_name) != -1 for c in smart_bullet_insights)
+                    if not is_redundant:
+                        cat_url = f"{reverse('expense-list')}?category={cat_name}"
+                        cat_obj = user_categories.get(cat_name)
+                        icon_cls = cat_obj.icon if cat_obj else 'bi-tag'
+                        smart_bullet_insights.append({
+                            'text': format_html(_("<a href='{url}' class='text-decoration-none text-reset hover-link'>{cat}</a> spending dropped <span class='text-success fw-bold'>{pct}%</span>! Nice job."), url=cat_url, cat=cat_name, pct=int(abs(diff_pct))),
+                            'icon': icon_cls,
+                            'theme': 'success'
+                        })
+
+    # Fallback/Empty state for smart insights
+    if not smart_bullet_insights:
+        smart_bullet_insights.append({
+            'text': _("You're maintaining a steady financial pace."),
+            'icon': 'bi-check-circle',
+            'theme': 'success'
+        })
+        if hero_metrics['saved'] > 0:
+            smart_bullet_insights.append({
+                'text': _("Consistent tracking leads to better wealth."),
+                'icon': 'bi-stars',
+                'theme': 'primary'
+            })
+
     context = {
         'is_new_user': not has_any_data,
-        'insights': insights[::-1],
+        'actionable_alerts': actionable_alerts,
+        'smart_insights': smart_insights,
+        'monthly_story': monthly_story,
         'total_income': total_income,
         'savings': savings,
         'recent_transactions': expenses.order_by('-date')[:5],
@@ -780,6 +1060,11 @@ def home_view(request):
         'show_year_in_review': show_year_in_review,
         'year_in_review_year': year_in_review_year,
         'salary_breakdown': salary_breakdown,
+        'hero_metrics': hero_metrics,
+        'smart_bullet_insights': smart_bullet_insights,
+        'trend_labels': trend_labels,
+        'trend_iso_dates': trend_iso_dates,
+        'selected_categories': selected_categories,
     }
     return render(request, 'home.html', context)
 

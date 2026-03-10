@@ -114,46 +114,33 @@ class ExpenseListView(LoginRequiredMixin, RecurringTransactionMixin, ListView):
         context['categories'] = categories
         context['months_list'] = [(i, calendar.month_name[i]) for i in range(1, 13)]
         
-        # Determine selected year for UI
-        # Determine selected year for UI
-        year_param = self.request.GET.get('year')
+        # Determine selected filters for UI
         start_date = self.request.GET.get('start_date')
         end_date = self.request.GET.get('end_date')
-
         context['start_date'] = start_date
         context['end_date'] = end_date
         
-        if start_date or end_date:
-            context['selected_years'] = []
-            context['selected_months'] = []
-            context['selected_categories'] = []
-        else:
-            selected_years = self.request.GET.getlist('year')
-            selected_months = self.request.GET.getlist('month')
-            selected_categories = self.request.GET.getlist('category')
-            search_query = self.request.GET.get('search')
-            
-            # Remove empty strings
-            selected_years = [y for y in selected_years if y]
-            selected_months = [m for m in selected_months if m]
-            selected_categories = [c for c in selected_categories if c]
+        selected_years = self.request.GET.getlist('year')
+        selected_months = self.request.GET.getlist('month')
+        selected_categories = self.request.GET.getlist('category')
+        search_query = self.request.GET.get('search', '')
 
-            # Check if any specific filter is active
-            has_active_filters = (
-                selected_years or 
-                selected_months or 
-                search_query 
-                # (ignoring category here as well to match get_queryset)
-            )
+        # Remove empty strings
+        selected_years = [y for y in selected_years if y]
+        selected_months = [m for m in selected_months if m]
+        selected_categories = [c for c in selected_categories if c]
+        
+        context['selected_years'] = selected_years
+        context['selected_months'] = selected_months
+        context['selected_categories'] = selected_categories
+        context['search_query'] = search_query
 
-            # Mirror default logic from get_queryset
+        # Mirror default logic from get_queryset if NO date range is present
+        if not (start_date or end_date):
+            has_active_filters = (selected_years or selected_months or search_query)
             if not has_active_filters:
-                selected_years = [str(datetime.now().year)]
-                selected_months = [str(datetime.now().month)]
-            
-            context['selected_years'] = selected_years
-            context['selected_months'] = selected_months
-            context['selected_categories'] = selected_categories
+                context['selected_years'] = [str(datetime.now().year)]
+                context['selected_months'] = [str(datetime.now().month)]
             
         return context
 
