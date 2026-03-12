@@ -180,8 +180,19 @@ def home_view(request):
     
     total_monthly_budget = sum([float(c.limit) for c in user_categories.values() if c.limit])
     
-    categories = [item['category'] for item in category_data]
-    category_amounts = [item['total'] for item in category_data]
+    # Sort category data by total descending (already done at line 148, but reinforcing logic)
+    category_data.sort(key=lambda x: x['total'], reverse=True)
+
+    # 1.5 Group into Top 5 + Others for Chart Clarity
+    if len(category_data) > 5:
+        top_5 = category_data[:5]
+        others_total = sum(float(item['total']) for item in category_data[5:])
+        
+        categories = [item['category'] for item in top_5] + [str(_("Others"))]
+        category_amounts = [float(item['total']) for item in top_5] + [others_total]
+    else:
+        categories = [item['category'] for item in category_data]
+        category_amounts = [float(item['total']) for item in category_data]
     
     # 2. Time Trend (Stacked) Data
     
@@ -891,37 +902,39 @@ def home_view(request):
     else:
         story_month_name = _("This period")
 
+    # Calculate Future Growth (Total Surplus = Investments + Remaining Savings)
+    # savings is already (income - lifestyle_expenses) because total_expenses excludes investments
+    total_wealth_contribution = max(0, savings)
+    future_growth_pct = round((float(total_wealth_contribution) / float(total_income) * 100)) if total_income > 0 else 0
+    lifestyle_pct = round((float(total_expenses) / float(total_income) * 100)) if total_income > 0 else 0
+    
     income_bold = mark_safe(f"<b>{currency_symbol}{total_income:,.0f}</b>")
-    spent_bold = mark_safe(f"<b>{currency_symbol}{total_expenses:,.0f}</b>")
-    saved_bold = mark_safe(f"<b>{currency_symbol}{savings:,.0f}</b>")
-    rate_bold = mark_safe(f"<b>{round(savings_rate_value)}%</b>")
-
+    lifestyle_bold = mark_safe(f"<b>{currency_symbol}{total_expenses:,.0f}</b>")
+    invest_bold = mark_safe(f"<b>{currency_symbol}{total_investments:,.0f}</b>")
+    future_total_bold = mark_safe(f"<b>{currency_symbol}{total_wealth_contribution:,.0f}</b>")
+    
+    # Narrative Structure
     monthly_story = format_html(
-        _("In {month}, you brought in {income} and spent {expenses}."),
+        _("In {month}, you earned {income}. You spent {lifestyle} on lifestyle, and invested {invest} toward future wealth."),
         month=story_month_name,
         income=income_bold,
-        expenses=spent_bold
+        lifestyle=lifestyle_bold,
+        invest=invest_bold
     )
 
-    if savings > 0:
+    if total_wealth_contribution > 0:
         monthly_story += format_html(
-            _(" You successfully saved {savings}, achieving a {rate} savings rate."),
-            savings=saved_bold,
-            rate=rate_bold
+            _(" That means {future_total} ({future_pct}%) went toward your future, while {lifestyle} ({life_pct}%) funded your lifestyle."),
+            future_total=future_total_bold,
+            future_pct=future_growth_pct,
+            lifestyle=lifestyle_bold,
+            life_pct=lifestyle_pct
         )
-        if prev_month_data and 'savings_rate' in prev_month_data and round(savings_rate_value) > prev_month_data['savings_rate']:
-            monthly_story = format_html("{} {}", monthly_story, _("That's an improvement from last month!"))
-    elif savings < 0:
-        deficit_bold = mark_safe(f"<b>{currency_symbol}{abs(savings):,.0f}</b>")
-        monthly_story += format_html(
-            _(" You outspent your income by {deficit}."),
-            deficit=deficit_bold
-        )
-
+    
     if projected_savings > 0:
         proj_bold = mark_safe(f"<b>{currency_symbol}{int(projected_savings):,.0f}</b>")
         monthly_story += format_html(
-            _(" If you keep this pace, you could save {proj} by year's end."),
+            _(" At this pace, you could save {proj} by year's end."),
             proj=proj_bold
         )
     # Check for onboarding (True if user has NO data at all)
@@ -1030,7 +1043,123 @@ def home_view(request):
                 'theme': 'primary'
             })
 
+    # --- Recurring Transactions Summary (Optimized & Grouped) ---
+    v_month = int(selected_months[0]) if len(selected_months) == 1 else now.month
+    v_year = int(selected_years[0]) if len(selected_years) == 1 else now.year
+    
+    recurring_groups = {
+        'INCOME': {'items': [], 'total': Decimal('0.00'), 'icon': '💰', 'label': _('Income')},
+        'EXPENSE': {'items': [], 'total': Decimal('0.00'), 'icon': '💸', 'label': _('Expenses')},
+        'INVESTMENT': {'items': [], 'total': Decimal('0.00'), 'icon': '📈', 'label': _('Investments')},
+    }
+    
+    total_recurring_commitment = Decimal('0.00')
+    
+    active_recurring = RecurringTransaction.objects.filter(user=request.user, is_active=True)
+    for rt in active_recurring:
+        # Find if it occurs in the viewed month
+        due_date = rt.start_date
+        max_loops = 500 # Safety
+        loops = 0
+        while (due_date.year < v_year or (due_date.year == v_year and due_date.month < v_month)) and loops < max_loops:
+            due_date = rt.get_next_date(due_date, rt.frequency)
+            loops += 1
+            
+        if due_date.year == v_year and due_date.month == v_month:
+            rtype = rt.transaction_type
+            # Determine if it's an investment
+            if rtype == 'EXPENSE' and rt.category in investment_categories:
+                rtype = 'INVESTMENT'
+                
+            item = {
+                'id': rt.id,
+                'description': rt.description,
+                'amount': rt.base_amount,
+                'date': due_date,
+                'type': rtype,
+                'category': rt.category or (rt.source if rt.transaction_type == 'INCOME' else _('Recurring')),
+                'frequency_label': rt.get_frequency_display()
+            }
+            
+            recurring_groups[rtype]['items'].append(item)
+            recurring_groups[rtype]['total'] += rt.base_amount
+            
+            if rtype == 'INCOME':
+                total_recurring_commitment -= rt.base_amount
+            else:
+                total_recurring_commitment += rt.base_amount
+
+    # Sorting items within groups by date
+    for group in recurring_groups.values():
+        group['items'].sort(key=lambda x: x['date'])
+
+    # Calculate Net Recurring Balance (Positive if surplus, Negative if deficit)
+    recurring_net_balance = recurring_groups['INCOME']['total'] - recurring_groups['EXPENSE']['total'] - recurring_groups['INVESTMENT']['total']
+
+    # --- Expense Projection Chart Logic ---
+    proj_labels = []
+    proj_historical = []
+    proj_forecast = []
+    
+    # Calculate last 6 months labels and data
+    for i in range(5, -1, -1):
+        m = v_month - i
+        y = v_year
+        while m < 1:
+            m += 12
+            y -= 1
+        
+        month_label = calendar.month_name[m][:3] + " " + str(y)[2:]
+        proj_labels.append(month_label)
+        
+        # Aggregate expenses (Operating Only)
+        m_total = Expense.objects.filter(
+            user=request.user, 
+            date__year=y, 
+            date__month=m
+        ).exclude(category__in=investment_categories).aggregate(Sum('base_amount'))['base_amount__sum'] or 0
+        
+        proj_historical.append(float(m_total))
+        proj_forecast.append(None) # No forecast for historical months
+    
+    # Calculate if we have enough data to show a projection (BEFORE adding None values)
+    # Need at least one month with significant spending (> 50) to make it meaningful
+    has_projection = any(v > 50 for v in proj_historical)
+    
+    # Calculate projection for next 3 months
+    # Improved average: Exclude current month (if it's the viewed/real current month) 
+    # and zero-months to get a more realistic "normal" spending pace
+    is_viewing_current = (v_month == now.month and v_year == now.year)
+    basis_vals = proj_historical[:-1] if is_viewing_current else proj_historical
+    basis_vals = [v for v in basis_vals if v > 100] # Exclude tiny/zero months
+    
+    avg_spend = sum(basis_vals) / len(basis_vals) if basis_vals else (sum(proj_historical) / len(proj_historical) if proj_historical else 0)
+    last_hist_val = proj_historical[-1]
+    
+    # The last historical month is the 'bridge' for the forecast line
+    proj_forecast[-1] = last_hist_val
+    
+    for i in range(1, 4):
+        m = v_month + i
+        y = v_year
+        while m > 12:
+            m -= 12
+            y += 1
+            
+    for i in range(1, 4):
+        m = v_month + i
+        y = v_year
+        while m > 12:
+            m -= 12
+            y += 1
+            
+        month_label = calendar.month_name[m][:3] + " " + str(y)[2:]
+        proj_labels.append(month_label)
+        proj_historical.append(None)
+        proj_forecast.append(float(avg_spend))
+
     context = {
+        'has_projection': has_projection,
         'is_new_user': not has_any_data,
         'actionable_alerts': actionable_alerts,
         'smart_insights': smart_insights,
@@ -1062,8 +1191,9 @@ def home_view(request):
         'selected_month': display_month,  # NEW: For template display labels
         'selected_categories': selected_categories,
         'months_list': [(i, calendar.month_name[i]) for i in range(1, 13)],
-        'total_expenses': total_expenses,
-        'transaction_count': transaction_count,
+        'recurring_groups': recurring_groups,
+        'recurring_net_balance': recurring_net_balance,
+        'total_recurring_commitment': total_recurring_commitment,
         'top_category': top_category,
         'projected_savings': projected_savings, # NEW
         'start_date': start_date,
@@ -1082,6 +1212,9 @@ def home_view(request):
         'trend_labels': trend_labels,
         'trend_iso_dates': trend_iso_dates,
         'selected_categories': selected_categories,
+        'proj_labels': proj_labels,
+        'proj_historical': proj_historical,
+        'proj_forecast': proj_forecast,
     }
     return render(request, 'home.html', context)
 

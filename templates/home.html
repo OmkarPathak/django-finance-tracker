@@ -344,7 +344,7 @@
             {% if has_any_budget or total_income > 0 %}
             <div class="card shadow-lg border-0 mb-4 fade-in" id="tour-money-flow-card" style="animation-delay: 0.2s;">
                 <div class="card-header bg-transparent border-bottom py-2 px-4">
-                    <h6 class="mb-0 fw-bold text-uppercase text-muted" style="letter-spacing: 1px; font-size: 0.9rem;">
+                    <h6 class="mb-0 fw-bold text-uppercase text-muted" style="letter-spacing: 0.6px; font-size: 0.9rem;">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="me-2 text-primary" style="vertical-align: -2px;">
                             <path d="M21.21 15.89A10 10 0 1 1 8 2.83" class="anim-pie" fill="currentColor" fill-opacity="0.3"/>
                             <path d="M22 12A10 10 0 0 0 12 2v10z"/>
@@ -367,7 +367,7 @@
                             {% if monthly_story %}
                             <div class="position-relative border-start-lg border-opacity-10 ps-lg-4">
                                 <h4 class="fw-bold text-primary mb-3" style="letter-spacing: -0.5px;">{% trans "Your Financial Story" %}</h4>
-                                <p class="mb-0" style="position: relative; z-index: 1;">
+                                <p class="mb-0" style="position: relative; z-index: 1; font-size: 0.95rem;">
                                     {{ monthly_story|safe }}
                                 </p>
                             </div>
@@ -402,7 +402,7 @@
                 <div class="col-12 col-md-6">
                     <div class="card shadow-lg border-0 h-100 fade-in" id="tour-smart-insights-card" style="animation-delay: 0.3s;">
                         <div class="card-header bg-transparent border-bottom py-3">
-                            <h6 class="mb-0 fw-bold text-uppercase text-muted" style="letter-spacing: 1px;">
+                            <h6 class="mb-0 fw-bold text-uppercase text-muted" style="letter-spacing: 0.6px;">
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="me-2 text-primary" style="vertical-align: -2px;">
                                     <polyline points="22 7 13.5 15.5 8.5 10.5 2 17" class="anim-trend"/>
                                     <polyline points="16 7 22 7 22 13" class="anim-trend"/>
@@ -466,7 +466,7 @@
                 <div class="col-12 col-md-6">
                     <div class="card shadow-lg border-0 h-100 fade-in" id="tour-actionable-alerts-card" style="animation-delay: 0.4s;">
                         <div class="card-header bg-transparent border-bottom py-3">
-                            <h6 class="mb-0 fw-bold text-uppercase text-muted" style="letter-spacing: 1px;">
+                            <h6 class="mb-0 fw-bold text-uppercase text-muted" style="letter-spacing: 0.6px;">
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="me-2 text-danger animate-pulse-light" style="vertical-align: -2px;">
                                     <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
                                     <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
@@ -690,7 +690,7 @@ document.addEventListener('DOMContentLoaded', function() {
 <!-- LAYER 2: FINANCIAL HEALTH & SPENDING PACE -->
 <div class="row g-4 mb-4 fade-in" id="tour-hero-card" style="animation-delay: 0.1s;">
     <!-- Financial Health Card -->
-    <div class="col-12 col-lg-8">
+    <div class="col-12 col-lg-4">
         <div class="card shadow-lg border-0 rounded-4 h-100 overflow-hidden transition-all">
             <div class="card-header bg-transparent border-bottom d-flex justify-content-between align-items-center">
                 <span class="fw-bold">
@@ -838,7 +838,6 @@ document.addEventListener('DOMContentLoaded', function() {
                         </div>
                     {% endif %}
                 </div>
-                </div>
             </div>
             {% else %}
             <div class="card-body p-4 d-flex flex-column justify-content-center align-items-center text-center">
@@ -856,10 +855,7 @@ document.addEventListener('DOMContentLoaded', function() {
             {% endif %}
         </div>
     </div>
-</div>
 
-<!-- LAYER 3: SMART INSIGHTS, BUDGET VS SPENT, PAYMENT DIST -->
-<div class="row g-4 mb-4 fade-in" style="animation-delay: 0.6s;">
     <!-- NEW: Smart Insights Card -->
     <div class="col-lg-4">
         <div class="card shadow-lg border-0 h-100 glass-card rounded-4">
@@ -901,96 +897,14 @@ document.addEventListener('DOMContentLoaded', function() {
             </div>
         </div>
     </div>
-
-    <!-- Budget vs Spent List -->
-    <div class="col-lg-4" id="tour-budget-card">
-        <div class="card shadow-lg border-0 h-100 glass-card rounded-4">
-            <div class="card-header bg-transparent border-bottom d-flex justify-content-between align-items-center">
-                <span class="fw-bold"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1 text-muted" style="vertical-align: -2px;"><rect x="3" y="10" width="4" height="12" rx="1" class="anim-bar"/><rect x="10" y="6" width="4" height="16" rx="1" class="anim-bar" style="animation-delay: 0.3s;"/><rect x="17" y="2" width="4" height="20" rx="1" class="anim-bar" style="animation-delay: 0.6s;"/></svg> {% trans "Budget vs Spent" %}</span>
-                <a href="{% url 'budget' %}" class="btn btn-sm text-decoration-none opacity-25"><i class="bi bi-box-arrow-up-right"></i></a>
-            </div>
-            <div class="card-body p-0">
-                {% if has_any_budget %}
-                    <div class="d-flex flex-column">
-                        {% for item in category_limits|slice:":5" %}
-                            {% if item.limit %}
-                            <div class="list-group-item border-0 d-flex align-items-center py-2 px-3 hover-bg-light position-relative" style="cursor: pointer;" onclick="filterByCategory('{{ item.name|escapejs }}')">
-                                <!-- Left: Name -->
-                                <div class="d-flex align-items-center gap-2" style="width: 35%; flex-shrink: 0;">
-                                    <div class="text-truncate">
-                                        <h6 class="mb-0 text-truncate" title="{{ item.name }}">{{ item.name }}</h6>
-                                    </div>
-                                </div>
-
-                                <!-- Middle: Amount & Progress -->
-                                <div class="d-flex flex-column align-items-end flex-grow-1">
-                                    <div class="d-flex justify-content-between w-100 mb-1 small">
-                                        <span class="fw-bold">{{ currency_symbol }}{{ item.total|floatformat:0|translate_digits }}</span>
-                                        <span class="text-muted">{{ currency_symbol }}{{ item.limit|floatformat:0|translate_digits }}</span>
-                                    </div>
-                                    
-                                    <div class="progress w-100 progress-thin">
-                                        <div class="progress-bar {% if item.used_percent > 90 %}progress-gradient-danger{% elif item.used_percent > 80 %}progress-gradient-warning{% else %}progress-gradient-success{% endif %}" 
-                                             role="progressbar" 
-                                             style="width: {{ item.used_percent }}%" 
-                                             aria-valuenow="{{ item.used_percent }}" 
-                                             aria-valuemin="0" 
-                                             aria-valuemax="100"></div>
-                                    </div>
-                                </div>
-                            </div>
-                            {% endif %}
-                        {% endfor %}
-                    </div>
-                {% else %}
-                    <div class="empty-state-container">
-                        <div class="mb-3 text-primary opacity-50">
-                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                                <circle cx="12" cy="12" r="10" opacity="0.2" fill="currentColor"/>
-                                <path d="M12 2a10 10 0 0 1 10 10h-10z" class="anim-pie" fill="currentColor" fill-opacity="0.3"/>
-                                <line x1="12" y1="2" x2="12" y2="12"/>
-                                <line x1="12" y1="12" x2="22" y2="12"/>
-                            </svg>
-                        </div>
-                        <h6 class="fw-bold mb-2">{% trans "No Budgets Set" %}</h6>
-                        <p class="small text-muted mb-3">{% trans "Set limits for your categories to track spending." %}</p>
-                        <a href="{% url 'category-list' %}" class="btn btn-primary btn-sm rounded-pill px-4">{% trans "Set Budget" %}</a>
-                    </div>
-                {% endif %}
-            </div>
-        </div>
-    </div>
-
-    <!-- Payment Method Distribution -->
-    <div class="col-lg-4">
-        <div class="card shadow-lg border-0 h-100 glass-card rounded-4" style="animation-delay: 0.5s">
-            <div class="card-header bg-transparent border-bottom fw-bold">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1 text-muted" style="vertical-align: -2px;"><rect x="2" y="5" width="20" height="14" rx="2" class="anim-card"/><line x1="2" y1="10" x2="22" y2="10" class="anim-card"/></svg>
-                {% trans "Payment Method" %}
-            </div>
-            <div class="card-body">
-                {% if payment_data %}
-                <div style="height: 180px; width: 100%;">
-                    <canvas id="paymentChart"></canvas>
-                </div>
-                {% else %}
-                <div class="empty-state-container" style="min-height: 250px;">
-                    <div class="mb-3 text-muted opacity-50">
-                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                            <rect x="2" y="5" width="20" height="14" rx="2" class="anim-card-empty"/>
-                            <line x1="2" y1="10" x2="22" y2="10" class="anim-card-empty"/>
-                            <path d="M7 15h2" class="anim-card-empty"/>
-                        </svg>
-                    </div>
-                    <p class="text-muted small mb-0">{% trans "No payment data available" %}</p>
-                </div>
-                {% endif %}
-            </div>
-        </div>
-    </div>
 </div>
 
-<!-- Charts Row 2: Trend Chart + Recent Transactions -->
+<!-- SECTION: SPENDING -->
+<h6 class="text-muted small text-uppercase fw-bold mb-4 mt-4 px-1 d-flex align-items-center fade-in" style="letter-spacing: 1px; opacity: 0.7;">
+    <span class="me-2 text-primary">●</span> {% trans "Spending Analysis" %}
+</h6>
+
+<!-- Charts Row 2: Trend Chart + Top Categories -->
 <div class="row g-4 mb-4 fade-in" style="animation-delay: 0.7s;">
     <!-- Trend Chart -->
     <div class="col-md-6">
@@ -999,7 +913,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 <span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1 text-muted" style="vertical-align: -2px;"><polyline points="4 18 8 12 14 16 20 6" class="anim-trend"/></svg> {{ trend_title }}</span>
             </div>
             <div class="card-body">
-                {% if trend_datasets %}
+                {% if trend_labels %}
                 <div style="height: 350px; width: 100%;">
                     <canvas id="trendChart"></canvas>
                 </div>
@@ -1012,90 +926,6 @@ document.addEventListener('DOMContentLoaded', function() {
                         </svg>
                     </div>
                     <p class="text-muted mb-0">{% trans "Start tracking to see your spending trends!" %}</p>
-                </div>
-                {% endif %}
-            </div>
-        </div>
-    </div>
-
-    <!-- Recent Transactions Table -->
-    <div class="col-md-6">
-        <div class="card shadow-lg border-0 h-100 rounded-4">
-            <div class="card-header bg-transparent border-bottom d-flex justify-content-between align-items-center">
-                <span class="fw-bold"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1 text-muted" style="vertical-align: -2px;"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14" class="anim-clk"/></svg> {% trans "Recent Transactions" %}</span>
-                <a href="{% url 'expense-list' %}" class="btn btn-sm text-decoration-none opacity-25"><i class="bi bi-box-arrow-up-right"></i></a>
-            </div>
-            <div class="card-body p-0">
-                <div class="list-group list-group-flush">
-                    {% for expense in recent_transactions %}
-                    <div class="list-group-item bg-transparent border-0 d-flex align-items-center py-3 px-2 px-md-3 hover-bg-light position-relative">
-                        <!-- Icon / Avatar -->
-                        <div class="icon-shape icon-shape-md fw-bold fs-5 me-2 me-md-3 d-flex align-items-center justify-content-center flex-shrink-0" style="width: 45px; height: 45px;">
-                            <i class="bi {% category_icon expense.category user %}"></i>
-                        </div>
-                        
-                        <!-- Middle Content -->
-                        <div class="flex-grow-1 me-2 me-md-3" style="min-width: 0;">
-                            <h6 class="mb-0 fw-bold text-truncate">{{ expense.description }}</h6>
-                            <small class="text-muted d-block text-truncate">
-                                {{ expense.date|date:"M d"|translate_digits }} • {{ expense.category }}
-                            </small>
-                        </div>
-                        
-                        <div class="text-end flex-shrink-0 me-2">
-                            <span class="d-block fw-bold fs-6">{{ currency_symbol }}{{ expense.base_amount|translate_digits }}</span>
-                            {% if expense.currency != currency_symbol %}
-                            <small class="text-muted d-block" style="font-size: 0.7rem;">
-                                ({{ expense.currency }}{{ expense.amount|translate_digits }})
-                            </small>
-                            {% endif %}
-                        </div>
-                        
-                        <!-- Clickable Stretched Link -->
-                        <a href="{% url 'expense-edit' expense.pk %}" class="stretched-link"></a>
-                    </div>
-                    {% empty %}
-                    <div class="empty-state-container" style="min-height: 350px;">
-                        <div class="mb-3 text-muted opacity-50">
-                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                                <path class="anim-receipt" d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1z"/>
-                                <line class="anim-receipt" x1="8" y1="7" x2="16" y2="7"/>
-                                <line class="anim-receipt" x1="8" y1="11" x2="14" y2="11"/>
-                                <line class="anim-receipt" x1="8" y1="15" x2="12" y2="15"/>
-                            </svg>
-                        </div>
-                        <p class="text-muted mb-0">{% trans "No recent transactions" %}</p>
-                    </div>
-                    {% endfor %}
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Charts Row 3: Category Distribution + Top Categories -->
-<div class="row g-4 mb-4 fade-in" style="animation-delay: 0.8s;">
-    <!-- Category Chart -->
-    <div class="col-md-6">
-        <div class="card shadow-lg border-0 h-100 rounded-4">
-            <div class="card-header bg-transparent border-bottom fw-bold">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1 text-muted" style="vertical-align: -2px;"><circle cx="12" cy="12" r="10" class="anim-donut" stroke-dasharray="15 8 8 8"/></svg>
-                {% trans "Category Distribution" %}
-            </div>
-            <div class="card-body">
-                {% if categories %}
-                <div style="height: 320px; width: 100%;">
-                    <canvas id="categoryChart"></canvas>
-                </div>
-                {% else %}
-                <div class="empty-state-container" style="min-height: 320px;">
-                    <div class="mb-3 text-muted opacity-50">
-                        <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                            <circle cx="12" cy="12" r="10" class="anim-donut-empty" stroke-dasharray="15 8 8 8"/>
-                            <circle cx="12" cy="12" r="4" opacity="0.2"/>
-                        </svg>
-                    </div>
-                    <p class="text-muted mb-0">{% trans "No categories to display" %}</p>
                 </div>
                 {% endif %}
             </div>
@@ -1171,6 +1001,285 @@ document.addEventListener('DOMContentLoaded', function() {
         </div>
     </div>
 </div>
+
+<!-- Charts Row 3: Category Distribution + Top Categories -->
+<div class="row g-4 mb-4 fade-in" style="animation-delay: 0.8s;">
+    <!-- Category Chart -->
+    <div class="col-md-6">
+        <div class="card shadow-lg border-0 h-100 rounded-4">
+            <div class="card-header bg-transparent border-bottom fw-bold">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1 text-muted" style="vertical-align: -2px;"><circle cx="12" cy="12" r="10" class="anim-donut" stroke-dasharray="15 8 8 8"/></svg>
+                {% trans "Category Distribution" %}
+            </div>
+            <div class="card-body">
+                {% if categories %}
+                <div style="height: 320px; width: 100%;">
+                    <canvas id="categoryChart"></canvas>
+                </div>
+                {% else %}
+                <div class="empty-state-container" style="min-height: 320px;">
+                    <div class="mb-3 text-muted opacity-50">
+                        <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10" class="anim-donut-empty" stroke-dasharray="15 8 8 8"/>
+                            <circle cx="12" cy="12" r="4" opacity="0.2"/>
+                        </svg>
+                    </div>
+                    <p class="text-muted mb-0">{% trans "No categories to display" %}</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Transactions Table -->
+    <div class="col-md-6">
+        <div class="card shadow-lg border-0 h-100 rounded-4">
+            <div class="card-header bg-transparent border-bottom d-flex justify-content-between align-items-center">
+                <span class="fw-bold"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1 text-muted" style="vertical-align: -2px;"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14" class="anim-clk"/></svg> {% trans "Recent Transactions" %}</span>
+                <a href="{% url 'expense-list' %}" class="btn btn-sm text-decoration-none opacity-25"><i class="bi bi-box-arrow-up-right"></i></a>
+            </div>
+            <div class="card-body p-0">
+                <div class="list-group list-group-flush">
+                    {% for expense in recent_transactions %}
+                    <div class="list-group-item bg-transparent border-0 d-flex align-items-center py-3 px-2 px-md-3 hover-bg-light position-relative">
+                        <!-- Icon / Avatar -->
+                        <div class="icon-shape icon-shape-md fw-bold fs-5 me-2 me-md-3 d-flex align-items-center justify-content-center flex-shrink-0" style="width: 45px; height: 45px;">
+                            <i class="bi {% category_icon expense.category user %}"></i>
+                        </div>
+                        
+                        <!-- Middle Content -->
+                        <div class="flex-grow-1 me-2 me-md-3" style="min-width: 0;">
+                            <h6 class="mb-0 fw-bold text-truncate">{{ expense.description }}</h6>
+                            <small class="text-muted d-block text-truncate">
+                                {{ expense.date|date:"M d"|translate_digits }} • {{ expense.category }}
+                            </small>
+                        </div>
+                        
+                        <div class="text-end flex-shrink-0 me-2">
+                            <span class="d-block fw-bold fs-6">{{ currency_symbol }}{{ expense.base_amount|translate_digits }}</span>
+                            {% if expense.currency != currency_symbol %}
+                            <small class="text-muted d-block" style="font-size: 0.7rem;">
+                                ({{ expense.currency }}{{ expense.amount|translate_digits }})
+                            </small>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Clickable Stretched Link -->
+                        <a href="{% url 'expense-edit' expense.pk %}" class="stretched-link"></a>
+                    </div>
+                    {% empty %}
+                    <div class="empty-state-container" style="min-height: 350px;">
+                        <div class="mb-3 text-muted opacity-50">
+                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path class="anim-receipt" d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1z"/>
+                                <line class="anim-receipt" x1="8" y1="7" x2="16" y2="7"/>
+                                <line class="anim-receipt" x1="8" y1="11" x2="14" y2="11"/>
+                                <line class="anim-receipt" x1="8" y1="15" x2="12" y2="15"/>
+                            </svg>
+                        </div>
+                        <p class="text-muted mb-0">{% trans "No recent transactions" %}</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>    
+</div>
+
+<!-- SECTION: CASHFLOW -->
+<h6 class="text-muted small text-uppercase fw-bold mb-4 mt-4 px-1 d-flex align-items-center fade-in" style="letter-spacing: 1px; opacity: 0.7; animation-delay: 0.8s;">
+    <span class="me-2 text-success">●</span> {% trans "Cashflow & Commitments" %}
+</h6>
+<div class="row g-4 mb-4 fade-in" style="animation-delay: 0.9s;">
+    <!-- Upcoming Recurring Transactions Card -->
+    <div class="col-lg-6" id="tour-recurring-card">
+        <div class="card shadow-lg border-0 h-100 glass-card rounded-4">
+            <div class="card-header bg-transparent border-bottom d-flex justify-content-between align-items-center">
+                <span class="fw-bold">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1 text-muted" style="vertical-align: -2px;">
+                        <path d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9" class="anim-rotate"/>
+                    </svg> 
+                    {% trans "Recurring Commitments" %}
+                </span>
+                <a href="{% url 'recurring-list' %}" class="btn btn-sm text-decoration-none opacity-25"><i class="bi bi-box-arrow-up-right"></i></a>
+            </div>
+            <div class="card-body bg-transparent p-0 d-flex flex-column h-100">
+                <!-- 1. Top Summary Totals -->
+                <div class="p-4 border-bottom bg-transparent bg-opacity-10">
+                    <div class="row g-2 text-center mb-4">
+                        <div class="col-4 border-end">
+                            <p class="text-muted small-xs text-uppercase fw-bold mb-1">{% trans "Income" %}</p>
+                            <span class="text-success fw-bold" style="font-size: 0.9rem;">{{ currency_symbol }}{{ recurring_groups.INCOME.total|floatformat:0|translate_digits }}</span>
+                        </div>
+                        <div class="col-4 border-end">
+                            <p class="text-muted small-xs text-uppercase fw-bold mb-1">{% trans "Expenses" %}</p>
+                            <span class="text-danger fw-bold" style="font-size: 0.9rem;">{{ currency_symbol }}{{ recurring_groups.EXPENSE.total|floatformat:0|translate_digits }}</span>
+                        </div>
+                        <div class="col-4">
+                            <p class="text-muted small-xs text-uppercase fw-bold mb-1">{% trans "Invest" %}</p>
+                            <span class="text-info fw-bold" style="font-size: 0.9rem;">{{ currency_symbol }}{{ recurring_groups.INVESTMENT.total|floatformat:0|translate_digits }}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between align-items-center pt-3 border-top border-secondary border-opacity-10">
+                        <div>
+                            <span class="text-muted text-uppercase fw-bold d-block" style="font-size: 0.8rem; letter-spacing: 0.5px;">{% trans "Recurring Net Commitment" %}</span>
+                            <small class="text-muted opacity-50" style="font-size: 0.8rem;">{% trans "Based on recurring transactions" %}</small>
+                        </div>
+                        <div class="text-end">
+                            <h4 class="fw-bold mb-0 {% if recurring_net_balance > 0 %}text-success{% elif recurring_net_balance == 0 %}text-muted{% else %}text-danger{% endif %}" style="letter-spacing: -0.5px;">
+                                {% if recurring_net_balance > 0 %}+{% endif %}{{ currency_symbol }}{{ recurring_net_balance|floatformat:0|translate_digits }}
+                            </h4>
+                        </div>
+                    </div>
+
+                    {% if recurring_groups.INCOME.total == 0 %}
+                    <div class="mt-3 p-2 bg-warning bg-opacity-10 rounded border border-warning border-opacity-25">
+                        <small class="text-warning-emphasis d-block" style="font-size: 0.65rem; line-height: 1.2;">
+                            <i class="bi bi-info-circle-fill me-1"></i>
+                            {% trans "No recurring income configured. Add salary as a recurring item to track monthly cashflow." %}
+                        </small>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- 2. Simplified Item List -->
+                {% if recurring_groups.INCOME.items or recurring_groups.EXPENSE.items or recurring_groups.INVESTMENT.items %}
+                    <div class="px-3 py-2 bg-transparent bg-opacity-10 border-bottom">
+                        <small class="text-muted bg-transparent fw-bold text-uppercase" style="font-size: 0.7rem; letter-spacing: 1px;">
+                            {% trans "Recurring Items" %}
+                        </small>
+                    </div>
+                    <div class="flex-grow-1 overflow-auto" style="max-height: 280px;">
+                        <div class="list-group list-group-flush">
+                            {% for type, group in recurring_groups.items %}
+                                {% for item in group.items %}
+                                <a href="{% url 'recurring-edit' item.id %}" class="list-group-item list-group-item-action bg-transparent border-0 d-flex align-items-center py-2 px-3 hover-bg-light transition-all text-decoration-none text-inherit">
+                                    <div class="d-flex flex-column flex-grow-1 min-w-0">
+                                        <h6 class="mb-0 text-truncate fw-bold text-inherit" style="font-size: 1rem;">{{ item.description }}</h6>
+                                        <small class="text-muted opacity-75" style="font-size: 0.8rem; font-weight: 400;">
+                                            {{ item.date|date:"d M"|translate_digits }} · {{ item.category }}
+                                        </small>
+                                    </div>
+                                    <div class="text-end">
+                                        <span class="fw-bold" style="font-size: 1rem; color: {% if item.type == 'INCOME' %}#10b981{% elif item.type == 'INVESTMENT' %}#0ea5e9{% else %}#ef4444{% endif %};">
+                                            {% if item.type == 'INCOME' %}+{% else %}-{% endif %}{{ currency_symbol }}{{ item.amount|floatformat:0|translate_digits }}
+                                        </span>
+                                    </div>
+                                </a>
+                                {% endfor %}
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- 3. Focused Footer -->
+                    {% if recurring_groups.INVESTMENT.total > 0 %}
+                    <div class="mt-auto p-3 border-top bg-transparent bg-opacity-25 rounded-bottom-4">
+                        <div class="d-flex bg-transparent align-items-center text-info" style="font-size: 0.85rem; font-weight: 600;">
+                            <span class="me-2">📈</span>
+                            {{ currency_symbol }}{{ recurring_groups.INVESTMENT.total|floatformat:0|translate_digits }} {% trans "committed to future monthly" %}
+                        </div>
+                    </div>
+                    {% endif %}
+                {% else %}
+                    <div class="empty-state-container p-4">
+                        <div class="mb-3 text-muted opacity-50">
+                            <i class="bi bi-calendar-check fs-1"></i>
+                        </div>
+                        <h6 class="fw-bold mb-1">{% trans "No Recurring Bills" %}</h6>
+                        <p class="small text-muted mb-0">{% trans "Auto-generate transactions by adding recurring bills." %}</p>
+                        <a href="{% url 'recurring-add' %}" class="btn btn-primary btn-sm rounded-pill mt-3 px-4">{% trans "Add Recurring" %}</a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Payment Method Distribution -->
+    <div class="col-lg-6">
+        <div class="card shadow-lg border-0 h-100 glass-card rounded-4">
+            <div class="card-header bg-transparent border-bottom fw-bold">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1 text-muted" style="vertical-align: -2px;"><rect x="2" y="5" width="20" height="14" rx="2" class="anim-card"/><line x1="2" y1="10" x2="22" y2="10" class="anim-card"/></svg>
+                {% trans "Payment Method" %}
+            </div>
+            <div class="card-body d-flex flex-column justify-content-center h-100 p-4">
+                {% if payment_data %}
+                <div class="w-100" style="min-height: 240px;">
+                    <canvas id="paymentChart"></canvas>
+                </div>
+                {% else %}
+                <div class="empty-state-container flex-grow-1 d-flex flex-column justify-content-center" style="min-height: 250px;">
+                    <div class="mb-3 text-muted opacity-50">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="2" y="5" width="20" height="14" rx="2" class="anim-card-empty"/>
+                            <line x1="2" y1="10" x2="22" y2="10" class="anim-card-empty"/>
+                            <path d="M7 15h2" class="anim-card-empty"/>
+                        </svg>
+                    </div>
+                    <p class="text-muted small mb-0">{% trans "No payment data available" %}</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- SECTION: FORECAST -->
+<h6 class="text-muted small text-uppercase fw-bold mb-4 mt-4 px-1 d-flex align-items-center fade-in" style="letter-spacing: 1px; opacity: 0.7; animation-delay: 1.0s;">
+    <span class="me-2 text-info">●</span> {% trans "Future Forecast" %}
+</h6>
+<div class="row g-4 mb-4 fade-in" style="animation-delay: 1.1s;">
+    <!-- Expense Projection Chart Card -->
+    <div class="col-12">
+        <div class="card shadow-lg border-0 h-100 glass-card rounded-4">
+            <div class="card-header bg-transparent border-bottom fw-bold d-flex justify-content-between align-items-center">
+                <span>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1 text-muted" style="vertical-align: -2px;">
+                        <path d="M3 3v18h18" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M18.5 9.5l-3 3-2.5-4.5-3 6.5-4-4" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M19 12v7" stroke-dasharray="2 2" stroke-linecap="round"/>
+                    </svg>
+                    {% trans "Expense Projection" %}
+                </span>
+                <span class="badge bg-info bg-opacity-10 text-info rounded-pill px-3 py-1 small border border-info border-opacity-10" style="font-size: 0.65rem;">
+                    <i class="bi bi-info-circle me-1"></i> {% trans "Based on last 6 months" %}
+                </span>
+            </div>
+            <div class="card-body">
+                {% if has_projection %}
+                <div style="height: 300px; width: 100%;">
+                    <canvas id="projectionChart"></canvas>
+                </div>
+                {% else %}
+                <div class="empty-state-container" style="min-height: 250px;">
+                    <div class="mb-3 text-muted opacity-50">
+                        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M3 3v18h18" opacity="0.2"/>
+                            <path d="M19 12v7" stroke-dasharray="2 2" stroke-linecap="round" opacity="0.5"/>
+                            <path d="M18.5 9.5l-3 3-2.5-4.5-3 6.5-4-4" stroke-dasharray="4 4" class="anim-rotate" opacity="0.5"/>
+                        </svg>
+                    </div>
+                    <p class="text-muted mb-0">{% trans "Not enough data yet to generate a projection. Keep tracking for a few months!" %}</p>
+                </div>
+                {% endif %}
+
+                <div class="mt-4 pt-3 border-top border-secondary border-opacity-10">
+                    <div class="d-flex align-items-start gap-3 p-3 bg-light bg-opacity-10 rounded-3">
+                        <div class="text-info mt-1">
+                            <i class="bi bi-info-circle-fill fs-5"></i>
+                        </div>
+                        <div>
+                            <h6 class="fw-bold mb-1" style="font-size: 0.85rem;">{% trans "How is this forecast calculated?" %}</h6>
+                            <p class="text-muted mb-0" style="font-size: 0.8rem; line-height: 1.5;">
+                                {% trans "The projection is based on your average monthly spending over the last 6 months. It assumes a consistent spending pattern to help you plan for future months." %}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 {% include 'partials/savings_modal.html' %}
 
 
@@ -1189,6 +1298,9 @@ document.addEventListener('DOMContentLoaded', function() {
 {{ payment_labels|json_script:"payment-labels" }}
 {{ payment_data|json_script:"payment-data" }}
 {{ selected_categories|json_script:"selected-categories-data" }}
+{{ proj_labels|json_script:"proj-labels" }}
+{{ proj_historical|json_script:"proj-historical" }}
+{{ proj_forecast|json_script:"proj-forecast" }}
 
 <script>
 
@@ -1387,53 +1499,34 @@ document.addEventListener('DOMContentLoaded', function() {
         const moneyFlowCanvas = document.getElementById('moneyFlowChart');
         const savedAmount = parseFloat("{{ hero_metrics.saved|stringformat:'f'|default:'0' }}");
 
-        if (moneyFlowCanvas && (categories.length > 0 || savedAmount > 0)) {
+        if (moneyFlowCanvas) {
             const ctxFlow = moneyFlowCanvas.getContext('2d');
             
-            // Prepare Data: Savings + Categories
-            const flowLabels = [];
-            const flowData = [];
-            const flowGradients = [];
+            const incomeTotal = parseFloat("{{ total_income|stringformat:'f'|default:'0' }}");
+            const lifestyleTotal = parseFloat("{{ total_expenses|stringformat:'f'|default:'0' }}");
+            const investmentTotal = parseFloat("{{ total_investments|stringformat:'f'|default:'0' }}");
+            const remainingTotal = Math.max(0, incomeTotal - lifestyleTotal - investmentTotal);
             
-            // Savings First (Green)
-            if (savedAmount > 0) {
-                flowLabels.push('{% trans "Unallocated" %}');
-                flowData.push(savedAmount);
-                flowGradients.push(createGradient(ctxFlow, '#11998e', '#38ef7d')); // Green
-            }
+            const flowLabels = ['{% trans "Lifestyle" %}', '{% trans "Investments" %}', '{% trans "Remaining" %}'];
+            const flowData = [lifestyleTotal, investmentTotal, remainingTotal];
             
-            // Then Categories
-            categories.forEach((cat, index) => {
-                flowLabels.push(cat);
-                flowData.push(categoryAmounts[index]);
-            });
-            
-            const catGradients = [
-                 createGradient(ctxFlow, '#00c6ff', '#0072ff'), // Blue
-                 createGradient(ctxFlow, '#a78bfa', '#7c3aed'), // Soft Violet
-                 createGradient(ctxFlow, '#f7b733', '#fc4a1a'), // Orange
-                 createGradient(ctxFlow, '#4facfe', '#00f2fe'), // Cyan
-                 createGradient(ctxFlow, '#30cfd0', '#330867')  // Sea-Blue
+            const flowGradients = [
+                createGradient(ctxFlow, '#818cf8', '#6366f1'), // Lifestyle (Indigo)
+                createGradient(ctxFlow, '#34d399', '#10b981'), // Investments (Emerald)
+                createGradient(ctxFlow, '#0ea5e9', '#0284c7')  // Remaining (Sky Blue)
             ];
-            
-            for (let i = flowGradients.length; i < flowLabels.length; i++) {
-                flowGradients.push(catGradients[(i - (savedAmount > 0 ? 1 : 0)) % catGradients.length]);
-            }
 
-            // Convert structure for a single stacked horizontal bar
             const flowDatasets = flowLabels.map((label, index) => ({
                 label: label,
                 data: [flowData[index]],
                 backgroundColor: flowGradients[index],
-                borderWidth: 2, 
-                borderColor: document.documentElement.getAttribute('data-bs-theme') === 'dark' ? '#212529' : '#ffffff', // subtle inner spacing
-                borderRadius: index === 0 ? {topLeft: 20, bottomLeft: 20} : (index === flowLabels.length - 1 ? {topRight: 20, bottomRight: 20} : 0),
+                borderWidth: 0, 
+                borderRadius: 0,
                 barPercentage: 1.0,
                 categoryPercentage: 1.0
             }));
 
-            // Compute exact sum to prevent Chart.js from artificially padding the right side
-            const totalWidth = flowData.reduce((a, b) => a + b, 0);
+            const totalWidth = incomeTotal;
 
             charts.moneyFlow = new Chart(ctxFlow, {
                 type: 'bar',
@@ -1446,7 +1539,16 @@ document.addEventListener('DOMContentLoaded', function() {
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: { 
-                        legend: { position: 'bottom', labels: { boxWidth: 12, font: {size: 11} }, display: true },
+                        legend: { 
+                            position: 'bottom', 
+                            labels: { 
+                                boxWidth: 10, 
+                                usePointStyle: true,
+                                pointStyle: 'circle',
+                                font: {size: 11, weight: '500'} 
+                            }, 
+                            display: true 
+                        },
                         tooltip: {
                             callbacks: {
                                 label: function(context) {
@@ -1500,19 +1602,43 @@ document.addEventListener('DOMContentLoaded', function() {
                             const total = totalWidth; 
                             const percentage = Math.round((val / total) * 100);
                             
-                            if (percentage >= 4) {
-                                ctx.font = 'bold 12px sans-serif';
-                                ctx.fillStyle = '#ffffff';
+                            if (percentage >= 8) {
                                 ctx.textAlign = 'center';
                                 ctx.textBaseline = 'middle';
+                                ctx.fillStyle = '#ffffff';
+                                ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
+                                ctx.shadowBlur = 4;
                                 
                                 const x = bar.x - (bar.width / 2);
                                 const y = bar.y;
                                 
-                                ctx.shadowColor = 'rgba(0, 0, 0, 0.4)';
-                                ctx.shadowBlur = 3;
-                                ctx.fillText(translateDigits(percentage) + '%', x, y);
+                                // 1. Label (e.g., Lifestyle)
+                                ctx.font = '700 10px "Outfit", sans-serif';
+                                ctx.fillText(dataset.label.toUpperCase(), x, y - 8);
+                                
+                                // 2. Amount (e.g., ₹43k)
+                                let displayVal = val;
+                                let suffix = '';
+                                if (val >= 1000) {
+                                    displayVal = Math.round(val / 1000);
+                                    suffix = 'k';
+                                } else {
+                                    displayVal = Math.round(val);
+                                }
+                                const amountText = '{{ currency_symbol }}' + translateDigits(displayVal.toLocaleString()) + suffix;
+                                
+                                ctx.font = '700 13px "Outfit", sans-serif';
+                                ctx.fillText(amountText, x, y + 8);
+                                
                                 ctx.shadowBlur = 0;
+                            } else if (percentage >= 4) {
+                                // Fallback for smaller segments: just the amount
+                                ctx.font = '700 11px "Outfit", sans-serif';
+                                ctx.fillStyle = '#ffffff';
+                                ctx.textAlign = 'center';
+                                ctx.textBaseline = 'middle';
+                                const x = bar.x - (bar.width / 2);
+                                ctx.fillText('{{ currency_symbol }}' + translateDigits(Math.round(val).toLocaleString()), x, bar.y);
                             }
                         });
                         ctx.restore();
@@ -1568,24 +1694,24 @@ document.addEventListener('DOMContentLoaded', function() {
                             const amountText = '{{ currency_symbol }}' + translateDigits(value.toLocaleString());
                             // Percentage text
                             const pctText = translateDigits(percentage) + '%';
-                            
-                            // Only draw text if the slice is large enough
-                            if (arc.circumference > 0.25) {
-                                ctx.font = 'bold 11px sans-serif';
-                                ctx.textAlign = 'center';
-                                ctx.textBaseline = 'middle';
-                                ctx.fillStyle = '#ffffff';
-                                ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
-                                ctx.shadowBlur = 4;
-                                
-                                // Draw amount slightly higher
-                                ctx.fillText(amountText, center.x, center.y - 7);
-                                // Draw percentage slightly lower
-                                ctx.font = '9px sans-serif';
-                                ctx.fillText(pctText, center.x, center.y + 7);
-                                
-                                ctx.shadowBlur = 0;
-                            }
+                                                        // Only draw text if the slice is large enough
+                             if (arc.circumference > 0.3) {
+                                 ctx.font = 'bold 12px "Outfit", sans-serif';
+                                 ctx.textAlign = 'center';
+                                 ctx.textBaseline = 'middle';
+                                 ctx.fillStyle = '#ffffff';
+                                 ctx.shadowColor = 'rgba(0, 0, 0, 0.6)';
+                                 ctx.shadowBlur = 5;
+                                 
+                                 // Draw percentage as primary
+                                 ctx.fillText(pctText, center.x, center.y - 8);
+                                 
+                                 // Draw amount as secondary
+                                 ctx.font = '10px "Inter", sans-serif';
+                                 ctx.fillText(amountText, center.x, center.y + 8);
+                                 
+                                 ctx.shadowBlur = 0;
+                             }
                         });
                         ctx.restore();
                     }
@@ -1775,58 +1901,38 @@ document.addEventListener('DOMContentLoaded', function() {
      
                      try {
                          if (charts.payment) charts.payment.destroy();
-     
-                         charts.payment = new Chart(ctxPayment, {
-                             type: 'bar',
-                             data: {
-                                 labels: paymentLabels,
-                                 datasets: [{
-                                     label: 'Amount',
-                                     data: paymentData,
-                                     backgroundColor: paymentGradients,
-                                     borderRadius: 4,
-                                     barPercentage: 0.6,
-                                 }]
-                             },
-                             options: {
-                                indexAxis: 'y', // Horizontal Bar
-                                responsive: true,
-                                maintainAspectRatio: false,
-                                layout: {
-                                    padding: {
-                                        right: 60 // Leave space for labels
-                                    }
-                                },
-                                scales: {
-                                    x: {
-                                        grid: { display: false, drawBorder: false },
-                                        ticks: { display: false }, // Hide X axis labels for cleaner look
-                                        beginAtZero: true,
-                                        grace: '15%' // Add extra space at the end of the scale
-                                    },
-                                    y: {
-                                        grid: { display: false, drawBorder: false },
-                                        ticks: {font: { weight: 'bold' } }
-                                    }
-                                },
+                              charts.payment = new Chart(ctxPayment, {
+                              type: 'pie',
+                              data: {
+                                  labels: paymentLabels,
+                                  datasets: [{
+                                      data: paymentData,
+                                      backgroundColor: paymentGradients,
+                                      borderWidth: 0,
+                                      hoverOffset: 12
+                                  }]
+                              },
+                              options: {
+                                 responsive: true,
+                                 maintainAspectRatio: false,
                                  plugins: { 
-                                     legend: { display: false }, // Legend redundant for bar chart with labels on Y axis
+                                     legend: { 
+                                         position: 'bottom',
+                                         labels: {
+                                             usePointStyle: true,
+                                             padding: 20,
+                                             font: { family: '"Outfit", sans-serif', size: 13 }
+                                         }
+                                     },
                                      tooltip: {
                                          callbacks: {
                                              label: function(context) {
-                                                 let label = context.dataset.label || '';
-                                                 if (label) {
-                                                     label += ': ';
-                                                 }
-                                                 if (context.parsed.x !== null) {
-                                                     label += '{{ currency_symbol }}' + translateDigits(context.parsed.x.toLocaleString());
-                                                 }
-                                                 return label;
+                                                 const value = context.raw;
+                                                 const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                                 const pct = ((value / total) * 100).toFixed(1);
+                                                 return ` ${context.label}: {{ currency_symbol }}${translateDigits(value.toLocaleString())} (${translateDigits(pct)}%)`;
                                              }
                                          }
-                                     },
-                                     datalabels: { // Requires plugin, but we can do custom drawing if needed. 
-                                        // For now let's just use tooltips and clean bars.
                                      }
                                  },
                                  onClick: (e, elements, chart) => {
@@ -1839,27 +1945,43 @@ document.addEventListener('DOMContentLoaded', function() {
                                  onHover: (event, chartElement) => {
                                      event.native.target.style.cursor = chartElement.length ? 'pointer' : 'default';
                                  }
-                             },
-                             plugins: [{
-                                 id: 'barValues',
-                                 afterDatasetsDraw(chart) {
-                                     const { ctx } = chart;
-                                     ctx.save();
-                                     const meta = chart.getDatasetMeta(0);
-                                     meta.data.forEach((bar, index) => {
-                                         const value = paymentData[index];
-                                         const text = '{{ currency_symbol }}' + translateDigits(value.toLocaleString());
-                                         ctx.font = 'bold 11px sans-serif';
-                                         ctx.fillStyle = '#6c757d'; // Muted text color
-                                         ctx.textAlign = 'left';
-                                         ctx.textBaseline = 'middle';
-                                         // Draw text to the right of the bar
-                                         ctx.fillText(text, bar.x + 5, bar.y);
-                                     });
-                                     ctx.restore();
-                                 }
-                             }]
-                         });
+                              },
+                              plugins: [{
+                                  id: 'pieLabels',
+                                  afterDatasetsDraw(chart) {
+                                      const { ctx, data } = chart;
+                                      ctx.save();
+                                      const meta = chart.getDatasetMeta(0);
+                                      const total = data.datasets[0].data.reduce((a, b) => a + b, 0);
+                                      
+                                      meta.data.forEach((arc, index) => {
+                                          const value = data.datasets[0].data[index];
+                                          const percentage = total > 0 ? ((value / total) * 100).toFixed(0) : 0;
+                                          
+                                          if (arc.circumference > 0.4 && percentage > 5) {
+                                              const center = arc.getCenterPoint();
+                                              const amountText = '{{ currency_symbol }}' + translateDigits(value.toLocaleString());
+                                              const pctText = translateDigits(percentage) + '%';
+                                              
+                                              ctx.textAlign = 'center';
+                                              ctx.textBaseline = 'middle';
+                                              ctx.fillStyle = '#ffffff';
+                                              ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
+                                              ctx.shadowBlur = 4;
+                                              
+                                              // Draw value
+                                              ctx.font = 'bold 11px "Outfit", sans-serif';
+                                              ctx.fillText(amountText, center.x, center.y - 7);
+                                              
+                                              // Draw percentage
+                                              ctx.font = 'bold 10px "Outfit", sans-serif';
+                                              ctx.fillText(pctText, center.x, center.y + 7);
+                                          }
+                                      });
+                                      ctx.restore();
+                                  }
+                              }]
+                          });
                      } catch (err) {
                          console.error('Payment Chart Init Failed', err);
                      }
@@ -1872,6 +1994,90 @@ document.addEventListener('DOMContentLoaded', function() {
         // Try init immediately if ready, AND on window load to be safe
         initPaymentChart();
         window.addEventListener('load', initPaymentChart);
+
+        // --- 6. Expense Projection Chart ---
+        const initProjectionChart = () => {
+             const projLabels = safeParse('proj-labels');
+             const projHistorical = safeParse('proj-historical');
+             const projForecast = safeParse('proj-forecast');
+             
+             if (projLabels && projLabels.length > 0) {
+                 const canvas = document.getElementById('projectionChart');
+                 if (canvas) {
+                     const ctxProj = canvas.getContext('2d');
+                     
+                     if (charts.projection) charts.projection.destroy();
+                     
+                     charts.projection = new Chart(ctxProj, {
+                         type: 'line',
+                         data: {
+                             labels: projLabels,
+                             datasets: [
+                                 {
+                                     label: '{% trans "Actual Spend" %}',
+                                     data: projHistorical,
+                                     borderColor: '#219EBC',
+                                     backgroundColor: 'rgba(33, 158, 188, 0.1)',
+                                     fill: true,
+                                     tension: 0.4,
+                                     pointRadius: 4,
+                                     pointBackgroundColor: '#219EBC',
+                                     spanGaps: true
+                                 },
+                                 {
+                                     label: '{% trans "Projected Spend" %}',
+                                     data: projForecast,
+                                     borderColor: '#8ecae6',
+                                     borderDash: [5, 5],
+                                     backgroundColor: 'transparent',
+                                     tension: 0.4,
+                                     pointRadius: 4,
+                                     pointBackgroundColor: '#8ecae6',
+                                     spanGaps: true
+                                 }
+                             ]
+                         },
+                         options: {
+                             responsive: true,
+                             maintainAspectRatio: false,
+                             interaction: {
+                                 intersect: false,
+                                 mode: 'index',
+                             },
+                             plugins: {
+                                 legend: { display: true, position: 'bottom', labels: { boxWidth: 12, font: { size: 10 } } },
+                                 tooltip: {
+                                     callbacks: {
+                                          label: function(context) {
+                                              const value = context.parsed.y;
+                                              if (value === null || value === undefined) return context.dataset.label;
+                                              return context.dataset.label + ': {{ currency_symbol }}' + translateDigits(value.toLocaleString());
+                                          }
+                                     }
+                                 }
+                             },
+                             scales: {
+                                 x: {
+                                     grid: { display: false },
+                                     ticks: { font: { size: 10 } }
+                                 },
+                                 y: {
+                                     grid: { color: currentColors.grid },
+                                     ticks: { 
+                                         font: { size: 10 },
+                                         callback: (val) => translateDigits(val)
+                                     },
+                                     beginAtZero: true
+                                 }
+                             }
+                         }
+                     });
+                 }
+             }
+        };
+
+        initProjectionChart();
+        window.addEventListener('load', initProjectionChart);
 
         // --- Viral Salary Breakdown JS Functions ---
         window.analyzeSalary = function() {
