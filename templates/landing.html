@@ -189,12 +189,19 @@
             letter-spacing: -0.02em;
         }
 
-        [data-bs-theme="dark"] .img-light {
+        .img-dark,
+        .img-light {
             display: none !important;
         }
 
-        [data-bs-theme="light"] .img-dark {
-            display: none !important;
+        /* Default visibility when theme is not yet detected */
+        html:not([data-bs-theme]) .img-light,
+        [data-bs-theme="light"] .img-light {
+            display: block !important;
+        }
+
+        [data-bs-theme="dark"] .img-dark {
+            display: block !important;
         }
 
         .navbar {
