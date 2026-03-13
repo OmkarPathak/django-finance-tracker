@@ -26,6 +26,17 @@
         </div>
     </div>
 </div>
+</div>
+
+<!-- SECTION 1: FINANCIAL HEALTH -->
+<div class="mb-4">
+    <div class="d-flex align-items-center gap-2 mb-3 mt-4">
+        <div class="rounded-circle bg-primary bg-opacity-10 d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
+            <i class="bi bi-heart-pulse-fill text-primary"></i>
+        </div>
+        <h4 class="fw-bold mb-0">{% trans "Financial Health" %}</h4>
+    </div>
+    <p class="text-muted small mb-4">{% trans "An overview of your overall fiscal strength, balance rates, and core income vs. spending trends." %}</p>
 
 <!-- Financial Health Score Section -->
 <div class="row mb-4 animate__animated animate__fadeInUp">
@@ -194,50 +205,40 @@
     </div>
 </div>
 
-<!-- Charts Row -->
-<div class="row g-4 mb-4 animate__animated animate__fadeInUp" style="animation-delay: 0.1s;">
-    <!-- Line Chart -->
-    <div class="col-lg-8">
-        <div class="card border-0 shadow-lg h-100">
-            <div class="card-header bg-transparent border-bottom py-3 d-flex justify-content-between align-items-center">
-                <h5 class="fw-bold mb-0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="me-2 text-muted" style="vertical-align: -3px;"><style>@keyframes an-vs { 0%,100% { transform: scale(1); } 50% { transform: scale(1.1); } } .an-vs { animation: an-vs 4s ease-in-out infinite; }</style><rect x="3" y="12" width="4" height="9" rx="1" class="an-vs"/><rect x="10" y="7" width="4" height="14" rx="1" class="an-vs" style="animation-delay:0.2s"/><rect x="17" y="3" width="4" height="18" rx="1" class="an-vs" style="animation-delay:0.4s"/></svg> {% trans "Income vs Expenses" %}</h5>
-                <span class="text-muted" data-bs-toggle="tooltip" title="{% trans 'Blue bars show income, Violet bars show expenses. The Teal line is your Net Savings.' %}">
-                    <i class="bi bi-question-circle"></i>
-                </span>
-            </div>
-            <div class="card-body">
-                <div class="chart-container-scrollable" style="overflow-x: auto; -webkit-overflow-scrolling: touch;">
-                    <div style="height: 350px; min-width: 600px;">
-                        <canvas id="balanceChart"></canvas>
+<!-- Income vs Expenses & Balance Rate Trend -->
+<div class="row g-4 mb-3">
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-transparent border-bottom py-3">
+                    <h5 class="fw-bold mb-0">{% trans "Income vs Expenses" %}</h5>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container-scrollable" style="overflow-x: auto;">
+                        <div style="height: 350px;">
+                            <canvas id="balanceChart"></canvas>
+                        </div>
                     </div>
                 </div>
-                 <div class="mt-3 text-center">
+                <div class="card-footer bg-transparent border-0 pt-0 pb-3">
                     <small class="text-muted">
-                        <i class="bi bi-info-circle me-1"></i> 
-                        {% trans "Comparing what comes in (Blue) vs. what goes out (Violet). The gap is your potential savings." %}
+                        {% trans "Comparison of your total earnings against your total spending over time. Ideally, income should always stay above expenses." %}
                     </small>
                 </div>
             </div>
         </div>
-    </div>
-    
-    <!-- Donut Chart -->
-    <div class="col-lg-4">
-        <div class="card border-0 shadow-lg h-100">
-            <div class="card-header bg-transparent border-bottom py-3 d-flex justify-content-between align-items-center">
-                <h5 class="fw-bold mb-0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="me-2 text-muted" style="vertical-align: -3px;"><style>@keyframes an-donut { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } } .an-donut { animation: an-donut 12s linear infinite; transform-origin: center; }</style><circle cx="12" cy="12" r="10" class="an-donut" stroke-dasharray="15 8 8 8"/></svg> {% trans "Spending" %} ({{ selected_year }})</h5>
-                 <span class="text-muted" data-bs-toggle="tooltip" title="{% trans 'Breakdown of where your money went this year. The biggest slice is your biggest expense category.' %}">
-                    <i class="bi bi-question-circle"></i>
-                </span>
-            </div>
-            <div class="card-body d-flex flex-column align-items-center justify-content-center position-relative">
-                <div style="height: 300px; width: 100%;">
-                    <canvas id="categoryDonutChart"></canvas>
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm h-100">
+                 <div class="card-header bg-transparent border-bottom py-3">
+                    <h5 class="fw-bold mb-0">{% trans "Balance Rate Trend (%)" %}</h5>
                 </div>
-                 <div class="mt-3 text-center">
+                <div class="card-body">
+                     <div style="height: 350px;">
+                        <canvas id="rateChart"></canvas>
+                    </div>
+                </div>
+                <div class="card-footer bg-transparent border-0 pt-0 pb-3">
                     <small class="text-muted">
-                        <i class="bi bi-info-circle me-1"></i> 
-                        {% trans "See which categories are consuming the most of your budget this year." %}
+                        {% trans "The percentage of income you managed to save each period. A consistent or rising line indicates improving financial health." %}
                     </small>
                 </div>
             </div>
@@ -245,21 +246,49 @@
     </div>
 </div>
 
-<!-- Balance Rate Trend -->
-<div class="row animate__animated animate__fadeInUp" style="animation-delay: 0.2s;">
-    <div class="col-12">
-        <div class="card border-0 shadow-lg">
-             <div class="card-header bg-transparent border-bottom py-3">
-                <h5 class="fw-bold mb-0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="me-2 text-muted" style="vertical-align: -3px;"><style>@keyframes an-line { 0% { stroke-dasharray: 0 40; } 100% { stroke-dasharray: 40 40; } } .an-line { animation: an-line 3s ease-in-out infinite alternate; }</style><polyline points="4 18 8 12 14 16 20 6" class="an-line"/></svg> {% trans "Balance Rate Trend (%)" %}</h5>
-            </div>
-            <div class="card-body">
-                 <div style="height: 300px;">
-                    <canvas id="rateChart"></canvas>
+<!-- SECTION 2: SPENDING BEHAVIOR -->
+<div class="mb-4">
+    <div class="d-flex align-items-center gap-2 mb-3">
+        <div class="rounded-circle bg-warning bg-opacity-10 d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
+            <i class="bi bi-pie-chart-fill text-warning"></i>
+        </div>
+        <h4 class="fw-bold mb-0">{% trans "Spending Behavior" %}</h4>
+    </div>
+    <p class="text-muted small mb-4">{% trans "Analyze where your money goes by category and identify patterns in your daily spending habits." %}</p>
+
+    <div class="row g-4 mb-4">
+        <!-- Donut Chart -->
+        <div class="col-lg-5">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-transparent border-bottom py-3">
+                    <h5 class="fw-bold mb-0">{% trans "Category Distribution" %} ({{ selected_year }})</h5>
                 </div>
-                <div class="mt-3 text-center">
+                <div class="card-body d-flex flex-column align-items-center justify-content-center">
+                    <div style="height: 350px; width: 100%;">
+                        <canvas id="categoryDonutChart"></canvas>
+                    </div>
+                </div>
+                <div class="card-footer bg-transparent border-0 pt-0 pb-3">
                     <small class="text-muted">
-                        <i class="bi bi-info-circle me-1"></i> 
-                        {% trans "Shows what % of your income is left after expenses. A higher positive percentage means you're growing your wealth." %}
+                        {% trans "A breakdown of your spending by category. Identify your biggest spending areas and where you can potentially cut back." %}
+                    </small>
+                </div>
+            </div>
+        </div>
+        <!-- Day of Week Chart -->
+        <div class="col-lg-7">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-transparent border-bottom py-3">
+                    <h5 class="fw-bold mb-0">{% trans "Day-of-Week Spending" %}</h5>
+                </div>
+                <div class="card-body">
+                    <div style="height: 350px;">
+                        <canvas id="dowChart"></canvas>
+                    </div>
+                </div>
+                <div class="card-footer bg-transparent border-0 pt-0 pb-3">
+                    <small class="text-muted">
+                        {% trans "Understand your spending habits based on the day of the week. Do you spend more on weekends or weekdays?" %}
                     </small>
                 </div>
             </div>
@@ -267,24 +296,45 @@
     </div>
 </div>
 
-<!-- Sankey Diagram Section -->
-<div class="row animate__animated animate__fadeInUp mt-4" style="animation-delay: 0.25s;">
-    <div class="col-12">
-        <div class="card border-0 shadow-lg mb-4">
-            <div class="card-header bg-transparent border-bottom py-3 d-flex justify-content-between align-items-center">
-                <div class="d-flex align-items-center gap-2">
-                    <h5 class="fw-bold mb-0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="me-2 text-muted" style="vertical-align: -3px;"><style>@keyframes an-flow { 0%,100% { opacity: 0.5; } 50% { opacity: 1; } } .an-flow { animation: an-flow 3s ease-in-out infinite; }</style><path d="M5 5v14" class="an-flow"/><path d="M19 5v14" class="an-flow" style="animation-delay:0.5s"/><path d="M5 12c3-4 8 4 14 0" class="an-flow" style="animation-delay:0.25s"/></svg> {% trans "Income Flow" %}</h5>
-                     <span class="text-muted" data-bs-toggle="tooltip" title="{% trans 'Visualizes how your income is distributed across your expenses and savings.' %}">
-                        <i class="bi bi-question-circle"></i>
-                    </span>
+<!-- SECTION 3: CASHFLOW -->
+<div class="mb-5">
+    <div class="d-flex align-items-center gap-2 mb-3 mt-5">
+        <div class="rounded-circle bg-success bg-opacity-10 d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
+            <i class="bi bi-water text-success"></i>
+        </div>
+        <h4 class="fw-bold mb-0">{% trans "Cashflow" %}</h4>
+    </div>
+    <p class="text-muted small mb-4">{% trans "Trace the flow of your income into various buckets and understand your fixed vs. variable commitments." %}</p>
+
+    <div class="row g-4 mb-4">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-transparent border-bottom py-3">
+                    <h5 class="fw-bold mb-0">{% trans "Income Flow" %}</h5>
+                </div>
+                <div class="card-body" style="overflow-x: auto;">
+                    <div id="sankey_basic" style="width: 100%; min-width: 500px; height: 350px;"></div>
+                </div>
+                <div class="card-footer bg-transparent border-0 pt-0 pb-3">
+                    <small class="text-muted">
+                        {% trans "Visualize how your income is distributed across different categories, investments, and remaining balance." %}
+                    </small>
                 </div>
             </div>
-            <div class="card-body" style="overflow-x: auto;">
-                 <div id="sankey_basic" style="width: 100%; min-width: 600px; height: 400px;"></div>
-                <div class="mt-3 text-center">
+        </div>
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-transparent border-bottom py-3">
+                    <h5 class="fw-bold mb-0">{% trans "Recurring Split" %}</h5>
+                </div>
+                <div class="card-body">
+                    <div style="height: 350px;">
+                        <canvas id="recurringSplitChart"></canvas>
+                    </div>
+                </div>
+                <div class="card-footer bg-transparent border-0 pt-0 pb-3">
                     <small class="text-muted">
-                        <i class="bi bi-info-circle me-1"></i> 
-                        {% trans "Watch your money flow from income to different categories." %}
+                        {% trans "The portion of your spending that goes towards fixed recurring transactions versus one-time flexible expenses." %}
                     </small>
                 </div>
             </div>
@@ -292,60 +342,39 @@
     </div>
 </div>
 
-<!-- Day of Week & Recurring Split -->
-<div class="row g-4 animate__animated animate__fadeInUp mt-2" style="animation-delay: 0.3s;">
-    <div class="col-lg-7">
-        <div class="card border-0 shadow-lg h-100">
-            <div class="card-header bg-transparent border-bottom py-3">
-                <h5 class="fw-bold mb-0"><i class="bi bi-calendar-event me-2 text-muted fs-6" style="vertical-align: -1px;"></i> {% trans "Day-of-Week Spending" %}</h5>
-            </div>
-            <div class="card-body">
-                <div style="height: 300px;">
-                    <canvas id="dowChart"></canvas>
-                </div>
-                <div class="mt-3 text-center">
-                    <small class="text-muted">{% trans "Identifies which days you tend to spend the most." %}</small>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="col-lg-5">
-        <div class="card border-0 shadow-lg h-100">
-            <div class="card-header bg-transparent border-bottom py-3">
-                <h5 class="fw-bold mb-0"><i class="bi bi-repeat me-2 text-muted fs-6" style="vertical-align: -1px;"></i> {% trans "Recurring vs One-time" %}</h5>
-            </div>
-            <div class="card-body">
-                <div style="height: 300px;">
-                    <canvas id="recurringSplitChart"></canvas>
-                </div>
-                <div class="mt-3 text-center">
-                    <small class="text-muted">{% trans "Fixed costs vs discretionary spending this month." %}</small>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
+<!-- SECTION 4: FORECAST -->
 {% if burn_down_spent %}
-<!-- Cumulative Burn-down -->
-<div class="row animate__animated animate__fadeInUp mt-4 mb-4" style="animation-delay: 0.4s;">
-    <div class="col-12">
-        <div class="card border-0 shadow-lg">
-            <div class="card-header bg-transparent border-bottom py-3">
-                <h5 class="fw-bold mb-0"><i class="bi bi-graph-down-arrow me-2 text-muted fs-6" style="vertical-align: -1px;"></i> {% trans "Cumulative Spending Burn-down" %}</h5>
-            </div>
-            <div class="card-body">
-                <div style="height: 350px;">
-                    <canvas id="burnDownChart"></canvas>
+<div class="mb-5">
+    <div class="d-flex align-items-center gap-2 mb-3 mt-5">
+        <div class="rounded-circle bg-info bg-opacity-10 d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
+            <i class="bi bi-hourglass-split text-info"></i>
+        </div>
+        <h4 class="fw-bold mb-0">{% trans "Forecast" %}</h4>
+    </div>
+    <p class="text-muted small mb-4">{% trans "Predict your end-of-month spending based on your current pace and remaining budget." %}</p>
+
+    <div class="row g-4 mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-transparent border-bottom py-3">
+                    <h5 class="fw-bold mb-0">{% trans "Cumulative Spending Burn-down" %}</h5>
                 </div>
-                <div class="mt-3 text-center">
-                    <small class="text-muted">{% trans "Pace of spending through the month vs. your total budget limit." %}</small>
+                <div class="card-body">
+                    <div style="height: 350px;">
+                        <canvas id="burnDownChart"></canvas>
+                    </div>
+                </div>
+                <div class="card-footer bg-transparent border-0 pt-0 pb-3">
+                    <small class="text-muted">
+                        {% trans "Monitor your cumulative spending throughout the month relative to your budget. Helps you pace your spending to avoid overshooting." %}
+                    </small>
                 </div>
             </div>
         </div>
     </div>
 </div>
 {% endif %}
+
 
 <!-- Data Passing -->
 {{ chart_labels|json_script:"chart-labels" }}
@@ -383,6 +412,16 @@
     data.addColumn('string', 'To');
     data.addColumn('number', 'Amount');
     data.addRows(rawSankeyData);
+
+    // Format tooltips with currency
+    const currencySym = '{{ user.profile.currency }}';
+    const formatter = new google.visualization.NumberFormat({
+        prefix: currencySym,
+        fractionDigits: 0,
+        groupingSymbol: ',',
+        decimalSymbol: '.'
+    });
+    formatter.format(data, 2);
 
     const isDark = document.documentElement.getAttribute('data-bs-theme') === 'dark';
     const textColor = isDark ? '#f8f9fa' : '#212529';
@@ -719,10 +758,17 @@
         const recData = JSON.parse(document.getElementById('recurring-split-data').textContent);
         const ctxRec = document.getElementById('recurringSplitChart').getContext('2d');
         
+        const totalRec = recData.reduce((acc, curr) => acc + curr, 0);
+        const recLabelsWithValues = recLabels.map((label, i) => {
+            const val = recData[i];
+            const percent = totalRec > 0 ? ((val / totalRec) * 100).toFixed(1) + '%' : '0%';
+            return `${label} ({{ user.profile.currency }}${translateDigits(val.toLocaleString())} | ${translateDigits(percent)})`;
+        });
+
         new Chart(ctxRec, {
             type: 'doughnut',
             data: {
-                labels: recLabels,
+                labels: recLabelsWithValues,
                 datasets: [{
                     data: recData,
                     backgroundColor: ['#6366f1', '#38f9d7'],
@@ -736,7 +782,8 @@
                 plugins: {
                     legend: { position: 'bottom', labels: { boxWidth: 10 } }
                 }
-            }
+            },
+            plugins: [drawDonutValuesPlugin]
         });
 
         // 8. Cumulative Burn-down (Line)

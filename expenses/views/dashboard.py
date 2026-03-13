@@ -98,6 +98,7 @@ def home_view(request):
 
     if selected_categories:
         expenses = expenses.filter(category__in=selected_categories)
+        investments = investments.filter(category__in=selected_categories)
         
     # Income Logic (Mirroring Expense Filters)
     incomes = Income.objects.filter(user=request.user)
@@ -1204,6 +1205,7 @@ def home_view(request):
         'smart_insights': smart_insights,
         'monthly_story': monthly_story,
         'total_income': total_income,
+        'total_expenses': total_expenses,
         'savings': savings,
         'recent_transactions': expenses.order_by('-date')[:5],
         'categories': categories,
