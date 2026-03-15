@@ -16,7 +16,7 @@
                     {% csrf_token %}
                     <div class="d-flex justify-content-start gap-3">
                         <button type="submit" class="btn btn-danger px-4">Delete</button>
-                        <a href="{% url 'expense-list' %}" class="btn btn-outline-secondary px-4">Cancel</a>
+                        <a href="{% url 'expense-list' %}?{{ request.GET.urlencode }}" class="btn btn-outline-secondary px-4">Cancel</a>
                     </div>
                 </form>
             </div>

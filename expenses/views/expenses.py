@@ -145,9 +145,14 @@ class ExpenseListView(LoginRequiredMixin, RecurringTransactionMixin, ListView):
         context['selected_categories'] = selected_categories
         context['search_query'] = search_query
 
+        # If redirected from "Investments" chart segment, pre-select investment categories
+        if self.request.GET.get('is_investment') == 'true' and not selected_categories:
+            investment_categories = Category.objects.filter(user=self.request.user, is_investment=True).values_list('name', flat=True)
+            context['selected_categories'] = list(investment_categories)
+
         # Mirror default logic from get_queryset if NO date range is present
         if not (start_date or end_date):
-            has_active_filters = (selected_years or selected_months or search_query)
+            has_active_filters = (selected_years or selected_months or search_query or self.request.GET.get('is_investment'))
             if not has_active_filters:
                 context['selected_years'] = [str(datetime.now().year)]
                 context['selected_months'] = [str(datetime.now().month)]
@@ -245,6 +250,13 @@ class ExpenseDeleteView(LoginRequiredMixin, DeleteView):
     def get_queryset(self):
         return Expense.objects.filter(user=self.request.user)
 
+    def get_success_url(self):
+        url = reverse('expense-list')
+        query_params = self.request.GET.urlencode()
+        if query_params:
+            return f"{url}?{query_params}"
+        return url
+
 class ExpenseBulkDeleteView(LoginRequiredMixin, View):
     def post(self, request, *args, **kwargs):
         expense_ids = request.POST.getlist('expense_ids')
@@ -262,7 +274,14 @@ class ExpenseBulkDeleteView(LoginRequiredMixin, View):
         else:
             messages.warning(request, 'No valid expenses found to delete.')
             
-        return redirect('expense-list')
+        return redirect(self.get_success_url())
+
+    def get_success_url(self):
+        url = reverse('expense-list')
+        query_params = self.request.GET.urlencode()
+        if query_params:
+            return f"{url}?{query_params}"
+        return url
 
 class ExpenseBulkUpdateView(LoginRequiredMixin, View):
     def post(self, request, *args, **kwargs):

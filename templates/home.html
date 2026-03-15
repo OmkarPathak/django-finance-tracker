@@ -1572,17 +1572,27 @@ document.addEventListener('DOMContentLoaded', function() {
                         if (elements.length > 0) {
                             const index = elements[0].datasetIndex;
                             const label = chart.data.datasets[index].label;
-                            if (label === '{% trans "Unallocated" %}' || label === '{% trans "Balance" %}') return; // Don't redirect on balance click
                             
-                            // Build Query Params for category click
+                            // Build Query Params
                             const queryParams = new URLSearchParams();
-                            queryParams.append('category', label);
-                            
                             if (sMonths && sMonths.length) sMonths.forEach(m => queryParams.append('month', m));
                             if (sYears && sYears.length) sYears.forEach(y => queryParams.append('year', y));
-                            
-                            showLoader();
-                            window.location.href = "{% url 'expense-list' %}?" + queryParams.toString();
+
+                            if (label === '{% trans "Lifestyle" %}') {
+                                queryParams.append('is_investment', 'false');
+                                showLoader();
+                                window.location.href = "{% url 'expense-list' %}?" + queryParams.toString();
+                            } else if (label === '{% trans "Investments" %}') {
+                                queryParams.append('is_investment', 'true');
+                                showLoader();
+                                window.location.href = "{% url 'expense-list' %}?" + queryParams.toString();
+                            } else if (label === '{% trans "Remaining" %}') {
+                                return; // No link for remaining
+                            } else if (label !== '{% trans "Unallocated" %}' && label !== '{% trans "Balance" %}') {
+                                queryParams.append('category', label);
+                                showLoader();
+                                window.location.href = "{% url 'expense-list' %}?" + queryParams.toString();
+                            }
                         }
                     }
                 },

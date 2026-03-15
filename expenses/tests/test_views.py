@@ -119,6 +119,36 @@ class ExpenseCRUDTest(BaseViewTest):
         self.assertEqual(response.status_code, 302)
         self.assertEqual(Expense.objects.count(), 0)
 
+    def test_investment_redirection_preselection(self):
+        """Test that is_investment=true correctly pre-selects investment categories."""
+        # 'Food' is already created in setUp, so we don't need to create it again with False.
+        # But for clarity in this test, let's just use different names or skip creation of Food.
+        Category.objects.create(user=self.user, name='Stocks', is_investment=True)
+        Category.objects.create(user=self.user, name='Crypto', is_investment=True)
+        Category.objects.filter(user=self.user, name='Food').update(is_investment=False)
+        
+        url = reverse('expense-list')
+        response = self.client.get(url, {'is_investment': 'true'})
+        
+        self.assertEqual(response.status_code, 200)
+        selected_categories = response.context['selected_categories']
+        
+        self.assertIn('Stocks', selected_categories)
+        self.assertIn('Crypto', selected_categories)
+        self.assertNotIn('Food', selected_categories)
+
+    def test_delete_retains_filters(self):
+        expense = Expense.objects.create(user=self.user, date=date.today(), amount=100, category='Food', description='Del', currency='₹')
+        url = reverse('expense-delete', kwargs={'pk': expense.pk})
+        # Add filters to the GET URL
+        url_with_filters = f"{url}?category=Food&year={date.today().year}"
+        
+        # Post to the URL with filters
+        response = self.client.post(url_with_filters)
+        self.assertEqual(response.status_code, 302)
+        self.assertIn('category=Food', response.url)
+        self.assertIn(f'year={date.today().year}', response.url)
+
 class IncomeCRUDTest(BaseViewTest):
     def test_create_income(self):
         url = reverse('income-create')
@@ -178,6 +208,18 @@ class BulkActionTest(BaseViewTest):
         
         self.assertEqual(Expense.objects.filter(pk__in=[e1.pk, e2.pk]).count(), 0)
         self.assertTrue(Expense.objects.filter(pk=e3.pk).exists())
+
+    def test_bulk_delete_retains_filters(self):
+        e1 = Expense.objects.create(user=self.user, date=date.today(), amount=100, category='Food', description='e1', currency='₹')
+        url = reverse('expense-bulk-delete')
+        # Add filters to the URL
+        url_with_filters = f"{url}?category=Food&year={date.today().year}"
+        data = {'expense_ids': [e1.pk]}
+        
+        response = self.client.post(url_with_filters, data)
+        self.assertEqual(response.status_code, 302)
+        self.assertIn('category=Food', response.url)
+        self.assertIn(f'year={date.today().year}', response.url)
 
 class AnalyticsViewTest(BaseViewTest):
     def test_analytics_access(self):

@@ -789,7 +789,7 @@
 
     <!-- Views Container -->
     <div class="card-body p-0">
-        <form id="bulkDeleteForm" method="post" action="{% url 'expense-bulk-delete' %}">
+        <form id="bulkDeleteForm" method="post" action="{% url 'expense-bulk-delete' %}?{{ request.GET.urlencode }}">
             {% csrf_token %}
             
             <!-- Mobile Bulk Actions (Hidden by default, shown via JS) -->
@@ -875,7 +875,7 @@
                                         <li>
                                             <button class="dropdown-item d-flex align-items-center gap-2 py-2 text-danger delete-btn" type="button" 
                                                     data-bs-toggle="modal" data-bs-target="#deleteModal" 
-                                                    data-url="{% url 'expense-delete' expense.pk %}"
+                                                    data-url="{% url 'expense-delete' expense.pk %}?{{ request.GET.urlencode }}"
                                                     data-message="{% trans 'Are you sure you want to delete' %} '{{ expense.description }}'?">
                                                 <i class="bi bi-trash"></i>
                                                 <span>{% trans "Delete" %}</span>
@@ -983,7 +983,7 @@
                                             <li>
                                                 <button class="dropdown-item d-flex align-items-center gap-2 py-2 text-danger delete-btn-card" type="button" 
                                                         data-bs-toggle="modal" data-bs-target="#deleteModal" 
-                                                        data-url="{% url 'expense-delete' expense.pk %}"
+                                                        data-url="{% url 'expense-delete' expense.pk %}?{{ request.GET.urlencode }}"
                                                         data-message="{% trans 'Are you sure you want to delete' %} '{{ expense.description }}'?">
                                                     <i class="bi bi-trash"></i>
                                                     <span>{% trans "Delete" %}</span>
@@ -1088,7 +1088,7 @@
                                             <li>
                                                 <button class="dropdown-item d-flex align-items-center gap-2 py-2 text-danger delete-btn-card" type="button"
                                                         data-bs-toggle="modal" data-bs-target="#deleteModal"
-                                                        data-url="{% url 'expense-delete' expense.pk %}"
+                                                        data-url="{% url 'expense-delete' expense.pk %}?{{ request.GET.urlencode }}"
                                                         data-message="{% trans 'Are you sure you want to delete' %} '{{ expense.description }}'?">
                                                     <i class="bi bi-trash"></i>
                                                     <span>{% trans "Delete" %}</span>
