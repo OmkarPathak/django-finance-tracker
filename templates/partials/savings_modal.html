@@ -1,76 +1,779 @@
-{% load static %}
+{% load static i18n %}
 <div class="modal fade" id="savingsMethodModal" tabindex="-1" aria-labelledby="savingsMethodModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
             <div class="modal-header border-0 bg-body-tertiary">
                 <h5 class="modal-title fw-bold d-flex align-items-center" id="savingsMethodModalLabel">
-                    <i class="bi bi-lightbulb-fill text-warning me-2"></i> Our Methodology
+                    <i class="bi bi-lightbulb-fill text-warning me-2"></i> {% trans "How It Works" %}
                 </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body p-0">
-                 <section class="py-4 overflow-hidden">
-                    <div class="container-fluid px-4 px-md-5">
-                        <div class="row align-items-center">
-                            <div class="col-lg-5 mb-4 mb-lg-0">
+
+                <style>
+                    #guideTab .nav-link.active { color: #fff !important; }
+                    [data-bs-theme="dark"] #guideTab .nav-link.active { color: #fff !important; }
+                    #guideTab .nav-link:not(.active) { color: var(--bs-body-color); }
+                    /* SVG text color fix for dark mode */
+                    [data-bs-theme="dark"] .guide-svg text { fill: currentColor; }
+                    [data-bs-theme="dark"] .guide-svg rect[fill="white"] { fill: var(--bs-body-bg); }
+                </style>
+
+                <!-- Tab Navigation -->
+                <ul class="nav nav-pills nav-fill px-3 pt-3 gap-1 flex-nowrap overflow-auto" id="guideTab" role="tablist" style="scrollbar-width: none;">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active rounded-pill px-3 py-2 text-nowrap" id="tab-accounts" data-bs-toggle="pill" data-bs-target="#pane-accounts" type="button" role="tab" style="font-size: 0.8rem;">
+                            <i class="bi bi-wallet2 me-1"></i> {% trans "Accounts" %}
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link rounded-pill px-3 py-2 text-nowrap" id="tab-transfers" data-bs-toggle="pill" data-bs-target="#pane-transfers" type="button" role="tab" style="font-size: 0.8rem;">
+                            <i class="bi bi-arrow-left-right me-1"></i> {% trans "Transfers" %}
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link rounded-pill px-3 py-2 text-nowrap" id="tab-creditcard" data-bs-toggle="pill" data-bs-target="#pane-creditcard" type="button" role="tab" style="font-size: 0.8rem;">
+                            <i class="bi bi-credit-card me-1"></i> {% trans "Credit Cards" %}
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link rounded-pill px-3 py-2 text-nowrap" id="tab-investments" data-bs-toggle="pill" data-bs-target="#pane-investments" type="button" role="tab" style="font-size: 0.8rem;">
+                            <i class="bi bi-graph-up-arrow me-1"></i> {% trans "Investments" %}
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link rounded-pill px-3 py-2 text-nowrap" id="tab-budgets" data-bs-toggle="pill" data-bs-target="#pane-budgets" type="button" role="tab" style="font-size: 0.8rem;">
+                            <i class="bi bi-speedometer2 me-1"></i> {% trans "Budgets" %}
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link rounded-pill px-3 py-2 text-nowrap" id="tab-recurring" data-bs-toggle="pill" data-bs-target="#pane-recurring" type="button" role="tab" style="font-size: 0.8rem;">
+                            <i class="bi bi-arrow-repeat me-1"></i> {% trans "Subscriptions" %}
+                        </button>
+                    </li>
+                </ul>
+
+                <!-- Tab Content -->
+                <div class="tab-content p-3 p-md-4" id="guideTabContent">
+
+                    <!-- ======== TAB 1: ACCOUNTS ======== -->
+                    <div class="tab-pane fade show active" id="pane-accounts" role="tabpanel">
+                        <div class="row align-items-center g-4">
+                            <div class="col-lg-6 text-center">
+                                <!-- Accounts SVG Illustration -->
+                                <svg viewBox="0 0 480 360" xmlns="http://www.w3.org/2000/svg" class="w-100" style="max-width: 480px;">
+                                    <defs>
+                                        <linearGradient id="accGrad1" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#6366f1"/><stop offset="100%" stop-color="#818cf8"/></linearGradient>
+                                        <linearGradient id="accGrad2" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#10b981"/><stop offset="100%" stop-color="#34d399"/></linearGradient>
+                                        <linearGradient id="accGrad3" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#f59e0b"/><stop offset="100%" stop-color="#fbbf24"/></linearGradient>
+                                        <linearGradient id="accGrad4" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#0ea5e9"/><stop offset="100%" stop-color="#38bdf8"/></linearGradient>
+                                        <filter id="accShadow"><feDropShadow dx="0" dy="4" stdDeviation="6" flood-opacity="0.1"/></filter>
+                                    </defs>
+                                    <!-- Central Net Worth Circle -->
+                                    <circle cx="240" cy="170" r="65" fill="url(#accGrad1)" opacity="0.1"/>
+                                    <circle cx="240" cy="170" r="50" fill="url(#accGrad1)" opacity="0.15"/>
+                                    <text x="240" y="160" text-anchor="middle" font-size="11" fill="#6366f1" font-weight="700" letter-spacing="1">NET WORTH</text>
+                                    <text x="240" y="182" text-anchor="middle" font-size="18" fill="#6366f1" font-weight="800">$12,500</text>
+
+                                    <!-- Bank Account Card -->
+                                    <g filter="url(#accShadow)" transform="translate(30, 30)">
+                                        <rect x="0" y="0" width="150" height="80" rx="12" fill="white" stroke="#e5e7eb" stroke-width="1"/>
+                                        <rect x="0" y="0" width="150" height="80" rx="12" fill="url(#accGrad4)" opacity="0.05"/>
+                                        <circle cx="28" cy="28" r="14" fill="#0ea5e9" opacity="0.15"/>
+                                        <text x="28" y="33" text-anchor="middle" font-size="14">🏦</text>
+                                        <text x="52" y="30" font-size="10" fill="#64748b" font-weight="600">Bank Account</text>
+                                        <text x="16" y="58" font-size="16" fill="#0ea5e9" font-weight="800">$8,200</text>
+                                        <text x="100" y="58" font-size="8" fill="#10b981" font-weight="600">PRIMARY</text>
+                                    </g>
+                                    <line x1="145" y1="100" x2="200" y2="150" stroke="#0ea5e9" stroke-width="1.5" stroke-dasharray="4,4" opacity="0.4"/>
+
+                                    <!-- Cash Account Card -->
+                                    <g filter="url(#accShadow)" transform="translate(300, 20)">
+                                        <rect x="0" y="0" width="150" height="80" rx="12" fill="white" stroke="#e5e7eb" stroke-width="1"/>
+                                        <rect x="0" y="0" width="150" height="80" rx="12" fill="url(#accGrad2)" opacity="0.05"/>
+                                        <circle cx="28" cy="28" r="14" fill="#10b981" opacity="0.15"/>
+                                        <text x="28" y="33" text-anchor="middle" font-size="14">💵</text>
+                                        <text x="52" y="30" font-size="10" fill="#64748b" font-weight="600">Cash</text>
+                                        <text x="16" y="58" font-size="16" fill="#10b981" font-weight="800">$1,500</text>
+                                    </g>
+                                    <line x1="340" y1="95" x2="285" y2="148" stroke="#10b981" stroke-width="1.5" stroke-dasharray="4,4" opacity="0.4"/>
+
+                                    <!-- Credit Card (negative) -->
+                                    <g filter="url(#accShadow)" transform="translate(20, 230)">
+                                        <rect x="0" y="0" width="150" height="80" rx="12" fill="white" stroke="#e5e7eb" stroke-width="1"/>
+                                        <rect x="0" y="0" width="150" height="80" rx="12" fill="#ef4444" opacity="0.04"/>
+                                        <circle cx="28" cy="28" r="14" fill="#ef4444" opacity="0.15"/>
+                                        <text x="28" y="33" text-anchor="middle" font-size="14">💳</text>
+                                        <text x="52" y="30" font-size="10" fill="#64748b" font-weight="600">Credit Card</text>
+                                        <text x="16" y="58" font-size="16" fill="#ef4444" font-weight="800">-$2,200</text>
+                                        <text x="100" y="58" font-size="8" fill="#ef4444" font-weight="600">DEBT</text>
+                                    </g>
+                                    <line x1="130" y1="240" x2="200" y2="200" stroke="#ef4444" stroke-width="1.5" stroke-dasharray="4,4" opacity="0.4"/>
+
+                                    <!-- Investment Account -->
+                                    <g filter="url(#accShadow)" transform="translate(310, 240)">
+                                        <rect x="0" y="0" width="150" height="80" rx="12" fill="white" stroke="#e5e7eb" stroke-width="1"/>
+                                        <rect x="0" y="0" width="150" height="80" rx="12" fill="url(#accGrad3)" opacity="0.05"/>
+                                        <circle cx="28" cy="28" r="14" fill="#f59e0b" opacity="0.15"/>
+                                        <text x="28" y="33" text-anchor="middle" font-size="14">📈</text>
+                                        <text x="52" y="30" font-size="10" fill="#64748b" font-weight="600">Investment</text>
+                                        <text x="16" y="58" font-size="16" fill="#f59e0b" font-weight="800">$5,000</text>
+                                        <text x="100" y="58" font-size="8" fill="#f59e0b" font-weight="600">GROWING</text>
+                                    </g>
+                                    <line x1="355" y1="250" x2="285" y2="200" stroke="#f59e0b" stroke-width="1.5" stroke-dasharray="4,4" opacity="0.4"/>
+
+                                    <!-- Formula at bottom -->
+                                    <text x="240" y="345" text-anchor="middle" font-size="10" fill="#94a3b8" font-weight="600" letter-spacing="0.5">Bank + Cash + Investment - Credit Card = Net Worth</text>
+                                </svg>
+                            </div>
+                            <div class="col-lg-6">
                                 <span class="badge rounded-pill bg-primary bg-opacity-10 text-primary px-3 py-2 mb-3 fw-bold border border-primary border-opacity-10">
-                                    <i class="bi bi-lightbulb-fill me-1"></i> Core Philosophy
+                                    <i class="bi bi-wallet2 me-1"></i> {% trans "Accounts & Net Worth" %}
                                 </span>
-                                <h2 class="display-6 fw-bold mb-4">The "Pay Yourself First" <span class="text-gradient">Method</span></h2>
-                                <p class="text-muted mb-4">
-                                    TrackMyRupee is designed around a simple but powerful rule: <strong>Treat Savings as an Expense.</strong>
-                                </p>
+                                <h3 class="fw-bold mb-3">{% trans "Track All Your Money in One Place" %}</h3>
+                                <p class="text-muted mb-4">{% trans "Create separate accounts for each place your money lives. Your Net Worth is automatically calculated as the sum of all account balances." %}</p>
                                 <div class="d-flex flex-column gap-3">
-                                    <div class="d-flex gap-3">
-                                        <div class="flex-shrink-0">
-                                            <div class="rounded-circle bg-success bg-opacity-10 p-2 text-success">
-                                                <i class="bi bi-1-circle-fill fs-5"></i>
-                                            </div>
-                                        </div>
+                                    <div class="d-flex gap-3 align-items-start">
+                                        <div class="rounded-circle bg-info bg-opacity-10 p-2 text-info flex-shrink-0"><i class="bi bi-bank fs-5"></i></div>
                                         <div>
-                                            <h6 class="fw-bold mb-1">Income Arrives</h6>
-                                            <p class="text-muted small mb-0">Your monthly salary hits your account.</p>
+                                            <h6 class="fw-bold mb-1">{% trans "Bank Accounts" %}</h6>
+                                            <p class="text-muted small mb-0">{% trans "Add your savings and checking accounts. Balance updates automatically when you log expenses or income." %}</p>
                                         </div>
                                     </div>
-                                    <div class="d-flex gap-3">
-                                        <div class="flex-shrink-0">
-                                            <div class="rounded-circle bg-primary bg-opacity-10 p-2 text-primary">
-                                                <i class="bi bi-2-circle-fill fs-5"></i>
-                                            </div>
-                                        </div>
+                                    <div class="d-flex gap-3 align-items-start">
+                                        <div class="rounded-circle bg-success bg-opacity-10 p-2 text-success flex-shrink-0"><i class="bi bi-cash-stack fs-5"></i></div>
                                         <div>
-                                            <h6 class="fw-bold mb-1">Savings are Deducted</h6>
-                                            <p class="text-muted small mb-0">Record SIPs, RDs, and Investments as an <strong>Expense Category</strong> named "Savings".</p>
+                                            <h6 class="fw-bold mb-1">{% trans "Cash" %}</h6>
+                                            <p class="text-muted small mb-0">{% trans "Track cash in hand separately. Great for everyday small expenses." %}</p>
                                         </div>
                                     </div>
-                                    <div class="d-flex gap-3">
-                                        <div class="flex-shrink-0">
-                                            <div class="rounded-circle bg-info bg-opacity-10 p-2 text-info">
-                                                <i class="bi bi-3-circle-fill fs-5"></i>
-                                            </div>
-                                        </div>
+                                    <div class="d-flex gap-3 align-items-start">
+                                        <div class="rounded-circle bg-warning bg-opacity-10 p-2 text-warning flex-shrink-0"><i class="bi bi-graph-up-arrow fs-5"></i></div>
                                         <div>
-                                            <h6 class="fw-bold mb-1">True Balance</h6>
-                                            <p class="text-muted small mb-0">Income - Expenses (incl. Savings) = Your <strong>Guilt-Free Spending Money</strong>.</p>
+                                            <h6 class="fw-bold mb-1">{% trans "Investment & Credit Card Accounts" %}</h6>
+                                            <p class="text-muted small mb-0">{% trans "Add investment portfolios and credit cards. Credit card balances are treated as debt and subtracted from net worth." %}</p>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
-                            <div class="col-lg-7 text-center">
-                                <div class="mockup-container overflow-x-auto pb-3" style="max-width: 100%;">
-                                    <img src="{% static 'img/savings_method_dark.svg' %}" alt="Savings as Expense Method" class="w-100 hover-scale transition-transform img-dark rounded-4" style="min-width: 700px;">
-                                    <img src="{% static 'img/savings_method.svg' %}" alt="Savings as Expense Method" class="w-100 hover-scale transition-transform img-light rounded-4" style="min-width: 700px;">
+                                <div class="mt-4">
+                                    <a href="{% url 'account-create' %}" class="btn btn-primary rounded-pill px-4 btn-sm d-inline-flex align-items-center">
+                                        <i class="bi bi-plus-lg me-1"></i> {% trans "Create Account" %}
+                                    </a>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </section>
+
+                    <!-- ======== TAB 3: TRANSFERS ======== -->
+                    <div class="tab-pane fade" id="pane-transfers" role="tabpanel">
+                        <div class="row align-items-center g-4">
+                            <div class="col-lg-6 order-lg-2 text-center">
+                                <!-- Transfers SVG Illustration -->
+                                <svg viewBox="0 0 480 320" xmlns="http://www.w3.org/2000/svg" class="w-100" style="max-width: 480px;">
+                                    <defs>
+                                        <linearGradient id="tfGrad1" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#6366f1"/><stop offset="100%" stop-color="#818cf8"/></linearGradient>
+                                        <linearGradient id="tfGrad2" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#10b981"/><stop offset="100%" stop-color="#34d399"/></linearGradient>
+                                        <linearGradient id="tfArrow" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#6366f1"/><stop offset="100%" stop-color="#10b981"/></linearGradient>
+                                        <filter id="tfShadow"><feDropShadow dx="0" dy="3" stdDeviation="5" flood-opacity="0.08"/></filter>
+                                        <marker id="tfArrowHead" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                                            <path d="M 0 0 L 10 5 L 0 10 z" fill="#10b981"/>
+                                        </marker>
+                                    </defs>
+
+                                    <!-- From Account Card -->
+                                    <g filter="url(#tfShadow)" transform="translate(20, 60)">
+                                        <rect x="0" y="0" width="170" height="110" rx="14" fill="white" stroke="#e5e7eb" stroke-width="1"/>
+                                        <rect x="0" y="0" width="170" height="38" rx="14" fill="url(#tfGrad1)" opacity="0.1"/>
+                                        <rect x="0" y="24" width="170" height="14" fill="url(#tfGrad1)" opacity="0.1"/>
+                                        <text x="85" y="27" text-anchor="middle" font-size="11" fill="#6366f1" font-weight="700">🏦 SALARY ACCOUNT</text>
+                                        <text x="85" y="70" text-anchor="middle" font-size="22" fill="#1e293b" font-weight="800">$8,200</text>
+                                        <text x="85" y="90" text-anchor="middle" font-size="10" fill="#94a3b8" font-weight="500">Balance before</text>
+                                    </g>
+
+                                    <!-- Animated Transfer Arrow -->
+                                    <g>
+                                        <line x1="200" y1="115" x2="290" y2="115" stroke="url(#tfArrow)" stroke-width="2.5" stroke-dasharray="6,4" marker-end="url(#tfArrowHead)">
+                                            <animate attributeName="stroke-dashoffset" from="20" to="0" dur="1.5s" repeatCount="indefinite"/>
+                                        </line>
+                                        <!-- Flying money symbol -->
+                                        <g>
+                                            <circle r="18" fill="#f0fdf4" stroke="#10b981" stroke-width="1.5">
+                                                <animateMotion dur="1.5s" repeatCount="indefinite" path="M200,115 L290,115"/>
+                                            </circle>
+                                            <text font-size="14" text-anchor="middle" dy="5" fill="#10b981" font-weight="700">
+                                                <animateMotion dur="1.5s" repeatCount="indefinite" path="M200,115 L290,115"/>
+                                                $500
+                                            </text>
+                                        </g>
+                                    </g>
+
+                                    <!-- To Account Card -->
+                                    <g filter="url(#tfShadow)" transform="translate(290, 60)">
+                                        <rect x="0" y="0" width="170" height="110" rx="14" fill="white" stroke="#e5e7eb" stroke-width="1"/>
+                                        <rect x="0" y="0" width="170" height="38" rx="14" fill="url(#tfGrad2)" opacity="0.1"/>
+                                        <rect x="0" y="24" width="170" height="14" fill="url(#tfGrad2)" opacity="0.1"/>
+                                        <text x="85" y="27" text-anchor="middle" font-size="11" fill="#10b981" font-weight="700">📈 INVESTMENT</text>
+                                        <text x="85" y="70" text-anchor="middle" font-size="22" fill="#1e293b" font-weight="800">$5,500</text>
+                                        <text x="85" y="90" text-anchor="middle" font-size="10" fill="#94a3b8" font-weight="500">Balance after</text>
+                                    </g>
+
+                                    <!-- Result cards below -->
+                                    <g transform="translate(20, 210)">
+                                        <rect x="0" y="0" width="170" height="50" rx="10" fill="#fef2f2" stroke="#fecaca" stroke-width="1"/>
+                                        <text x="85" y="20" text-anchor="middle" font-size="9" fill="#ef4444" font-weight="600">DEBITED</text>
+                                        <text x="85" y="38" text-anchor="middle" font-size="14" fill="#ef4444" font-weight="800">- $500</text>
+                                    </g>
+                                    <g transform="translate(290, 210)">
+                                        <rect x="0" y="0" width="170" height="50" rx="10" fill="#f0fdf4" stroke="#bbf7d0" stroke-width="1"/>
+                                        <text x="85" y="20" text-anchor="middle" font-size="9" fill="#10b981" font-weight="600">CREDITED</text>
+                                        <text x="85" y="38" text-anchor="middle" font-size="14" fill="#10b981" font-weight="800">+ $500</text>
+                                    </g>
+
+                                    <!-- Info badge -->
+                                    <g transform="translate(140, 278)">
+                                        <rect x="0" y="0" width="200" height="30" rx="15" fill="#6366f1" opacity="0.08"/>
+                                        <text x="100" y="19" text-anchor="middle" font-size="10" fill="#6366f1" font-weight="600">💡 Net Worth stays the same!</text>
+                                    </g>
+                                </svg>
+                            </div>
+                            <div class="col-lg-6 order-lg-1">
+                                <span class="badge rounded-pill bg-success bg-opacity-10 text-success px-3 py-2 mb-3 fw-bold border border-success border-opacity-10">
+                                    <i class="bi bi-arrow-left-right me-1"></i> {% trans "Transfers" %}
+                                </span>
+                                <h3 class="fw-bold mb-3">{% trans "Move Money Between Accounts" %}</h3>
+                                <p class="text-muted mb-4">{% trans "Transfers let you move money between your own accounts without affecting your expenses or income. Your Net Worth stays unchanged." %}</p>
+                                <div class="d-flex flex-column gap-3">
+                                    <div class="d-flex gap-3 align-items-start">
+                                        <div class="rounded-circle bg-primary bg-opacity-10 p-2 text-primary flex-shrink-0"><i class="bi bi-1-circle-fill fs-5"></i></div>
+                                        <div>
+                                            <h6 class="fw-bold mb-1">{% trans "Select Source & Destination" %}</h6>
+                                            <p class="text-muted small mb-0">{% trans "Pick which account to send from and which to receive." %}</p>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex gap-3 align-items-start">
+                                        <div class="rounded-circle bg-info bg-opacity-10 p-2 text-info flex-shrink-0"><i class="bi bi-2-circle-fill fs-5"></i></div>
+                                        <div>
+                                            <h6 class="fw-bold mb-1">{% trans "Enter Amount" %}</h6>
+                                            <p class="text-muted small mb-0">{% trans "Both accounts are updated instantly. Source is debited, destination is credited." %}</p>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex gap-3 align-items-start">
+                                        <div class="rounded-circle bg-success bg-opacity-10 p-2 text-success flex-shrink-0"><i class="bi bi-3-circle-fill fs-5"></i></div>
+                                        <div>
+                                            <h6 class="fw-bold mb-1">{% trans "Not an Expense" %}</h6>
+                                            <p class="text-muted small mb-0">{% trans "Transfers are NOT recorded as expenses or income. They just redistribute your money." %}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="alert alert-info bg-info bg-opacity-10 border-info border-opacity-25 mt-4 small" role="alert">
+                                    <i class="bi bi-lightbulb-fill me-1"></i> <strong>{% trans "Use case:" %}</strong> {% trans "Moving salary to savings, paying credit card bill from bank, or funding an investment account." %}
+                                </div>
+                                <a href="{% url 'transfer-create' %}" class="btn btn-success rounded-pill px-4 btn-sm d-inline-flex align-items-center">
+                                    <i class="bi bi-plus-lg me-1"></i> {% trans "New Transfer" %}
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ======== TAB 4: CREDIT CARDS ======== -->
+                    <div class="tab-pane fade" id="pane-creditcard" role="tabpanel">
+                        <div class="row align-items-center g-4">
+                            <div class="col-lg-6 text-center">
+                                <!-- Credit Card SVG Illustration -->
+                                <svg viewBox="0 0 480 380" xmlns="http://www.w3.org/2000/svg" class="w-100" style="max-width: 480px;">
+                                    <defs>
+                                        <linearGradient id="ccGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#1e3a5f"/><stop offset="100%" stop-color="#4a6fa5"/></linearGradient>
+                                        <linearGradient id="ccGold" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#d4a574"/><stop offset="100%" stop-color="#c9956b"/></linearGradient>
+                                        <filter id="ccShadow"><feDropShadow dx="0" dy="6" stdDeviation="8" flood-opacity="0.15"/></filter>
+                                    </defs>
+
+                                    <!-- Credit Card Visual -->
+                                    <g filter="url(#ccShadow)" transform="translate(110, 10)">
+                                        <rect x="0" y="0" width="260" height="155" rx="16" fill="url(#ccGrad)"/>
+                                        <!-- Card chip -->
+                                        <rect x="28" y="45" width="40" height="30" rx="5" fill="url(#ccGold)" opacity="0.9"/>
+                                        <line x1="38" y1="50" x2="38" y2="70" stroke="#b38756" stroke-width="0.5"/>
+                                        <line x1="48" y1="50" x2="48" y2="70" stroke="#b38756" stroke-width="0.5"/>
+                                        <line x1="58" y1="50" x2="58" y2="70" stroke="#b38756" stroke-width="0.5"/>
+                                        <line x1="30" y1="57" x2="66" y2="57" stroke="#b38756" stroke-width="0.5"/>
+                                        <line x1="30" y1="63" x2="66" y2="63" stroke="#b38756" stroke-width="0.5"/>
+                                        <!-- Card number -->
+                                        <text x="28" y="105" font-size="15" fill="white" font-weight="500" letter-spacing="3" opacity="0.9">···· ···· ···· 4242</text>
+                                        <!-- Card name -->
+                                        <text x="28" y="130" font-size="10" fill="white" opacity="0.7" font-weight="500" letter-spacing="1">CARDHOLDER NAME</text>
+                                        <text x="200" y="130" font-size="10" fill="white" opacity="0.7" font-weight="500">12/27</text>
+                                        <!-- Balance label -->
+                                        <text x="28" y="25" font-size="9" fill="white" opacity="0.6" letter-spacing="1">OUTSTANDING</text>
+                                        <text x="160" y="25" font-size="16" fill="#fca5a5" font-weight="800">-$2,200</text>
+                                    </g>
+
+                                    <!-- Step-by-step flow below the card -->
+                                    <!-- Step 1: Spend -->
+                                    <g transform="translate(30, 190)">
+                                        <rect x="0" y="0" width="120" height="70" rx="12" fill="white" stroke="#e5e7eb" stroke-width="1"/>
+                                        <circle cx="25" cy="22" r="12" fill="#ef4444" opacity="0.12"/>
+                                        <text x="25" y="27" text-anchor="middle" font-size="12">🛒</text>
+                                        <text x="50" y="25" font-size="9" fill="#64748b" font-weight="700">YOU SPEND</text>
+                                        <text x="60" y="50" text-anchor="middle" font-size="15" fill="#ef4444" font-weight="800">$500</text>
+                                    </g>
+
+                                    <!-- Arrow 1 -->
+                                    <g transform="translate(155, 215)">
+                                        <line x1="0" y1="10" x2="35" y2="10" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="4,3"/>
+                                        <polygon points="35,5 45,10 35,15" fill="#94a3b8"/>
+                                    </g>
+
+                                    <!-- Step 2: Debt increases -->
+                                    <g transform="translate(200, 190)">
+                                        <rect x="0" y="0" width="120" height="70" rx="12" fill="#fef2f2" stroke="#fecaca" stroke-width="1"/>
+                                        <text x="60" y="22" text-anchor="middle" font-size="9" fill="#ef4444" font-weight="700">DEBT GROWS</text>
+                                        <text x="60" y="50" text-anchor="middle" font-size="15" fill="#ef4444" font-weight="800">-$2,700</text>
+                                    </g>
+
+                                    <!-- Arrow 2 -->
+                                    <g transform="translate(325, 215)">
+                                        <line x1="0" y1="10" x2="35" y2="10" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="4,3"/>
+                                        <polygon points="35,5 45,10 35,15" fill="#94a3b8"/>
+                                    </g>
+
+                                    <!-- Step 3: Pay bill via transfer -->
+                                    <g transform="translate(370, 190)">
+                                        <rect x="0" y="0" width="95" height="70" rx="12" fill="#f0fdf4" stroke="#bbf7d0" stroke-width="1"/>
+                                        <text x="47" y="22" text-anchor="middle" font-size="9" fill="#10b981" font-weight="700">PAY BILL</text>
+                                        <text x="47" y="42" text-anchor="middle" font-size="8" fill="#64748b">via Transfer</text>
+                                        <text x="47" y="58" text-anchor="middle" font-size="13" fill="#10b981" font-weight="800">+$2,700</text>
+                                    </g>
+
+                                    <!-- Bottom labels -->
+                                    <g transform="translate(30, 285)">
+                                        <rect x="0" y="0" width="420" height="55" rx="12" fill="#6366f1" opacity="0.05"/>
+                                        <text x="210" y="20" text-anchor="middle" font-size="10" fill="#6366f1" font-weight="700">💡 THE CREDIT CARD WORKFLOW</text>
+                                        <text x="210" y="38" text-anchor="middle" font-size="9" fill="#64748b">Spend on card → Balance goes negative → Pay bill with Transfer from Bank → Balance resets to $0</text>
+                                    </g>
+                                </svg>
+                            </div>
+                            <div class="col-lg-6">
+                                <span class="badge rounded-pill bg-danger bg-opacity-10 text-danger px-3 py-2 mb-3 fw-bold border border-danger border-opacity-10">
+                                    <i class="bi bi-credit-card me-1"></i> {% trans "Credit Card Accounts" %}
+                                </span>
+                                <h3 class="fw-bold mb-3">{% trans "Track Credit Card Spending & Payments" %}</h3>
+                                <p class="text-muted mb-4">{% trans "Credit card accounts work differently — they start at $0 and go negative as you spend. When you pay the bill, use a Transfer to bring it back to zero." %}</p>
+                                <div class="d-flex flex-column gap-3">
+                                    <div class="d-flex gap-3 align-items-start">
+                                        <div class="rounded-circle bg-danger bg-opacity-10 p-2 text-danger flex-shrink-0"><i class="bi bi-1-circle-fill fs-5"></i></div>
+                                        <div>
+                                            <h6 class="fw-bold mb-1">{% trans "Create a Credit Card Account" %}</h6>
+                                            <p class="text-muted small mb-0">{% trans 'Go to Accounts → Add Account → Select "Credit Card" type. Set initial balance to 0.' %}</p>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex gap-3 align-items-start">
+                                        <div class="rounded-circle bg-warning bg-opacity-10 p-2 text-warning flex-shrink-0"><i class="bi bi-2-circle-fill fs-5"></i></div>
+                                        <div>
+                                            <h6 class="fw-bold mb-1">{% trans "Log Expenses to the Card" %}</h6>
+                                            <p class="text-muted small mb-0">{% trans "When adding an expense, select your credit card as the account. The balance will go negative (representing debt)." %}</p>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex gap-3 align-items-start">
+                                        <div class="rounded-circle bg-success bg-opacity-10 p-2 text-success flex-shrink-0"><i class="bi bi-3-circle-fill fs-5"></i></div>
+                                        <div>
+                                            <h6 class="fw-bold mb-1">{% trans "Pay the Bill via Transfer" %}</h6>
+                                            <p class="text-muted small mb-0">{% trans 'Create a Transfer: From "Bank Account" → To "Credit Card". This pays off the debt without creating an expense.' %}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="alert alert-warning bg-warning bg-opacity-10 border-warning border-opacity-25 mt-4 small" role="alert">
+                                    <i class="bi bi-exclamation-triangle-fill me-1"></i> <strong>{% trans "Important:" %}</strong> {% trans "Never log a credit card bill payment as an expense — that would double-count your spending! Always use Transfers." %}
+                                </div>
+                                <a href="{% url 'account-create' %}" class="btn btn-primary rounded-pill px-4 btn-sm d-inline-flex align-items-center">
+                                    <i class="bi bi-plus-lg me-1"></i> {% trans "Add Credit Card" %}
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ======== TAB 5: INVESTMENTS ======== -->
+                    <div class="tab-pane fade" id="pane-investments" role="tabpanel">
+                        <div class="row align-items-center g-4">
+                            <div class="col-lg-6 order-lg-2 text-center">
+                                <!-- Investment SVG Illustration -->
+                                <svg viewBox="0 0 480 350" xmlns="http://www.w3.org/2000/svg" class="w-100" style="max-width: 480px;">
+                                    <defs>
+                                        <linearGradient id="invGrad" x1="0%" y1="100%" x2="0%" y2="0%"><stop offset="0%" stop-color="#10b981" stop-opacity="0"/><stop offset="100%" stop-color="#10b981" stop-opacity="0.2"/></linearGradient>
+                                        <linearGradient id="invLine" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#10b981"/><stop offset="100%" stop-color="#059669"/></linearGradient>
+                                        <filter id="invShadow"><feDropShadow dx="0" dy="3" stdDeviation="5" flood-opacity="0.08"/></filter>
+                                    </defs>
+
+                                    <!-- Growth chart background -->
+                                    <rect x="40" y="20" width="400" height="200" rx="12" fill="white" stroke="#e5e7eb" stroke-width="1" filter="url(#invShadow)"/>
+                                    <text x="60" y="45" font-size="10" fill="#64748b" font-weight="600" letter-spacing="1">📈 INVESTMENT GROWTH</text>
+
+                                    <!-- Grid lines -->
+                                    <line x1="60" y1="70" x2="420" y2="70" stroke="#f1f5f9" stroke-width="1"/>
+                                    <line x1="60" y1="110" x2="420" y2="110" stroke="#f1f5f9" stroke-width="1"/>
+                                    <line x1="60" y1="150" x2="420" y2="150" stroke="#f1f5f9" stroke-width="1"/>
+                                    <line x1="60" y1="190" x2="420" y2="190" stroke="#f1f5f9" stroke-width="1"/>
+
+                                    <!-- Y-axis labels -->
+                                    <text x="55" y="73" text-anchor="end" font-size="8" fill="#94a3b8">$10K</text>
+                                    <text x="55" y="113" text-anchor="end" font-size="8" fill="#94a3b8">$7.5K</text>
+                                    <text x="55" y="153" text-anchor="end" font-size="8" fill="#94a3b8">$5K</text>
+                                    <text x="55" y="193" text-anchor="end" font-size="8" fill="#94a3b8">$2.5K</text>
+
+                                    <!-- Area fill -->
+                                    <path d="M80,190 L140,170 L200,155 L260,130 L320,110 L380,85 L400,75 L400,200 L80,200 Z" fill="url(#invGrad)"/>
+                                    <!-- Growth line -->
+                                    <polyline points="80,190 140,170 200,155 260,130 320,110 380,85 400,75" fill="none" stroke="url(#invLine)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <!-- Data points -->
+                                    <circle cx="80" cy="190" r="4" fill="white" stroke="#10b981" stroke-width="2"/>
+                                    <circle cx="140" cy="170" r="4" fill="white" stroke="#10b981" stroke-width="2"/>
+                                    <circle cx="200" cy="155" r="4" fill="white" stroke="#10b981" stroke-width="2"/>
+                                    <circle cx="260" cy="130" r="4" fill="white" stroke="#10b981" stroke-width="2"/>
+                                    <circle cx="320" cy="110" r="4" fill="white" stroke="#10b981" stroke-width="2"/>
+                                    <circle cx="380" cy="85" r="4" fill="white" stroke="#10b981" stroke-width="2"/>
+                                    <circle cx="400" cy="75" r="5" fill="#10b981" stroke="white" stroke-width="2"/>
+
+                                    <!-- X-axis labels -->
+                                    <text x="80" y="212" text-anchor="middle" font-size="8" fill="#94a3b8">Jan</text>
+                                    <text x="140" y="212" text-anchor="middle" font-size="8" fill="#94a3b8">Mar</text>
+                                    <text x="200" y="212" text-anchor="middle" font-size="8" fill="#94a3b8">May</text>
+                                    <text x="260" y="212" text-anchor="middle" font-size="8" fill="#94a3b8">Jul</text>
+                                    <text x="320" y="212" text-anchor="middle" font-size="8" fill="#94a3b8">Sep</text>
+                                    <text x="380" y="212" text-anchor="middle" font-size="8" fill="#94a3b8">Nov</text>
+
+                                    <!-- Workflow steps -->
+                                    <g transform="translate(30, 240)">
+                                        <rect x="0" y="0" width="130" height="55" rx="10" fill="white" stroke="#e5e7eb" stroke-width="1"/>
+                                        <circle cx="22" cy="20" r="10" fill="#6366f1" opacity="0.12"/>
+                                        <text x="22" y="24" text-anchor="middle" font-size="9" fill="#6366f1" font-weight="800">1</text>
+                                        <text x="42" y="22" font-size="8.5" fill="#1e293b" font-weight="700">Create Account</text>
+                                        <text x="22" y="42" font-size="7.5" fill="#64748b">Type: Investment</text>
+                                    </g>
+                                    <g transform="translate(145, 250)"><polygon points="0,8 12,0 12,16" fill="#94a3b8" opacity="0.5"/></g>
+                                    <g transform="translate(170, 240)">
+                                        <rect x="0" y="0" width="130" height="55" rx="10" fill="white" stroke="#e5e7eb" stroke-width="1"/>
+                                        <circle cx="22" cy="20" r="10" fill="#10b981" opacity="0.12"/>
+                                        <text x="22" y="24" text-anchor="middle" font-size="9" fill="#10b981" font-weight="800">2</text>
+                                        <text x="42" y="22" font-size="8.5" fill="#1e293b" font-weight="700">Transfer Funds</text>
+                                        <text x="22" y="42" font-size="7.5" fill="#64748b">Bank → Investment</text>
+                                    </g>
+                                    <g transform="translate(315, 250)"><polygon points="0,8 12,0 12,16" fill="#94a3b8" opacity="0.5"/></g>
+                                    <g transform="translate(340, 240)">
+                                        <rect x="0" y="0" width="130" height="55" rx="10" fill="white" stroke="#e5e7eb" stroke-width="1"/>
+                                        <circle cx="22" cy="20" r="10" fill="#f59e0b" opacity="0.12"/>
+                                        <text x="22" y="24" text-anchor="middle" font-size="9" fill="#f59e0b" font-weight="800">3</text>
+                                        <text x="42" y="22" font-size="8.5" fill="#1e293b" font-weight="700">Track Growth</text>
+                                        <text x="22" y="42" font-size="7.5" fill="#64748b">Update balance</text>
+                                    </g>
+
+                                    <!-- Bottom info -->
+                                    <g transform="translate(100, 312)">
+                                        <rect x="0" y="0" width="280" height="28" rx="14" fill="#10b981" opacity="0.08"/>
+                                        <text x="140" y="18" text-anchor="middle" font-size="9.5" fill="#10b981" font-weight="600">✨ Investments count towards your Net Worth</text>
+                                    </g>
+                                </svg>
+                            </div>
+                            <div class="col-lg-6 order-lg-1">
+                                <span class="badge rounded-pill bg-warning bg-opacity-10 text-warning px-3 py-2 mb-3 fw-bold border border-warning border-opacity-10">
+                                    <i class="bi bi-graph-up-arrow me-1"></i> {% trans "Investment Accounts" %}
+                                </span>
+                                <h3 class="fw-bold mb-3">{% trans "Track Your Investments & Watch Them Grow" %}</h3>
+                                <p class="text-muted mb-4">{% trans "Investment accounts let you track mutual funds, stocks, fixed deposits, and more. Fund them via Transfers and update the balance as they grow." %}</p>
+                                <div class="d-flex flex-column gap-3">
+                                    <div class="d-flex gap-3 align-items-start">
+                                        <div class="rounded-circle bg-primary bg-opacity-10 p-2 text-primary flex-shrink-0"><i class="bi bi-1-circle-fill fs-5"></i></div>
+                                        <div>
+                                            <h6 class="fw-bold mb-1">{% trans "Create an Investment Account" %}</h6>
+                                            <p class="text-muted small mb-0">{% trans 'Go to Accounts → Add → Choose "Investment Account". Name it after your fund or portfolio.' %}</p>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex gap-3 align-items-start">
+                                        <div class="rounded-circle bg-success bg-opacity-10 p-2 text-success flex-shrink-0"><i class="bi bi-2-circle-fill fs-5"></i></div>
+                                        <div>
+                                            <h6 class="fw-bold mb-1">{% trans "Fund via Transfer" %}</h6>
+                                            <p class="text-muted small mb-0">{% trans "Use Transfers to move money from your bank to the investment account. This keeps your expenses clean." %}</p>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex gap-3 align-items-start">
+                                        <div class="rounded-circle bg-warning bg-opacity-10 p-2 text-warning flex-shrink-0"><i class="bi bi-3-circle-fill fs-5"></i></div>
+                                        <div>
+                                            <h6 class="fw-bold mb-1">{% trans "Update as Value Grows" %}</h6>
+                                            <p class="text-muted small mb-0">{% trans "Periodically edit the account balance to reflect market gains or losses. Your net worth updates automatically." %}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="alert alert-success bg-success bg-opacity-10 border-success border-opacity-25 mt-4 small" role="alert">
+                                    <i class="bi bi-lightbulb-fill me-1"></i> <strong>{% trans "Pro tip:" %}</strong> {% trans "Create separate accounts for each investment — e.g., 'Mutual Fund SIP', 'Stocks', 'FD - HDFC'. This gives you clear visibility into where your wealth is growing." %}
+                                </div>
+                                <a href="{% url 'account-create' %}" class="btn btn-warning rounded-pill px-4 btn-sm text-dark d-inline-flex align-items-center">
+                                    <i class="bi bi-plus-lg me-1"></i> {% trans "Add Investment Account" %}
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ======== TAB 6: BUDGETS ======== -->
+                    <div class="tab-pane fade" id="pane-budgets" role="tabpanel">
+                        <div class="row align-items-center g-4">
+                            <div class="col-lg-6 text-center">
+                                <!-- Budgets SVG Illustration -->
+                                <svg viewBox="0 0 480 340" xmlns="http://www.w3.org/2000/svg" class="w-100" style="max-width: 480px;">
+                                    <defs>
+                                        <linearGradient id="budSafe" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#10b981"/><stop offset="100%" stop-color="#34d399"/></linearGradient>
+                                        <linearGradient id="budWarn" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#f59e0b"/><stop offset="100%" stop-color="#fbbf24"/></linearGradient>
+                                        <linearGradient id="budOver" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#ef4444"/><stop offset="100%" stop-color="#f87171"/></linearGradient>
+                                        <filter id="budShadow"><feDropShadow dx="0" dy="3" stdDeviation="5" flood-opacity="0.08"/></filter>
+                                    </defs>
+
+                                    <text x="240" y="30" text-anchor="middle" font-size="12" fill="#64748b" font-weight="700" letter-spacing="1">🎯 MONTHLY BUDGET LIMITS</text>
+
+                                    <!-- Budget Bar 1: Food (Safe - 60%) -->
+                                    <g filter="url(#budShadow)" transform="translate(40, 50)">
+                                        <rect x="0" y="0" width="400" height="70" rx="12" fill="white" stroke="#e5e7eb" stroke-width="1"/>
+                                        <circle cx="30" cy="24" r="14" fill="#10b981" opacity="0.12"/>
+                                        <text x="30" y="29" text-anchor="middle" font-size="14">🍔</text>
+                                        <text x="55" y="22" font-size="11" fill="#1e293b" font-weight="700">Food &amp; Dining</text>
+                                        <text x="55" y="36" font-size="9" fill="#94a3b8">$300 of $500 budget</text>
+                                        <text x="370" y="27" text-anchor="end" font-size="11" fill="#10b981" font-weight="800">60%</text>
+                                        <!-- Progress bar -->
+                                        <rect x="20" y="48" width="360" height="10" rx="5" fill="#f1f5f9"/>
+                                        <rect x="20" y="48" width="216" height="10" rx="5" fill="url(#budSafe)"/>
+                                        <text x="380" y="57" text-anchor="start" font-size="8" fill="#10b981" font-weight="600">✓</text>
+                                    </g>
+
+                                    <!-- Budget Bar 2: Shopping (Warning - 85%) -->
+                                    <g filter="url(#budShadow)" transform="translate(40, 135)">
+                                        <rect x="0" y="0" width="400" height="70" rx="12" fill="white" stroke="#e5e7eb" stroke-width="1"/>
+                                        <circle cx="30" cy="24" r="14" fill="#f59e0b" opacity="0.12"/>
+                                        <text x="30" y="29" text-anchor="middle" font-size="14">🛍️</text>
+                                        <text x="55" y="22" font-size="11" fill="#1e293b" font-weight="700">Shopping</text>
+                                        <text x="55" y="36" font-size="9" fill="#94a3b8">$425 of $500 budget</text>
+                                        <text x="370" y="27" text-anchor="end" font-size="11" fill="#f59e0b" font-weight="800">85%</text>
+                                        <!-- Progress bar -->
+                                        <rect x="20" y="48" width="360" height="10" rx="5" fill="#f1f5f9"/>
+                                        <rect x="20" y="48" width="306" height="10" rx="5" fill="url(#budWarn)"/>
+                                        <text x="380" y="57" text-anchor="start" font-size="8" fill="#f59e0b" font-weight="600">⚠</text>
+                                    </g>
+
+                                    <!-- Budget Bar 3: Entertainment (Over - 120%) -->
+                                    <g filter="url(#budShadow)" transform="translate(40, 220)">
+                                        <rect x="0" y="0" width="400" height="70" rx="12" fill="white" stroke="#fecaca" stroke-width="1"/>
+                                        <rect x="0" y="0" width="400" height="70" rx="12" fill="#ef4444" opacity="0.03"/>
+                                        <circle cx="30" cy="24" r="14" fill="#ef4444" opacity="0.12"/>
+                                        <text x="30" y="29" text-anchor="middle" font-size="14">🎬</text>
+                                        <text x="55" y="22" font-size="11" fill="#1e293b" font-weight="700">Entertainment</text>
+                                        <text x="55" y="36" font-size="9" fill="#94a3b8">$360 of $300 budget</text>
+                                        <text x="370" y="27" text-anchor="end" font-size="11" fill="#ef4444" font-weight="800">120%</text>
+                                        <!-- Progress bar -->
+                                        <rect x="20" y="48" width="360" height="10" rx="5" fill="#f1f5f9"/>
+                                        <rect x="20" y="48" width="360" height="10" rx="5" fill="url(#budOver)"/>
+                                        <text x="380" y="57" text-anchor="start" font-size="8" fill="#ef4444" font-weight="600">🔴</text>
+                                    </g>
+
+                                    <!-- Bottom info -->
+                                    <g transform="translate(60, 308)">
+                                        <rect x="0" y="0" width="360" height="26" rx="13" fill="#6366f1" opacity="0.06"/>
+                                        <text x="180" y="17" text-anchor="middle" font-size="9" fill="#6366f1" font-weight="600">💡 Set limits per category → Get alerts when you're close to overspending</text>
+                                    </g>
+                                </svg>
+                            </div>
+                            <div class="col-lg-6">
+                                <span class="badge rounded-pill bg-info bg-opacity-10 text-info px-3 py-2 mb-3 fw-bold border border-info border-opacity-10">
+                                    <i class="bi bi-speedometer2 me-1"></i> {% trans "Budgets" %}
+                                </span>
+                                <h3 class="fw-bold mb-3">{% trans "Set Spending Limits & Stay on Track" %}</h3>
+                                <p class="text-muted mb-4">{% trans "Budgets let you set monthly spending limits per category. You'll see visual progress bars and get alerts when you're close to your limit." %}</p>
+                                <div class="d-flex flex-column gap-3">
+                                    <div class="d-flex gap-3 align-items-start">
+                                        <div class="rounded-circle bg-primary bg-opacity-10 p-2 text-primary flex-shrink-0"><i class="bi bi-1-circle-fill fs-5"></i></div>
+                                        <div>
+                                            <h6 class="fw-bold mb-1">{% trans "Set Category Limits" %}</h6>
+                                            <p class="text-muted small mb-0">{% trans 'Go to Categories → Edit a category → Set a monthly budget limit (e.g., Food = $500).' %}</p>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex gap-3 align-items-start">
+                                        <div class="rounded-circle bg-warning bg-opacity-10 p-2 text-warning flex-shrink-0"><i class="bi bi-2-circle-fill fs-5"></i></div>
+                                        <div>
+                                            <h6 class="fw-bold mb-1">{% trans "Monitor Progress" %}</h6>
+                                            <p class="text-muted small mb-0">{% trans "The dashboard shows color-coded progress: Green (safe), Yellow (near limit), Red (over budget)." %}</p>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex gap-3 align-items-start">
+                                        <div class="rounded-circle bg-success bg-opacity-10 p-2 text-success flex-shrink-0"><i class="bi bi-3-circle-fill fs-5"></i></div>
+                                        <div>
+                                            <h6 class="fw-bold mb-1">{% trans "Get Smart Alerts" %}</h6>
+                                            <p class="text-muted small mb-0">{% trans "The Smart Insights section warns you when categories are approaching or exceeding their limits." %}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="mt-4">
+                                    <a href="{% url 'budget' %}" class="btn btn-info rounded-pill px-4 btn-sm text-white d-inline-flex align-items-center">
+                                        <i class="bi bi-speedometer2 me-1"></i> {% trans "View Budgets" %}
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ======== TAB 7: RECURRING / SUBSCRIPTIONS ======== -->
+                    <div class="tab-pane fade" id="pane-recurring" role="tabpanel">
+                        <div class="row align-items-center g-4">
+                            <div class="col-lg-6 order-lg-2 text-center">
+                                <!-- Recurring SVG Illustration -->
+                                <svg viewBox="0 0 480 340" xmlns="http://www.w3.org/2000/svg" class="w-100" style="max-width: 480px;">
+                                    <defs>
+                                        <filter id="recShadow"><feDropShadow dx="0" dy="3" stdDeviation="5" flood-opacity="0.08"/></filter>
+                                    </defs>
+
+                                    <text x="240" y="28" text-anchor="middle" font-size="11" fill="#64748b" font-weight="700" letter-spacing="1">🔄 RECURRING TRANSACTIONS</text>
+
+                                    <!-- Calendar graphic with recurring markers -->
+                                    <g filter="url(#recShadow)" transform="translate(30, 45)">
+                                        <rect x="0" y="0" width="200" height="190" rx="14" fill="white" stroke="#e5e7eb" stroke-width="1"/>
+                                        <rect x="0" y="0" width="200" height="35" rx="14" fill="#6366f1" opacity="0.08"/>
+                                        <rect x="0" y="21" width="200" height="14" fill="#6366f1" opacity="0.08"/>
+                                        <text x="100" y="25" text-anchor="middle" font-size="11" fill="#6366f1" font-weight="700">📅 March 2026</text>
+                                        <!-- Calendar grid -->
+                                        <g font-size="8" fill="#94a3b8" text-anchor="middle" font-weight="600">
+                                            <text x="25" y="52">S</text><text x="55" y="52">M</text><text x="85" y="52">T</text>
+                                            <text x="115" y="52">W</text><text x="145" y="52">T</text><text x="175" y="52">F</text>
+                                        </g>
+                                        <!-- Week 1 -->
+                                        <g font-size="9" fill="#64748b" text-anchor="middle">
+                                            <text x="25" y="72">1</text>
+                                            <circle cx="25" cy="76" r="2.5" fill="#10b981"/>
+                                            <text x="55" y="72">2</text><text x="85" y="72">3</text><text x="115" y="72">4</text>
+                                            <text x="145" y="72">5</text>
+                                            <circle cx="145" cy="76" r="2.5" fill="#ef4444"/>
+                                            <text x="175" y="72">6</text>
+                                        </g>
+                                        <!-- Week 2 -->
+                                        <g font-size="9" fill="#64748b" text-anchor="middle">
+                                            <text x="25" y="95">7</text><text x="55" y="95">8</text><text x="85" y="95">9</text>
+                                            <text x="115" y="95">10</text>
+                                            <circle cx="115" cy="99" r="2.5" fill="#f59e0b"/>
+                                            <text x="145" y="95">11</text><text x="175" y="95">12</text>
+                                        </g>
+                                        <!-- Week 3 -->
+                                        <g font-size="9" fill="#64748b" text-anchor="middle">
+                                            <text x="25" y="118">13</text><text x="55" y="118">14</text><text x="85" y="118">15</text>
+                                            <text x="115" y="118">16</text><text x="145" y="118">17</text><text x="175" y="118">18</text>
+                                        </g>
+                                        <!-- Week 4 -->
+                                        <g font-size="9" fill="#64748b" text-anchor="middle">
+                                            <text x="25" y="141">19</text><text x="55" y="141">20</text><text x="85" y="141">21</text>
+                                            <text x="115" y="141">22</text><text x="145" y="141">23</text><text x="175" y="141">24</text>
+                                        </g>
+                                        <!-- Week 5 -->
+                                        <g font-size="9" fill="#64748b" text-anchor="middle">
+                                            <text x="25" y="164">25</text><text x="55" y="164">26</text><text x="85" y="164">27</text>
+                                            <text x="115" y="164">28</text><text x="145" y="164">29</text><text x="175" y="164">30</text>
+                                        </g>
+                                        <!-- Legend -->
+                                        <g transform="translate(15, 178)">
+                                            <circle cx="5" cy="0" r="3" fill="#10b981"/><text x="12" y="3" font-size="7" fill="#64748b">Income</text>
+                                            <circle cx="55" cy="0" r="3" fill="#ef4444"/><text x="62" y="3" font-size="7" fill="#64748b">Expense</text>
+                                            <circle cx="110" cy="0" r="3" fill="#f59e0b"/><text x="117" y="3" font-size="7" fill="#64748b">Investment</text>
+                                        </g>
+                                    </g>
+
+                                    <!-- Subscription list -->
+                                    <g filter="url(#recShadow)" transform="translate(250, 45)">
+                                        <rect x="0" y="0" width="210" height="190" rx="14" fill="white" stroke="#e5e7eb" stroke-width="1"/>
+                                        <text x="105" y="24" text-anchor="middle" font-size="10" fill="#64748b" font-weight="700">UPCOMING</text>
+
+                                        <!-- Item 1: Salary -->
+                                        <g transform="translate(12, 38)">
+                                            <circle cx="12" cy="12" r="10" fill="#10b981" opacity="0.12"/>
+                                            <text x="12" y="16" text-anchor="middle" font-size="10">💰</text>
+                                            <text x="30" y="10" font-size="9" fill="#1e293b" font-weight="600">Salary</text>
+                                            <text x="30" y="22" font-size="7.5" fill="#94a3b8">1st of every month</text>
+                                            <text x="178" y="15" text-anchor="end" font-size="10" fill="#10b981" font-weight="700">+$5,000</text>
+                                        </g>
+
+                                        <!-- Item 2: Netflix -->
+                                        <g transform="translate(12, 76)">
+                                            <circle cx="12" cy="12" r="10" fill="#ef4444" opacity="0.12"/>
+                                            <text x="12" y="16" text-anchor="middle" font-size="10">📺</text>
+                                            <text x="30" y="10" font-size="9" fill="#1e293b" font-weight="600">Netflix</text>
+                                            <text x="30" y="22" font-size="7.5" fill="#94a3b8">5th of every month</text>
+                                            <text x="178" y="15" text-anchor="end" font-size="10" fill="#ef4444" font-weight="700">-$15</text>
+                                        </g>
+
+                                        <!-- Item 3: SIP -->
+                                        <g transform="translate(12, 114)">
+                                            <circle cx="12" cy="12" r="10" fill="#f59e0b" opacity="0.12"/>
+                                            <text x="12" y="16" text-anchor="middle" font-size="10">📈</text>
+                                            <text x="30" y="10" font-size="9" fill="#1e293b" font-weight="600">Mutual Fund SIP</text>
+                                            <text x="30" y="22" font-size="7.5" fill="#94a3b8">10th of every month</text>
+                                            <text x="178" y="15" text-anchor="end" font-size="10" fill="#f59e0b" font-weight="700">-$200</text>
+                                        </g>
+
+                                        <!-- Item 4: Gym -->
+                                        <g transform="translate(12, 152)">
+                                            <circle cx="12" cy="12" r="10" fill="#ef4444" opacity="0.12"/>
+                                            <text x="12" y="16" text-anchor="middle" font-size="10">🏋️</text>
+                                            <text x="30" y="10" font-size="9" fill="#1e293b" font-weight="600">Gym Membership</text>
+                                            <text x="30" y="22" font-size="7.5" fill="#94a3b8">15th of every month</text>
+                                            <text x="178" y="15" text-anchor="end" font-size="10" fill="#ef4444" font-weight="700">-$50</text>
+                                        </g>
+                                    </g>
+
+                                    <!-- Auto-log banner -->
+                                    <g transform="translate(30, 255)">
+                                        <rect x="0" y="0" width="420" height="60" rx="12" fill="white" stroke="#e5e7eb" stroke-width="1" filter="url(#recShadow)"/>
+                                        <rect x="0" y="0" width="420" height="60" rx="12" fill="#6366f1" opacity="0.03"/>
+                                        <g transform="translate(20, 12)">
+                                            <text x="190" y="12" text-anchor="middle" font-size="10" fill="#6366f1" font-weight="700">🤖 Automatic Transaction Logging</text>
+                                            <text x="190" y="30" text-anchor="middle" font-size="8.5" fill="#64748b">Set it once → Transactions are created automatically on the scheduled date</text>
+                                        </g>
+                                    </g>
+                                </svg>
+                            </div>
+                            <div class="col-lg-6 order-lg-1">
+                                <span class="badge rounded-pill bg-primary bg-opacity-10 text-primary px-3 py-2 mb-3 fw-bold border border-primary border-opacity-10">
+                                    <i class="bi bi-arrow-repeat me-1"></i> {% trans "Recurring & Subscriptions" %}
+                                </span>
+                                <h3 class="fw-bold mb-3">{% trans "Automate Your Regular Transactions" %}</h3>
+                                <p class="text-muted mb-4">{% trans "Set up recurring transactions for things that happen on a schedule — salary, subscriptions, SIPs, rent, and more. They get logged automatically!" %}</p>
+                                <div class="d-flex flex-column gap-3">
+                                    <div class="d-flex gap-3 align-items-start">
+                                        <div class="rounded-circle bg-success bg-opacity-10 p-2 text-success flex-shrink-0"><i class="bi bi-1-circle-fill fs-5"></i></div>
+                                        <div>
+                                            <h6 class="fw-bold mb-1">{% trans "Recurring Income" %}</h6>
+                                            <p class="text-muted small mb-0">{% trans "Set up your monthly salary, freelance payments, or dividends to be logged automatically." %}</p>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex gap-3 align-items-start">
+                                        <div class="rounded-circle bg-danger bg-opacity-10 p-2 text-danger flex-shrink-0"><i class="bi bi-2-circle-fill fs-5"></i></div>
+                                        <div>
+                                            <h6 class="fw-bold mb-1">{% trans "Recurring Expenses" %}</h6>
+                                            <p class="text-muted small mb-0">{% trans "Netflix, rent, electricity — add them once and they show up every month." %}</p>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex gap-3 align-items-start">
+                                        <div class="rounded-circle bg-warning bg-opacity-10 p-2 text-warning flex-shrink-0"><i class="bi bi-3-circle-fill fs-5"></i></div>
+                                        <div>
+                                            <h6 class="fw-bold mb-1">{% trans "Recurring Investments" %}</h6>
+                                            <p class="text-muted small mb-0">{% trans "Track SIPs and auto-investing. Transactions are created on the date you specify." %}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="mt-4">
+                                    <a href="{% url 'recurring-create' %}" class="btn btn-primary rounded-pill px-4 btn-sm d-inline-flex align-items-center">
+                                        <i class="bi bi-plus-lg me-1"></i> {% trans "Add Recurring" %}
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div><!-- /tab-content -->
             </div>
             <div class="modal-footer border-0 bg-body-tertiary justify-content-center">
                 <a href="{% url 'expense-create' %}" class="btn btn-primary rounded-pill px-4">
-                    <i class="bi bi-plus-lg me-2"></i> Add "Savings" Expense
+                    <i class="bi bi-plus-lg me-2"></i> {% trans "Add Expense" %}
                 </a>
-                <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">Got it</button>
+                <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">{% trans "Got it" %}</button>
             </div>
         </div>
     </div>

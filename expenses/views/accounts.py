@@ -5,6 +5,7 @@ from django.urls import reverse_lazy
 from django.contrib import messages
 from django.utils.translation import gettext as _
 from django.db.models import Q
+from django.http import JsonResponse
 from itertools import chain
 from ..models import Account, Transfer, Expense, Income
 from ..forms import AccountForm, TransferForm
@@ -58,6 +59,23 @@ class AccountDeleteView(LoginRequiredMixin, DeleteView):
 
     def get_queryset(self):
         return Account.objects.filter(user=self.request.user)
+
+class AccountQuickCreateView(LoginRequiredMixin, View):
+    """AJAX endpoint for creating an account from a modal and returning JSON."""
+
+    def post(self, request):
+        form = AccountForm(request.POST, user=request.user)
+        if form.is_valid():
+            account = form.save(commit=False)
+            account.user = request.user
+            account.save()
+            return JsonResponse({
+                'success': True,
+                'id': account.pk,
+                'name': str(account),
+            })
+        return JsonResponse({'success': False, 'errors': form.errors}, status=400)
+
 
 class TransferCreateView(LoginRequiredMixin, CreateView):
     model = Transfer

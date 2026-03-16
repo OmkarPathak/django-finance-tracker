@@ -685,6 +685,22 @@ document.addEventListener('DOMContentLoaded', function() {
     .hover-stats:hover { opacity: 0.7; transform: translateY(-2px); }
     .hover-link:hover { text-decoration: underline !important; opacity: 0.8; }
     .transition-all { transition: all 0.3s ease; }
+
+    /* Accounts grid scroll container */
+    .accounts-grid-container {
+        scrollbar-width: none; /* Firefox */
+        -ms-overflow-style: none; /* IE/Edge */
+        -webkit-mask-image: linear-gradient(to bottom, #000 85%, transparent 100%);
+        mask-image: linear-gradient(to bottom, #000 85%, transparent 100%);
+    }
+    .accounts-grid-container::-webkit-scrollbar { display: none; }
+    /* Remove fade mask when content fits */
+    .accounts-grid-container:not(.has-overflow) {
+        -webkit-mask-image: none;
+        mask-image: none;
+    }
+    .account-row:hover { background: var(--bs-tertiary-bg); }
+    .min-width-0 { min-width: 0; }
 </style>
 
 <!-- LAYER 2: FINANCIAL HEALTH & SPENDING PACE -->
@@ -692,56 +708,66 @@ document.addEventListener('DOMContentLoaded', function() {
     <!-- Net Worth & Accounts Selection -->
     <div class="col-12 col-lg-8">
         <div class="card shadow-lg border-0 rounded-4 overflow-hidden h-100">
-            <div class="card-header bg-transparent border-bottom d-flex justify-content-between align-items-center py-3 px-4">
-                <h6 class="mb-0 fw-bold text-uppercase text-muted" style="letter-spacing: 0.6px; font-size: 0.85rem;">
+            <div class="card-header bg-transparent border-bottom d-flex justify-content-between align-items-center px-3">
+                <h6 class="mb-0 fw-bold text-uppercase text-muted" style="letter-spacing: 0.3px; font-size: 0.85rem;">
                     <i class="bi bi-wallet2 me-2 text-primary"></i> {% trans "Your Accounts & Net Worth" %}
                 </h6>
                 <div class="dropdown">
-                    <button class="btn btn-xs btn-outline-primary rounded-pill py-1 px-3 fw-bold" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="font-size: 0.75rem;">
-                        <i class="bi bi-plus-lg me-1"></i> {% trans "Action" %}
+                    <button class="btn btn-sm btn-outline-primary rounded-pill fw-bold px-2" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="font-size: 0.85rem;">
+                        <i class="bi bi-plus me-1"></i> {% trans "Add" %}
                     </button>
                     <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2">
                         <li><a class="dropdown-item py-2" href="{% url 'transfer-create' %}"><i class="bi bi-arrow-left-right text-info me-2"></i> {% trans "Internal Transfer" %}</a></li>
-                        <li><a class="dropdown-item py-2" href="{% url 'account-create' %}"><i class="bi bi-bank text-primary me-2"></i> {% trans "Add New Account" %}</a></li>
+                        <li><a class="dropdown-item py-2" href="{% url 'account-create' %}"><i class="bi bi-bank text-primary me-2"></i> {% trans "New Account" %}</a></li>
                     </ul>
                 </div>
             </div>
             <div class="card-body p-4">
-                <div class="row align-items-center g-4">
-                    <!-- Net Worth Display -->
-                    <div class="col-12 col-md-5 text-center text-md-start border-end-md">
-                        <p class="text-muted small text-uppercase fw-bold mb-1" style="letter-spacing: 1px;">{% trans "Total Net Worth" %}</p>
-                        <h1 class="display-5 fw-black text-primary mb-2" style="font-family: 'Clash Display', sans-serif;">
+                <!-- Net Worth Summary Row -->
+                <div class="d-flex flex-column flex-sm-row align-items-sm-center justify-content-between mb-3 pb-3 border-bottom">
+                    <div class="text-center text-sm-start mb-2 mb-sm-0">
+                        <p class="text-muted small text-uppercase fw-bold mb-1" style="letter-spacing: 0.5px;">{% trans "Total Net Worth" %}</p>
+                        <h1 class="display-5 fw-black text-primary mb-0" style="font-family: 'Clash Display', sans-serif;">
                             {{ currency_symbol }}{{ net_worth|humanize_currency:currency_symbol|translate_digits }}
                         </h1>
-                        <p class="small text-muted mb-0">
-                            {% blocktrans with count=accounts.count %}
-                            Aggregated across {{ count }} accounts.
-                            {% endblocktrans %}
-                        </p>
                     </div>
+                    <div class="text-center text-sm-end">
+                        <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-3 py-2 fw-semibold" style="font-size: 0.75rem;">
+                            {% blocktrans with count=accounts.count %}{{ count }} accounts{% endblocktrans %}
+                        </span>
+                    </div>
+                </div>
 
-                    <!-- Accounts List (Horizontal Scroll) -->
-                    <div class="col-12 col-md-7">
-                        <div class="d-flex gap-3 overflow-auto no-scrollbar pb-2" style="white-space: nowrap;">
-                            {% for account in accounts %}
-                            <a href="{% url 'account-detail' account.pk %}" class="min-w-fit px-3 py-3 border rounded-4 hover-stats transition-all bg-body-tertiary text-decoration-none text-body" style="width: 160px;">
-                                <div class="d-flex align-items-center gap-2 mb-2">
-                                    <div class="rounded-circle bg-primary bg-opacity-10 text-primary d-flex align-items-center justify-content-center" style="width: 28px; height: 28px;">
-                                        <i class="bi bi-bank" style="font-size: 0.75rem;"></i>
-                                    </div>
-                                    <span class="small fw-bold text-truncate" title="{{ account.name }}">{{ account.name }}</span>
-                                </div>
-                                <h5 class="fw-bold mb-0">{{ currency_symbol }}{{ account.balance|humanize_currency:currency_symbol|translate_digits }}</h5>
-                                <p class="text-muted mb-0 mt-1" style="font-size: 0.65rem;">{{ account.get_account_type_display }}</p>
-                            </a>
-                            {% empty %}
-                            <div class="text-center w-100 py-2">
-                                <p class="text-muted small mb-0">{% trans "No accounts found. Start by adding one!" %}</p>
-                            </div>
-                            {% endfor %}
+                <!-- Accounts List -->
+                <div class="accounts-grid-container overflow-auto no-scrollbar" style="max-height: 200px;">
+                    {% for account in accounts %}
+                    <a href="{% url 'account-detail' account.pk %}" class="d-flex align-items-center text-decoration-none text-body px-1 py-2 rounded-3 account-row {% if not forloop.last %}border-bottom{% endif %}" style="transition: background 0.15s;">
+                        <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0 me-3
+                            {% if account.account_type == 'CREDIT_CARD' %}bg-warning bg-opacity-10 text-warning
+                            {% elif account.account_type == 'INVESTMENT' %}bg-success bg-opacity-10 text-success
+                            {% elif account.account_type == 'CASH' %}bg-info bg-opacity-10 text-info
+                            {% else %}bg-primary bg-opacity-10 text-primary{% endif %}"
+                            style="width: 32px; height: 32px;">
+                            <i class="bi
+                                {% if account.account_type == 'CREDIT_CARD' %}bi-credit-card
+                                {% elif account.account_type == 'INVESTMENT' %}bi-graph-up-arrow
+                                {% elif account.account_type == 'CASH' %}bi-cash-stack
+                                {% else %}bi-bank{% endif %}"
+                                style="font-size: 0.8rem;"></i>
                         </div>
+                        <div class="flex-grow-1 min-width-0">
+                            <div class="fw-semibold text-truncate" style="font-size: 0.85rem;">{{ account.name }}</div>
+                            <div class="text-muted" style="font-size: 0.7rem;">{{ account.get_account_type_display }}</div>
+                        </div>
+                        <div class="text-end flex-shrink-0 ms-3">
+                            <div class="fw-bold" style="font-size: 0.9rem;">{{ currency_symbol }}{{ account.balance|humanize_currency:currency_symbol|translate_digits }}</div>
+                        </div>
+                    </a>
+                    {% empty %}
+                    <div class="text-center py-3">
+                        <p class="text-muted small mb-0">{% trans "No accounts found. Start by adding one!" %}</p>
                     </div>
+                    {% endfor %}
                 </div>
             </div>
         </div>
@@ -749,13 +775,13 @@ document.addEventListener('DOMContentLoaded', function() {
     <!-- Financial Health Card -->
     <div class="col-12 col-lg-4">
         <div class="card shadow-lg border-0 rounded-4 h-100 overflow-hidden transition-all">
-            <div class="card-header bg-transparent border-bottom d-flex justify-content-between align-items-center">
-                <span class="fw-bold">
+            <div class="card-header bg-transparent border-bottom d-flex justify-content-between align-items-center py-2.5">
+                <h6 class="mb-0 fw-bold text-uppercase text-muted" style="letter-spacing: 0.3px; font-size: 0.85rem;">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="me-1 text-muted" style="vertical-align: -2px;">
                         <path d="M22 12h-4l-3 9L9 3l-3 9H2" class="anim-heartbeat"/>
                     </svg> 
                     {% trans "Financial Health" %} ({% if salary_breakdown.month_name %} {{ salary_breakdown.month_name }} {% else %} Custom Range {% endif %})
-                </span>
+                </h6>
                 {% if hero_metrics.income > 0 or hero_metrics.spent > 0 %}
                     {% if hero_metrics.status == 'excellent' %}
                         <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-3 border border-success border-opacity-10"><i class="bi bi-star-fill me-1"></i> {% trans "Excellent" %}</span>
@@ -931,6 +957,73 @@ document.addEventListener('DOMContentLoaded', function() {
                         </svg>
                     </div>
                     <p class="text-muted small mb-0">{% trans "No spending data available." %}</p>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Income vs Expenses Breakdown Card -->
+    <div class="col-12 col-lg-4">
+        <div class="card shadow-lg border-0 h-100 glass-card rounded-4">
+            <div class="card-header bg-transparent border-bottom d-flex justify-content-between align-items-center">
+                <span class="fw-bold">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="me-1 text-muted" style="vertical-align: -2px;">
+                        <circle cx="12" cy="12" r="10" opacity="0.2"/>
+                        <path d="M12 2a10 10 0 0 1 10 10" class="anim-pie"/>
+                    </svg>
+                    {% trans "Income vs Expenses" %}
+                </span>
+            </div>
+            {% if hero_metrics.income > 0 or hero_metrics.spent > 0 %}
+            <div class="card-body p-4 d-flex flex-column justify-content-center align-items-center text-center">
+                <!-- SVG Donut Chart -->
+                <div class="position-relative mb-3" style="width: 140px; height: 140px;">
+                    <svg viewBox="0 0 120 120" class="w-100 h-100" style="transform: rotate(-90deg);">
+                        <circle cx="60" cy="60" r="45" fill="none" stroke="var(--bs-tertiary-bg)" stroke-width="12"/>
+                        <circle cx="60" cy="60" r="45" fill="none" stroke="#10b981" stroke-width="12"
+                            stroke-dasharray="282.7" stroke-dashoffset="0"
+                            id="ie-donut-income" style="transition: stroke-dashoffset 1.2s ease;"/>
+                        <circle cx="60" cy="60" r="45" fill="none" stroke="#ef4444" stroke-width="12"
+                            stroke-dasharray="282.7" stroke-dashoffset="282.7"
+                            id="ie-donut-expense" style="transition: stroke-dashoffset 1.2s ease;"/>
+                    </svg>
+                    <div class="position-absolute top-50 start-50 translate-middle text-center">
+                        <span id="ie-gauge-percentage" class="fw-black text-body-emphasis" style="font-size: 1.4rem;"></span>
+                        <span class="d-block text-muted" style="font-size: 0.6rem; margin-top: -2px;">{% trans "saved" %}</span>
+                    </div>
+                </div>
+                <!-- Legend -->
+                <div class="d-flex justify-content-center gap-4 mb-3">
+                    <div class="text-center">
+                        <span class="d-inline-block rounded-circle me-1" style="width: 8px; height: 8px; background: #10b981;"></span>
+                        <span class="text-muted small">{% trans "Income" %}</span>
+                        <div class="fw-bold small text-success">{{ currency_symbol }}{{ total_income|floatformat:0|humanize_currency:currency_symbol|translate_digits }}</div>
+                    </div>
+                    <div class="text-center">
+                        <span class="d-inline-block rounded-circle me-1" style="width: 8px; height: 8px; background: #ef4444;"></span>
+                        <span class="text-muted small">{% trans "Expenses" %}</span>
+                        <div class="fw-bold small text-danger">{{ currency_symbol }}{{ total_expenses|floatformat:0|humanize_currency:currency_symbol|translate_digits }}</div>
+                    </div>
+                </div>
+                <!-- Balance -->
+                <div class="bg-secondary bg-opacity-10 rounded-4 px-3 py-2 w-100">
+                    <small class="text-muted text-uppercase fw-bold" style="font-size: 0.65rem; letter-spacing: 0.5px;">{% trans "Remaining" %}</small>
+                    <h5 class="fw-bold mb-0 {% if hero_metrics.saved >= 0 %}text-success{% else %}text-danger{% endif %}">
+                        {{ currency_symbol }}{{ hero_metrics.saved|floatformat:0|humanize_currency:currency_symbol|translate_digits }}
+                    </h5>
+                </div>
+            </div>
+            {% else %}
+            <div class="card-body p-4 d-flex flex-column justify-content-center align-items-center text-center">
+                <div class="empty-state-container py-4">
+                    <div class="mb-3 text-muted opacity-50">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10" opacity="0.2" class="anim-donut-empty"/>
+                            <path d="M12 2a10 10 0 0 1 10 10"/>
+                        </svg>
+                    </div>
+                    <p class="text-muted small mb-0">{% trans "No income or expense data yet." %}</p>
                 </div>
             </div>
             {% endif %}
@@ -1400,6 +1493,12 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 
     document.addEventListener('DOMContentLoaded', function() {
+        // Accounts grid: add fade mask only when content overflows
+        const agc = document.querySelector('.accounts-grid-container');
+        if (agc && agc.scrollHeight > agc.clientHeight) {
+            agc.classList.add('has-overflow');
+        }
+
         {% if is_new_user %} return; {% endif %}
 
         // --- Data ---
@@ -1509,6 +1608,43 @@ document.addEventListener('DOMContentLoaded', function() {
                     percentageText.innerText = translateDigits(Math.floor(start)) + '%';
                 }
             }, stepTime);
+        }
+
+        // --- Income vs Expenses Donut Chart ---
+        const ieDonutIncome = document.getElementById('ie-donut-income');
+        const ieDonutExpense = document.getElementById('ie-donut-expense');
+        const ieGaugePct = document.getElementById('ie-gauge-percentage');
+
+        if (ieDonutIncome && ieDonutExpense && (totalIncome > 0 || totalExpenses > 0)) {
+            const total = totalIncome + totalExpenses;
+            const incomeRatio = totalIncome / total;
+            const expenseRatio = totalExpenses / total;
+            const circumference = 282.7;
+            const incomeArc = incomeRatio * circumference;
+            const expenseArc = expenseRatio * circumference;
+
+            setTimeout(() => {
+                // Income arc starts from 0, occupies its portion
+                ieDonutIncome.style.strokeDasharray = `${incomeArc} ${circumference}`;
+                ieDonutIncome.style.strokeDashoffset = '0';
+                // Expense arc starts where income ends
+                ieDonutExpense.style.strokeDasharray = `${expenseArc} ${circumference}`;
+                ieDonutExpense.style.strokeDashoffset = `-${incomeArc}`;
+            }, 200);
+
+            // Animate savings percentage
+            if (ieGaugePct) {
+                const savedPct = totalIncome > 0 ? Math.round(((totalIncome - totalExpenses) / totalIncome) * 100) : 0;
+                let cnt = 0;
+                const dur = 1200, step = 20, steps = dur / step, inc = savedPct / steps;
+                const t = setInterval(() => {
+                    cnt += inc;
+                    if (cnt >= savedPct) { ieGaugePct.innerText = translateDigits(savedPct) + '%'; clearInterval(t); }
+                    else { ieGaugePct.innerText = translateDigits(Math.floor(cnt)) + '%'; }
+                }, step);
+            }
+        } else if (ieGaugePct) {
+            ieGaugePct.innerText = '0%';
         }
 
         // --- 1. Trend Chart ---
