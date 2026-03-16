@@ -7,7 +7,7 @@ from django.utils.translation import gettext as _
 from django.utils import timezone
 from django.db.models import Sum
 
-from ..models import Income
+from ..models import Income, RecurringTransaction
 from ..forms import IncomeForm
 from .mixins import RecurringTransactionMixin
 
@@ -67,8 +67,20 @@ class IncomeListView(LoginRequiredMixin, RecurringTransactionMixin, ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        from ..models import CURRENCY_CHOICES
+        from ..models import CURRENCY_CHOICES, Account
         context['currency_choices'] = CURRENCY_CHOICES
+        context['accounts'] = Account.objects.filter(user=self.request.user)
+        
+        # Get active recurring sources and their frequencies for this user
+        recurring_data = {
+            rt.source: rt.frequency 
+            for rt in RecurringTransaction.objects.filter(
+                user=self.request.user,
+                transaction_type='INCOME',
+                is_active=True
+            )
+        }
+        context['recurring_data'] = recurring_data
         
         # Calculate stats for the filtered queryset
         filtered_queryset = self.object_list
@@ -92,7 +104,35 @@ class IncomeCreateView(LoginRequiredMixin, CreateView):
         return kwargs
     def form_valid(self, form):
         form.instance.user = self.request.user
-        return super().form_valid(form)
+        response = super().form_valid(form)
+        
+        if form.cleaned_data.get('add_to_recurring'):
+            existing_rt = RecurringTransaction.objects.filter(
+                user=self.request.user,
+                transaction_type='INCOME',
+                source=form.instance.source,
+                is_active=True
+            ).exists()
+            
+            if not existing_rt:
+                RecurringTransaction.objects.create(
+                    user=self.request.user,
+                    transaction_type='INCOME',
+                    amount=form.instance.amount,
+                    currency=form.instance.currency,
+                    account=form.instance.account,
+                    source=form.instance.source,
+                    frequency=form.cleaned_data.get('frequency'),
+                    start_date=form.instance.date,
+                    last_processed_date=form.instance.date,
+                    description=form.instance.description,
+                    is_active=True
+                )
+                messages.info(self.request, _("A recurring income subscription has also been created."))
+            else:
+                messages.info(self.request, _("A recurring subscription for this source already exists."))
+            
+        return response
 
     def get_success_url(self):
         next_url = self.request.POST.get('next') or self.request.GET.get('next')
@@ -120,6 +160,35 @@ class IncomeUpdateView(LoginRequiredMixin, UpdateView):
         if next_url:
             return next_url
         return super().get_success_url()
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        if form.cleaned_data.get('add_to_recurring'):
+            existing_rt = RecurringTransaction.objects.filter(
+                user=self.request.user,
+                transaction_type='INCOME',
+                source=form.instance.source,
+                is_active=True
+            ).exists()
+            
+            if not existing_rt:
+                RecurringTransaction.objects.create(
+                    user=self.request.user,
+                    transaction_type='INCOME',
+                    amount=form.instance.amount,
+                    currency=form.instance.currency,
+                    account=form.instance.account,
+                    source=form.instance.source,
+                    frequency=form.cleaned_data.get('frequency'),
+                    start_date=form.instance.date,
+                    last_processed_date=form.instance.date,
+                    description=form.instance.description,
+                    is_active=True
+                )
+                messages.info(self.request, _("A recurring income subscription has also been created."))
+            else:
+                messages.info(self.request, _("A recurring subscription for this source already exists."))
+        return response
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

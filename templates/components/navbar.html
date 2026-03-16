@@ -112,6 +112,7 @@
                         <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2">
                             <li><a class="dropdown-item py-2" href="{% url 'expense-create' %}?next={{ request.path }}"><i class="bi bi-dash-circle text-danger me-2"></i> {% trans "Add Expense" %}</a></li>
                             <li><a class="dropdown-item py-2" href="{% url 'recurring-create' %}?next={{ request.path }}"><i class="bi bi-arrow-repeat text-primary me-2"></i> {% trans "Add Subscription" %}</a></li>
+                            <li><a class="dropdown-item py-2" href="{% url 'transfer-create' %}?next={{ request.path }}"><i class="bi bi-arrow-left-right text-info me-2"></i> {% trans "Internal Transfer" %}</a></li>
                             <li><a class="dropdown-item py-2" href="{% url 'income-create' %}?next={{ request.path }}"><i class="bi bi-plus-circle text-success me-2"></i> {% trans "Add Income" %}</a></li>
                         </ul>
                     </li>
@@ -344,6 +345,10 @@
             <a href="{% url 'recurring-create' %}?next={{ request.path }}" class="list-group-item list-group-item-action">
                 <i class="bi bi-arrow-repeat text-primary"></i>
                 <span>{% trans "Add Subscription" %}</span>
+            </a>
+            <a href="{% url 'transfer-create' %}?next={{ request.path }}" class="list-group-item list-group-item-action">
+                <i class="bi bi-arrow-left-right text-info"></i>
+                <span>{% trans "Internal Transfer" %}</span>
             </a>
             <a href="{% url 'income-create' %}?next={{ request.path }}" class="list-group-item list-group-item-action">
                 <i class="bi bi-plus-circle text-success"></i>

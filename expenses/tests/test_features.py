@@ -25,8 +25,8 @@ class SettingsViewTest(BaseFeatureTest):
         self.user.profile.refresh_from_db()
         self.assertEqual(self.user.profile.currency, '$')
 
-    def test_account_delete(self):
-        url = reverse('account-delete')
+    def test_user_delete(self):
+        url = reverse('user-delete')
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         

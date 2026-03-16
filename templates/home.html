@@ -689,6 +689,63 @@ document.addEventListener('DOMContentLoaded', function() {
 
 <!-- LAYER 2: FINANCIAL HEALTH & SPENDING PACE -->
 <div class="row g-4 mb-4 fade-in" id="tour-hero-card" style="animation-delay: 0.1s;">
+    <!-- Net Worth & Accounts Selection -->
+    <div class="col-12 col-lg-8">
+        <div class="card shadow-lg border-0 rounded-4 overflow-hidden h-100">
+            <div class="card-header bg-transparent border-bottom d-flex justify-content-between align-items-center py-3 px-4">
+                <h6 class="mb-0 fw-bold text-uppercase text-muted" style="letter-spacing: 0.6px; font-size: 0.85rem;">
+                    <i class="bi bi-wallet2 me-2 text-primary"></i> {% trans "Your Accounts & Net Worth" %}
+                </h6>
+                <div class="dropdown">
+                    <button class="btn btn-xs btn-outline-primary rounded-pill py-1 px-3 fw-bold" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="font-size: 0.75rem;">
+                        <i class="bi bi-plus-lg me-1"></i> {% trans "Action" %}
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2">
+                        <li><a class="dropdown-item py-2" href="{% url 'transfer-create' %}"><i class="bi bi-arrow-left-right text-info me-2"></i> {% trans "Internal Transfer" %}</a></li>
+                        <li><a class="dropdown-item py-2" href="{% url 'account-create' %}"><i class="bi bi-bank text-primary me-2"></i> {% trans "Add New Account" %}</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="card-body p-4">
+                <div class="row align-items-center g-4">
+                    <!-- Net Worth Display -->
+                    <div class="col-12 col-md-5 text-center text-md-start border-end-md">
+                        <p class="text-muted small text-uppercase fw-bold mb-1" style="letter-spacing: 1px;">{% trans "Total Net Worth" %}</p>
+                        <h1 class="display-5 fw-black text-primary mb-2" style="font-family: 'Clash Display', sans-serif;">
+                            {{ currency_symbol }}{{ net_worth|humanize_currency:currency_symbol|translate_digits }}
+                        </h1>
+                        <p class="small text-muted mb-0">
+                            {% blocktrans with count=accounts.count %}
+                            Aggregated across {{ count }} accounts.
+                            {% endblocktrans %}
+                        </p>
+                    </div>
+
+                    <!-- Accounts List (Horizontal Scroll) -->
+                    <div class="col-12 col-md-7">
+                        <div class="d-flex gap-3 overflow-auto no-scrollbar pb-2" style="white-space: nowrap;">
+                            {% for account in accounts %}
+                            <a href="{% url 'account-detail' account.pk %}" class="min-w-fit px-3 py-3 border rounded-4 hover-stats transition-all bg-body-tertiary text-decoration-none text-body" style="width: 160px;">
+                                <div class="d-flex align-items-center gap-2 mb-2">
+                                    <div class="rounded-circle bg-primary bg-opacity-10 text-primary d-flex align-items-center justify-content-center" style="width: 28px; height: 28px;">
+                                        <i class="bi bi-bank" style="font-size: 0.75rem;"></i>
+                                    </div>
+                                    <span class="small fw-bold text-truncate" title="{{ account.name }}">{{ account.name }}</span>
+                                </div>
+                                <h5 class="fw-bold mb-0">{{ currency_symbol }}{{ account.balance|humanize_currency:currency_symbol|translate_digits }}</h5>
+                                <p class="text-muted mb-0 mt-1" style="font-size: 0.65rem;">{{ account.get_account_type_display }}</p>
+                            </a>
+                            {% empty %}
+                            <div class="text-center w-100 py-2">
+                                <p class="text-muted small mb-0">{% trans "No accounts found. Start by adding one!" %}</p>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
     <!-- Financial Health Card -->
     <div class="col-12 col-lg-4">
         <div class="card shadow-lg border-0 rounded-4 h-100 overflow-hidden transition-all">

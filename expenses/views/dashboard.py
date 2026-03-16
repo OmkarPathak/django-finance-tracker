@@ -15,7 +15,7 @@ from django.utils import timezone
 from django.utils.formats import date_format
 from django.contrib import messages
 
-from ..models import Expense, Income, Category, UserProfile, RecurringTransaction
+from ..models import Expense, Income, Category, UserProfile, RecurringTransaction, Account, Transfer
 from ..utils import get_exchange_rate, generate_year_in_review_data
 from .mixins import process_user_recurring_transactions
 from ..templatetags.digit_filters import compact_amount
@@ -42,14 +42,11 @@ def home_view(request):
     # Global currency symbol for insights/metrics
     currency_symbol = request.user.profile.currency if hasattr(request.user, 'profile') else '₹'
 
-    # Base QuerySet - Split into Operating Expenses and Wealth Growth
-    investment_categories = Category.objects.filter(user=request.user, is_investment=True).values_list('name', flat=True)
+    # Base QuerySet - All user expenses
+    expenses = Expense.objects.filter(user=request.user).order_by('-date')
     
-    # Operating Expenses (Normal Spending)
-    expenses = Expense.objects.filter(user=request.user).exclude(category__in=investment_categories).order_by('-date')
-    
-    # Wealth Growth (Investments)
-    investments = Expense.objects.filter(user=request.user, category__in=investment_categories).order_by('-date')
+    # Wealth Growth (Investments) - Now handled via Transfers to Investment accounts
+    investments = Expense.objects.none()
     
     # Logic for EOM projection
     now = datetime.now()
@@ -332,10 +329,10 @@ def home_view(request):
                 prev_month = sel_month - 1
                 prev_year = sel_year
 
-            # Split previous expenses into Operating and Investments for consistency
+            # Current year-month stats
             prev_expenses_all = Expense.objects.filter(user=request.user, date__year=prev_year, date__month=prev_month)
-            prev_expenses_op = prev_expenses_all.exclude(category__in=investment_categories).aggregate(Sum('base_amount'))['base_amount__sum'] or 0
-            prev_investments = prev_expenses_all.filter(category__in=investment_categories).aggregate(Sum('base_amount'))['base_amount__sum'] or 0
+            prev_expenses_op = prev_expenses_all.aggregate(Sum('base_amount'))['base_amount__sum'] or 0
+            prev_investments = 0  # Replaced by Transfers
 
             prev_income = Income.objects.filter(user=request.user, date__year=prev_year, date__month=prev_month).aggregate(Sum('base_amount'))['base_amount__sum'] or 0
             prev_savings = prev_income - prev_expenses_op
@@ -1116,9 +1113,7 @@ def home_view(request):
             
         if due_date.year == v_year and due_date.month == v_month:
             rtype = rt.transaction_type
-            # Determine if it's an investment
-            if rtype == 'EXPENSE' and rt.category in investment_categories:
-                rtype = 'INVESTMENT'
+            # Determine if it's an investment - Now handled via Transfers
                 
             item = {
                 'id': rt.id,
@@ -1166,7 +1161,7 @@ def home_view(request):
             user=request.user, 
             date__year=y, 
             date__month=m
-        ).exclude(category__in=investment_categories).aggregate(Sum('base_amount'))['base_amount__sum'] or 0
+        ).aggregate(Sum('base_amount'))['base_amount__sum'] or 0
         
         proj_historical.append(float(m_total))
         proj_forecast.append(None) # No forecast for historical months
@@ -1207,7 +1202,13 @@ def home_view(request):
         proj_historical.append(None)
         proj_forecast.append(float(avg_spend))
 
+    # Net Worth Calculation
+    accounts = Account.objects.filter(user=request.user)
+    net_worth = accounts.aggregate(Sum('balance'))['balance__sum'] or Decimal('0.00')
+
     context = {
+        'net_worth': net_worth,
+        'accounts': accounts,
         'has_projection': has_projection,
         'is_new_user': not has_any_data,
         'actionable_alerts': actionable_alerts,

@@ -1,0 +1,52 @@
+{% extends 'expenses/settings_base.html' %}
+{% load i18n %}
+
+{% block settings_content %}
+<div class="fade-in">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm border-0 border-top border-danger border-4 mt-4">
+                <div class="card-header bg-transparent border-0 pt-4 px-4 text-center">
+                    <div class="bg-danger bg-opacity-10 text-danger rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 64px; height: 64px;">
+                        <i class="bi bi-exclamation-triangle fs-2"></i>
+                    </div>
+                    <h2 class="h4 fw-bold mb-0 text-danger">{% trans "Confirm Transfer Deletion" %}</h2>
+                    <p class="text-muted">{% trans "This action will also revert the balances of both accounts." %}</p>
+                </div>
+                <div class="card-body p-4">
+                    <div class="bg-light rounded-3 p-3 mb-4">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">{% trans "Date" %}</span>
+                            <span class="fw-bold">{{ object.date }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">{% trans "From" %}</span>
+                            <span class="text-danger fw-bold">{{ object.from_account.name }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">{% trans "To" %}</span>
+                            <span class="text-success fw-bold">{{ object.to_account.name }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span class="text-muted">{% trans "Amount" %}</span>
+                            <span class="fw-bold fs-5">{{ user.profile.currency }}{{ object.amount }}</span>
+                        </div>
+                    </div>
+
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-danger btn-lg fw-bold py-3">
+                                {% trans "Confirm Delete" %}
+                            </button>
+                            <a href="{% url 'transfer-list' %}" class="btn btn-outline-secondary py-2">
+                                {% trans "Cancel" %}
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

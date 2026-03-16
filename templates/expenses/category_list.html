@@ -50,7 +50,6 @@
                                             data-name="{{ category.name }}"
                                             data-icon="{{ category.icon }}"
                                             data-limit="{{ category.limit|default_if_none:'' }}"
-                                            data-is-investment="{% if category.is_investment %}true{% else %}false{% endif %}"
                                             title="{% trans 'Edit' %}">
                                         <i class="bi bi-pencil-square text-primary fs-6"></i>
                                     </button>
@@ -217,14 +216,6 @@
                             </div>
                         </div>
 
-                        <div class="mb-4">
-                            <div class="form-check form-switch pt-1">
-                                <input class="form-check-input mt-1" type="checkbox" id="edit_is_investment" name="is_investment">
-                                <label class="form-check-label fw-bold text-muted small text-uppercase ms-2" for="edit_is_investment">
-                                    {% trans "Treat as Investment / Exclude from Expenses" %}
-                                </label>
-                            </div>
-                        </div>
                         
                         <div class="d-grid">
                             <button type="submit" class="btn btn-primary">{% trans "Save Changes" %}</button>
@@ -257,17 +248,14 @@
                     const name = button.getAttribute('data-name');
                     const icon = button.getAttribute('data-icon') || 'bi-tag';
                     const limit = button.getAttribute('data-limit');
-                    const isInvestment = button.getAttribute('data-is-investment') === 'true';
                     
                     const form = editModal.querySelector('#editCategoryForm');
                     const nameInput = editModal.querySelector('#edit_name');
                     const limitInput = editModal.querySelector('#edit_limit');
-                    const isInvestmentInput = editModal.querySelector('#edit_is_investment');
                     
                     form.action = url;
                     nameInput.value = name;
                     limitInput.value = limit || '';
-                    isInvestmentInput.checked = isInvestment;
                     
                     // Update Icon Picker State
                     hiddenInput.value = icon;

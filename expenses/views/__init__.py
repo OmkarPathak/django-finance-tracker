@@ -8,5 +8,6 @@ from .goals import *
 from .settings import *
 from .notifications import *
 from .recurring import *
+from .accounts import *
 from .misc import *
 from .mixins import *
