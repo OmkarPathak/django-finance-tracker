@@ -78,8 +78,10 @@ def home_view(request):
         
         trend_title = _("Expenses Trend (Custom Range)")
     else:
-        # Default to current month/year ONLY on initial land (no params)
-        if not request.GET and not (selected_years or selected_months):
+        # Default to current month/year when no filter params are provided
+        # (ignore non-filter params like 'onboarded' from onboarding redirect)
+        has_filter_params = selected_years or selected_months or selected_categories
+        if not has_filter_params:
             selected_years = [str(datetime.now().year)]
             selected_months = [str(datetime.now().month)]
         
@@ -224,7 +226,20 @@ def home_view(request):
     trend_iso_dates = [p.strftime('%Y-%m-%d') for p in periods]
     
     trend_data = [float(item['total']) for item in total_data]
-    
+
+    # Determine if this is a daily (single-month) view
+    trend_is_daily = bool(
+        (start_date or end_date) or
+        (len(selected_months) == 1 and len(selected_years) == 1)
+    )
+
+    # Compute 7-day rolling average for daily views
+    trend_7d_avg = []
+    if trend_is_daily and len(trend_data) > 1:
+        for i in range(len(trend_data)):
+            window = trend_data[max(0, i - 6):i + 1]
+            trend_7d_avg.append(round(sum(window) / len(window), 2))
+
     trend_datasets = [{
         'label': str(_('Total Spent')),
         'data': trend_data,
@@ -285,6 +300,21 @@ def home_view(request):
     top_category = category_data[0]['category'] if category_data else None
     
     savings = total_income - total_expenses
+
+    # 4a. Internal Transfers (excluded from income/expense, just movement)
+    transfers_qs = Transfer.objects.filter(user=request.user)
+    if start_date or end_date:
+        if start_date:
+            transfers_qs = transfers_qs.filter(date__gte=start_date)
+        if end_date:
+            transfers_qs = transfers_qs.filter(date__lte=end_date)
+    else:
+        if selected_years:
+            transfers_qs = transfers_qs.filter(date__year__in=selected_years)
+        if selected_months:
+            transfers_qs = transfers_qs.filter(date__month__in=selected_months)
+    total_transfers = transfers_qs.aggregate(Sum('amount'))['amount__sum'] or 0
+    transfer_count = transfers_qs.count()
 
     # --- NEW: Savings Projection (Linear Extrapolation) ---
     current_date = date.today()
@@ -637,12 +667,24 @@ def home_view(request):
                     'icon': item['icon']
                 }
 
+        # Ideal spending pace: how much should have been spent by now
+        ideal_spent_so_far = (total_monthly_budget / num_days * days_elapsed) if (total_monthly_budget > 0 and num_days > 0) else 0
+        budget_diff = round(ideal_spent_so_far - float(total_expenses), 0)  # positive = under budget
+        spent_percent = round(float(total_expenses) / total_monthly_budget * 100, 1) if total_monthly_budget > 0 else 0
+        ideal_percent = round(days_elapsed / num_days * 100, 1) if num_days > 0 else 0
+
         spending_pace = {
             'daily_spending_pace': round(daily_burn, 0),
             'projected_month_spend': round(daily_burn * num_days, 0),
             'status': 'on_track',
             'diff_amount': max(0, round((daily_burn * num_days) - total_monthly_budget, 0)),
-            'budget_multiplier': round((daily_burn * num_days) / total_monthly_budget, 1) if total_monthly_budget > 0 else 0
+            'budget_multiplier': round((daily_burn * num_days) / total_monthly_budget, 1) if total_monthly_budget > 0 else 0,
+            'budget_diff': budget_diff,
+            'spent_percent': min(spent_percent, 150),  # cap at 150% for display
+            'ideal_percent': ideal_percent,
+            'days_elapsed': days_elapsed,
+            'num_days': num_days,
+            'ideal_spent_so_far': round(ideal_spent_so_far, 0),
         }
 
         short_insight = ""
@@ -1205,10 +1247,12 @@ def home_view(request):
     # Net Worth Calculation
     accounts = Account.objects.filter(user=request.user)
     net_worth = accounts.aggregate(Sum('balance'))['balance__sum'] or Decimal('0.00')
+    investment_accounts_balance = accounts.filter(account_type='INVESTMENT').aggregate(Sum('balance'))['balance__sum'] or Decimal('0.00')
 
     context = {
         'net_worth': net_worth,
         'accounts': accounts,
+        'investment_accounts_balance': investment_accounts_balance,
         'has_projection': has_projection,
         'is_new_user': not has_any_data,
         'actionable_alerts': actionable_alerts,
@@ -1225,6 +1269,8 @@ def home_view(request):
         'trend_labels': trend_labels,
         'trend_datasets': trend_datasets,
         'trend_title': trend_title,
+        'trend_is_daily': trend_is_daily,
+        'trend_7d_avg': trend_7d_avg,
         'top_labels': top_labels,
         'top_amounts': top_amounts,
         # New Context
@@ -1260,6 +1306,8 @@ def home_view(request):
         'hero_metrics': hero_metrics,
         'smart_bullet_insights': smart_bullet_insights,
         'total_investments': total_investments,
+        'total_transfers': total_transfers,
+        'transfer_count': transfer_count,
         'trend_labels': trend_labels,
         'trend_iso_dates': trend_iso_dates,
         'selected_categories': selected_categories,
