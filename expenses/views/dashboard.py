@@ -1244,14 +1244,51 @@ def home_view(request):
         proj_historical.append(None)
         proj_forecast.append(float(avg_spend))
 
-    # Net Worth Calculation
+    # Net Worth & Asset Allocation Calculation
     accounts = Account.objects.filter(user=request.user)
     net_worth = accounts.aggregate(Sum('balance'))['balance__sum'] or Decimal('0.00')
     investment_accounts_balance = accounts.filter(account_type='INVESTMENT').aggregate(Sum('balance'))['balance__sum'] or Decimal('0.00')
+    
+    # Group by account type for Asset Allocation chart
+    allocation_qs = accounts.values('account_type').annotate(total=Sum('balance')).order_by('-total')
+    asset_allocation = []
+    account_type_display = dict(Account.ACCOUNT_TYPES)
+    cumulative_percent = 0
+    circumference = 2 * 3.14159 * 45
+    for item in allocation_qs:
+        percent = round((float(item['total']) / float(net_worth) * 100), 1) if net_worth > 0 else 0
+        asset_allocation.append({
+            'type': account_type_display.get(item['account_type'], item['account_type']),
+            'total': float(item['total']),
+            'percent': percent,
+            'arc_length': (percent / 100) * circumference,
+            'offset_length': (cumulative_percent / 100) * circumference
+        })
+        cumulative_percent += percent
+
+    # 5. Unified Activity Feed (Combined Expenses, Incomes, Transfers)
+    # We'll tag each with 'transaction_type' for the template
+    recent_expenses = list(expenses.order_by('-date')[:10])
+    for e in recent_expenses: e.transaction_type = 'EXPENSE'
+    
+    recent_incomes = list(incomes.order_by('-date')[:10])
+    for i in recent_incomes: i.transaction_type = 'INCOME'
+    
+    recent_transfers = list(transfers_qs.order_by('-date')[:10])
+    for t in recent_transfers: t.transaction_type = 'TRANSFER'
+
+    from itertools import chain
+    recent_activity = sorted(
+        chain(recent_expenses, recent_incomes, recent_transfers),
+        key=lambda x: x.date,
+        reverse=True
+    )[:10]
 
     context = {
         'net_worth': net_worth,
         'accounts': accounts,
+        'asset_allocation': asset_allocation,
+        'recent_activity': recent_activity,
         'investment_accounts_balance': investment_accounts_balance,
         'has_projection': has_projection,
         'is_new_user': not has_any_data,
@@ -1261,7 +1298,7 @@ def home_view(request):
         'total_income': total_income,
         'total_expenses': total_expenses,
         'savings': savings,
-        'recent_transactions': expenses.order_by('-date')[:5],
+        'recent_activity': recent_activity,
         'categories': categories,
         'category_amounts': category_amounts,
         'category_data': category_data, # Passing full queryset for the summary table
