@@ -4,17 +4,17 @@
 {% block settings_content %}
 <div class="fade-in">
     <div class="pt-1 pb-3 mb-4">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <div class="d-flex align-items-center gap-3">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3">
+            <div class="d-flex align-items-center gap-2 gap-md-3">
                 <a href="{% url 'account-list' %}" class="btn btn-outline-secondary btn-sm rounded-circle p-0 d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
                     <i class="bi bi-arrow-left"></i>
                 </a>
-                <h2 class="h4 mb-0 fw-bold">{% trans "Internal Transfers" %}</h2>
+                <h2 class="h4 mb-0 fw-bold text-nowrap">{% trans "Internal Transfers" %}</h2>
                 <button class="btn btn-outline-secondary rounded-circle p-0 d-flex align-items-center justify-content-center" style="width: 28px; height: 28px; min-width: 28px; line-height: 1;" data-bs-toggle="collapse" data-bs-target="#guideTransfers" aria-expanded="false" title="{% trans 'How it works' %}">
                     <i class="bi bi-info-lg" style="font-size: 0.75rem;"></i>
                 </button>
             </div>
-            <a href="{% url 'transfer-create' %}" class="btn btn-primary btn-sm">
+            <a href="{% url 'transfer-create' %}" class="btn btn-primary btn-sm text-nowrap px-3">
                 <i class="bi bi-plus-lg me-1"></i> {% trans "New Transfer" %}
             </a>
         </div>
