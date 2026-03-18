@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Expense, Category, Income, RecurringTransaction, Notification
+from .models import Expense, Category, Income, RecurringTransaction, Notification, Account, Transfer
 
 @admin.register(Notification)
 class NotificationAdmin(admin.ModelAdmin):
@@ -39,6 +39,21 @@ class RecurringTransactionAdmin(admin.ModelAdmin):
     list_select_related = ('user',)
     list_filter = ('transaction_type', 'frequency', 'is_active', 'user')
     search_fields = ('description', 'user__username')
+
+@admin.register(Account)
+class AccountAdmin(admin.ModelAdmin):
+    list_display = ('name', 'account_type', 'balance', 'currency', 'user')
+    list_select_related = ('user',)
+    list_filter = ('account_type', 'currency', 'user')
+    search_fields = ('name', 'user__username')
+
+@admin.register(Transfer)
+class TransferAdmin(admin.ModelAdmin):
+    list_display = ('date', 'from_account', 'to_account', 'amount', 'user')
+    list_select_related = ('user', 'from_account', 'to_account')
+    list_filter = ('date', 'from_account', 'to_account', 'user')
+    search_fields = ('description', 'user__username')
+    ordering = ('-date',)
 
 from .models import UserProfile, PaymentHistory
 
