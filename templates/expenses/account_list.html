@@ -1,0 +1,98 @@
+{% extends 'expenses/settings_base.html' %}
+{% load i18n digit_filters %}
+
+{% block settings_content %}
+<div class="fade-in">
+    <div class="pt-1 pb-3 mb-4">
+        <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center gap-2 mb-3">
+            <div class="d-flex align-items-center gap-2">
+                <h2 class="h4 mb-0 fw-bold">{% trans "Accounts" %}</h2>
+                <button class="btn btn-outline-secondary rounded-circle p-0 d-flex align-items-center justify-content-center" style="width: 28px; height: 28px; min-width: 28px; line-height: 1;" data-bs-toggle="collapse" data-bs-target="#guideAccounts" aria-expanded="false" title="{% trans 'How it works' %}">
+                    <i class="bi bi-info-lg" style="font-size: 0.75rem;"></i>
+                </button>
+            </div>
+            <div class="d-flex gap-2 w-100 w-sm-auto justify-content-end">
+                <a href="{% url 'transfer-list' %}" class="btn btn-outline-primary btn-sm flex-grow-1 flex-sm-grow-0 text-center">
+                    <i class="bi bi-arrow-left-right me-1"></i> {% trans "Transfer History" %}
+                </a>
+                <a href="{% url 'account-create' %}" class="btn btn-primary btn-sm flex-grow-1 flex-sm-grow-0 text-center">
+                    <i class="bi bi-plus-lg me-1"></i> {% trans "Add Account" %}
+                </a>
+            </div>
+        </div>
+        <p class="text-muted small mb-3">{% trans "Manage your wallets, bank accounts, and investment portfolios" %}</p>
+    </div>
+
+    {% include 'partials/guide_accounts.html' %}
+
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover table-striped mb-0 text-start align-middle">
+                    <thead>
+                        <tr>
+                            <th class="ps-4">{% trans "Account Name" %}</th>
+                            <th>{% trans "Type" %}</th>
+                            <th class="text-end">{% trans "Balance" %}</th>
+                            <th class="text-end pe-4">{% trans "Actions" %}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for account in accounts %}
+                        <tr>
+                            <td class="ps-4">
+                                <div class="d-flex align-items-center gap-2">
+                                    <div class="bg-primary bg-opacity-10 text-primary rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
+                                        {% if account.account_type == 'CASH' %}
+                                            <i class="bi bi-cash-stack"></i>
+                                        {% elif account.account_type == 'BANK' %}
+                                            <i class="bi bi-bank"></i>
+                                        {% elif account.account_type == 'INVESTMENT' %}
+                                            <i class="bi bi-graph-up-arrow"></i>
+                                        {% else %}
+                                            <i class="bi bi-wallet2"></i>
+                                        {% endif %}
+                                    </div>
+                                    <a href="{% url 'account-detail' account.pk %}" class="fw-bold text-decoration-none hover-link text-body">{{ account.name }}</a>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="badge bg-secondary bg-opacity-10 text-secondary border">
+                                    {{ account.get_account_type_display }}
+                                </span>
+                            </td>
+                            <td class="text-end fw-bold {% if account.balance < 0 %}text-danger{% else %}text-success{% endif %}">
+                                {{ account.currency }}{{ account.balance|floatformat:2|translate_digits }}
+                            </td>
+                            <td class="text-end pe-4 text-nowrap">
+                                <div class="hstack gap-3 justify-content-end">
+                                    <a href="{% url 'account-edit' account.pk %}" class="btn btn-sm btn-link text-decoration-none p-0 d-inline-flex align-items-center" title="{% trans 'Edit' %}">
+                                        <i class="bi bi-pencil-square text-primary fs-6"></i>
+                                    </a>
+                                    <a href="{% url 'account-delete' account.pk %}" class="btn btn-sm btn-link text-decoration-none p-0 delete-btn d-inline-flex align-items-center" title="{% trans 'Delete' %}">
+                                        <i class="bi bi-trash text-danger fs-6"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4" class="text-center py-5">
+                                <div class="py-4">
+                                    <i class="bi bi-wallet2 text-muted display-1 mb-3 d-block"></i>
+                                    <h4 class="fw-bold text-muted">{% trans "No Accounts Yet" %}</h4>
+                                    <p class="text-muted mb-4">{% trans "Track your balances across different bank accounts and wallets." %}</p>
+                                    <a href="{% url 'account-create' %}" class="btn btn-primary">
+                                        <i class="bi bi-plus-lg me-1"></i> {% trans "Add Account" %}
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

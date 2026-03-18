@@ -1,0 +1,103 @@
+{% extends 'base.html' %}
+{% load i18n humanize currency_filters digit_filters %}
+
+{% block content %}
+<div class="container fade-in">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
+        <div>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-2">
+                    <li class="breadcrumb-item"><a href="{% url 'home' %}">{% trans "Dashboard" %}</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'account-list' %}">{% trans "Accounts" %}</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">{{ account.name }}</li>
+                </ol>
+            </nav>
+            <h1 class="h2 fw-bold mb-0">{{ account.name }}</h1>
+            <p class="text-muted mb-0">{{ account.get_account_type_display }} • {{ account.currency }}</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{% url 'transfer-create' %}?from_account={{ account.id }}" class="btn btn-outline-primary fw-bold">
+                <i class="bi bi-arrow-left-right me-1"></i> {% trans "Transfer" %}
+            </a>
+            <a href="{% url 'account-edit' account.id %}" class="btn btn-primary fw-bold">
+                <i class="bi bi-pencil me-1"></i> {% trans "Edit Account" %}
+            </a>
+        </div>
+    </div>
+
+    <!-- Account Summary Stats -->
+    <div class="row g-4 mb-4">
+        <div class="col-12 col-md-4">
+            <div class="card shadow-sm border-0 rounded-4 p-4 text-center bg-primary bg-opacity-10">
+                <p class="text-muted small text-uppercase fw-bold mb-1" style="letter-spacing: 1px;">{% trans "Current Balance" %}</p>
+                <h2 class="fw-black text-primary mb-0" style="font-family: 'Clash Display', sans-serif;">
+                    {{ currency_symbol }}{{ account.balance|humanize_currency:currency_symbol|translate_digits }}
+                </h2>
+            </div>
+        </div>
+        <!-- You could add more stats here, like total income/expense for this account -->
+    </div>
+
+    <!-- Transaction Ledger -->
+    <div class="card shadow-sm border-0 rounded-4 overflow-hidden">
+        <div class="card-header bg-transparent border-bottom py-3 px-4 d-flex justify-content-between align-items-center">
+            <h5 class="mb-0 fw-bold">{% trans "Transaction History" %}</h5>
+            <span class="badge bg-secondary bg-opacity-10 text-secondary rounded-pill">{{ ledger|length }} {% trans "Items" %}</span>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="bg-light">
+                    <tr>
+                        <th class="ps-4 border-0">{% trans "Date" %}</th>
+                        <th class="border-0">{% trans "Description" %}</th>
+                        <th class="border-0">{% trans "Type" %}</th>
+                        <th class="text-end pe-4 border-0">{% trans "Amount" %}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in ledger %}
+                    <tr>
+                        <td class="ps-4 text-muted small">{{ item.date|date:"d M Y" }}</td>
+                        <td>
+                            {% trans "No description" as no_desc %}
+                            <div class="fw-bold">{{ item.description|default:no_desc }}</div>
+                            {% if item.category %}
+                                <div class="small text-muted">{{ item.category }}</div>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if item.transaction_type == 'INCOME' %}
+                                <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-3">{% trans "Income" %}</span>
+                            {% elif item.transaction_type == 'EXPENSE' %}
+                                <span class="badge bg-danger bg-opacity-10 text-danger rounded-pill px-3">{% trans "Expense" %}</span>
+                            {% elif item.transaction_type == 'TRANSFER_OUT' %}
+                                <span class="badge bg-info bg-opacity-10 text-info rounded-pill px-3">
+                                    {% trans "Transfer to" %} {{ item.to_account.name }}
+                                </span>
+                            {% elif item.transaction_type == 'TRANSFER_IN' %}
+                                <span class="badge bg-info bg-opacity-10 text-info rounded-pill px-3">
+                                    {% trans "Transfer from" %} {{ item.from_account.name }}
+                                </span>
+                            {% endif %}
+                        </td>
+                        <td class="text-end pe-4">
+                            <span class="fw-bold {% if item.transaction_type == 'INCOME' or item.transaction_type == 'TRANSFER_IN' %}text-success{% elif item.transaction_type == 'EXPENSE' or item.transaction_type == 'TRANSFER_OUT' %}text-danger{% endif %}">
+                                {% if item.transaction_type == 'INCOME' or item.transaction_type == 'TRANSFER_IN' %}+{% else %}-{% endif %}
+                                {{ currency_symbol }}{{ item.amount|humanize_currency:currency_symbol|translate_digits }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" class="text-center py-5 text-muted">
+                            <i class="bi bi-inbox fs-1 d-block mb-3 opacity-25"></i>
+                            {% trans "No transactions found for this account." %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

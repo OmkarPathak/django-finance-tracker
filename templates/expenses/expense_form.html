@@ -35,18 +35,23 @@
                             <div class="form-card form-row">
                                 {% for hidden in form.hidden_fields %}{{ hidden }}{% endfor %}
                                 
-                                <!-- Row 1: Date & Currency -->
+                                <!-- Row 1: Date, Currency & Account -->
                                 <div class="row g-2 mb-3">
-                                    <div class="col-md-6 col-6">
+                                    <div class="col-md-4 col-4">
                                         <label class="form-label">{% trans "Date" %}</label>
                                         <input type="date" name="{{ form.date.html_name }}" class="form-control" 
                                             value="{{ form.date.value|date:'Y-m-d'|default:form.date.value }}" required id="{{ form.date.id_for_label }}">
                                         {% if form.date.errors %}<div class="text-danger small mt-1">{{ form.date.errors.0 }}</div>{% endif %}
                                     </div>
-                                    <div class="col-md-6 col-6">
+                                    <div class="col-md-4 col-4">
                                         <label class="form-label">{% trans "Currency" %}</label>
                                         {{ form.currency }}
                                         {% if form.currency.errors %}<div class="text-danger small mt-1">{{ form.currency.errors.0 }}</div>{% endif %}
+                                    </div>
+                                    <div class="col-md-4 col-4">
+                                        <label class="form-label">{% trans "Account" %}</label>
+                                        {{ form.account }}
+                                        {% if form.account.errors %}<div class="text-danger small mt-1">{{ form.account.errors.0 }}</div>{% endif %}
                                     </div>
                                 </div>
 
@@ -156,18 +161,23 @@
                         <div class="form-card form-row mb-4">
                             {% for hidden in form.hidden_fields %}{{ hidden }}{% endfor %}
                             
-                                <!-- Row 1: Date & Currency -->
+                                <!-- Row 1: Date, Currency & Account -->
                                 <div class="row g-2 mb-3">
-                                    <div class="col-md-6 col-6">
+                                    <div class="col-md-4 col-4">
                                         <label class="form-label">{% trans "Date" %}</label>
                                         <input type="date" name="{{ form.date.name }}" class="form-control" 
                                             value="{{ form.date.value|date:'Y-m-d'|default:form.date.value }}" required id="{{ form.date.id_for_label }}">
                                         {% if form.date.errors %}<div class="text-danger small mt-1">{{ form.date.errors.0 }}</div>{% endif %}
                                     </div>
-                                    <div class="col-md-6 col-6">
+                                    <div class="col-md-4 col-4">
                                         <label class="form-label">{% trans "Currency" %}</label>
                                         {{ form.currency }}
                                         {% if form.currency.errors %}<div class="text-danger small mt-1">{{ form.currency.errors.0 }}</div>{% endif %}
+                                    </div>
+                                    <div class="col-md-4 col-4">
+                                        <label class="form-label">{% trans "Account" %}</label>
+                                        {{ form.account }}
+                                        {% if form.account.errors %}<div class="text-danger small mt-1">{{ form.account.errors.0 }}</div>{% endif %}
                                     </div>
                                 </div>
 

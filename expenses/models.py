@@ -4,6 +4,7 @@ from django.contrib.auth.models import User
 from datetime import timedelta
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
+from django.db import transaction
 from .utils import get_exchange_rate
 
 CURRENCY_CHOICES = [
@@ -18,6 +19,31 @@ CURRENCY_CHOICES = [
     ('元', _('Chinese Yuan (元)')),
     ('₩', _('South Korean Won (₩)')),
 ]
+
+class Account(models.Model):
+    ACCOUNT_TYPES = [
+        ('CASH', _('Cash')),
+        ('BANK', _('Bank Account')),
+        ('CREDIT_CARD', _('Credit Card')),
+        ('INVESTMENT', _('Investment Account')),
+        ('OTHER', _('Other')),
+    ]
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='accounts')
+    name = models.CharField(max_length=100, verbose_name=_('Account Name'))
+    account_type = models.CharField(max_length=20, choices=ACCOUNT_TYPES, default='BANK', verbose_name=_('Account Type'))
+    balance = models.DecimalField(max_digits=15, decimal_places=2, default=Decimal('0.00'), verbose_name=_('Current Balance'))
+    currency = models.CharField(max_length=5, choices=CURRENCY_CHOICES, default='₹', verbose_name=_('Currency'))
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['user', 'name'], name='unique_account_per_user')
+        ]
+
+    def __str__(self):
+        return f"{self.name} ({self.currency}{self.balance})"
 
 class Expense(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -39,23 +65,46 @@ class Expense(models.Model):
     exchange_rate = models.DecimalField(max_digits=15, decimal_places=6, default=1.0, verbose_name=_('Exchange Rate'))
     base_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0.0, verbose_name=_('Amount in Base Currency'))
 
+    account = models.ForeignKey(Account, on_delete=models.SET_NULL, null=True, blank=True, related_name='expenses', verbose_name=_('Account'))
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     def save(self, *args, **kwargs):
-        if self.category:
-            self.category = self.category.strip()
-        
-        # Multi-currency normalization
-        base_currency = self.user.profile.currency
-        if self.currency == base_currency:
-            self.exchange_rate = Decimal('1.0')
-            self.base_amount = self.amount
-        else:
-            self.exchange_rate = get_exchange_rate(self.currency, base_currency)
-            self.base_amount = (self.amount * self.exchange_rate).quantize(Decimal('0.01'))
+        with transaction.atomic():
+            # Handle balance reversal for updates
+            if self.pk:
+                old_instance = Expense.objects.get(pk=self.pk)
+                if old_instance.account:
+                    old_instance.account.balance += old_instance.amount
+                    old_instance.account.save()
+
+            if self.category:
+                self.category = self.category.strip()
             
-        super().save(*args, **kwargs)
+            # Multi-currency normalization
+            base_currency = self.user.profile.currency
+            if self.currency == base_currency:
+                self.exchange_rate = Decimal('1.0')
+                self.base_amount = self.amount
+            else:
+                self.exchange_rate = get_exchange_rate(self.currency, base_currency)
+                self.base_amount = (self.amount * self.exchange_rate).quantize(Decimal('0.01'))
+                
+            super().save(*args, **kwargs)
+            
+            # Apply new balance
+            if self.account:
+                self.account.refresh_from_db()
+                self.account.balance -= self.amount
+                self.account.save()
+
+    def delete(self, *args, **kwargs):
+        with transaction.atomic():
+            if self.account:
+                self.account.balance += self.amount
+                self.account.save()
+            super().delete(*args, **kwargs)
 
     class Meta:
         constraints = [
@@ -78,7 +127,6 @@ class Category(models.Model):
     name = models.CharField(max_length=255, verbose_name=_('Category Name'))
     icon = models.CharField(max_length=50, default='bi-tag', verbose_name=_('Icon'))
     limit = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, verbose_name=_('Monthly Limit'))
-    is_investment = models.BooleanField(default=False, verbose_name=_('Treat as Investment / Exclude from Expenses.'))
 
     def save(self, *args, **kwargs):
         if self.name:
@@ -108,23 +156,46 @@ class Income(models.Model):
     exchange_rate = models.DecimalField(max_digits=15, decimal_places=6, default=1.0, verbose_name=_('Exchange Rate'))
     base_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0.0, verbose_name=_('Amount in Base Currency'))
 
+    account = models.ForeignKey(Account, on_delete=models.SET_NULL, null=True, blank=True, related_name='incomes', verbose_name=_('Account'))
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     def save(self, *args, **kwargs):
-        if self.source:
-            self.source = self.source.strip()
-            
-        # Multi-currency normalization
-        base_currency = self.user.profile.currency
-        if self.currency == base_currency:
-            self.exchange_rate = Decimal('1.0')
-            self.base_amount = self.amount
-        else:
-            self.exchange_rate = get_exchange_rate(self.currency, base_currency)
-            self.base_amount = (self.amount * self.exchange_rate).quantize(Decimal('0.01'))
+        with transaction.atomic():
+            # Handle balance reversal for updates
+            if self.pk:
+                old_instance = Income.objects.get(pk=self.pk)
+                if old_instance.account:
+                    old_instance.account.balance -= old_instance.amount
+                    old_instance.account.save()
 
-        super().save(*args, **kwargs)
+            if self.source:
+                self.source = self.source.strip()
+                
+            # Multi-currency normalization
+            base_currency = self.user.profile.currency
+            if self.currency == base_currency:
+                self.exchange_rate = Decimal('1.0')
+                self.base_amount = self.amount
+            else:
+                self.exchange_rate = get_exchange_rate(self.currency, base_currency)
+                self.base_amount = (self.amount * self.exchange_rate).quantize(Decimal('0.01'))
+
+            super().save(*args, **kwargs)
+
+            # Apply new balance
+            if self.account:
+                self.account.refresh_from_db()
+                self.account.balance += self.amount
+                self.account.save()
+
+    def delete(self, *args, **kwargs):
+        with transaction.atomic():
+            if self.account:
+                self.account.balance -= self.amount
+                self.account.save()
+            super().delete(*args, **kwargs)
 
     class Meta:
         constraints = [
@@ -135,6 +206,59 @@ class Income(models.Model):
         ]
         indexes = [
             models.Index(fields=['user', 'source']),
+            models.Index(fields=['user', 'date']),
+        ]
+
+    def __str__(self):
+        return f"{self.date} - {self.source} - {self.amount}"
+
+class Transfer(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    from_account = models.ForeignKey(Account, on_delete=models.CASCADE, related_name='transfers_out', verbose_name=_('From Account'))
+    to_account = models.ForeignKey(Account, on_delete=models.CASCADE, related_name='transfers_in', verbose_name=_('To Account'))
+    amount = models.DecimalField(max_digits=12, decimal_places=2, verbose_name=_('Amount'))
+    date = models.DateField(default=timezone.now, verbose_name=_('Date'))
+    description = models.TextField(blank=True, null=True, verbose_name=_('Description'))
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def save(self, *args, **kwargs):
+        with transaction.atomic():
+            # Revert-and-Apply pattern for updates
+            if self.pk:
+                old_instance = Transfer.objects.get(pk=self.pk)
+                # Revert old
+                old_instance.from_account.balance += old_instance.amount
+                old_instance.from_account.save()
+                old_instance.to_account.balance -= old_instance.amount
+                old_instance.to_account.save()
+
+            super().save(*args, **kwargs)
+
+            # Apply new
+            # Refresh accounts to get reverted balances
+            self.from_account.refresh_from_db()
+            self.to_account.refresh_from_db()
+            
+            self.from_account.balance -= self.amount
+            self.from_account.save()
+            self.to_account.balance += self.amount
+            self.to_account.save()
+
+    def delete(self, *args, **kwargs):
+        with transaction.atomic():
+            self.from_account.balance += self.amount
+            self.from_account.save()
+            self.to_account.balance -= self.amount
+            self.to_account.save()
+            super().delete(*args, **kwargs)
+
+    def __str__(self):
+        return f"Transfer {self.amount} from {self.from_account.name} to {self.to_account.name} on {self.date}"
+
+    class Meta:
+        indexes = [
             models.Index(fields=['user', 'date']),
         ]
 
@@ -165,6 +289,8 @@ class RecurringTransaction(models.Model):
     currency = models.CharField(max_length=5, choices=CURRENCY_CHOICES, default='₹', verbose_name=_('Currency'))
     exchange_rate = models.DecimalField(max_digits=15, decimal_places=6, default=1.0, verbose_name=_('Exchange Rate'))
     base_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0.0, verbose_name=_('Amount in Base Currency'))
+
+    account = models.ForeignKey(Account, on_delete=models.SET_NULL, null=True, blank=True, verbose_name=_('Account'))
 
     frequency = models.CharField(max_length=10, choices=FREQUENCY_CHOICES, verbose_name=_('Frequency'))
     start_date = models.DateField(verbose_name=_('Start Date'))

@@ -208,3 +208,6 @@ __marimo__/
 
 # antigravity rules
 .agent/rules/project-context.mdc/project-context.mdc
+
+# backups
+backup*

@@ -12,11 +12,12 @@ from datetime import date
 class ExpenseForm(forms.ModelForm):
     class Meta:
         model = Expense
-        fields = ['date', 'amount', 'currency', 'description', 'category', 'payment_method']
+        fields = ['date', 'amount', 'currency', 'account', 'description', 'category', 'payment_method']
         widgets = {
             'date': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
             'amount': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
             'currency': forms.Select(attrs={'class': 'form-select'}),
+            'account': forms.Select(attrs={'class': 'form-select'}),
             'description': forms.TextInput(attrs={'class': 'form-control'}),
             'payment_method': forms.Select(attrs={'class': 'form-select'}),
         }
@@ -41,8 +42,16 @@ class ExpenseForm(forms.ModelForm):
             # Create choices list: [(name, name), ...]
             choices = [(cat.name, cat.name) for cat in categories]
             self.fields['category'].widget = forms.Select(choices=choices, attrs={'class': 'form-select django-multi-select'})
+            
+            # Filter accounts for the user
+            self.fields['account'].queryset = Account.objects.filter(user=user)
+            # Default to the first account (likely 'Cash')
+            default_account = Account.objects.filter(user=user, name='Cash').first()
+            if default_account:
+                self.fields['account'].initial = default_account
         else:
             self.fields['category'].widget = forms.TextInput(attrs={'class': 'form-control'})
+            self.fields['account'].queryset = Account.objects.none()
 
     def clean_category(self):
         category = self.cleaned_data.get('category')
@@ -53,14 +62,23 @@ class ExpenseForm(forms.ModelForm):
 class IncomeForm(forms.ModelForm):
     class Meta:
         model = Income
-        fields = ['date', 'amount', 'currency', 'source', 'description']
+        fields = ['date', 'amount', 'currency', 'account', 'source', 'description']
         widgets = {
             'date': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
             'amount': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
             'currency': forms.Select(attrs={'class': 'form-select'}),
+            'account': forms.Select(attrs={'class': 'form-select'}),
             'source': forms.TextInput(attrs={'class': 'form-control', 'placeholder': _('e.g. Salary, Freelance')}),
             'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 2}),
         }
+    
+    add_to_recurring = forms.BooleanField(required=False, label=_("Make this a recurring income"))
+    frequency = forms.ChoiceField(
+        choices=RecurringTransaction.FREQUENCY_CHOICES,
+        required=False,
+        label=_("Frequency"),
+        widget=forms.Select(attrs={'class': 'form-select'})
+    )
     
     def __init__(self, *args, **kwargs):
         self.user = kwargs.pop('user', None)
@@ -68,6 +86,12 @@ class IncomeForm(forms.ModelForm):
         self.fields['date'].initial = date.today
         if self.user:
             self.fields['currency'].initial = self.user.profile.currency
+            self.fields['account'].queryset = Account.objects.filter(user=self.user)
+            default_account = Account.objects.filter(user=self.user, name='Cash').first()
+            if default_account:
+                self.fields['account'].initial = default_account
+        else:
+            self.fields['account'].queryset = Account.objects.none()
         
     def clean_source(self):
         source = self.cleaned_data.get('source')
@@ -78,11 +102,12 @@ class IncomeForm(forms.ModelForm):
 class RecurringTransactionForm(forms.ModelForm):
     class Meta:
         model = RecurringTransaction
-        fields = ['transaction_type', 'amount', 'currency', 'category', 'source', 'frequency', 'start_date', 'description', 'is_active', 'payment_method']
+        fields = ['transaction_type', 'amount', 'currency', 'account', 'category', 'source', 'frequency', 'start_date', 'description', 'is_active', 'payment_method']
         widgets = {
             'transaction_type': forms.Select(attrs={'class': 'form-select', 'onchange': 'toggleFields()'}),
             'amount': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
             'currency': forms.Select(attrs={'class': 'form-select'}),
+            'account': forms.Select(attrs={'class': 'form-select'}),
             'category': forms.Select(attrs={'class': 'form-select'}),
             'source': forms.TextInput(attrs={'class': 'form-control', 'placeholder': _('e.g. Salary, Rent')}),
             'frequency': forms.Select(attrs={'class': 'form-select'}),
@@ -97,6 +122,9 @@ class RecurringTransactionForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         if user:
             self.fields['currency'].initial = user.profile.currency
+            self.fields['account'].queryset = Account.objects.filter(user=user)
+        else:
+            self.fields['account'].queryset = Account.objects.none()
         
         # Category field as Select for Expenses
         if user:
@@ -283,10 +311,71 @@ class CategoryForm(forms.ModelForm):
  
     class Meta:
         model = Category
-        fields = ['name', 'icon', 'limit', 'is_investment']
+        fields = ['name', 'icon', 'limit']
         widgets = {
             'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': _('Category Name')}),
             'limit': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01', 'placeholder': '0.00'}),
-            'is_investment': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }
+
+from .models import Account, Transfer
+
+class AccountForm(forms.ModelForm):
+    class Meta:
+        model = Account
+        fields = ['name', 'account_type', 'balance', 'currency']
+        widgets = {
+            'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': _('Account Name (e.g. HDFC Bank)')}),
+            'account_type': forms.Select(attrs={'class': 'form-select'}),
+            'balance': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
+            'currency': forms.Select(attrs={'class': 'form-select'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)
+        super().__init__(*args, **kwargs)
+        if user:
+            self.fields['currency'].initial = user.profile.currency
+        
+        # If editing an existing account, disable balance field to prevent manual manipulation?
+        # User requirement: "manage CRUD for transactions". Let's allow it for now if they want to adjust.
+
+class TransferForm(forms.ModelForm):
+    class Meta:
+        model = Transfer
+        fields = ['date', 'amount', 'from_account', 'to_account', 'description']
+        widgets = {
+            'date': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
+            'amount': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
+            'from_account': forms.Select(attrs={'class': 'form-select'}),
+            'to_account': forms.Select(attrs={'class': 'form-select'}),
+            'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 2}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)
+        super().__init__(*args, **kwargs)
+        self.fields['date'].initial = date.today
+        if user:
+            self.fields['from_account'].queryset = Account.objects.filter(user=user)
+            self.fields['to_account'].queryset = Account.objects.filter(user=user)
+
+    def clean(self):
+        cleaned_data = super().clean()
+        from_account = cleaned_data.get('from_account')
+        to_account = cleaned_data.get('to_account')
+        amount = cleaned_data.get('amount')
+
+        if from_account == to_account:
+            raise forms.ValidationError(_("Source and destination accounts must be different."))
+        
+        if amount and amount <= 0:
+            raise forms.ValidationError(_("Transfer amount must be greater than zero."))
+
+        if from_account and amount and from_account.balance < amount:
+            # Optional: Allow overdraft? USER didn't specify. Let's show a warning or validation error.
+            # Many finance apps allow it, but let's be strict or just allow it.
+            # user requirement "mathematically robust" might imply we should at least warn.
+            pass
+
+        return cleaned_data
 

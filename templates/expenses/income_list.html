@@ -1,5 +1,5 @@
 {% extends 'expenses/settings_base.html' %}
-{% load i18n digit_filters humanize %}
+{% load i18n digit_filters humanize expense_extras %}
 
 {% block settings_content %}
     <style>
@@ -131,6 +131,9 @@
                                             data-description="{{ income.description|default_if_none:'' }}"
                                             data-amount="{{ income.amount }}"
                                             data-currency="{{ income.currency }}"
+                                            data-account="{{ income.account.pk }}"
+                                            data-is-recurring="{% if income.source in recurring_data %}true{% else %}false{% endif %}"
+                                            data-frequency="{{ recurring_data|get_dict_item:income.source }}"
                                             title="{% trans 'Edit' %}">
                                         <i class="bi bi-pencil-square text-primary fs-6"></i>
                                     </button>
@@ -224,44 +227,69 @@
                         {% csrf_token %}
                         <input type="hidden" name="next" value="{{ request.path }}">
                         
-                        <div class="mb-3">
-                            <label for="edit_date" class="form-label text-muted small text-uppercase">{% trans "Date" %}</label>
-                            <input type="date" class="form-control" id="edit_date" name="date" required>
+                        <div class="row mb-3">
+                            <div class="col-6">
+                                <label for="edit_date" class="form-label text-muted small text-uppercase">{% trans "Date" %}</label>
+                                <input type="date" class="form-control" id="edit_date" name="date" required>
+                            </div>
+                            <div class="col-6">
+                                <label for="edit_currency" class="form-label text-muted small text-uppercase">{% trans "Currency" %}</label>
+                                <select class="form-select" id="edit_currency" name="currency" required>
+                                    {% for code, name in currency_choices %}
+                                        <option value="{{ code }}">{{ code }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
                         </div>
 
-                        <div class="mb-3">
-                            <label for="edit_source" class="form-label text-muted small text-uppercase">{% trans "Source" %}</label>
-                            <input type="text" class="form-control" id="edit_source" name="source" required>
+                        <div class="row mb-3">
+                            <div class="col-6">
+                                <label for="edit_amount" class="form-label text-muted small text-uppercase">{% trans "Amount" %}</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-transparent border-end-0 text-muted">{{ user.profile.currency }}</span>
+                                    <input type="number" class="form-control border-start-0 ps-0" id="edit_amount" name="amount" step="0.01" required>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <label for="edit_source" class="form-label text-muted small text-uppercase">{% trans "Source" %}</label>
+                                <input type="text" class="form-control" id="edit_source" name="source" required>
+                            </div>
                         </div>
                         
-                         <div class="mb-3">
+                        <div class="mb-3">
                             <label for="edit_description" class="form-label text-muted small text-uppercase">{% trans "Description" %}</label>
                             <textarea class="form-control" id="edit_description" name="description" rows="2"></textarea>
                         </div>
                         
-                        <div class="row">
-                            <div class="col-md-8">
-                                <div class="mb-4">
-                                    <label for="edit_amount" class="form-label text-muted small text-uppercase">{% trans "Amount" %}</label>
-                                    <div class="input-group">
-                                        <span class="input-group-text bg-transparent border-end-0 text-muted">{{ user.profile.currency }}</span>
-                                        <input type="number" class="form-control border-start-0 ps-0" id="edit_amount" name="amount" step="0.01" required>
-                                    </div>
-                                </div>
+                        <div class="mb-4">
+                            <label for="edit_account" class="form-label text-muted small text-uppercase">{% trans "Account" %}</label>
+                            <select class="form-select" id="edit_account" name="account" required>
+                                {% for account in accounts %}
+                                    <option value="{{ account.pk }}">{{ account.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="form-check form-switch mb-2">
+                                <input type="checkbox" class="form-check-input" id="edit_add_to_recurring" name="add_to_recurring">
+                                <label class="form-check-label fw-bold small text-muted text-uppercase" for="edit_add_to_recurring">
+                                    {% trans "Make this a recurring income" %}
+                                </label>
                             </div>
-                            <div class="col-md-4">
-                                <div class="mb-4">
-                                    <label for="edit_currency" class="form-label text-muted small text-uppercase">{% trans "Currency" %}</label>
-                                    <select class="form-select" id="edit_currency" name="currency" required>
-                                        {% for code, name in currency_choices %}
-                                            <option value="{{ code }}">{{ code }}</option>
-                                        {% endfor %}
-                                    </select>
-                                </div>
+                            <div id="edit-frequency-container" style="display: none;">
+                                <label for="edit_frequency" class="form-label small text-muted fw-bold text-uppercase">{% trans "Frequency" %}</label>
+                                <select class="form-select" id="edit_frequency" name="frequency">
+                                    <option value="DAILY">{% trans "Daily" %}</option>
+                                    <option value="WEEKLY">{% trans "Weekly" %}</option>
+                                    <option value="MONTHLY" selected>{% trans "Monthly" %}</option>
+                                    <option value="QUARTERLY">{% trans "Quarterly" %}</option>
+                                    <option value="YEARLY">{% trans "Yearly" %}</option>
+                                </select>
                             </div>
                         </div>
                         
-                        <div class="d-grid">
+                        <div class="d-grid mt-4">
                             <button type="submit" class="btn btn-primary">{% trans "Save Changes" %}</button>
                         </div>
                     </form>
@@ -289,8 +317,18 @@
                     var descInput = editModal.querySelector('#edit_description');
                     var amountInput = editModal.querySelector('#edit_amount');
                     var currencyInput = editModal.querySelector('#edit_currency');
+                    var accountInput = editModal.querySelector('#edit_account');
+                    var recurringCheckbox = editModal.querySelector('#edit_add_to_recurring');
+                    var frequencyContainer = editModal.querySelector('#edit-frequency-container');
                     
                     form.action = url;
+                    
+                    // Set recurring fields from button data
+                    var isRecurring = button.getAttribute('data-is-recurring') === 'true';
+                    if (recurringCheckbox) {
+                        recurringCheckbox.checked = isRecurring;
+                        frequencyContainer.style.display = isRecurring ? 'block' : 'none';
+                    }
                     
                     // Format date to YYYY-MM-DD for input type=date
                      if (date) {
@@ -311,6 +349,21 @@
                     descInput.value = description !== 'None' ? description : '';
                     amountInput.value = amount;
                     currencyInput.value = currency;
+                    accountInput.value = button.getAttribute('data-account');
+
+                    var freq = button.getAttribute('data-frequency');
+                    if (freq) {
+                        editModal.querySelector('#edit_frequency').value = freq;
+                    }
+                });
+            }
+
+            // Recurring toggle for edit modal
+            const editRecurringCheckbox = document.getElementById('edit_add_to_recurring');
+            const editFrequencyContainer = document.getElementById('edit-frequency-container');
+            if (editRecurringCheckbox) {
+                editRecurringCheckbox.addEventListener('change', function() {
+                    editFrequencyContainer.style.display = this.checked ? 'block' : 'none';
                 });
             }
         });

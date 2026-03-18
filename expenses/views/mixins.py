@@ -60,13 +60,16 @@ def process_user_recurring_transactions(user):
             # print(f"DEBUG: Creating {rt.transaction_type} for {current_date}")
             
             if rt.transaction_type == 'EXPENSE':
-                exists = Expense.objects.filter(user=user, date=current_date, amount=rt.amount, description=description, currency=rt.currency).exists()
+                category = rt.category or 'Uncategorized'
+                exists = Expense.objects.filter(user=user, date=current_date, amount=rt.amount, description=description, currency=rt.currency, category=category).exists()
                 if not exists:
-                    new_expenses.append(Expense(user=user, date=current_date, amount=rt.amount, currency=rt.currency, category=rt.category or 'Uncategorized', description=description, payment_method=rt.payment_method, exchange_rate=exchange_rate, base_amount=base_amount))
+                    new_expenses.append(Expense(user=user, date=current_date, amount=rt.amount, currency=rt.currency, category=category, description=description, payment_method=rt.payment_method, exchange_rate=exchange_rate, base_amount=base_amount))
             else:
-                exists = Income.objects.filter(user=user, date=current_date, amount=rt.amount, description=description, currency=rt.currency).exists()
+                source = rt.source or 'Other'
+                # Unique constraint for Income: user, date, amount, currency, source
+                exists = Income.objects.filter(user=user, date=current_date, amount=rt.amount, currency=rt.currency, source=source).exists()
                 if not exists:
-                    new_incomes.append(Income(user=user, date=current_date, amount=rt.amount, currency=rt.currency, source=rt.source or 'Other', description=description, exchange_rate=exchange_rate, base_amount=base_amount))
+                    new_incomes.append(Income(user=user, date=current_date, amount=rt.amount, currency=rt.currency, source=source, description=description, exchange_rate=exchange_rate, base_amount=base_amount))
             
             rt.last_processed_date = current_date
             current_date = rt.get_next_date(current_date, rt.frequency)

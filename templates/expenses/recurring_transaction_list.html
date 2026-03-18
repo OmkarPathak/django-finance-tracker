@@ -35,7 +35,12 @@
     <!-- Header Summary Section -->
         <div class="d-flex flex-column flex-sm-row justify-content-between align-items-stretch align-items-sm-center mb-3">
             <div class="mb-3 mb-sm-0">
-                <h2 class="h3 fw-bold mb-0">{% trans "Subscriptions" %}</h2>
+                <div class="d-flex align-items-center gap-2">
+                    <h2 class="h3 fw-bold mb-0">{% trans "Subscriptions" %}</h2>
+                    <button class="btn btn-outline-secondary rounded-circle p-0 d-flex align-items-center justify-content-center" style="width: 28px; height: 28px; min-width: 28px; line-height: 1;" data-bs-toggle="collapse" data-bs-target="#guideRecurring" aria-expanded="false" title="{% trans 'How it works' %}">
+                        <i class="bi bi-info-lg" style="font-size: 0.75rem;"></i>
+                    </button>
+                </div>
                 <p class="text-muted small mb-0 mt-1">{% trans "Manage your recurring payments and never miss a due date again." %}</p>
             </div>
             <div class="d-flex gap-2 justify-content-end">
@@ -56,6 +61,8 @@
                 </button>
             </div>
         </div>
+
+    {% include 'partials/guide_recurring.html' %}
 
     <!-- Filter Form -->
     <div class="collapse d-md-block" id="subscriptionFilters">

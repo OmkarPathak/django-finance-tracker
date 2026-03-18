@@ -59,7 +59,8 @@ def category_icon(category_name, user):
     except Exception:
          pass
     return 'bi-tag'
-    
+
+
 @register.filter(name='abs_val')
 def abs_val(value):
     """Returns the absolute value of the input."""
@@ -67,3 +68,11 @@ def abs_val(value):
         return abs(float(value))
     except (ValueError, TypeError):
         return value
+
+
+@register.filter(name='get_dict_item')
+def get_dict_item(dictionary, key):
+    """Returns the value for a given key in a dictionary."""
+    if dictionary:
+        return dictionary.get(key)
+    return None

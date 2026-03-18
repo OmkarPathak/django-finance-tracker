@@ -119,23 +119,6 @@ class ExpenseCRUDTest(BaseViewTest):
         self.assertEqual(response.status_code, 302)
         self.assertEqual(Expense.objects.count(), 0)
 
-    def test_investment_redirection_preselection(self):
-        """Test that is_investment=true correctly pre-selects investment categories."""
-        # 'Food' is already created in setUp, so we don't need to create it again with False.
-        # But for clarity in this test, let's just use different names or skip creation of Food.
-        Category.objects.create(user=self.user, name='Stocks', is_investment=True)
-        Category.objects.create(user=self.user, name='Crypto', is_investment=True)
-        Category.objects.filter(user=self.user, name='Food').update(is_investment=False)
-        
-        url = reverse('expense-list')
-        response = self.client.get(url, {'is_investment': 'true'})
-        
-        self.assertEqual(response.status_code, 200)
-        selected_categories = response.context['selected_categories']
-        
-        self.assertIn('Stocks', selected_categories)
-        self.assertIn('Crypto', selected_categories)
-        self.assertNotIn('Food', selected_categories)
 
     def test_delete_retains_filters(self):
         expense = Expense.objects.create(user=self.user, date=date.today(), amount=100, category='Food', description='Del', currency='₹')

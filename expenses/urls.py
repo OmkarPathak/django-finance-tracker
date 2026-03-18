@@ -31,6 +31,20 @@ urlpatterns = [
     path('income/add/', views.IncomeCreateView.as_view(), name='income-create'),
     path('income/<int:pk>/edit/', views.IncomeUpdateView.as_view(), name='income-edit'),
     path('income/<int:pk>/delete/', views.IncomeDeleteView.as_view(), name='income-delete'),
+    
+    # Accounts
+    path('accounts/list/', views.AccountListView.as_view(), name='account-list'),
+    path('accounts/add/', views.AccountCreateView.as_view(), name='account-create'),
+    path('accounts/<int:pk>/edit/', views.AccountUpdateView.as_view(), name='account-edit'),
+    path('accounts/<int:pk>/delete/', views.AccountDeleteView.as_view(), name='account-delete'),
+    path('accounts/<int:pk>/', views.AccountDetailView.as_view(), name='account-detail'),
+    path('accounts/quick-add/', views.AccountQuickCreateView.as_view(), name='account-quick-create'),
+    
+    # Transfers
+    path('transfers/', views.TransferListView.as_view(), name='transfer-list'), 
+    path('transfers/add/', views.TransferCreateView.as_view(), name='transfer-create'),
+    path('transfers/<int:pk>/edit/', views.TransferUpdateView.as_view(), name='transfer-edit'),
+    path('transfers/<int:pk>/delete/', views.TransferDeleteView.as_view(), name='transfer-delete'),
 
     # Calendar
     path('calendar/', views.CalendarView.as_view(), name='calendar'),
@@ -47,7 +61,7 @@ urlpatterns = [
     path('settings/language/', views.LanguageUpdateView.as_view(), name='language-settings'),
     path('settings/profile/', views.ProfileUpdateView.as_view(), name='profile-settings'),
     path('settings/', views.SettingsHomeView.as_view(), name='settings-home'), # Settings Home
-    path('account/delete/', views.AccountDeleteView.as_view(), name='account-delete'),
+    path('account/delete/', views.UserDeleteView.as_view(), name='user-delete'),
     path('tutorial/complete/', views.complete_tutorial, name='complete-tutorial'),
     
     # Savings Goals

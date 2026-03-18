@@ -7,21 +7,113 @@
         <div class="card border-0 shadow-lg rounded-4 overflow-hidden fade-in">
             <!-- Progress Header -->
             <div class="px-5 pt-4 d-flex justify-content-between align-items-center">
-                <span id="step-text" class="badge bg-primary-soft text-primary rounded-pill px-3 py-2 fw-bold">Step 1 of 4</span>
+                <span id="step-text" class="badge bg-primary-soft text-primary rounded-pill px-3 py-2 fw-bold">Step 1 of 5</span>
                 <div class="progress rounded-pill flex-grow-1 ms-3" style="height: 8px;">
-                    <div id="onboarding-progress" class="progress-bar progress-bar-striped progress-bar-animated rounded-pill" role="progressbar" style="width: 25%; transition: width 0.5s ease;"></div>
+                    <div id="onboarding-progress" class="progress-bar progress-bar-striped progress-bar-animated rounded-pill" role="progressbar" style="width: 20%; transition: width 0.5s ease;"></div>
                 </div>
             </div>
 
             <div class="card-body p-5">
-                <!-- Step 1: Initial Income -->
+                <!-- Step 1: Preferences (Welcome) -->
                 <div id="step-1" class="onboarding-step">
+                    <div class="text-center mb-4">
+                        <div class="icon-shape icon-shape-lg bg-primary bg-opacity-10 text-primary rounded-circle mb-3 mx-auto" style="width: 80px; height: 80px; display: flex; align-items: center; justify-content: center;">
+                            <i class="bi bi-stars fs-1"></i>
+                        </div>
+                        <h2 class="fw-bold">{% trans "Welcome to TrackMyRupee!" %}</h2>
+                        <p class="text-muted">{% trans "Let's personalize your experience before we start tracking." %}</p>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small text-uppercase text-muted">{% trans "Preferred Language" %}</label>
+                        <select id="onboarding-language" class="form-select form-select-lg">
+                            {% for code, name in language_choices %}
+                                <option value="{{ code }}" {% if user.profile.language == code %}selected{% endif %}>{{ name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-bold small text-uppercase text-muted">{% trans "Primary Currency" %}</label>
+                        <select id="onboarding-currency" class="form-select form-select-lg" onchange="updateCurrencyLabels(this.value)">
+                            {% for code, name in currency_choices %}
+                                <option value="{{ code }}" {% if user.profile.currency == code %}selected{% endif %}>{{ name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="d-grid shadow-hover">
+                        <button onclick="saveStep('setup', 1)" class="btn btn-primary btn-lg rounded-pill fw-bold py-3 shadow-sm">
+                            {% trans "Get Started" %} <i class="bi bi-arrow-right ms-2"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Step 2: Accounts -->
+                <div id="step-2" class="onboarding-step d-none">
+                    <div class="text-center mb-4">
+                        <div class="icon-shape icon-shape-lg bg-info bg-opacity-10 text-info rounded-circle mb-3 mx-auto" style="width: 80px; height: 80px; display: flex; align-items: center; justify-content: center;">
+                            <i class="bi bi-bank fs-1"></i>
+                        </div>
+                        <h2 class="fw-bold">{% trans "Where is your money?" %}</h2>
+                        <p class="text-muted">{% trans "Add your primary accounts to track balances accurately." %}</p>
+                    </div>
+
+                    <div id="onboarding-accounts-list" class="mb-3">
+                        <!-- Account Items will be styled with a cleaner card layout -->
+                        <div class="account-item p-4 bg-white border rounded-4 mb-3 shadow-sm hover-border-primary transition-all">
+                            <div class="row align-items-center g-3">
+                                <div class="col-md-7">
+                                    <div class="d-flex flex-column">
+                                        <label class="small text-muted mb-1 text-uppercase fw-semibold" style="letter-spacing: 0.5px;">{% trans "Account Name" %}</label>
+                                        <input type="text" class="form-control border-0 fw-bold fs-5 p-0 shadow-none bg-transparent account-name" value="{% trans 'Main Bank Account' %}" placeholder="Account Name">
+                                        <div class="mt-2">
+                                            <select class="form-select form-select-sm border-0 text-muted ps-0 pe-4 shadow-none bg-transparent account-type" style="width: fit-content; cursor: pointer;">
+                                                <option value="BANK" selected>{% trans "Bank Account" %}</option>
+                                                <option value="CASH">{% trans "Cash" %}</option>
+                                                <option value="CREDIT_CARD">{% trans "Credit Card" %}</option>
+                                                <option value="INVESTMENT">{% trans "Investment" %}</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-5">
+                                    <div class="text-md-end">
+                                        <label class="small text-muted mb-1 d-block text-uppercase fw-semibold" style="letter-spacing: 0.5px;">{% trans "Initial Balance" %}</label>
+                                        <div class="d-flex align-items-center justify-content-md-end">
+                                            <span class="fs-4 text-muted me-2 currency-label">{{ user.profile.currency }}</span>
+                                            <input type="number" class="form-control form-control-lg border-0 fw-bold text-md-end p-0 shadow-none bg-transparent account-balance" style="font-size: 1.5rem;" value="0" step="0.01">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="text-center mb-4">
+                        <button onclick="addAccountRow()" class="btn btn-link text-primary text-decoration-none fw-bold small">
+                            <i class="bi bi-plus-circle me-1"></i> {% trans "Add another account" %}
+                        </button>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button onclick="showStep(1)" class="btn btn-outline-secondary btn-lg rounded-pill fw-bold py-3 px-4 shadow-sm">
+                            <i class="bi bi-arrow-left"></i>
+                        </button>
+                        <button onclick="saveStep('accounts', 2)" class="btn btn-primary btn-lg rounded-pill fw-bold py-3 flex-grow-1 shadow-sm">
+                            {% trans "Continue" %} <i class="bi bi-arrow-right ms-2"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Step 3: Initial Income -->
+                <div id="step-3" class="onboarding-step d-none">
                     <div class="text-center mb-4">
                         <div class="icon-shape icon-shape-lg bg-success bg-opacity-10 text-success rounded-circle mb-3 mx-auto" style="width: 80px; height: 80px; display: flex; align-items: center; justify-content: center;">
                             <i class="bi bi-wallet2 fs-1"></i>
                         </div>
-                        <h2 class="fw-bold">{% trans "Let's add your income" %}</h2>
-                        <p class="text-muted">{% trans "Start by adding your primary income. This helps TrackMyRupee calculate your savings rate." %}</p>
+                        <h2 class="fw-bold">{% trans "Recent Earnings" %}</h2>
+                        <p class="text-muted">{% trans "Log your most recent income to start your ledger." %}</p>
                     </div>
 
                     <div class="mb-3">
@@ -32,26 +124,37 @@
                         </div>
                     </div>
 
-                    <div class="mb-4">
-                        <label class="form-label fw-bold small text-uppercase text-muted">{% trans "Source" %}</label>
-                        <input type="text" id="onboarding-income-source" class="form-control form-control-lg" placeholder="{% trans 'e.g. Monthly Salary' %}" value="{% trans 'Monthly Salary' %}">
+                    <div class="row g-2 mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small text-uppercase text-muted">{% trans "Source" %}</label>
+                            <input type="text" id="onboarding-income-source" class="form-control" placeholder="{% trans 'e.g. Salary' %}" value="{% trans 'Salary' %}">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small text-uppercase text-muted">{% trans "Deposit To" %}</label>
+                            <select id="onboarding-income-account" class="form-select onboarding-account-select">
+                                <!-- Populated via JS -->
+                            </select>
+                        </div>
                     </div>
 
-                    <div class="d-grid">
-                        <button onclick="saveStep('income', 1)" class="btn btn-primary btn-lg rounded-pill fw-bold py-3 shadow-sm">
+                    <div class="d-flex gap-2">
+                        <button onclick="showStep(2)" class="btn btn-outline-secondary btn-lg rounded-pill fw-bold py-3 px-4 shadow-sm">
+                            <i class="bi bi-arrow-left"></i>
+                        </button>
+                        <button onclick="saveStep('income', 3)" class="btn btn-primary btn-lg rounded-pill fw-bold py-3 flex-grow-1 shadow-sm">
                             {% trans "Continue" %} <i class="bi bi-arrow-right ms-2"></i>
                         </button>
                     </div>
                 </div>
 
-                <!-- Step 2: First Expense -->
-                <div id="step-2" class="onboarding-step d-none">
+                <!-- Step 4: First Expense -->
+                <div id="step-4" class="onboarding-step d-none">
                     <div class="text-center mb-4">
                         <div class="icon-shape icon-shape-lg bg-danger bg-opacity-10 text-danger rounded-circle mb-3 mx-auto" style="width: 80px; height: 80px; display: flex; align-items: center; justify-content: center;">
                             <i class="bi bi-cart-plus-fill fs-1"></i>
                         </div>
-                        <h2 class="fw-bold">{% trans "Track your first expense" %}</h2>
-                        <p class="text-muted">{% trans "Track something you bought recently to see your dashboard come alive." %}</p>
+                        <h2 class="fw-bold">{% trans "Recent Spending" %}</h2>
+                        <p class="text-muted">{% trans "Track something you bought recently." %}</p>
                     </div>
 
                     <div class="mb-3">
@@ -60,40 +163,48 @@
                             <span class="input-group-text bg-transparent border-end-0 text-muted currency-label">{{ user.profile.currency }}</span>
                             <input type="number" id="onboarding-expense-amount" class="form-control border-start-0 ps-0" placeholder="0.00" step="0.01">
                         </div>
-                        <div class="mt-3 d-flex gap-2">
+                        <div class="mt-3 d-flex gap-2 flex-wrap">
                             <button onclick="setExpenseAmount(100)" class="btn btn-sm btn-outline-secondary rounded-pill px-3">₹100</button>
                             <button onclick="setExpenseAmount(500)" class="btn btn-sm btn-outline-secondary rounded-pill px-3">₹500</button>
                             <button onclick="setExpenseAmount(1000)" class="btn btn-sm btn-outline-secondary rounded-pill px-3">₹1000</button>
                         </div>
                     </div>
 
-                    <div class="mb-3">
-                        <label class="form-label fw-bold small text-uppercase text-muted">{% trans "Category" %}</label>
-                        <select id="onboarding-expense-category" class="form-select form-select-lg">
-                            <option value="Food">{% trans "Food" %}</option>
-                            <option value="Shopping">{% trans "Shopping" %}</option>
-                            <option value="Groceries">{% trans "Groceries" %}</option>
-                            <option value="Miscellaneous" selected>{% trans "Miscellaneous" %}</option>
-                        </select>
+                    <div class="row g-2 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small text-uppercase text-muted">{% trans "Category" %}</label>
+                            <select id="onboarding-expense-category" class="form-select shadow-none">
+                                <option value="Food">{% trans "Food" %}</option>
+                                <option value="Shopping">{% trans "Shopping" %}</option>
+                                <option value="Groceries">{% trans "Groceries" %}</option>
+                                <option value="Miscellaneous" selected>{% trans "Miscellaneous" %}</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small text-uppercase text-muted">{% trans "Paid From" %}</label>
+                            <select id="onboarding-expense-account" class="form-select onboarding-account-select shadow-none">
+                                <!-- Populated via JS -->
+                            </select>
+                        </div>
                     </div>
 
                     <div class="mb-4">
                         <label class="form-label fw-bold small text-uppercase text-muted">{% trans "Description" %}</label>
-                        <input type="text" id="onboarding-expense-description" class="form-control form-control-lg" placeholder="{% trans 'e.g. Lunch with friends' %}">
+                        <input type="text" id="onboarding-expense-description" class="form-control" placeholder="{% trans 'e.g. Lunch' %}">
                     </div>
 
                     <div class="d-flex gap-2">
-                        <button onclick="showStep(1)" class="btn btn-outline-secondary btn-lg rounded-pill fw-bold py-3 px-4 shadow-sm">
+                        <button onclick="showStep(3)" class="btn btn-outline-secondary btn-lg rounded-pill fw-bold py-3 px-4 shadow-sm">
                             <i class="bi bi-arrow-left"></i>
                         </button>
-                        <button onclick="saveStep('expense', 2)" class="btn btn-primary btn-lg rounded-pill fw-bold py-3 flex-grow-1 shadow-sm">
+                        <button onclick="saveStep('expense', 4)" class="btn btn-primary btn-lg rounded-pill fw-bold py-3 flex-grow-1 shadow-sm">
                             {% trans "Continue" %} <i class="bi bi-arrow-right ms-2"></i>
                         </button>
                     </div>
                 </div>
 
-                <!-- Step 2.5: Insight Screen -->
-                <div id="step-2-5" class="onboarding-step d-none text-center">
+                <!-- Step 4.5: Insight Screen -->
+                <div id="step-4-5" class="onboarding-step d-none text-center">
                     <div class="mb-4">
                         <div class="mb-3">
                             <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-3 py-2 fw-bold">{% trans "Success!" %}</span>
@@ -125,27 +236,24 @@
                     </div>
 
                     <div class="d-grid">
-                        <button onclick="showStep(3)" class="btn btn-primary btn-lg rounded-pill fw-bold py-3 shadow-sm">
+                        <button onclick="showStep(5)" class="btn btn-primary btn-lg rounded-pill fw-bold py-3 shadow-sm">
                             {% trans "Continue" %} → {% trans "Set budgets" %}
                         </button>
                     </div>
                 </div>
 
-                <!-- Step 3: Budgets -->
-                <div id="step-3" class="onboarding-step d-none">
+                <!-- Step 5: Budgets -->
+                <div id="step-5" class="onboarding-step d-none">
                     <div class="text-center mb-4">
                         <div class="icon-shape icon-shape-lg bg-info bg-opacity-10 text-info rounded-circle mb-3 mx-auto" style="width: 80px; height: 80px; display: flex; align-items: center; justify-content: center;">
                             <i class="bi bi-pie-chart-fill fs-1"></i>
                         </div>
-                        <h2 class="fw-bold">{% trans "Plan your monthly spending" %}</h2>
-                        <p class="text-muted">{% trans "Set monthly limits (optional)" %}</p>
-                        <span class="badge bg-info bg-opacity-10 text-info rounded-pill px-3 py-1 small">
-                            <i class="bi bi-lightbulb me-1"></i> {% trans "Suggested based on typical spending" %}
-                        </span>
+                        <h2 class="fw-bold">{% trans "Monthly Budgeting" %}</h2>
+                        <p class="text-muted">{% trans "Set spending limits for categories." %}</p>
                     </div>
 
                     <div id="budget-list" class="mb-4">
-                        <div class="budget-item mb-3 p-3 bg-body-tertiary rounded-3">
+                        <div class="budget-item mb-3 p-3 bg-body-tertiary rounded-4 border border-opacity-50">
                             <div class="row align-items-center g-2">
                                 <div class="col-6">
                                     <label class="form-label small fw-bold mb-1">{% trans "Food & Dining" %}</label>
@@ -153,13 +261,13 @@
                                 </div>
                                 <div class="col-6">
                                     <div class="input-group input-group-sm">
-                                        <span class="input-group-text bg-transparent border-end-0 text-muted currency-label">{{ user.profile.currency }}</span>
-                                        <input type="number" class="form-control border-start-0 ps-0 budget-limit" placeholder="{% trans 'Limit' %}" value="5000">
+                                        <span class="input-group-text bg-transparent border-0 pe-1 text-muted currency-label">{{ user.profile.currency }}</span>
+                                        <input type="number" class="form-control border-0 bg-transparent fw-bold text-end budget-limit" placeholder="{% trans 'Limit' %}" value="5000">
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        <div class="budget-item mb-3 p-3 bg-body-tertiary rounded-3">
+                        <div class="budget-item mb-3 p-3 bg-body-tertiary rounded-4 border border-opacity-50">
                             <div class="row align-items-center g-2">
                                 <div class="col-6">
                                     <label class="form-label small fw-bold mb-1">{% trans "Shopping" %}</label>
@@ -167,13 +275,13 @@
                                 </div>
                                 <div class="col-6">
                                     <div class="input-group input-group-sm">
-                                        <span class="input-group-text bg-transparent border-end-0 text-muted currency-label">{{ user.profile.currency }}</span>
-                                        <input type="number" class="form-control border-start-0 ps-0 budget-limit" placeholder="{% trans 'Limit' %}" value="2000">
+                                        <span class="input-group-text bg-transparent border-0 pe-1 text-muted currency-label">{{ user.profile.currency }}</span>
+                                        <input type="number" class="form-control border-0 bg-transparent fw-bold text-end budget-limit" placeholder="{% trans 'Limit' %}" value="2000">
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        <div class="budget-item mb-0 p-3 bg-body-tertiary rounded-3">
+                        <div class="budget-item mb-0 p-3 bg-body-tertiary rounded-4 border border-opacity-50">
                             <div class="row align-items-center g-2">
                                 <div class="col-6">
                                     <label class="form-label small fw-bold mb-1">{% trans "Groceries" %}</label>
@@ -181,8 +289,8 @@
                                 </div>
                                 <div class="col-6">
                                     <div class="input-group input-group-sm">
-                                        <span class="input-group-text bg-transparent border-end-0 text-muted currency-label">{{ user.profile.currency }}</span>
-                                        <input type="number" class="form-control border-start-0 ps-0 budget-limit" placeholder="{% trans 'Limit' %}" value="3000">
+                                        <span class="input-group-text bg-transparent border-0 pe-1 text-muted currency-label">{{ user.profile.currency }}</span>
+                                        <input type="number" class="form-control border-0 bg-transparent fw-bold text-end budget-limit" placeholder="{% trans 'Limit' %}" value="3000">
                                     </div>
                                 </div>
                             </div>
@@ -190,95 +298,51 @@
                     </div>
 
                     <div class="d-flex gap-2">
-                        <button onclick="showStep(2)" class="btn btn-outline-secondary btn-lg rounded-pill fw-bold py-3 px-4 shadow-sm">
+                        <button onclick="showStep(4)" class="btn btn-outline-secondary btn-lg rounded-pill fw-bold py-3 px-4 shadow-sm">
                             <i class="bi bi-arrow-left"></i>
                         </button>
-                        <button onclick="saveStep('budget', 3)" class="btn btn-primary btn-lg rounded-pill fw-bold py-3 flex-grow-1 shadow-sm">
-                            {% trans "Continue" %} <i class="bi bi-arrow-right ms-2"></i>
+                        <button onclick="saveStep('budget', 5)" class="btn btn-primary btn-lg rounded-pill fw-bold py-3 flex-grow-1 shadow-sm">
+                            {% trans "Finish Setup" %} <i class="bi bi-check-lg ms-2"></i>
                         </button>
                     </div>
                 </div>
 
-                <!-- Step 4: Preferences -->
-                <div id="step-4" class="onboarding-step d-none">
-                    <div class="text-center mb-4">
-                        <div class="icon-shape icon-shape-lg bg-primary bg-opacity-10 text-primary rounded-circle mb-3 mx-auto" style="width: 80px; height: 80px; display: flex; align-items: center; justify-content: center;">
-                            <i class="bi bi-gear-fill fs-1"></i>
-                        </div>
-                        <h2 class="fw-bold">{% trans "Customize your experience" %}</h2>
-                        <p class="text-muted">{% trans "Choose how you'd like to use TrackMyRupee." %}</p>
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label fw-bold small text-uppercase text-muted">{% trans "Preferred Language" %}</label>
-                        <select id="onboarding-language" class="form-select form-select-lg">
-                            {% for code, name in language_choices %}
-                                <option value="{{ code }}" {% if user.profile.language == code %}selected{% endif %}>{{ name }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-
-                    <div class="mb-4">
-                        <label class="form-label fw-bold small text-uppercase text-muted">{% trans "Primary Currency" %}</label>
-                        <select id="onboarding-currency" class="form-select form-select-lg">
-                            {% for code, name in currency_choices %}
-                                <option value="{{ code }}" {% if user.profile.currency == code %}selected{% endif %}>{{ name }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-
-                    <div class="d-flex gap-2">
-                        <button onclick="showStep(3)" class="btn btn-outline-secondary btn-lg rounded-pill fw-bold py-3 px-4 shadow-sm">
-                            <i class="bi bi-arrow-left"></i>
-                        </button>
-                        <button onclick="saveStep('setup', 4)" class="btn btn-primary btn-lg rounded-pill fw-bold py-3 flex-grow-1 shadow-sm">
-                            {% trans "Complete Setup" %} <i class="bi bi-check-lg ms-2"></i>
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Step 5: Final Financial Story -->
-                <div id="step-5" class="onboarding-step d-none text-center">
+                <!-- Step 6: Final Summary -->
+                <div id="step-6" class="onboarding-step d-none text-center">
                     <div class="mb-4">
                         <div class="icon-shape icon-shape-lg bg-primary bg-opacity-10 text-primary rounded-circle mb-3 mx-auto" style="width: 80px; height: 80px; display: flex; align-items: center; justify-content: center;">
-                            <i class="bi bi-stars fs-1"></i>
+                            <i class="bi bi-rocket-takeoff fs-1"></i>
                         </div>
-                        <h2 class="fw-bold">{% trans "Your Financial Story" %}</h2>
-                        <p class="text-muted">{% trans "Here's what your month looks like so far." %}</p>
+                        <h2 class="fw-bold">{% trans "You're all set!" %}</h2>
+                        <p class="text-muted">{% trans "Your financial tracking journey begins now." %}</p>
                     </div>
 
-                    <div class="card bg-body-tertiary border-0 rounded-4 overflow-hidden mb-4">
+                    <div class="card bg-body-tertiary border-0 rounded-4 overflow-hidden mb-4 shadow-sm">
                         <div class="card-body p-4">
-                            <div class="d-flex justify-content-between mb-3 border-bottom pb-2">
-                                <span class="text-muted">{% trans "Income" %}</span>
+                            <div class="d-flex justify-content-between mb-3 border-bottom border-white border-opacity-10 pb-2">
+                                <span class="text-muted small fw-bold text-uppercase">{% trans "Total Income" %}</span>
                                 <span class="fw-bold text-success"><span class="currency-label">{{ user.profile.currency }}</span><span id="story-income">0</span></span>
                             </div>
-                            <div class="d-flex justify-content-between mb-3 border-bottom pb-2">
-                                <span class="text-muted">{% trans "Spent" %}</span>
+                            <div class="d-flex justify-content-between mb-3 border-bottom border-white border-opacity-10 pb-2">
+                                <span class="text-muted small fw-bold text-uppercase">{% trans "Total Spent" %}</span>
                                 <span class="fw-bold text-danger"><span class="currency-label">{{ user.profile.currency }}</span><span id="story-spent">0</span></span>
                             </div>
-                            <div class="d-flex justify-content-between mb-3 border-bottom pb-2">
-                                <span class="text-muted">{% trans "Remaining" %}</span>
-                                <span class="fw-bold text-primary"><span class="currency-label">{{ user.profile.currency }}</span><span id="story-remaining">0</span></span>
-                            </div>
                             <div class="d-flex justify-content-between">
-                                <span class="text-muted">{% trans "Top Category" %}</span>
-                                <span class="fw-bold" id="story-top-category">Food</span>
+                                <span class="text-muted small fw-bold text-uppercase">{% trans "Current Net" %}</span>
+                                <span class="fw-bold text-primary"><span class="currency-label">{{ user.profile.currency }}</span><span id="story-remaining">0</span></span>
                             </div>
                         </div>
                     </div>
 
                     <div class="d-grid">
-                        <a href="{% url 'home' %}?onboarded=true" class="btn btn-primary btn-lg rounded-pill fw-bold py-3 shadow-sm">
-                            {% trans "Go to Dashboard" %} <i class="bi bi-arrow-right ms-2"></i>
+                        <a href="{% url 'home' %}?onboarded=true" class="btn btn-primary btn-lg rounded-pill fw-bold py-3 shadow-sm shadow-hover">
+                            {% trans "Enter Dashboard" %} <i class="bi bi-arrow-right ms-2"></i>
                         </a>
                     </div>
                 </div>
 
-                <!-- Step Indicators removed in favor of Step X of 4 text and progress bar -->
-
-                <div class="text-center mt-3">
-                    <button onclick="skipOnboarding()" class="btn btn-link text-muted text-decoration-none small">{% trans "Skip for now" %}</button>
+                <div class="text-center mt-4">
+                    <button onclick="skipOnboarding()" class="btn btn-link text-muted text-decoration-none small opacity-75">{% trans "Skip for now" %}</button>
                 </div>
             </div>
         </div>
@@ -286,8 +350,62 @@
 </div>
 
 <script>
+    let userAccounts = [];
+
+    function updateCurrencyLabels(val) {
+        document.querySelectorAll('.currency-label').forEach(el => el.innerText = val);
+    }
+
     function setExpenseAmount(amount) {
         document.getElementById('onboarding-expense-amount').value = amount;
+    }
+
+    function populateAccountSelects() {
+        const selects = document.querySelectorAll('.onboarding-account-select');
+        selects.forEach(select => {
+            select.innerHTML = '';
+            userAccounts.forEach(acc => {
+                const opt = document.createElement('option');
+                opt.value = acc.id;
+                opt.text = acc.name;
+                select.appendChild(opt);
+            });
+        });
+    }
+
+    function addAccountRow() {
+        const list = document.getElementById('onboarding-accounts-list');
+        const newItem = document.createElement('div');
+        newItem.className = 'account-item p-4 bg-white border rounded-4 mb-3 shadow-sm hover-border-primary transition-all position-relative';
+        newItem.innerHTML = `
+            <button onclick="this.parentElement.remove()" class="btn-close position-absolute top-0 end-0 m-3" style="font-size: 0.7rem;"></button>
+            <div class="row align-items-center g-3">
+                <div class="col-md-7">
+                    <div class="d-flex flex-column">
+                        <label class="small text-muted mb-1 text-uppercase fw-semibold" style="letter-spacing: 0.5px;">{% trans "Account Name" %}</label>
+                        <input type="text" class="form-control border-0 fw-bold fs-5 p-0 shadow-none bg-transparent account-name" value="{% trans 'Savings' %}" placeholder="Account Name">
+                        <div class="mt-2">
+                            <select class="form-select form-select-sm border-0 text-muted ps-0 pe-4 shadow-none bg-transparent account-type" style="width: fit-content; cursor: pointer;">
+                                <option value="BANK" selected>{% trans "Bank Account" %}</option>
+                                <option value="CASH">{% trans "Cash" %}</option>
+                                <option value="CREDIT_CARD">{% trans "Credit Card" %}</option>
+                                <option value="INVESTMENT">{% trans "Investment" %}</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-5">
+                    <div class="text-md-end">
+                        <label class="small text-muted mb-1 d-block text-uppercase fw-semibold" style="letter-spacing: 0.5px;">{% trans "Initial Balance" %}</label>
+                        <div class="d-flex align-items-center justify-content-md-end">
+                            <span class="fs-4 text-muted me-2 currency-label">${document.getElementById('onboarding-currency').value}</span>
+                            <input type="number" class="form-control form-control-lg border-0 fw-bold text-md-end p-0 shadow-none bg-transparent account-balance" style="font-size: 1.5rem;" value="0" step="0.01">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        list.appendChild(newItem);
     }
 
     async function saveStep(step, currentStepNum) {
@@ -296,11 +414,21 @@
         if (step === 'setup') {
             payload.language = document.getElementById('onboarding-language').value;
             payload.currency = document.getElementById('onboarding-currency').value;
-            // Update UI currency labels
-            document.querySelectorAll('.currency-label').forEach(el => el.innerText = payload.currency);
+            updateCurrencyLabels(payload.currency);
+        } else if (step === 'accounts') {
+            let accounts = [];
+            document.querySelectorAll('#onboarding-accounts-list .account-item').forEach(item => {
+                accounts.push({
+                    name: item.querySelector('.account-name').value,
+                    type: item.querySelector('.account-type').value,
+                    balance: item.querySelector('.account-balance').value || 0
+                });
+            });
+            payload.accounts = accounts;
         } else if (step === 'income') {
             payload.amount = document.getElementById('onboarding-income-amount').value;
             payload.source = document.getElementById('onboarding-income-source').value;
+            payload.account_id = document.getElementById('onboarding-income-account').value;
         } else if (step === 'budget') {
             let categories = [];
             document.querySelectorAll('.budget-item').forEach(item => {
@@ -314,6 +442,7 @@
             payload.amount = document.getElementById('onboarding-expense-amount').value;
             payload.category = document.getElementById('onboarding-expense-category').value;
             payload.description = document.getElementById('onboarding-expense-description').value;
+            payload.account_id = document.getElementById('onboarding-expense-account').value;
         }
 
         try {
@@ -328,15 +457,18 @@
             const data = await res.json();
             
             if (data.success) {
+                if (step === 'accounts') {
+                    userAccounts = data.accounts || [];
+                    populateAccountSelects();
+                }
+                
                 if (step === 'expense') {
-                    // Show insight screen
                     updateInsightScreen();
-                    showStep('2-5');
-                } else if (step === 'setup') {
-                    // Show final story
+                    showStep('4-5');
+                } else if (step === 'budget') {
                     updateStoryScreen();
-                    showStep(5);
-                } else if (currentStepNum < 4) {
+                    showStep(6);
+                } else {
                     showStep(currentStepNum + 1);
                 }
             } else {
@@ -362,12 +494,10 @@
         const income = parseFloat(document.getElementById('onboarding-income-amount').value) || 0;
         const spent = parseFloat(document.getElementById('onboarding-expense-amount').value) || 0;
         const remaining = income - spent;
-        const topCategory = document.getElementById('onboarding-expense-category').value;
 
-        document.getElementById('story-income').innerText = income.toLocaleString();
-        document.getElementById('story-spent').innerText = spent.toLocaleString();
-        document.getElementById('story-remaining').innerText = remaining.toLocaleString();
-        document.getElementById('story-top-category').innerText = topCategory;
+        document.querySelectorAll('#story-income').forEach(el => el.innerText = income.toLocaleString());
+        document.querySelectorAll('#story-spent').forEach(el => el.innerText = spent.toLocaleString());
+        document.querySelectorAll('#story-remaining').forEach(el => el.innerText = remaining.toLocaleString());
     }
 
     function showStep(stepNum) {
@@ -376,18 +506,19 @@
         if (stepEl) stepEl.classList.remove('d-none');
         
         // Update Progress UI
+        const totalSteps = 5;
         if (typeof stepNum === 'number') {
-            const progress = (stepNum / 4) * 100;
-            document.getElementById('onboarding-progress').style.width = Math.min(progress, 100) + '%';
-            document.getElementById('step-text').innerText = `Step ${stepNum} of 4`;
-            
-            // Hide progress header on final step
-            if (stepNum > 4) {
-                document.querySelector('.progress-bar').parentElement.parentElement.classList.add('d-none');
+            if (stepNum <= totalSteps) {
+                const progress = (stepNum / totalSteps) * 100;
+                document.getElementById('onboarding-progress').style.width = progress + '%';
+                document.getElementById('step-text').innerText = `Step ${stepNum} of ${totalSteps}`;
+            } else {
+                // Final Story step
+                document.querySelector('.progress').parentElement.classList.add('d-none');
             }
-        } else if (stepNum === '2-5') {
-            // Keep at step 2 progress
-            document.getElementById('onboarding-progress').style.width = '50%';
+        } else if (stepNum === '4-5') {
+            // Insight screen, keep at step 4 progress
+            document.getElementById('onboarding-progress').style.width = '80%';
         }
     }
 
@@ -418,15 +549,22 @@
     .bg-primary-soft {
         background-color: rgba(var(--bs-primary-rgb), 0.1);
     }
-    .hover-scale:hover {
-        transform: scale(1.02);
-    }
     .onboarding-step {
         animation: slideUp 0.4s ease-out;
     }
     @keyframes slideUp {
         from { opacity: 0; transform: translateY(20px); }
         to { opacity: 1; transform: translateY(0); }
+    }
+    .shadow-hover:hover .btn {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1) !important;
+    }
+    .hover-border-primary:hover {
+        border-color: rgba(var(--bs-primary-rgb), 0.5) !important;
+    }
+    .transition-all {
+        transition: all 0.2s ease-in-out;
     }
 </style>
 {% endblock %}

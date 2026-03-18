@@ -13,7 +13,7 @@ from django.views.generic import TemplateView
 from django.http import JsonResponse
 from django.core.management import call_command
 from django.utils.translation import gettext as _
-from ..models import Expense, Category, Income, UserProfile, SubscriptionPlan, CURRENCY_CHOICES
+from ..models import Expense, Category, Income, UserProfile, SubscriptionPlan, CURRENCY_CHOICES, Account
 from ..forms import CustomSignupForm, LanguageUpdateForm, ProfileUpdateForm
 from .mixins import RecurringTransactionMixin
 
@@ -60,16 +60,42 @@ class OnboardingView(LoginRequiredMixin, TemplateView):
                     income = income_qs.first()
                     income.amount = Decimal(data.get('amount', 0))
                     income.currency = request.user.profile.currency
+                    if data.get('account_id'):
+                        income.account = get_object_or_404(Account, id=data.get('account_id'), user=request.user)
                     income.save()
                 else:
+                    account = None
+                    if data.get('account_id'):
+                        account = get_object_or_404(Account, id=data.get('account_id'), user=request.user)
                     Income.objects.create(
                         user=request.user,
                         date=date.today(),
                         source=data.get('source', 'Initial Income'),
                         amount=Decimal(data.get('amount', 0)),
-                        currency=request.user.profile.currency
+                        currency=request.user.profile.currency,
+                        account=account
                     )
                 return JsonResponse({'success': True})
+            
+            elif step == 'accounts':
+                accounts_data = data.get('accounts', [])
+                created_accounts = []
+                for acc_data in accounts_data:
+                    name = acc_data.get('name')
+                    acc_type = acc_data.get('type', 'BANK')
+                    balance = Decimal(acc_data.get('balance', 0))
+                    if name:
+                        acc, created = Account.objects.update_or_create(
+                            user=request.user,
+                            name=name,
+                            defaults={
+                                'account_type': acc_type,
+                                'balance': balance,
+                                'currency': request.user.profile.currency
+                            }
+                        )
+                        created_accounts.append({'id': acc.id, 'name': acc.name})
+                return JsonResponse({'success': True, 'accounts': created_accounts})
             
             elif step == 'budget':
                 categories = data.get('categories', [])
@@ -95,15 +121,21 @@ class OnboardingView(LoginRequiredMixin, TemplateView):
                     expense = expense_qs.first()
                     expense.amount = Decimal(data.get('amount', 0))
                     expense.currency = request.user.profile.currency
+                    if data.get('account_id'):
+                        expense.account = get_object_or_404(Account, id=data.get('account_id'), user=request.user)
                     expense.save()
                 else:
+                    account = None
+                    if data.get('account_id'):
+                        account = get_object_or_404(Account, id=data.get('account_id'), user=request.user)
                     Expense.objects.create(
                         user=request.user,
                         date=date.today(),
                         description=data.get('description', 'Initial Expense'),
                         category=data.get('category', 'Miscellaneous'),
                         amount=Decimal(data.get('amount', 0)),
-                        currency=request.user.profile.currency
+                        currency=request.user.profile.currency,
+                        account=account
                     )
                 return JsonResponse({'success': True})
 

@@ -18,7 +18,7 @@ from ..forms import ProfileUpdateForm, LanguageUpdateForm
 class SettingsHomeView(LoginRequiredMixin, TemplateView):
     template_name = 'expenses/settings_home.html'
 
-class AccountDeleteView(LoginRequiredMixin, DeleteView):
+class UserDeleteView(LoginRequiredMixin, DeleteView):
     model = settings.AUTH_USER_MODEL # Handled via get_object
     success_url = reverse_lazy('landing')
     template_name = 'expenses/account_confirm_delete.html'

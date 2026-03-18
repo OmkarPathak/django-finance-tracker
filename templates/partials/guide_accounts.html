@@ -1,0 +1,80 @@
+{% load i18n %}
+<!-- Educational: How Accounts Work -->
+<div class="collapse mb-4" id="guideAccounts">
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+        <div class="card-body p-3 p-md-4">
+            <div class="row align-items-center g-4">
+                <div class="col-lg-5 text-center">
+                    <svg viewBox="0 0 480 360" xmlns="http://www.w3.org/2000/svg" class="w-100" style="max-width: 420px;">
+                        <defs>
+                            <linearGradient id="gaGrad1" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#6366f1"/><stop offset="100%" stop-color="#818cf8"/></linearGradient>
+                            <linearGradient id="gaGrad2" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#10b981"/><stop offset="100%" stop-color="#34d399"/></linearGradient>
+                            <linearGradient id="gaGrad3" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#f59e0b"/><stop offset="100%" stop-color="#fbbf24"/></linearGradient>
+                            <linearGradient id="gaGrad4" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#0ea5e9"/><stop offset="100%" stop-color="#38bdf8"/></linearGradient>
+                            <filter id="gaSh"><feDropShadow dx="0" dy="4" stdDeviation="6" flood-opacity="0.1"/></filter>
+                        </defs>
+                        <circle cx="240" cy="170" r="65" fill="url(#gaGrad1)" opacity="0.1"/>
+                        <circle cx="240" cy="170" r="50" fill="url(#gaGrad1)" opacity="0.15"/>
+                        <text x="240" y="160" text-anchor="middle" font-size="11" fill="#6366f1" font-weight="700" letter-spacing="1">NET WORTH</text>
+                        <text x="240" y="182" text-anchor="middle" font-size="18" fill="#6366f1" font-weight="800">$12,500</text>
+                        <g filter="url(#gaSh)" transform="translate(30, 30)">
+                            <rect width="150" height="80" rx="12" fill="white" stroke="#e5e7eb" stroke-width="1"/>
+                            <rect width="150" height="80" rx="12" fill="url(#gaGrad4)" opacity="0.05"/>
+                            <circle cx="28" cy="28" r="14" fill="#0ea5e9" opacity="0.15"/>
+                            <text x="28" y="33" text-anchor="middle" font-size="14">🏦</text>
+                            <text x="52" y="30" font-size="10" fill="#64748b" font-weight="600">Bank Account</text>
+                            <text x="16" y="58" font-size="16" fill="#0ea5e9" font-weight="800">$8,200</text>
+                        </g>
+                        <line x1="145" y1="100" x2="200" y2="150" stroke="#0ea5e9" stroke-width="1.5" stroke-dasharray="4,4" opacity="0.4"/>
+                        <g filter="url(#gaSh)" transform="translate(300, 20)">
+                            <rect width="150" height="80" rx="12" fill="white" stroke="#e5e7eb" stroke-width="1"/>
+                            <rect width="150" height="80" rx="12" fill="url(#gaGrad2)" opacity="0.05"/>
+                            <circle cx="28" cy="28" r="14" fill="#10b981" opacity="0.15"/>
+                            <text x="28" y="33" text-anchor="middle" font-size="14">💵</text>
+                            <text x="52" y="30" font-size="10" fill="#64748b" font-weight="600">Cash</text>
+                            <text x="16" y="58" font-size="16" fill="#10b981" font-weight="800">$1,500</text>
+                        </g>
+                        <line x1="340" y1="95" x2="285" y2="148" stroke="#10b981" stroke-width="1.5" stroke-dasharray="4,4" opacity="0.4"/>
+                        <g filter="url(#gaSh)" transform="translate(20, 230)">
+                            <rect width="150" height="80" rx="12" fill="white" stroke="#e5e7eb" stroke-width="1"/>
+                            <rect width="150" height="80" rx="12" fill="#ef4444" opacity="0.04"/>
+                            <circle cx="28" cy="28" r="14" fill="#ef4444" opacity="0.15"/>
+                            <text x="28" y="33" text-anchor="middle" font-size="14">💳</text>
+                            <text x="52" y="30" font-size="10" fill="#64748b" font-weight="600">Credit Card</text>
+                            <text x="16" y="58" font-size="16" fill="#ef4444" font-weight="800">-$2,200</text>
+                        </g>
+                        <line x1="130" y1="240" x2="200" y2="200" stroke="#ef4444" stroke-width="1.5" stroke-dasharray="4,4" opacity="0.4"/>
+                        <g filter="url(#gaSh)" transform="translate(310, 240)">
+                            <rect width="150" height="80" rx="12" fill="white" stroke="#e5e7eb" stroke-width="1"/>
+                            <rect width="150" height="80" rx="12" fill="url(#gaGrad3)" opacity="0.05"/>
+                            <circle cx="28" cy="28" r="14" fill="#f59e0b" opacity="0.15"/>
+                            <text x="28" y="33" text-anchor="middle" font-size="14">📈</text>
+                            <text x="52" y="30" font-size="10" fill="#64748b" font-weight="600">Investment</text>
+                            <text x="16" y="58" font-size="16" fill="#f59e0b" font-weight="800">$5,000</text>
+                        </g>
+                        <line x1="355" y1="250" x2="285" y2="200" stroke="#f59e0b" stroke-width="1.5" stroke-dasharray="4,4" opacity="0.4"/>
+                        <text x="240" y="345" text-anchor="middle" font-size="10" fill="#94a3b8" font-weight="600" letter-spacing="0.5">Bank + Cash + Investment - Credit Card = Net Worth</text>
+                    </svg>
+                </div>
+                <div class="col-lg-7">
+                    <h5 class="fw-bold mb-3">{% trans "Track All Your Money in One Place" %}</h5>
+                    <p class="text-muted small mb-3">{% trans "Create separate accounts for each place your money lives. Your Net Worth is automatically calculated as the sum of all account balances." %}</p>
+                    <div class="d-flex flex-column gap-2">
+                        <div class="d-flex gap-2 align-items-start">
+                            <i class="bi bi-bank text-info flex-shrink-0 mt-1"></i>
+                            <span class="small"><strong>{% trans "Bank Accounts" %}</strong> — {% trans "Balance updates automatically when you log expenses or income." %}</span>
+                        </div>
+                        <div class="d-flex gap-2 align-items-start">
+                            <i class="bi bi-credit-card text-danger flex-shrink-0 mt-1"></i>
+                            <span class="small"><strong>{% trans "Credit Cards" %}</strong> — {% trans "Balances are treated as debt and subtracted from net worth." %}</span>
+                        </div>
+                        <div class="d-flex gap-2 align-items-start">
+                            <i class="bi bi-graph-up-arrow text-warning flex-shrink-0 mt-1"></i>
+                            <span class="small"><strong>{% trans "Investments" %}</strong> — {% trans "Track portfolios. Fund via Transfers and update balance as value grows." %}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

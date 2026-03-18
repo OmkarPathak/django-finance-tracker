@@ -54,13 +54,20 @@
                     {% endif %}
                 </div>
 
-                <!-- Row 3: Start Date -->
+                <!-- Row 3: Start Date and Account -->
                 <div class="col-6">
                     <label class="form-label">{% trans "Start Date" %}</label>
                     <input type="date" name="{{ form.start_date.name }}" class="form-control" 
                         value="{{ form.start_date.value|date:'Y-m-d'|default:'' }}{% if not form.start_date.value %}{% now 'Y-m-d' %}{% endif %}" required id="{{ form.start_date.id_for_label }}">
                     {% if form.start_date.errors %}
                         <div class="text-danger small">{{ form.start_date.errors|first }}</div>
+                    {% endif %}
+                </div>
+                <div class="col-6">
+                    <label class="form-label">{% trans "Account" %}</label>
+                    {{ form.account }}
+                    {% if form.account.errors %}
+                        <div class="text-danger small">{{ form.account.errors|first }}</div>
                     {% endif %}
                 </div>
 

@@ -26,24 +26,24 @@ class Command(BaseCommand):
 
         self.stdout.write(self.style.SUCCESS(f'Created user: {username} (PRO Tier)'))
 
-        # 2. Categories & Budgets (Needs vs Wants vs Investments)
+        # 2. Categories & Budgets
         categories_data = [
             # Needs
-            {'name': 'Rent', 'limit': 25000, 'icon': 'bi-house-fill', 'is_investment': False},
-            {'name': 'Groceries', 'limit': 8000, 'icon': 'bi-cart-fill', 'is_investment': False},
-            {'name': 'Utilities', 'limit': 5000, 'icon': 'bi-lightning-charge-fill', 'is_investment': False},
-            {'name': 'Transport', 'limit': 6000, 'icon': 'bi-car-front-fill', 'is_investment': False},
+            {'name': 'Rent', 'limit': 25000, 'icon': 'bi-house-fill'},
+            {'name': 'Groceries', 'limit': 8000, 'icon': 'bi-cart-fill'},
+            {'name': 'Utilities', 'limit': 5000, 'icon': 'bi-lightning-charge-fill'},
+            {'name': 'Transport', 'limit': 6000, 'icon': 'bi-car-front-fill'},
             
             # Wants
-            {'name': 'Dining Out', 'limit': 5000, 'icon': 'bi-egg-fried', 'is_investment': False}, 
-            {'name': 'Shopping', 'limit': 7000, 'icon': 'bi-bag-heart-fill', 'is_investment': False},
-            {'name': 'Subscriptions', 'limit': 3000, 'icon': 'bi-tv-fill', 'is_investment': False},
-            {'name': 'Travel', 'limit': 15000, 'icon': 'bi-airplane-fill', 'is_investment': False},
+            {'name': 'Dining Out', 'limit': 5000, 'icon': 'bi-egg-fried'}, 
+            {'name': 'Shopping', 'limit': 7000, 'icon': 'bi-bag-heart-fill'},
+            {'name': 'Subscriptions', 'limit': 3000, 'icon': 'bi-tv-fill'},
+            {'name': 'Travel', 'limit': 15000, 'icon': 'bi-airplane-fill'},
             
-            # Investments (Excluded from standard expenses for story-telling)
-            {'name': 'Mutual Funds', 'limit': 20000, 'icon': 'bi-graph-up-arrow', 'is_investment': True},
-            {'name': 'Stocks', 'limit': 10000, 'icon': 'bi-bank', 'is_investment': True},
-            {'name': 'Savings Transfer', 'limit': None, 'icon': 'bi-piggy-bank-fill', 'is_investment': True}, # For Goal contributions
+            # General / Investment-related (Standard categories now)
+            {'name': 'Mutual Funds', 'limit': 20000, 'icon': 'bi-graph-up-arrow'},
+            {'name': 'Stocks', 'limit': 10000, 'icon': 'bi-bank'},
+            {'name': 'Savings Transfer', 'limit': None, 'icon': 'bi-piggy-bank-fill'},
         ]
         
         cat_objs = {}
@@ -51,7 +51,7 @@ class Command(BaseCommand):
             cat, created = Category.objects.get_or_create(
                 user=user, 
                 name=c['name'], 
-                defaults={'limit': c['limit'], 'icon': c['icon'], 'is_investment': c['is_investment']}
+                defaults={'limit': c['limit'], 'icon': c['icon']}
             )
             cat_objs[c['name']] = cat
 
