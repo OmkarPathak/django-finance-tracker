@@ -263,7 +263,7 @@
                         
                         <div class="mb-4">
                             <label for="edit_account" class="form-label text-muted small text-uppercase">{% trans "Account" %}</label>
-                            <select class="form-select" id="edit_account" name="account" required>
+                            <select class="form-select searchable-select" id="edit_account" name="account" required>
                                 {% for account in accounts %}
                                     <option value="{{ account.pk }}">{{ account.name }}</option>
                                 {% endfor %}
@@ -350,6 +350,8 @@
                     amountInput.value = amount;
                     currencyInput.value = currency;
                     accountInput.value = button.getAttribute('data-account');
+                    // Sync searchable-select button text with selected value
+                    accountInput.dispatchEvent(new Event('change', { bubbles: true }));
 
                     var freq = button.getAttribute('data-frequency');
                     if (freq) {

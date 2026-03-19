@@ -153,15 +153,15 @@
             <!-- All Subscriptions Tab -->
             <div class="tab-pane fade show active" id="all" role="tabpanel">
                 {% if active_subs %}
-                    <div class="list-group shadow-sm rounded-3 border-0">
+                    <div class="list-group shadow-sm rounded-4 border-0">
                         {% for sub in active_subs %}
-                            <div class="list-group-item list-group-item-action px-3 py-2 border-0 border-bottom d-flex justify-content-between align-items-center">
+                            <div class="list-group-item list-group-item-action px-4 py-3 border-0 border-bottom d-flex justify-content-between align-items-center">
                                 <div class="d-flex align-items-center">
                                     <!-- Icon with Urgency Logic -->
-                                    <div class="me-2 
-                                        {% if sub.annotated_days_until <= 3 and sub.transaction_type != 'INCOME' %}text-danger
-                                        {% elif sub.annotated_days_until <= 7 and sub.transaction_type != 'INCOME' %}text-warning
-                                        {% else %}text-secondary{% endif %}">
+                                    <div class="me-3 d-flex align-items-center justify-content-center rounded-3 flex-shrink-0
+                                        {% if sub.annotated_days_until <= 3 and sub.transaction_type != 'INCOME' %}bg-danger-subtle text-danger
+                                        {% elif sub.annotated_days_until <= 7 and sub.transaction_type != 'INCOME' %}bg-warning-subtle text-warning
+                                        {% else %}bg-body-secondary text-secondary{% endif %}" style="width: 42px; height: 42px;">
                                         {% if sub.transaction_type == 'TRANSFER' %}
                                             <i class="bi bi-arrow-left-right fs-5"></i>
                                         {% else %}
@@ -169,7 +169,7 @@
                                         {% endif %}
                                     </div>
                                     <div>
-                                        <h6 class="mb-0 fw-bold" style="font-size: 0.95rem;">{{ sub.description }}</h6>
+                                        <h6 class="mb-1 fw-bold" style="font-size: 1rem;">{{ sub.description }}</h6>
                                         <div class="text-muted small d-flex align-items-center flex-wrap gap-2">
                                             <span class="d-inline-flex align-items-center">{{ sub.get_frequency_display }}</span>
                                             
@@ -202,15 +202,17 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div class="d-flex align-items-center gap-2">
-                                    <h6 class="fw-bold mb-0 text-nowrap" style="font-size: 0.95rem;">
-                                        {{ currency_symbol }}{{ sub.base_amount|compact_amount:currency_symbol|translate_digits }}
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="text-end">
+                                        <h6 class="fw-bold mb-0 text-nowrap" style="font-size: 1.05rem;">
+                                            {{ currency_symbol }}{{ sub.base_amount|compact_amount:currency_symbol|translate_digits }}
+                                        </h6>
                                         {% if sub.currency != user.profile.currency %}
-                                        <div class="text-muted fw-normal text-end" style="font-size: 0.7rem;">
+                                        <div class="text-muted fw-normal" style="font-size: 0.72rem;">
                                             ({{ sub.currency }}{{ sub.amount|compact_amount:sub.currency|translate_digits }})
                                         </div>
                                         {% endif %}
-                                    </h6>
+                                    </div>
                                     <div class="dropdown">
                                         <button class="btn btn-link text-muted p-0" type="button" data-bs-toggle="dropdown">
                                             <i class="bi bi-three-dots-vertical fs-6"></i>
@@ -257,15 +259,15 @@
             <!-- Renewing Soon Tab -->
             <div class="tab-pane fade" id="renewing" role="tabpanel">
                 {% if renewing_soon %}
-                    <div class="list-group shadow-sm rounded-3 border-0">
+                    <div class="list-group shadow-sm rounded-4 border-0">
                         {% for sub in renewing_soon %}
-                            <div class="list-group-item list-group-item-action px-3 py-2 border-0 border-bottom d-flex justify-content-between align-items-center">
+                            <div class="list-group-item list-group-item-action px-4 py-3 border-0 border-bottom d-flex justify-content-between align-items-center">
                                 <div class="d-flex align-items-center">
-                                    <div class="me-2 text-danger">
+                                    <div class="me-3 d-flex align-items-center justify-content-center rounded-3 bg-danger-subtle text-danger flex-shrink-0" style="width: 42px; height: 42px;">
                                         <i class="bi bi-exclamation-circle-fill fs-5"></i>
                                     </div>
                                     <div>
-                                        <h6 class="mb-0 fw-bold" style="font-size: 0.95rem;">{{ sub.description }}</h6>
+                                        <h6 class="mb-1 fw-bold" style="font-size: 1rem;">{{ sub.description }}</h6>
                                         <div class="text-muted small">
                                             <span class="badge bg-danger text-white me-2">{% trans "Renewing This Month" %}</span>
                                             <span>{{ sub.get_frequency_display }}</span>
@@ -273,15 +275,15 @@
                                     </div>
                                 </div>
                                 <div class="text-end">
-                                    <h6 class="fw-bold mb-1" style="font-size: 0.95rem;">
+                                    <h6 class="fw-bold mb-0" style="font-size: 1.05rem;">
                                         {{ currency_symbol }}{{ sub.base_amount|floatformat:0|translate_digits }}
-                                        {% if sub.currency != user.profile.currency %}
-                                        <div class="text-muted fw-normal" style="font-size: 0.7rem;">
-                                            ({{ sub.currency }}{{ sub.amount|floatformat:0|translate_digits }})
-                                        </div>
-                                        {% endif %}
                                     </h6>
-                                     <a href="{% url 'recurring-edit' sub.pk %}?next={{ request.path }}" class="btn btn-sm btn-outline-secondary mt-1 rounded-pill" style="font-size: 0.8rem;">{% trans "Manage" %}</a>
+                                    {% if sub.currency != user.profile.currency %}
+                                    <div class="text-muted fw-normal" style="font-size: 0.72rem;">
+                                        ({{ sub.currency }}{{ sub.amount|floatformat:0|translate_digits }})
+                                    </div>
+                                    {% endif %}
+                                    <a href="{% url 'recurring-edit' sub.pk %}?next={{ request.path }}" class="btn btn-sm btn-outline-secondary mt-2 rounded-pill" style="font-size: 0.8rem;">{% trans "Manage" %}</a>
                                 </div>
                             </div>
                         {% endfor %}
@@ -297,15 +299,15 @@
             <!-- Cancelled Tab -->
             <div class="tab-pane fade" id="cancelled" role="tabpanel">
                 {% if cancelled_subs %}
-                    <div class="list-group shadow-sm rounded-3 border-0 opacity-75">
+                    <div class="list-group shadow-sm rounded-4 border-0 opacity-75">
                         {% for sub in cancelled_subs %}
-                            <div class="list-group-item list-group-item-action px-3 py-2 border-0 border-bottom d-flex justify-content-between align-items-center opacity-75">
+                            <div class="list-group-item list-group-item-action px-4 py-3 border-0 border-bottom d-flex justify-content-between align-items-center opacity-75">
                                 <div class="d-flex align-items-center">
-                                    <div class="me-2 text-secondary">
+                                    <div class="me-3 d-flex align-items-center justify-content-center rounded-3 bg-body-secondary text-secondary flex-shrink-0" style="width: 42px; height: 42px;">
                                         <i class="bi bi-x-circle fs-5"></i>
                                     </div>
                                     <div>
-                                        <h6 class="mb-0 fw-bold text-decoration-line-through text-muted" style="font-size: 0.95rem;">{{ sub.description }}</h6>
+                                        <h6 class="mb-1 fw-bold text-decoration-line-through text-muted" style="font-size: 1rem;">{{ sub.description }}</h6>
                                         <div class="text-muted small">
                                             <span class="badge bg-secondary me-2">{% trans "Cancelled" %}</span>
                                             <span>{{ sub.get_frequency_display }}</span>
@@ -313,15 +315,15 @@
                                     </div>
                                 </div>
                                 <div class="text-end">
-                                    <h6 class="fw-bold mb-1 text-muted" style="font-size: 0.95rem;">
+                                    <h6 class="fw-bold mb-0 text-muted" style="font-size: 1.05rem;">
                                         {{ currency_symbol }}{{ sub.base_amount|floatformat:0|translate_digits }}
-                                        {% if sub.currency != user.profile.currency %}
-                                        <div class="text-muted fw-normal" style="font-size: 0.7rem;">
-                                            ({{ sub.currency }}{{ sub.amount|floatformat:0|translate_digits }})
-                                        </div>
-                                        {% endif %}
                                     </h6>
-                                    <a href="{% url 'recurring-edit' sub.pk %}?next={{ request.path }}" class="btn btn-sm btn-outline-primary mt-1" style="font-size: 0.8rem;">{% trans "Reactivate" %}</a>
+                                    {% if sub.currency != user.profile.currency %}
+                                    <div class="text-muted fw-normal" style="font-size: 0.72rem;">
+                                        ({{ sub.currency }}{{ sub.amount|floatformat:0|translate_digits }})
+                                    </div>
+                                    {% endif %}
+                                    <a href="{% url 'recurring-edit' sub.pk %}?next={{ request.path }}" class="btn btn-sm btn-outline-primary mt-2" style="font-size: 0.8rem;">{% trans "Reactivate" %}</a>
                                 </div>
                             </div>
                         {% endfor %}

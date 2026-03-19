@@ -17,7 +17,7 @@ class ExpenseForm(forms.ModelForm):
             'date': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
             'amount': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
             'currency': forms.Select(attrs={'class': 'form-select'}),
-            'account': forms.Select(attrs={'class': 'form-select'}),
+            'account': forms.Select(attrs={'class': 'form-select searchable-select'}),
             'description': forms.TextInput(attrs={'class': 'form-control'}),
             'payment_method': forms.Select(attrs={'class': 'form-select'}),
         }
@@ -67,7 +67,7 @@ class IncomeForm(forms.ModelForm):
             'date': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
             'amount': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
             'currency': forms.Select(attrs={'class': 'form-select'}),
-            'account': forms.Select(attrs={'class': 'form-select'}),
+            'account': forms.Select(attrs={'class': 'form-select searchable-select'}),
             'source': forms.TextInput(attrs={'class': 'form-control', 'placeholder': _('e.g. Salary, Freelance')}),
             'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 2}),
         }
@@ -109,11 +109,11 @@ class RecurringTransactionForm(forms.ModelForm):
             'transaction_type': forms.Select(attrs={'class': 'form-select', 'onchange': 'toggleFields()'}),
             'amount': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
             'currency': forms.Select(attrs={'class': 'form-select'}),
-            'account': forms.Select(attrs={'class': 'form-select'}),
+            'account': forms.Select(attrs={'class': 'form-select searchable-select'}),
             'category': forms.Select(attrs={'class': 'form-select'}),
             'source': forms.TextInput(attrs={'class': 'form-control', 'placeholder': _('e.g. Salary, Rent')}),
-            'from_account': forms.Select(attrs={'class': 'form-select'}),
-            'to_account': forms.Select(attrs={'class': 'form-select'}),
+            'from_account': forms.Select(attrs={'class': 'form-select searchable-select'}),
+            'to_account': forms.Select(attrs={'class': 'form-select searchable-select'}),
             'frequency': forms.Select(attrs={'class': 'form-select'}),
             'start_date': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
             'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 2}),
@@ -337,6 +337,15 @@ class CategoryForm(forms.ModelForm):
             'limit': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01', 'placeholder': '0.00'}),
         }
 
+    def clean_name(self):
+        name = self.cleaned_data.get('name', '').strip()
+        if not name:
+            raise forms.ValidationError(_('Category name is required.'))
+        user = getattr(self.instance, 'user', None) or getattr(self, '_user', None)
+        if user and Category.objects.filter(user=user, name__iexact=name).exclude(pk=self.instance.pk).exists():
+            raise forms.ValidationError(_('A category with this name already exists.'))
+        return name
+
 from .models import Account, Transfer
 
 class AccountForm(forms.ModelForm):
@@ -366,8 +375,8 @@ class TransferForm(forms.ModelForm):
         widgets = {
             'date': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
             'amount': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
-            'from_account': forms.Select(attrs={'class': 'form-select'}),
-            'to_account': forms.Select(attrs={'class': 'form-select'}),
+            'from_account': forms.Select(attrs={'class': 'form-select searchable-select'}),
+            'to_account': forms.Select(attrs={'class': 'form-select searchable-select'}),
             'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 2}),
         }
 

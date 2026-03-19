@@ -56,7 +56,7 @@ def create_category_ajax(request):
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
-            name = data.get('name')
+            name = data.get('name', '').strip()
             if not name:
                 return JsonResponse({'success': False, 'error': _('Name is required.')})
                 
@@ -64,11 +64,14 @@ def create_category_ajax(request):
             limit = float('inf') if profile.is_pro else (10 if profile.is_plus else 5)
             if Category.objects.filter(user=request.user).count() >= limit:
                 return JsonResponse({'success': False, 'error': _('Category limit reached.')}, status=403)
+
+            if Category.objects.filter(user=request.user, name__iexact=name).exists():
+                return JsonResponse({'success': False, 'error': _('A category with this name already exists.')})
                 
             category = Category.objects.create(user=request.user, name=name)
             return JsonResponse({'success': True, 'id': category.id, 'name': category.name})
         except Exception as e:
-            return JsonResponse({'success': False, 'error': str(e)}, status=400)
+            return JsonResponse({'success': False, 'error': _('Something went wrong. Please try again.')}, status=400)
     return JsonResponse({'success': False}, status=405)
 
 class CategoryCreateView(LoginRequiredMixin, CreateView):
@@ -85,6 +88,11 @@ class CategoryCreateView(LoginRequiredMixin, CreateView):
             return redirect('pricing')
         form.instance.user = self.request.user
         return super().form_valid(form)
+
+    def get_form(self, form_class=None):
+        form = super().get_form(form_class)
+        form.instance.user = self.request.user
+        return form
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

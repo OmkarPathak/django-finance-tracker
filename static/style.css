@@ -864,7 +864,7 @@ a:hover {
   border: none;
   border-radius: 16px;
   cursor: pointer;
-  background: var(--surface-color);
+  background: transparent;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   user-select: none;
 }
@@ -896,7 +896,7 @@ a:hover {
 
 /* Selected State */
 .payment-method-item.active {
-  background: var(--surface-color);
+  background: transparent;
 }
 
 .payment-method-item.active .icon-wrapper {
@@ -912,7 +912,7 @@ a:hover {
 
 [data-bs-theme="dark"] .payment-method-item {
   border-color: rgba(255,255,255,0.1);
-  background: rgba(255,255,255,0.03);
+  background: transparent;
 }
 
 [data-bs-theme="dark"] .payment-method-item .icon-wrapper {
@@ -920,11 +920,11 @@ a:hover {
 }
 
 [data-bs-theme="dark"] .payment-method-item:hover {
-  background: rgba(255,255,255,0.06);
+  background: rgba(255,255,255,0.04);
 }
 
 [data-bs-theme="dark"] .payment-method-item.active {
-  background: rgba(255,255,255,0.08);
+  background: transparent;
 }
 
 /* Responsive adjustment for small screens */
