@@ -19,18 +19,11 @@ def process_user_recurring_transactions(user):
     profile = user.profile
     recurring_txs = RecurringTransaction.objects.filter(user=user, is_active=True).order_by('created_at')
     
-    # print(f"DEBUG: Processing RTs for {user.username}. Total active: {recurring_txs.count()}")
-    
     # Enforce Tier Limits for processing
     if not profile.is_pro:
-        # Technical Improvement: allow 3 for Plus, 0 for Free
         limit = 3 if profile.is_plus else 0
         recurring_txs = recurring_txs[:limit]
-    
-    # print(f"DEBUG: Limit applied: {limit if not profile.is_pro else 'Unlimited'}. RTs to process: {len(recurring_txs)}")
 
-    new_expenses = []
-    new_incomes = []
     updates_needed = []
     
     try:
@@ -44,8 +37,6 @@ def process_user_recurring_transactions(user):
         else:
             current_date = rt.get_next_date(rt.last_processed_date, rt.frequency)
 
-        # print(f"DEBUG: RT {rt.description} ({rt.transaction_type}). Next due: {current_date}, Today: {today}")
-
         if current_date > today:
             continue
 
@@ -57,15 +48,23 @@ def process_user_recurring_transactions(user):
 
         while current_date <= today:
             description = f"{rt.description} (Recurring)"
-            # print(f"DEBUG: Creating {rt.transaction_type} for {current_date}")
             
             if rt.transaction_type == 'EXPENSE':
                 category = rt.category or 'Uncategorized'
                 exists = Expense.objects.filter(user=user, date=current_date, amount=rt.amount, description=description, currency=rt.currency, category=category).exists()
                 if not exists:
-                    new_expenses.append(Expense(user=user, date=current_date, amount=rt.amount, currency=rt.currency, category=category, description=description, payment_method=rt.payment_method, exchange_rate=exchange_rate, base_amount=base_amount))
+                    try:
+                        Expense(
+                            user=user, date=current_date, amount=rt.amount,
+                            currency=rt.currency, category=category,
+                            description=description, payment_method=rt.payment_method,
+                            exchange_rate=exchange_rate, base_amount=base_amount,
+                            account=rt.account,
+                        ).save()
+                    except Exception:
+                        pass  # Skip duplicates or constraint violations
+
             elif rt.transaction_type == 'TRANSFER':
-                # Create actual Transfer records that update account balances
                 if rt.from_account and rt.to_account:
                     exists = Transfer.objects.filter(
                         user=user, date=current_date, amount=rt.amount,
@@ -73,29 +72,33 @@ def process_user_recurring_transactions(user):
                         description=description
                     ).exists()
                     if not exists:
-                        # Transfer.save() handles atomic balance updates, so save individually
-                        Transfer(
-                            user=user, date=current_date, amount=rt.amount,
-                            from_account=rt.from_account, to_account=rt.to_account,
-                            description=description
-                        ).save()
+                        try:
+                            Transfer(
+                                user=user, date=current_date, amount=rt.amount,
+                                from_account=rt.from_account, to_account=rt.to_account,
+                                description=description
+                            ).save()
+                        except Exception:
+                            pass
+
             else:
                 source = rt.source or 'Other'
-                # Unique constraint for Income: user, date, amount, currency, source
                 exists = Income.objects.filter(user=user, date=current_date, amount=rt.amount, currency=rt.currency, source=source).exists()
                 if not exists:
-                    new_incomes.append(Income(user=user, date=current_date, amount=rt.amount, currency=rt.currency, source=source, description=description, exchange_rate=exchange_rate, base_amount=base_amount))
+                    try:
+                        Income(
+                            user=user, date=current_date, amount=rt.amount,
+                            currency=rt.currency, source=source,
+                            description=description, exchange_rate=exchange_rate,
+                            base_amount=base_amount, account=rt.account,
+                        ).save()
+                    except Exception:
+                        pass  # Skip duplicates or constraint violations
             
             rt.last_processed_date = current_date
             current_date = rt.get_next_date(current_date, rt.frequency)
         
         updates_needed.append(rt)
 
-    if new_expenses:
-        # print(f"DEBUG: Bulk creating {len(new_expenses)} expenses")
-        Expense.objects.bulk_create(new_expenses)
-    if new_incomes:
-        # print(f"DEBUG: Bulk creating {len(new_incomes)} incomes")
-        Income.objects.bulk_create(new_incomes)
     if updates_needed:
         RecurringTransaction.objects.bulk_update(updates_needed, ['last_processed_date'])

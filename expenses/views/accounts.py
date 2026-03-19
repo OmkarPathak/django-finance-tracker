@@ -7,8 +7,10 @@ from django.utils.translation import gettext as _
 from django.db.models import Q
 from django.http import JsonResponse
 from itertools import chain
+from decimal import Decimal
 from ..models import Account, Transfer, Expense, Income
 from ..forms import AccountForm, TransferForm
+from ..utils import get_exchange_rate
 
 class AccountListView(LoginRequiredMixin, ListView):
     model = Account
@@ -145,16 +147,36 @@ class AccountDetailView(LoginRequiredMixin, View):
         transfers_from = Transfer.objects.filter(user=request.user, from_account=account)
         transfers_to = Transfer.objects.filter(user=request.user, to_account=account)
         
+        base_currency = request.user.profile.currency if hasattr(request.user, 'profile') else '₹'
+
         # Combine everything and sort by date descending
-        # We'll add a 'transaction_type' attribute to each for the template
-        for e in expenses: e.transaction_type = 'EXPENSE'
-        for i in incomes: i.transaction_type = 'INCOME'
-        for t in transfers_from: 
+        # We'll add 'transaction_type', 'display_currency', and 'base_amount_display' to each for the template
+        for e in expenses:
+            e.transaction_type = 'EXPENSE'
+            e.display_currency = e.currency
+            e.base_amount_display = e.base_amount if e.currency != base_currency else None
+        for i in incomes:
+            i.transaction_type = 'INCOME'
+            i.display_currency = i.currency
+            i.base_amount_display = i.base_amount if i.currency != base_currency else None
+        for t in transfers_from:
             t.transaction_type = 'TRANSFER_OUT'
             t.display_amount = -t.amount
-        for t in transfers_to: 
+            t.display_currency = t.to_account.currency
+            if t.to_account.currency != base_currency:
+                rate = get_exchange_rate(t.to_account.currency, base_currency)
+                t.base_amount_display = (t.amount * rate).quantize(Decimal('0.01'))
+            else:
+                t.base_amount_display = None
+        for t in transfers_to:
             t.transaction_type = 'TRANSFER_IN'
             t.display_amount = t.amount
+            t.display_currency = t.from_account.currency
+            if t.from_account.currency != base_currency:
+                rate = get_exchange_rate(t.from_account.currency, base_currency)
+                t.base_amount_display = (t.amount * rate).quantize(Decimal('0.01'))
+            else:
+                t.base_amount_display = None
 
         ledger = sorted(
             chain(expenses, incomes, transfers_from, transfers_to),
@@ -165,6 +187,6 @@ class AccountDetailView(LoginRequiredMixin, View):
         context = {
             'account': account,
             'ledger': ledger,
-            'currency_symbol': request.user.profile.currency if hasattr(request.user, 'profile') else '₹'
+            'currency_symbol': base_currency,
         }
         return render(request, self.template_name, context)

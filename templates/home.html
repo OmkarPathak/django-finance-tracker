@@ -93,6 +93,9 @@
     @keyframes card-slide { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(5px); } }
     .anim-card-empty { animation: card-slide 3s ease-in-out infinite; }
 
+    @keyframes wallet-coin { 0%,100% { transform: translateX(0); opacity: 0.4; } 50% { transform: translateX(-3px); opacity: 1; } }
+    .anim-wallet-coin { animation: wallet-coin 3s ease-in-out infinite; }
+
     @keyframes trend-draw { 0% { stroke-dasharray: 0 40; } 100% { stroke-dasharray: 40 40; } }
     .anim-trend { animation: trend-draw 3s ease-in-out infinite alternate; }
 
@@ -876,16 +879,52 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     .account-row:hover { background: var(--bs-tertiary-bg); }
     .min-width-0 { min-width: 0; }
+
+    /* Unified hero card header height */
+    #tour-hero-card .card-header {
+        min-height: 52px;
+        padding-top: 0.65rem !important;
+        padding-bottom: 0.65rem !important;
+    }
+
+    /* Net Worth hero block */
+    .nw-hero-block {
+        position: relative;
+        background: linear-gradient(135deg, rgba(45, 106, 79, 0.06) 0%, rgba(45, 106, 79, 0.02) 100%);
+        border: 1px solid rgba(45, 106, 79, 0.08);
+        overflow: hidden;
+    }
+    [data-bs-theme="dark"] .nw-hero-block {
+        background: linear-gradient(135deg, rgba(45, 106, 79, 0.15) 0%, rgba(45, 106, 79, 0.05) 100%);
+        border-color: rgba(45, 106, 79, 0.15);
+    }
+
+    .nw-trend-badge {
+        font-size: 0.7rem;
+        font-weight: 600;
+        padding: 3px 10px;
+        border-radius: 20px;
+        display: inline-flex;
+        align-items: center;
+        gap: 3px;
+    }
 </style>
 
 <!-- LAYER 2: FINANCIAL HEALTH & SPENDING PACE -->
 <div class="row g-4 mb-4 fade-in" id="tour-hero-card" style="animation-delay: 0.1s;">
     <!-- Net Worth & Accounts Card -->
-    <div class="col-12 col-lg-8">
+    <div class="col-12 col-lg-6">
         <div class="card shadow-lg border-0 rounded-4 overflow-hidden h-100">
             <!-- Header: Month + Health Badge -->
             <div class="card-header bg-transparent border-bottom d-flex justify-content-between align-items-center px-4 py-3">
-                <h6 class="mb-0 fw-bold text-muted d-flex align-items-center">
+                <h6 class="mb-0 fw-bold text-muted d-inline-flex align-items-center" style="line-height: 1;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="me-2 text-muted flex-shrink-0" style="vertical-align: middle;">
+                        <rect x="2" y="6" width="20" height="12" rx="2" opacity="0.2"/>
+                        <rect x="2" y="6" width="20" height="12" rx="2"/>
+                        <path d="M22 10H18a2 2 0 0 0 0 4h4"/>
+                        <circle cx="18" cy="12" r="1" fill="currentColor" class="anim-wallet-coin"/>
+                    </svg>
+                    Total Net Worth - 
                     {% if selected_month and selected_year %}
                         {{ selected_month }} {{ selected_year|translate_digits }}
                     {% else %}
@@ -893,18 +932,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     {% endif %}
                 </h6>
                 <div class="d-flex align-items-center gap-2">
-                    {% if hero_metrics.income > 0 or hero_metrics.spent > 0 %}
-                        {% if hero_metrics.status == 'excellent' %}
-                            <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-3 py-1 border border-success border-opacity-10 fw-semibold" style="font-size: 0.75rem;">{% trans "Excellent" %} ↑</span>
-                        {% elif hero_metrics.status == 'good' %}
-                            <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-3 py-1 border border-primary border-opacity-10 fw-semibold" style="font-size: 0.75rem;">{% trans "Good" %} ↑</span>
-                        {% else %}
-                            <span class="badge bg-warning bg-opacity-10 text-warning rounded-pill px-3 py-1 border border-warning border-opacity-10 fw-semibold" style="font-size: 0.75rem;">{% trans "Attention" %}</span>
-                        {% endif %}
-                    {% endif %}
                     <div class="dropdown">
                         <button class="btn btn-sm btn-outline-primary rounded-pill fw-bold px-2" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="font-size: 0.8rem;">
-                            <i class="bi bi-plus"></i>
+                            <i class="bi bi-plus-lg"></i>
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2">
                             <li><a class="dropdown-item py-2" href="{% url 'transfer-create' %}"><i class="bi bi-arrow-left-right text-info me-2"></i> {% trans "Internal Transfer" %}</a></li>
@@ -916,16 +946,35 @@ document.addEventListener('DOMContentLoaded', function() {
 
             <div class="card-body p-4">
                 <!-- Net Worth Block -->
-                <div class="bg-body-tertiary rounded-4 p-3 p-md-4 mb-3">
-                    <p class="text-muted small text-uppercase fw-bold mb-1" style="letter-spacing: 0.5px; font-size: 0.65rem;">{% trans "Total Net Worth" %}</p>
+                <div class="nw-hero-block rounded-4 p-3 p-md-4 mb-3">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <p class="text-muted small text-uppercase fw-bold mb-0" style="letter-spacing: 0.5px; font-size: 0.65rem;">{% trans "Total Net Worth" %}</p>
+                        {% if hero_metrics.trend_type == 'positive' %}
+                            <span class="nw-trend-badge bg-success bg-opacity-10 text-success" role="button" data-bs-toggle="tooltip" data-bs-placement="bottom" title="{{ hero_metrics.trend_text }}">↑ {% trans "Growing" %}</span>
+                        {% elif hero_metrics.trend_type == 'negative' %}
+                            <span class="nw-trend-badge bg-danger bg-opacity-10 text-danger" role="button" data-bs-toggle="tooltip" data-bs-placement="bottom" title="{{ hero_metrics.trend_text }}">↓ {% trans "Declining" %}</span>
+                        {% elif hero_metrics.income > 0 or hero_metrics.spent > 0 %}
+                            <span class="nw-trend-badge bg-secondary bg-opacity-10 text-secondary" role="button" data-bs-toggle="tooltip" data-bs-placement="bottom" title="{% trans 'Savings rate unchanged vs last month' %}">→ {% trans "Stable" %}</span>
+                        {% endif %}
+                    </div>
                     <a href="{% url 'account-list' %}" class="text-decoration-none">
                         <h1 class="text-body-emphasis mb-1 fw-bold" style="font-family: 'DM Sans', 'Inter', sans-serif; font-size: clamp(1.6rem, 4vw, 2.2rem); letter-spacing: -0.5px;">
                             {{ currency_symbol }}{{ net_worth|humanize_currency:currency_symbol|translate_digits }}
                         </h1>
                     </a>
-                    {% if hero_metrics.savings_rate > 0 %}
-                    <div class="d-flex align-items-center gap-1 text-success" style="font-size: 0.75rem;">
-                        <span class="fw-semibold">{{ hero_metrics.savings_rate|translate_digits }}% {% trans "savings rate" %}</span>
+                    {% if hero_metrics.savings_rate > 0 or hero_metrics.income > 0 %}
+                    <div class="d-flex align-items-center gap-3 mt-1" style="font-size: 0.75rem;">
+                        {% if hero_metrics.savings_rate > 0 %}
+                        <span class="d-inline-flex align-items-center gap-1 text-success fw-semibold">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
+                            {{ hero_metrics.savings_rate|translate_digits }}% {% trans "savings rate" %}
+                        </span>
+                        {% endif %}
+                        {% if asset_allocation|length > 0 %}
+                        <span class="text-muted">
+                            {{ asset_allocation|length }} {% trans "account types" %}
+                        </span>
+                        {% endif %}
                     </div>
                     {% endif %}
                 </div>
@@ -934,8 +983,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 <div class="nw-accounts-grid mb-3">
                     {% for alloc in asset_allocation %}
                     <a href="{% url 'account-list' %}" class="bg-body-tertiary rounded-3 p-3 text-decoration-none d-block nw-account-pill" style="transition: background 0.15s;">
-                        <div class="text-muted mb-1" style="font-size: 0.65rem; letter-spacing: 0.03em;">{{ alloc.type }}</div>
-                        <div class="fw-bold text-body-emphasis" style="font-size: 0.95rem;">{{ currency_symbol }}{{ alloc.total|floatformat:0|humanize_currency:currency_symbol|translate_digits }}</div>
+                        <div class="text-muted mb-1" style="font-size: 0.85rem; letter-spacing: 0.03em;">{{ alloc.type }}</div>
+                        <div class="fw-bold text-body-emphasis" style="font-size: 1rem;">{{ currency_symbol }}{{ alloc.total|floatformat:0|humanize_currency:currency_symbol|translate_digits }}</div>
                     </a>
                     {% empty %}
                     <div class="text-center py-3 w-100">
@@ -943,24 +992,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     </div>
                     {% endfor %}
                 </div>
-
-                <!-- Story Row: Income / Lifestyle / Saved -->
-                {% if hero_metrics.income > 0 or hero_metrics.spent > 0 %}
-                <div class="bg-body-tertiary rounded-3 p-3 d-flex justify-content-between text-center">
-                    <a href="{% url 'income-list' %}?{% url_replace %}" class="text-decoration-none flex-fill">
-                        <div class="text-muted mb-1" style="font-size: 0.65rem;">{% trans "Income" %}</div>
-                        <div class="fw-bold text-body-emphasis" style="font-size: 0.9rem;">{{ currency_symbol }}{{ total_income|floatformat:0|humanize_currency:currency_symbol|translate_digits }}</div>
-                    </a>
-                    <a href="{% url 'expense-list' %}?{% url_replace is_investment='false' %}" class="text-decoration-none flex-fill border-start border-end">
-                        <div class="text-muted mb-1" style="font-size: 0.65rem;">{% trans "Lifestyle" %}</div>
-                        <div class="fw-bold text-warning" style="font-size: 0.9rem;">{{ currency_symbol }}{{ hero_metrics.spent|floatformat:0|humanize_currency:currency_symbol|translate_digits }}</div>
-                    </a>
-                    <a href="{% url 'account-list' %}" class="text-decoration-none flex-fill">
-                        <div class="text-muted mb-1" style="font-size: 0.65rem;">{% trans "Saved" %}</div>
-                        <div class="fw-bold text-success" style="font-size: 0.9rem;">{{ hero_metrics.savings_rate|translate_digits }}%</div>
-                    </a>
-                </div>
-                {% endif %}
 
                 <!-- Individual Accounts (expandable) -->
                 {% if accounts.count > 0 %}
@@ -990,7 +1021,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                     <div class="fw-semibold text-truncate" style="font-size: 0.8rem;">{{ account.name }}</div>
                                 </div>
                                 <div class="text-end flex-shrink-0 ms-3">
-                                    <div class="fw-bold" style="font-size: 0.8rem;">{{ currency_symbol }}{{ account.balance|humanize_currency:currency_symbol|translate_digits }}</div>
+                                    <div class="fw-bold" style="font-size: 0.8rem;">{{ account.currency }}{{ account.balance|humanize_currency:account.currency|translate_digits }}</div>
                                 </div>
                             </a>
                             {% endfor %}
@@ -1002,14 +1033,14 @@ document.addEventListener('DOMContentLoaded', function() {
         </div>
     </div>
     <!-- Financial Health Card -->
-    <div class="col-12 col-lg-4">
+    <div class="col-12 col-lg-6">
         <div class="card shadow-lg border-0 rounded-4 h-100 overflow-hidden transition-all">
-            <div class="card-header bg-transparent border-bottom d-flex justify-content-between align-items-center py-2.5">
-                <h6 class="mb-0 fw-bold text-muted d-inline-flex align-items-center">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="me-1 text-muted flex-shrink-0">
+            <div class="card-header bg-transparent border-bottom d-flex justify-content-between align-items-center px-4">
+                <h6 class="mb-0 fw-bold text-muted d-inline-flex align-items-center" style="line-height: 1;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="me-2 text-muted flex-shrink-0" style="vertical-align: middle;">
                         <path d="M22 12h-4l-3 9L9 3l-3 9H2" class="anim-heartbeat"/>
-                    </svg> 
-                    {% trans "Financial Health" %} - {% if salary_breakdown.month_name %} {{ salary_breakdown.month_name }} {% else %} Custom Range {% endif %}
+                    </svg>
+                    {% trans "Financial Health" %} – {% if salary_breakdown.month_name %} {{ salary_breakdown.month_name }} {% else %} Custom Range {% endif %}
                 </h6>
                 {% if hero_metrics.income > 0 or hero_metrics.spent > 0 %}
                     {% if hero_metrics.status == 'excellent' %}
@@ -1060,7 +1091,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 <div class="row g-0 py-3 border-top border-bottom">
                     <a href="{% url 'income-list' %}?{% url_replace %}" class="col-4 border-end px-2 text-decoration-none transition-all">
                         <small class="text-muted text-uppercase fw-bold d-block mb-1" style="font-size: 0.65rem; letter-spacing: 0.5px;">{% trans "Total Income" %}</small>
-                        <div class="fw-bold mb-0 text-body text-truncate" style="font-size: 0.9rem;">{{ currency_symbol }}{{ total_income|floatformat:0|humanize_currency:currency_symbol|translate_digits }}</div>
+                        <div class="fw-bold mb-0 text-body text-truncate" style="font-size: 0.95rem;">{{ currency_symbol }}{{ total_income|floatformat:0|humanize_currency:currency_symbol|translate_digits }}</div>
                         {% if prev_month_data.income_pct %}
                             <div class="mt-1 d-flex align-items-center justify-content-center gap-1" style="font-size: 0.65rem;">
                                 <span class="{% if prev_month_data.income_pct > 0 %}text-success{% elif prev_month_data.income_pct < 0 %}text-danger{% else %}text-muted{% endif %} fw-bold">
@@ -1072,7 +1103,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     </a>
                     <a href="{% url 'expense-list' %}?{% url_replace is_investment='false' %}" class="col-4 border-end px-2 text-decoration-none transition-all">
                         <small class="text-muted text-uppercase fw-bold d-block mb-1" style="font-size: 0.65rem; letter-spacing: 0.5px;">{% trans "Operating Spent" %}</small>
-                        <div class="fw-bold mb-0 text-body text-truncate" style="font-size: 0.9rem;">{{ currency_symbol }}{{ hero_metrics.spent|floatformat:0|humanize_currency:currency_symbol|translate_digits }}</div>
+                        <div class="fw-bold mb-0 text-body text-truncate" style="font-size: 0.95rem;">{{ currency_symbol }}{{ hero_metrics.spent|floatformat:0|humanize_currency:currency_symbol|translate_digits }}</div>
                         {% if prev_month_data.expense_pct %}
                             <div class="mt-1 d-flex align-items-center justify-content-center gap-1" style="font-size: 0.65rem;">
                                 <span class="{% if prev_month_data.expense_pct < 0 %}text-success{% elif prev_month_data.expense_pct > 0 %}text-danger{% else %}text-muted{% endif %} fw-bold">
@@ -1084,7 +1115,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     </a>
                     <a href="{% url 'account-list' %}" class="col-4 px-2 text-decoration-none transition-all">
                         <small class="text-muted text-uppercase fw-bold d-block mb-1" style="font-size: 0.65rem; letter-spacing: 0.5px;">{% trans "Wealth" %}</small>
-                        <div class="fw-bold mb-0 text-info text-truncate" style="font-size: 0.9rem;">{{ currency_symbol }}{{ investment_accounts_balance|floatformat:0|humanize_currency:currency_symbol|translate_digits }}</div>
+                        <div class="fw-bold mb-0 text-info text-truncate" style="font-size: 0.95rem;">{{ currency_symbol }}{{ investment_accounts_balance|floatformat:0|humanize_currency:currency_symbol|translate_digits }}</div>
                         {% if prev_month_data.investments_pct %}
                             <div class="mt-1 d-flex align-items-center justify-content-center gap-1" style="font-size: 0.65rem;">
                                 <span class="{% if prev_month_data.investments_pct > 0 %}text-success{% elif prev_month_data.investments_pct < 0 %}text-danger{% else %}text-muted{% endif %} fw-bold">
@@ -1342,9 +1373,9 @@ document.addEventListener('DOMContentLoaded', function() {
                         {% for insight in smart_bullet_insights %}
                         <div class="d-flex align-items-start mb-4">
                             <div class="rounded-circle bg-opacity-10 text-{{ insight.theme }} d-flex align-items-center justify-content-center me-1 mt-1 pb-1 flex-shrink-0" style="width: 28px; height: 28px;">
-                                <i class="bi {{ insight.icon }}" style="font-size: 0.95rem;"></i>
+                                <i class="bi {{ insight.icon }}" style="font-size: 0.9rem;"></i>
                             </div>
-                            <p class="mb-0 lh-sm mt-1" style="font-size: 0.95rem;">{{ insight.text|safe }}</p>
+                            <p class="mb-0 lh-sm mt-1" style="font-size: 0.85rem;">{{ insight.text|safe }}</p>
                         </div>
                         {% endfor %}
                     </div>
@@ -1648,7 +1679,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                         </small>
                                     </div>
                                     <div class="text-end">
-                                        <span class="fw-bold" style="font-size: 0.9rem; color: {% if item.type == 'INCOME' %}#2d6a4f{% elif item.type == 'INVESTMENT' %}#8b6f47{% elif item.type == 'TRANSFER' %}#6c757d{% else %}#c0392b{% endif %};">
+                                        <span class="fw-bold" style="font-size: 0.901rem; color: {% if item.type == 'INCOME' %}#2d6a4f;{% elif item.type == 'INVESTMENT' %}#8b6f47;{% elif item.type == 'TRANSFER' %}#6c757d;{% else %}#c0392b;{% endif %}">
                                             {% if item.type == 'INCOME' %}+{% elif item.type == 'TRANSFER' %}{% else %}-{% endif %}{{ currency_symbol }}{{ item.amount|compact_amount:currency_symbol|translate_digits }}
                                         </span>
                                     </div>
@@ -1805,6 +1836,9 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 
     document.addEventListener('DOMContentLoaded', function() {
+        // Init Bootstrap tooltips
+        document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(el => new bootstrap.Tooltip(el));
+
         // Accounts grid: add fade mask only when content overflows
         const agc = document.querySelector('.accounts-grid-container');
         if (agc && agc.scrollHeight > agc.clientHeight) {

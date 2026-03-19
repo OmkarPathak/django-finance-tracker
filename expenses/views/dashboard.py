@@ -42,6 +42,17 @@ def home_view(request):
     # Global currency symbol for insights/metrics
     currency_symbol = request.user.profile.currency if hasattr(request.user, 'profile') else '₹'
 
+    # Helper: sum transfer amounts converted to user's base currency
+    def sum_transfers_base(qs):
+        total = Decimal('0.00')
+        for t in qs.select_related('from_account'):
+            if t.from_account and t.from_account.currency != currency_symbol:
+                rate = get_exchange_rate(t.from_account.currency, currency_symbol)
+                total += (t.amount * rate).quantize(Decimal('0.01'))
+            else:
+                total += t.amount
+        return total
+
     # Base QuerySet - All user expenses
     expenses = Expense.objects.filter(user=request.user).order_by('-date')
     
@@ -121,7 +132,7 @@ def home_view(request):
             investments = investments.filter(date__lte=end_date)
     
     total_income = incomes.aggregate(Sum('base_amount'))['base_amount__sum'] or 0
-    total_investments = investments.aggregate(Sum('amount'))['amount__sum'] or 0
+    total_investments = sum_transfers_base(investments)
     all_dates = Expense.objects.filter(user=request.user).dates('date', 'year', order='DESC')
     years = sorted(list(set([d.year for d in all_dates] + [datetime.now().year])), reverse=True)
     all_categories = Expense.objects.filter(user=request.user).values_list('category', flat=True).distinct().order_by('category')
@@ -312,7 +323,7 @@ def home_view(request):
             transfers_qs = transfers_qs.filter(date__year__in=selected_years)
         if selected_months:
             transfers_qs = transfers_qs.filter(date__month__in=selected_months)
-    total_transfers = transfers_qs.aggregate(Sum('amount'))['amount__sum'] or 0
+    total_transfers = sum_transfers_base(transfers_qs)
     transfer_count = transfers_qs.count()
 
     # --- NEW: Savings Projection (Linear Extrapolation) ---
@@ -361,10 +372,10 @@ def home_view(request):
             # Current year-month stats
             prev_expenses_all = Expense.objects.filter(user=request.user, date__year=prev_year, date__month=prev_month)
             prev_expenses_op = prev_expenses_all.aggregate(Sum('base_amount'))['base_amount__sum'] or 0
-            prev_investments = Transfer.objects.filter(
+            prev_investments = sum_transfers_base(Transfer.objects.filter(
                 user=request.user, to_account__account_type='INVESTMENT',
                 date__year=prev_year, date__month=prev_month
-            ).aggregate(Sum('amount'))['amount__sum'] or 0
+            ))
 
             prev_income = Income.objects.filter(user=request.user, date__year=prev_year, date__month=prev_month).aggregate(Sum('base_amount'))['base_amount__sum'] or 0
             prev_savings = prev_income - prev_expenses_op
@@ -1250,22 +1261,40 @@ def home_view(request):
         proj_historical.append(None)
         proj_forecast.append(float(avg_spend))
 
-    # Net Worth & Asset Allocation Calculation
+    # Net Worth & Asset Allocation Calculation (multi-currency aware)
     accounts = Account.objects.filter(user=request.user)
-    net_worth = accounts.aggregate(Sum('balance'))['balance__sum'] or Decimal('0.00')
-    investment_accounts_balance = accounts.filter(account_type='INVESTMENT').aggregate(Sum('balance'))['balance__sum'] or Decimal('0.00')
-    
-    # Group by account type for Asset Allocation chart
-    allocation_qs = accounts.values('account_type').annotate(total=Sum('balance')).order_by('-total')
+    base_currency = currency_symbol  # user's profile currency
+
+    # Convert each account balance to user's base currency
+    net_worth = Decimal('0.00')
+    investment_accounts_balance = Decimal('0.00')
+    account_base_balances = {}  # account.pk -> converted balance
+    for acc in accounts:
+        if acc.currency == base_currency:
+            converted = acc.balance
+        else:
+            rate = get_exchange_rate(acc.currency, base_currency)
+            converted = (acc.balance * rate).quantize(Decimal('0.01'))
+        account_base_balances[acc.pk] = converted
+        net_worth += converted
+        if acc.account_type == 'INVESTMENT':
+            investment_accounts_balance += converted
+
+    # Group by account type for Asset Allocation chart (using converted balances)
+    from collections import defaultdict
+    type_totals = defaultdict(Decimal)
+    for acc in accounts:
+        type_totals[acc.account_type] += account_base_balances[acc.pk]
+
     asset_allocation = []
     account_type_display = dict(Account.ACCOUNT_TYPES)
     cumulative_percent = 0
     circumference = 2 * 3.14159 * 45
-    for item in allocation_qs:
-        percent = round((float(item['total']) / float(net_worth) * 100), 1) if net_worth > 0 else 0
+    for account_type, total in sorted(type_totals.items(), key=lambda x: x[1], reverse=True):
+        percent = round((float(total) / float(net_worth) * 100), 1) if net_worth > 0 else 0
         asset_allocation.append({
-            'type': account_type_display.get(item['account_type'], item['account_type']),
-            'total': float(item['total']),
+            'type': account_type_display.get(account_type, account_type),
+            'total': float(total),
             'percent': percent,
             'arc_length': (percent / 100) * circumference,
             'offset_length': (cumulative_percent / 100) * circumference

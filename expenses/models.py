@@ -344,6 +344,14 @@ class RecurringTransaction(models.Model):
             
         super().save(*args, **kwargs)
 
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['user', 'transaction_type', 'amount', 'currency', 'description', 'frequency', 'start_date'],
+                name='unique_recurring_transaction'
+            )
+        ]
+
     def __str__(self):
         return f"{self.transaction_type} - {self.description} ({self.frequency})"
         

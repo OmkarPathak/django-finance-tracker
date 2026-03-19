@@ -156,7 +156,7 @@
 
         /* NAV */
         .landing-nav {
-            position: sticky; top: 0; z-index: 100;
+            position: sticky; top: 0; z-index: 102;
             background: rgba(250,249,246,0.92);
             backdrop-filter: blur(12px);
             border-bottom: 1px solid var(--border);
@@ -401,6 +401,37 @@
         .price-btn.solid:hover { background: #235c41; transform: translateY(-1px); }
         .price-note { font-size: 12px; color: var(--ink3); text-align: center; margin-top: 24px; }
 
+        /* BILLING TOGGLE */
+        .billing-toggle {
+            display: flex; align-items: center; justify-content: center; gap: 12px;
+            margin: 32px auto 0; width: fit-content;
+        }
+        .billing-toggle-label {
+            font-size: 14px; font-weight: 500; color: var(--ink3);
+            cursor: pointer; transition: color .2s; user-select: none;
+        }
+        .billing-toggle-label.active { color: var(--ink); }
+        .billing-toggle-track {
+            position: relative; width: 48px; height: 26px;
+            background: var(--paper3); border-radius: 99px;
+            cursor: pointer; transition: background .2s;
+            border: 1.5px solid var(--border); flex-shrink: 0;
+        }
+        .billing-toggle-track.yearly { background: var(--accent-light); border-color: var(--accent); }
+        .billing-toggle-thumb {
+            position: absolute; top: 3px; left: 3px;
+            width: 18px; height: 18px; border-radius: 50%;
+            background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+            transition: transform .25s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .billing-toggle-track.yearly .billing-toggle-thumb { transform: translateX(22px); background: var(--accent); }
+        .billing-save-badge {
+            font-size: 11px; font-weight: 500;
+            background: var(--accent-light); color: var(--accent);
+            padding: 3px 10px; border-radius: 99px;
+            margin-left: 4px;
+        }
+
         /* LANGUAGES */
         .lang-strip {
             background: var(--paper2); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
@@ -452,6 +483,38 @@
         .footer-bottom { border-top: 1px solid var(--border); padding-top: 24px; display: flex; justify-content: space-between; align-items: center; }
         .footer-bottom p { font-size: 12px; color: var(--ink3); }
 
+        /* MOBILE NAV */
+        .mobile-nav-actions { display: none; align-items: center; gap: 16px; }
+        .hamburger {
+            background: none; border: none; cursor: pointer;
+            width: 32px; height: 32px;
+            display: flex; flex-direction: column; justify-content: center; gap: 6px;
+            padding: 4px; z-index: 101;
+            margin-right: -4px;
+        }
+        .hamburger span {
+            display: block; width: 100%; height: 2px;
+            background: var(--ink); border-radius: 2px;
+            transition: all 0.3s ease;
+        }
+        .hamburger.active span:nth-child(1) { transform: translateY(8px) rotate(45deg); }
+        .hamburger.active span:nth-child(2) { opacity: 0; }
+        .hamburger.active span:nth-child(3) { transform: translateY(-8px) rotate(-45deg); }
+
+        .mobile-menu {
+            position: fixed; top: 0; right: -100%; width: 100%; height: 100%;
+            background: var(--paper); z-index: 100;
+            padding: 100px 32px;
+            transition: right 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            display: flex; flex-direction: column; gap: 20px;
+        }
+        .mobile-menu.active { right: 0; }
+        .mobile-menu a {
+            font-size: 20px; font-weight: 500; color: var(--ink);
+            text-decoration: none; padding-bottom: 12px; border-bottom: 1px solid var(--border);
+        }
+        .mobile-menu .nav-cta { text-align: center; margin-top: 10px; border-bottom: none; }
+
         /* RESPONSIVE */
         @media (max-width: 800px) {
             .hero { padding: 60px 5% 50px; }
@@ -461,7 +524,8 @@
             .networth-split, .accounts-row { grid-template-columns: 1fr; }
             .footer-top { grid-template-columns: 1fr 1fr; }
             .footer-bottom { flex-direction: column; gap: 10px; text-align: center; }
-            .landing-nav .nav-links { display: none; }
+            .nav-links { display: none !important; }
+            .mobile-nav-actions { display: flex; }
         }
 
         /* ANIMATIONS */
@@ -495,13 +559,31 @@
         <li><a href="{% url 'account_login' %}">{% trans "Login" %}</a></li>
         <li><a class="nav-cta" href="{% url 'account_signup' %}">{% trans "Start Free" %}</a></li>
     </ul>
+
+    <!-- Mobile Nav Actions -->
+    <div class="mobile-nav-actions">
+        <a href="{% url 'account_login' %}" style="font-size: 14px; color: var(--ink); text-decoration: none; font-weight: 500;">{% trans "Login" %}</a>
+        <button class="hamburger" id="hamburger-btn" aria-label="Menu">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+    </div>
 </nav>
+
+<!-- Mobile Menu Overlay -->
+<div class="mobile-menu" id="mobile-menu">
+    <a href="#features" onclick="toggleMenu()">{% trans "Features" %}</a>
+    <a href="#networth" onclick="toggleMenu()">{% trans "Net Worth" %}</a>
+    <a href="#pricing" onclick="toggleMenu()">{% trans "Pricing" %}</a>
+    <a href="{% url 'demo_login' %}">{% trans "Live Demo" %}</a>
+    <a href="{% url 'account_signup' %}" class="nav-cta">{% trans "Start Free" %}</a>
+</div>
 
 <!-- HERO -->
 <div class="hero">
 <div class="hero-inner">
-    <div class="hero-left">
-        <div class="hero-eyebrow">{% trans "Built for Indian salaried professionals" %}</div>
+    <div class="hero-left"> 
         <h1>{% trans "Finally know" %} <em>{% trans "exactly" %}</em> {% trans "where your salary goes" %}</h1>
         <p>{% blocktrans %}TrackMyRupee is a privacy-first personal finance dashboard. Track expenses, manage accounts, watch your net worth grow — all without sharing your bank login or SMS access.{% endblocktrans %}</p>
         <div class="hero-actions">
@@ -778,6 +860,16 @@
         <div class="section-tag">{% trans "Simple pricing" %}</div>
         <h2 class="section-title">{% trans "Less than ₹2 a day to understand your money" %}</h2>
         <p class="section-sub">{% blocktrans %}Start free forever. Upgrade only when you want more power. No hidden charges, no annual tricks.{% endblocktrans %}</p>
+
+        <!-- Billing Toggle -->
+        <div class="billing-toggle">
+            <span class="billing-toggle-label" id="lp-label-monthly">{% trans "Monthly" %}</span>
+            <div class="billing-toggle-track yearly" id="lp-billing-track" role="switch" aria-checked="true" tabindex="0">
+                <div class="billing-toggle-thumb"></div>
+            </div>
+            <span class="billing-toggle-label active" id="lp-label-yearly">{% trans "Yearly" %} <span class="billing-save-badge">{% trans "Save ~40%" %}</span></span>
+        </div>
+
         <div class="pricing-grid">
             <div class="price-card">
                 <div class="price-name">{% trans "Free" %}</div>
@@ -798,11 +890,12 @@
                 <div class="price-name">{% trans "Plus" %}</div>
                 <div class="price-amount">
                     <span class="lp-plan-price"
+                        data-monthly="{{ plans_monthly.PLUS.price|default:'49'|floatformat:0 }}"
                         data-yearly="{{ plans_yearly.PLUS.price|default:'299'|floatformat:0 }}">
                         ₹{% if plans_yearly.PLUS %}{{ plans_yearly.PLUS.price|floatformat:0 }}{% else %}299{% endif %}
                     </span>
                 </div>
-                <div class="price-period">{% trans "per year" %} · {% trans "LIMITED OFFER" %}</div>
+                <div class="price-period lp-price-period">{% trans "per year" %} · {% trans "LIMITED OFFER" %}</div>
                 <hr class="price-divider">
                 <ul class="price-features">
                     <li>{% trans "Everything in Free" %}</li>
@@ -812,17 +905,22 @@
                     <li>{% trans "Year in Review" %}</li>
                     <li>{% trans "Email reminders" %}</li>
                 </ul>
-                <a href="{% url 'account_signup' %}" class="price-btn solid">{% trans "Get Plus" %} — ₹{% if plans_yearly.PLUS %}{{ plans_yearly.PLUS.price|floatformat:0 }}{% else %}299{% endif %}/{% trans "yr" %}</a>
+                <a href="{% url 'account_signup' %}" class="price-btn solid lp-price-btn"
+                    data-label="{% trans 'Get Plus' %}"
+                    data-monthly="{{ plans_monthly.PLUS.price|default:'49'|floatformat:0 }}"
+                    data-yearly="{{ plans_yearly.PLUS.price|default:'299'|floatformat:0 }}"
+                >{% trans "Get Plus" %} — ₹{% if plans_yearly.PLUS %}{{ plans_yearly.PLUS.price|floatformat:0 }}{% else %}299{% endif %}/{% trans "yr" %}</a>
             </div>
             <div class="price-card">
                 <div class="price-name">{% trans "Pro" %}</div>
                 <div class="price-amount">
                     <span class="lp-plan-price"
+                        data-monthly="{{ plans_monthly.PRO.price|default:'99'|floatformat:0 }}"
                         data-yearly="{{ plans_yearly.PRO.price|default:'499'|floatformat:0 }}">
                         ₹{% if plans_yearly.PRO %}{{ plans_yearly.PRO.price|floatformat:0 }}{% else %}499{% endif %}
                     </span>
                 </div>
-                <div class="price-period">{% trans "per year" %} · {% trans "LIMITED OFFER" %}</div>
+                <div class="price-period lp-price-period">{% trans "per year" %} · {% trans "LIMITED OFFER" %}</div>
                 <hr class="price-divider">
                 <ul class="price-features">
                     <li>{% trans "Everything in Plus" %}</li>
@@ -832,7 +930,11 @@
                     <li>{% trans "Priority support" %}</li>
                     <li>{% trans "Year in Review" %}</li>
                 </ul>
-                <a href="{% url 'account_signup' %}" class="price-btn outline">{% trans "Get Pro" %} — ₹{% if plans_yearly.PRO %}{{ plans_yearly.PRO.price|floatformat:0 }}{% else %}499{% endif %}/{% trans "yr" %}</a>
+                <a href="{% url 'account_signup' %}" class="price-btn outline lp-price-btn"
+                    data-label="{% trans 'Get Pro' %}"
+                    data-monthly="{{ plans_monthly.PRO.price|default:'99'|floatformat:0 }}"
+                    data-yearly="{{ plans_yearly.PRO.price|default:'499'|floatformat:0 }}"
+                >{% trans "Get Pro" %} — ₹{% if plans_yearly.PRO %}{{ plans_yearly.PRO.price|floatformat:0 }}{% else %}499{% endif %}/{% trans "yr" %}</a>
             </div>
         </div>
         <p class="price-note">{% blocktrans %}14-day money back guarantee on paid plans. No credit card required for free tier.{% endblocktrans %}</p>
@@ -863,7 +965,7 @@
     <div class="footer-inner">
         <div class="footer-top">
             <div class="footer-brand">
-                <a class="nav-logo" href="/">Track<span style="color:var(--accent)">My</span>Rupee</a>
+                <a class="nav-logo" href="/">TrackMyRupee</a>
                 <p>{% blocktrans %}A privacy-first personal finance dashboard for Indian salaried professionals. Built by an indie developer in Pune.{% endblocktrans %}</p>
             </div>
             <div class="footer-col">
@@ -894,6 +996,53 @@
         </div>
     </div>
 </footer>
+
+<script>
+    const hamburger = document.getElementById('hamburger-btn');
+    const mobileMenu = document.getElementById('mobile-menu');
+
+    function toggleMenu() {
+        hamburger.classList.toggle('active');
+        mobileMenu.classList.toggle('active');
+        document.body.style.overflow = mobileMenu.classList.contains('active') ? 'hidden' : '';
+    }
+
+    hamburger.addEventListener('click', toggleMenu);
+
+    // Billing toggle
+    const billingTrack = document.getElementById('lp-billing-track');
+    const labelMonthly = document.getElementById('lp-label-monthly');
+    const labelYearly  = document.getElementById('lp-label-yearly');
+    let isYearly = true;
+
+    function updateLpPricing() {
+        billingTrack.classList.toggle('yearly', isYearly);
+        billingTrack.setAttribute('aria-checked', isYearly);
+        labelMonthly.classList.toggle('active', !isYearly);
+        labelYearly.classList.toggle('active', isYearly);
+
+        document.querySelectorAll('.lp-plan-price').forEach(el => {
+            const price = isYearly ? el.dataset.yearly : el.dataset.monthly;
+            el.textContent = '₹' + price;
+        });
+
+        document.querySelectorAll('.lp-price-period').forEach(el => {
+            el.textContent = isYearly ? 'per year · LIMITED OFFER' : 'per month';
+        });
+
+        document.querySelectorAll('.lp-price-btn').forEach(el => {
+            const label = el.dataset.label;
+            const price = isYearly ? el.dataset.yearly : el.dataset.monthly;
+            const suffix = isYearly ? '/yr' : '/mo';
+            el.textContent = label + ' — ₹' + price + suffix;
+        });
+    }
+
+    billingTrack.addEventListener('click', () => { isYearly = !isYearly; updateLpPricing(); });
+    billingTrack.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); isYearly = !isYearly; updateLpPricing(); } });
+    labelMonthly.addEventListener('click', () => { if (isYearly) { isYearly = false; updateLpPricing(); } });
+    labelYearly.addEventListener('click', () => { if (!isYearly) { isYearly = true; updateLpPricing(); } });
+</script>
 
 </body>
 </html>

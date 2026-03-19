@@ -202,6 +202,7 @@ class RecurringTransactionCreateView(LoginRequiredMixin, CreateView):
     form_class = RecurringTransactionForm
     template_name = 'expenses/recurring_transaction_form.html'
     success_url = reverse_lazy('recurring-list')
+    
     def dispatch(self, request, *args, **kwargs):
         profile = request.user.profile
         limit = float('inf') if profile.is_pro else (3 if profile.is_plus else 0)
@@ -210,9 +211,25 @@ class RecurringTransactionCreateView(LoginRequiredMixin, CreateView):
             messages.error(request, _("Subscription limit reached. Please upgrade."))
             return redirect('pricing')
         return super().dispatch(request, *args, **kwargs)
+    
     def form_valid(self, form):
         form.instance.user = self.request.user
+        # Prevent exact duplicate recurring transactions
+        dup = RecurringTransaction.objects.filter(
+            user=self.request.user,
+            transaction_type=form.instance.transaction_type,
+            amount=form.instance.amount,
+            currency=form.instance.currency,
+            description=form.instance.description,
+            frequency=form.instance.frequency,
+            start_date=form.instance.start_date,
+            is_active=True,
+        ).exists()
+        if dup:
+            messages.warning(self.request, _("A recurring transaction with the same details already exists."))
+            return self.form_invalid(form)
         return super().form_valid(form)
+    
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs(); kwargs['user'] = self.request.user
         return kwargs
