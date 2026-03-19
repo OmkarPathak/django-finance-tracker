@@ -1,8 +1,8 @@
 <svg width="800" height="600" viewBox="100 50 600 500" fill="none" xmlns="http://www.w3.org/2000/svg">
 <defs>
 <linearGradient id="primaryGradient" x1="0" y1="0" x2="800" y2="600" gradientUnits="userSpaceOnUse">
-<stop stop-color="#00f260"/>
-<stop offset="1" stop-color="#0575e6"/>
+<stop stop-color="#2d6a4f"/>
+<stop offset="1" stop-color="#3d8b6a"/>
 </linearGradient>
 <linearGradient id="cardBg" x1="0" y1="0" x2="0" y2="600" gradientUnits="userSpaceOnUse">
 <stop stop-color="#2a2d35" stop-opacity="0.9"/>
@@ -19,7 +19,7 @@
 
 <!-- Background -->
 <rect width="800" height="600" fill="none"/>
-<circle cx="200" cy="500" r="100" fill="#00f260" opacity="0.05" filter="url(#glow)"/>
+<circle cx="200" cy="500" r="100" fill="#2d6a4f" opacity="0.05" filter="url(#glow)"/>
 
 <!-- Calendar Card -->
 <rect x="150" y="100" width="500" height="400" rx="20" fill="url(#cardBg)" stroke="rgba(255,255,255,0.1)" stroke-width="2"/>
@@ -47,7 +47,7 @@
 <!-- Day 2 (Active/Payday) -->
 <rect x="70" y="10" width="40" height="40" rx="8" fill="url(#primaryGradient)" filter="url(#glow)"/>
 <!-- Day 3 (Selected) -->
-<rect x="130" y="10" width="40" height="40" rx="8" stroke="#00f260" stroke-width="2" fill="none"/>
+<rect x="130" y="10" width="40" height="40" rx="8" stroke="#2d6a4f" stroke-width="2" fill="none"/>
 
 <!-- More Days -->
 <rect x="190" y="10" width="40" height="40" rx="8" fill="rgba(255,255,255,0.05)"/>

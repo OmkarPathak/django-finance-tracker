@@ -414,7 +414,7 @@
                             <div class="d-flex flex-column gap-4">
                                 {% if salary_breakdown.viral_insight %}
                                     <div class="d-flex align-items-start gap-3">
-                                        <div class="d-flex align-items-center justify-content-center rounded-circle border flex-shrink-0" style="width: 42px; height: 42px; background-color: rgba(13, 110, 253, 0.1);">
+                                        <div class="d-flex align-items-center justify-content-center rounded-circle border flex-shrink-0" style="width: 42px; height: 42px; background-color: rgba(45, 106, 79, 0.1);">
                                             <i class="bi bi-magic text-primary" style="font-size: 1.2rem;"></i>
                                         </div>
                                         <div class="flex-grow-1">
@@ -426,7 +426,7 @@
                                 
                                 {% for insight in smart_insights %}
                                 <div class="d-flex align-items-start gap-3">
-                                    <div class="d-flex align-items-center justify-content-center rounded-circle border flex-shrink-0" style="width: 42px; height: 42px; background-color: rgba(25, 135, 84, 0.1);">
+                                    <div class="d-flex align-items-center justify-content-center rounded-circle border flex-shrink-0" style="width: 42px; height: 42px; background-color: rgba(45, 106, 79, 0.1);">
                                         <i class="bi bi-{{ insight.icon }} text-success" style="font-size: 1.2rem;"></i>
                                     </div>
                                     <div class="flex-grow-1">
@@ -438,7 +438,7 @@
                                 
                                 {% if salary_breakdown.relatable_metric %}
                                     <div class="d-flex align-items-start gap-3">
-                                        <div class="d-flex align-items-center justify-content-center rounded-circle border flex-shrink-0" style="width: 42px; height: 42px; background-color: rgba(255, 193, 7, 0.1);">
+                                        <div class="d-flex align-items-center justify-content-center rounded-circle border flex-shrink-0" style="width: 42px; height: 42px; background-color: rgba(224, 123, 57, 0.1);">
                                             <i class="bi bi-{{ salary_breakdown.relatable_metric.icon }} text-warning" style="font-size: 1.2rem;"></i>
                                         </div>
                                         <div class="flex-grow-1">
@@ -533,7 +533,7 @@
 <div id="capture-container" style="position: absolute; left: -9999px; top: -9999px;">
     {% if salary_breakdown or total_income > 0 %}
 
-    <div id="salary-wrapped-card" style="width: 400px; padding: 40px; background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); color: #ffffff; border-radius: 0;">
+    <div id="salary-wrapped-card" style="width: 400px; padding: 40px; background-color: #1a1a18; color: #ffffff; border-radius: 0;">
         <div style="margin-bottom: 30px; display: flex; align-items: center; justify-content: space-between;">
             <div>
                 <h2 style="margin: 0; font-weight: 800; font-size: 24px; letter-spacing: -0.5px; color: #ffffff;">{% trans "My salary journey" %}</h2>
@@ -566,7 +566,7 @@
             </div>
         </div>
 
-        <div style="background: rgba(255,255,255,0.1); padding: 20px; border-radius: 15px; border-left: 4px solid #4facfe; margin-bottom: 25px;">
+        <div style="background: rgba(255,255,255,0.1); padding: 20px; border-radius: 15px; border-left: 4px solid #2d6a4f; margin-bottom: 25px;">
              <div style="font-weight: 700; font-size: 14px; margin-bottom: 6px; color: #ffffff;">✨ {% trans "AI Insight" %}</div>
              <div style="font-size: 14px; opacity: 0.9; line-height: 1.5; color: #ffffff;">
                 {% if salary_breakdown.viral_insight %}
@@ -594,7 +594,7 @@
 <!-- Year in Review Banner -->
 {% if show_year_in_review %}
 <div id="yir-banner-container" style="display: none;">
-    <div class="alert alert-primary border-0 shadow-sm d-flex flex-column flex-sm-row align-items-sm-center justify-content-between fade-in mb-4 gap-3 position-relative pe-5" role="alert" style="background: linear-gradient(135deg, rgba(30,60,114,0.05) 0%, rgba(42,82,152,0.05) 100%);">
+    <div class="alert alert-primary border-0 shadow-sm d-flex flex-column flex-sm-row align-items-sm-center justify-content-between fade-in mb-4 gap-3 position-relative pe-5" role="alert" style="background-color: rgba(45, 106, 79, 0.06);">
         
         <!-- Dismiss Button -->
         <button type="button" class="btn-close position-absolute top-0 end-0 m-2 mt-2 me-2" id="dismiss-yir-btn" aria-label="Close" style="font-size: 0.75rem;"></button>
@@ -604,7 +604,7 @@
                 <i class="bi bi-stars fs-5"></i>
             </div>
             <div>
-                <h6 class="alert-heading fw-bold mb-0 text-primary" style="font-family: 'Clash Display', sans-serif;">{% blocktrans %}Your {{ year_in_review_year }} in Review is Ready ✨{% endblocktrans %}</h6>
+                <h6 class="alert-heading fw-bold mb-0 text-primary" style="font-family: 'Instrument Serif', sans-serif;">{% blocktrans %}Your {{ year_in_review_year }} in Review is Ready ✨{% endblocktrans %}</h6>
                 <p class="mb-0 small text-muted" style="opacity: 0.85;">{% trans "See your financial year wrapped and discover your top spending habits." %}</p>
             </div>
         </div>
@@ -727,7 +727,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 <div class="d-flex flex-column flex-sm-row align-items-sm-center justify-content-between mb-3 pb-3 border-bottom">
                     <div class="text-center text-sm-start mb-2 mb-sm-0">
                         <p class="text-muted small text-uppercase fw-bold mb-1" style="letter-spacing: 0.5px;">{% trans "Total Net Worth" %}</p>
-                        <h1 class="display-5 fw-black text-primary mb-0" style="font-family: 'Clash Display', sans-serif;">
+                        <h1 class="display-5 fw-black text-primary mb-0" style="font-family: 'Instrument Serif', sans-serif;">
                             {{ currency_symbol }}{{ net_worth|humanize_currency:currency_symbol|translate_digits }}
                         </h1>
                     </div>
@@ -799,7 +799,7 @@ document.addEventListener('DOMContentLoaded', function() {
             <div class="card-body px-4 py-3 text-center">
                 <!-- Savings Rate Hero -->
                 <div class="mb-4 mt-2 px-3 text-center">
-                    <h1 class="fw-black mb-2 text-body-emphasis" style="font-family: 'Clash Display', sans-serif; font-size: 2rem; letter-spacing: -1px;">
+                    <h1 class="fw-black mb-2 text-body-emphasis" style="font-family: 'Instrument Serif', sans-serif; font-size: 2rem; letter-spacing: -1px;">
                         {{ hero_metrics.savings_rate|translate_digits }}<span class="fs-4 text-muted fw-bold">%</span>
                     </h1>
                     
@@ -923,7 +923,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     {% if salary_breakdown.spending_pace.status == 'on_track' %}
                         <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-2 py-1 small border border-success border-opacity-10">{% trans "On Track" %}</span>
                     {% elif salary_breakdown.spending_pace.status == 'near_limit' %}
-                        <span class="badge bg-warning bg-opacity-10 rounded-pill px-2 py-1 small border border-warning border-opacity-10" style="color: #e67e22;">{% trans "Near Limit" %}</span>
+                        <span class="badge bg-warning bg-opacity-10 rounded-pill px-2 py-1 small border border-warning border-opacity-10" style="color: #e07b39;">{% trans "Near Limit" %}</span>
                     {% else %}
                         <span class="badge bg-danger bg-opacity-10 text-danger rounded-pill px-2 py-1 small border border-danger border-opacity-10">{% trans "Over Budget" %}</span>
                     {% endif %}
@@ -969,7 +969,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     <!-- Budget progress bar -->
                     <div class="d-flex justify-content-between align-items-baseline mb-2">
                         <small class="text-muted fw-bold text-uppercase" style="font-size: 0.6rem; letter-spacing: 0.5px;">{% trans "Budget Used" %}</small>
-                        <small class="fw-bold {% if salary_breakdown.spending_pace.spent_percent > 100 %}text-danger{% elif salary_breakdown.spending_pace.spent_percent > 80 %}{% else %}text-success{% endif %}" style="font-size: 0.8rem;{% if salary_breakdown.spending_pace.spent_percent > 80 and salary_breakdown.spending_pace.spent_percent <= 100 %} color: #e67e22;{% endif %}">{{ salary_breakdown.spending_pace.spent_percent|floatformat:0|translate_digits }}%</small>
+                        <small class="fw-bold {% if salary_breakdown.spending_pace.spent_percent > 100 %}text-danger{% elif salary_breakdown.spending_pace.spent_percent > 80 %}{% else %}text-success{% endif %}" style="font-size: 0.8rem;{% if salary_breakdown.spending_pace.spent_percent > 80 and salary_breakdown.spending_pace.spent_percent <= 100 %} color: #e07b39;{% endif %}">{{ salary_breakdown.spending_pace.spent_percent|floatformat:0|translate_digits }}%</small>
                     </div>
                     <div class="position-relative" style="height: 10px;">
                         <div class="rounded-pill w-100 h-100" style="background: var(--bs-tertiary-bg);"></div>
@@ -991,7 +991,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         {% if salary_breakdown.spending_pace.status == 'over_budget' %}
                             <small class="text-danger fw-bold"><i class="bi bi-exclamation-triangle-fill me-1"></i>{{ salary_breakdown.spending_pace.budget_multiplier|translate_digits }}× {% trans "over budget" %}</small>
                         {% elif salary_breakdown.spending_pace.status == 'near_limit' %}
-                            <small class="fw-bold" style="color: #e67e22;"><i class="bi bi-info-circle-fill me-1"></i>{% trans "Nearly at limit" %}</small>
+                            <small class="fw-bold" style="color: #e07b39;"><i class="bi bi-info-circle-fill me-1"></i>{% trans "Nearly at limit" %}</small>
                         {% else %}
                             <small class="text-success fw-bold"><i class="bi bi-check-circle-fill me-1"></i>{% trans "Within budget" %}</small>
                         {% endif %}
@@ -1048,7 +1048,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             stroke-width="12"
                             stroke-dasharray="{{ item.arc_length|floatformat:2 }} 282.74"
                             stroke-dashoffset="-{{ item.offset_length|floatformat:2 }}"
-                            style="transition: stroke-dashoffset 1.2s ease, stroke-dasharray 1.2s ease; stroke: {% if item.type == 'Cash' %}#059669{% elif item.type == 'Bank Account' %}#4f46e5{% elif item.type == 'Credit Card' %}#e11d48{% elif item.type == 'Investment Account' %}#d97706{% else %}#94a3b8{% endif %};"/>
+                            style="transition: stroke-dashoffset 1.2s ease, stroke-dasharray 1.2s ease; stroke: {% if item.type == 'Cash' %}#6b8f71{% elif item.type == 'Bank Account' %}#2d6a4f{% elif item.type == 'Credit Card' %}#c0392b{% elif item.type == 'Investment Account' %}#e07b39{% else %}#b5c4b1{% endif %};"/>
                         {% endfor %}
                     </svg>
                     <div class="position-absolute top-50 start-50 translate-middle text-center">
@@ -1060,7 +1060,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 <div class="d-flex flex-wrap justify-content-center gap-2 mb-3">
                     {% for item in asset_allocation %}
                     <div class="text-center px-1">
-                        <span class="rounded-circle d-inline-block me-2" style="width: 10px; height: 10px; background-color: {% if item.type == 'Cash' %}#059669{% elif item.type == 'Bank Account' %}#4f46e5{% elif item.type == 'Credit Card' %}#e11d48{% elif item.type == 'Investment Account' %}#d97706{% else %}#94a3b8{% endif %};"></span>
+                        <span class="rounded-circle d-inline-block me-2" style="width: 10px; height: 10px; background-color: {% if item.type == 'Cash' %}#6b8f71{% elif item.type == 'Bank Account' %}#2d6a4f{% elif item.type == 'Credit Card' %}#c0392b{% elif item.type == 'Investment Account' %}#e07b39{% else %}#b5c4b1{% endif %};"></span>
                         <span class="text-muted" style="font-size: 0.7rem;">{{ item.type }}</span>
                         <div class="fw-bold" style="font-size: 0.75rem;">{{ item.percent|translate_digits }}%</div>
                     </div>
@@ -1413,7 +1413,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                         </small>
                                     </div>
                                     <div class="text-end">
-                                        <span class="fw-bold" style="font-size: 1rem; color: {% if item.type == 'INCOME' %}#10b981{% elif item.type == 'INVESTMENT' %}#0ea5e9{% else %}#ef4444{% endif %};">
+                                        <span class="fw-bold" style="font-size: 1rem; color: {% if item.type == 'INCOME' %}#2d6a4f{% elif item.type == 'INVESTMENT' %}#8b6f47{% else %}#c0392b{% endif %};">
                                             {% if item.type == 'INCOME' %}+{% else %}-{% endif %}{{ currency_symbol }}{{ item.amount|compact_amount:currency_symbol|translate_digits }}
                                         </span>
                                     </div>
@@ -1477,7 +1477,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 <!-- SECTION: FORECAST -->
 <h6 class="text-muted small text-uppercase fw-bold mb-4 mt-4 px-1 d-flex align-items-center fade-in" style="letter-spacing: 1px; opacity: 0.7; animation-delay: 1.0s;">
-    <span class="me-2 text-info">●</span> {% trans "Future Forecast" %}
+    <span class="me-2 text-success">●</span> {% trans "Future Forecast" %}
 </h6>
 <div class="row g-4 mb-4 fade-in" style="animation-delay: 1.1s;">
     <!-- Expense Projection Chart Card -->
@@ -1615,18 +1615,24 @@ document.addEventListener('DOMContentLoaded', function() {
         };
 
         let currentColors = getThemeColor();
-        Chart.defaults.font.family = "'Segoe UI', 'Roboto', 'Helvetica', 'Arial', sans-serif";
+        Chart.defaults.font.family = "'DM Sans', 'Inter', sans-serif";
         Chart.defaults.color = currentColors.text;
         
         const charts = {};
 
-        // --- Gradient Helper ---
-        const createGradient = (ctx, colorStart, colorEnd) => {
-            const gradient = ctx.createLinearGradient(0, 0, 0, 400);
-            gradient.addColorStop(0, colorStart);
-            gradient.addColorStop(1, colorEnd);
-            return gradient;
-        };
+        // --- Solid Color Helper ---
+        const chartPalette = [
+            '#2d6a4f', // Forest Green
+            '#e07b39', // Warm Amber
+            '#c0392b', // Warm Red
+            '#8b6f47', // Warm Brown
+            '#6b8f71', // Sage Green
+            '#b5651d', // Burnt Orange
+            '#7a5c58', // Dusty Rose
+            '#4a7c59', // Muted Jade
+            '#d4956a', // Sandy Peach
+            '#5c6b5e'  // Olive Gray
+        ];
 
         // --- 0. Income vs Expenses Chart (SVG Animation) ---
         const totalIncome = {{ total_income|stringformat:"f"|default:0 }};
@@ -1642,17 +1648,17 @@ document.addEventListener('DOMContentLoaded', function() {
         const gaugeFill = document.getElementById('gauge-fill-path');
         const percentageText = document.getElementById('ie-percentage');
         
-        let chartColor = '#219EBC'; // Default Blue
+        let chartColor = '#2d6a4f'; // Forest Green
 
         if (percentageText) {
             if (iePercentage > 100) {
-                chartColor = '#E74C3C'; // Red
+                chartColor = '#c0392b'; // Warm Red
                 percentageText.classList.add('text-danger');
             } else if (iePercentage > 80) {
-                chartColor = '#F39C12'; // Orange
+                chartColor = '#e07b39'; // Warm Amber
                 percentageText.classList.add('text-warning');
             } else {
-                chartColor = '#219EBC';
+                chartColor = '#2d6a4f';
                 percentageText.classList.add('text-primary');
             }
         }
@@ -1694,23 +1700,21 @@ document.addEventListener('DOMContentLoaded', function() {
 
         if (trendIsDaily && trendLabels.length > 1) {
             // --- Daily view: Area line + 7-day moving average ---
-            const areaGradient = ctxTrend.createLinearGradient(0, 0, 0, 350);
-            areaGradient.addColorStop(0, 'rgba(0, 114, 255, 0.22)');
-            areaGradient.addColorStop(1, 'rgba(0, 198, 255, 0.02)');
+            const areaGradient = 'rgba(45, 106, 79, 0.12)';
 
             const dailyDatasets = [
                 {
                     label: '{% trans "Daily Spend" %}',
                     data: trendDatasets[0].data,
-                    borderColor: '#0072ff',
+                    borderColor: '#2d6a4f',
                     backgroundColor: areaGradient,
                     fill: true,
                     tension: 0.35,
                     borderWidth: 2,
                     pointRadius: 3,
-                    pointBackgroundColor: '#0072ff',
+                    pointBackgroundColor: '#2d6a4f',
                     pointHoverRadius: 6,
-                    pointHoverBackgroundColor: '#00c6ff',
+                    pointHoverBackgroundColor: '#245a42',
                     pointHoverBorderColor: '#fff',
                     pointHoverBorderWidth: 2,
                     order: 1
@@ -1718,7 +1722,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 {
                     label: '{% trans "7-Day Average" %}',
                     data: trend7dAvg,
-                    borderColor: '#38f9d7',
+                    borderColor: '#e07b39',
                     backgroundColor: 'transparent',
                     fill: false,
                     tension: 0.4,
@@ -1726,7 +1730,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     borderDash: [6, 3],
                     pointRadius: 0,
                     pointHoverRadius: 4,
-                    pointHoverBackgroundColor: '#43e97b',
+                    pointHoverBackgroundColor: '#e07b39',
                     order: 0
                 }
             ];
@@ -1783,15 +1787,8 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         } else {
             // --- Monthly view: Keep as bar chart ---
-            const trendGradients = [
-                createGradient(ctxTrend, '#00c6ff', '#0072ff'),
-                createGradient(ctxTrend, '#43e97b', '#38f9d7'),
-                createGradient(ctxTrend, '#a78bfa', '#7c3aed'),
-                createGradient(ctxTrend, '#4facfe', '#00f2fe'),
-                createGradient(ctxTrend, '#30cfd0', '#330867')
-            ];
             trendDatasets.forEach((ds, i) => {
-                ds.backgroundColor = trendGradients[i % trendGradients.length];
+                ds.backgroundColor = chartPalette[i % chartPalette.length];
                 ds.borderRadius = 2;
             });
 
@@ -1854,16 +1851,16 @@ document.addEventListener('DOMContentLoaded', function() {
             const flowLabels = ['{% trans "Lifestyle" %}', '{% trans "Investments" %}', '{% trans "Remaining" %}'];
             const flowData = [lifestyleTotal, investmentTotal, remainingTotal];
             
-            const flowGradients = [
-                createGradient(ctxFlow, '#818cf8', '#6366f1'), // Lifestyle (Indigo)
-                createGradient(ctxFlow, '#34d399', '#10b981'), // Investments (Emerald)
-                createGradient(ctxFlow, '#0ea5e9', '#0284c7')  // Remaining (Sky Blue)
+            const flowColors = [
+                '#2d6a4f', // Lifestyle (Forest Green)
+                '#e07b39', // Investments (Warm Amber)
+                '#d5d0c8'  // Remaining (Muted Stone)
             ];
 
             const flowDatasets = flowLabels.map((label, index) => ({
                 label: label,
                 data: [flowData[index]],
-                backgroundColor: flowGradients[index],
+                backgroundColor: flowColors[index],
                 borderWidth: 0, 
                 borderRadius: 0,
                 barPercentage: 1.0,
@@ -1923,13 +1920,11 @@ document.addEventListener('DOMContentLoaded', function() {
                             if (sYears && sYears.length) sYears.forEach(y => queryParams.append('year', y));
 
                             if (label === '{% trans "Lifestyle" %}') {
-                                queryParams.append('is_investment', 'false');
                                 showLoader();
                                 window.location.href = "{% url 'expense-list' %}?" + queryParams.toString();
                             } else if (label === '{% trans "Investments" %}') {
-                                queryParams.append('is_investment', 'true');
                                 showLoader();
-                                window.location.href = "{% url 'expense-list' %}?" + queryParams.toString();
+                                window.location.href = "{% url 'account-list' %}";
                             } else if (label === '{% trans "Remaining" %}') {
                                 return; // No link for remaining
                             } else if (label !== '{% trans "Unallocated" %}' && label !== '{% trans "Balance" %}') {
@@ -1959,15 +1954,17 @@ document.addEventListener('DOMContentLoaded', function() {
                             if (percentage >= 8) {
                                 ctx.textAlign = 'center';
                                 ctx.textBaseline = 'middle';
-                                ctx.fillStyle = '#ffffff';
-                                ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
-                                ctx.shadowBlur = 4;
+                                // Use dark text on light "Remaining" segment
+                                const isLight = dataset.backgroundColor === '#d5d0c8';
+                                ctx.fillStyle = isLight ? '#1a1a18' : '#ffffff';
+                                ctx.shadowColor = isLight ? 'rgba(255,255,255,0.3)' : 'rgba(0, 0, 0, 0.5)';
+                                ctx.shadowBlur = isLight ? 2 : 4;
                                 
                                 const x = bar.x - (bar.width / 2);
                                 const y = bar.y;
                                 
                                 // 1. Label (e.g., Lifestyle)
-                                ctx.font = '700 10px "Outfit", sans-serif';
+                                ctx.font = '700 10px "DM Sans", sans-serif';
                                 ctx.fillText(dataset.label.toUpperCase(), x, y - 8);
                                 
                                 // 2. Amount (e.g., ₹43k)
@@ -1981,14 +1978,15 @@ document.addEventListener('DOMContentLoaded', function() {
                                 }
                                 const amountText = '{{ currency_symbol }}' + translateDigits(displayVal.toLocaleString()) + suffix;
                                 
-                                ctx.font = '700 13px "Outfit", sans-serif';
+                                ctx.font = '700 13px "DM Sans", sans-serif';
                                 ctx.fillText(amountText, x, y + 8);
                                 
                                 ctx.shadowBlur = 0;
                             } else if (percentage >= 4) {
                                 // Fallback for smaller segments: just the amount
-                                ctx.font = '700 11px "Outfit", sans-serif';
-                                ctx.fillStyle = '#ffffff';
+                                const isLightSmall = dataset.backgroundColor === '#d5d0c8';
+                                ctx.font = '700 11px "DM Sans", sans-serif';
+                                ctx.fillStyle = isLightSmall ? '#1a1a18' : '#ffffff';
                                 ctx.textAlign = 'center';
                                 ctx.textBaseline = 'middle';
                                 const x = bar.x - (bar.width / 2);
@@ -2006,19 +2004,8 @@ document.addEventListener('DOMContentLoaded', function() {
         if (categoryCanvas && categories.length > 0) {
             const ctxCategory = categoryCanvas.getContext('2d');
             
-            // Generate distinct gradients matching the old aesthetic
-            const doughnutGradients = [
-                 createGradient(ctxCategory, '#00c6ff', '#0072ff'), // Blue
-                 createGradient(ctxCategory, '#43e97b', '#38f9d7'), // Teal
-                 createGradient(ctxCategory, '#a78bfa', '#7c3aed'), // Soft Violet
-                 createGradient(ctxCategory, '#f7b733', '#fc4a1a'), // Orange
-                 createGradient(ctxCategory, '#4facfe', '#00f2fe'), // Cyan
-                 createGradient(ctxCategory, '#30cfd0', '#330867'), // Sea-Blue
-                 createGradient(ctxCategory, '#fa709a', '#fee140'), // Yellow-Red
-                 createGradient(ctxCategory, '#667eea', '#764ba2')  // Deep Purple
-            ];
-
-            const bgGradients = categories.map((_, i) => doughnutGradients[i % doughnutGradients.length]);
+            // Solid colors matching the warm palette
+            const bgColors = categories.map((_, i) => chartPalette[i % chartPalette.length]);
 
             charts.categoryChart = new Chart(ctxCategory, {
                 type: 'doughnut',
@@ -2026,7 +2013,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     labels: categories,
                     datasets: [{
                         data: categoryAmounts,
-                        backgroundColor: bgGradients,
+                        backgroundColor: bgColors,
                         borderWidth: 0,
                         hoverOffset: 8
                     }]
@@ -2050,7 +2037,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             const pctText = translateDigits(percentage) + '%';
                                                         // Only draw text if the slice is large enough
                              if (arc.circumference > 0.3) {
-                                 ctx.font = 'bold 12px "Outfit", sans-serif';
+                                 ctx.font = 'bold 12px "DM Sans", sans-serif';
                                  ctx.textAlign = 'center';
                                  ctx.textBaseline = 'middle';
                                  ctx.fillStyle = '#ffffff';
@@ -2127,11 +2114,11 @@ document.addEventListener('DOMContentLoaded', function() {
             const spentData = withLimits.map(item => Math.min((item.total / item.limit) * 100, 100));
             const remainingData = spentData.map(spentPct => 100 - spentPct);
             
-            // Dynamic Gradients for Budgets
+            // Dynamic colors for Budgets - flat solid
             const spentColors = withLimits.map(item => {
-                if (item.total > item.limit) return createGradient(ctxBudget, '#ed213a', '#93291e'); // Red (Over)
-                if (item.total > item.limit * 0.8) return createGradient(ctxBudget, '#f7b733', '#fc4a1a'); // Orange (Warning)
-                return createGradient(ctxBudget, '#11998e', '#38ef7d'); // Green (Safe)
+                if (item.total > item.limit) return '#c0392b'; // Red (Over)
+                if (item.total > item.limit * 0.8) return '#e07b39'; // Warm Amber (Warning)
+                return '#2d6a4f'; // Forest Green (Safe)
             });
 
             charts.budget = new Chart(ctxBudget, {
@@ -2242,16 +2229,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (canvas) {
                      const ctxPayment = canvas.getContext('2d');
                      
-                     // Match Category Chart Gradients
-                     const paymentGradients = [
-                         createGradient(ctxPayment, '#00c6ff', '#0072ff'), // Blue
-                         createGradient(ctxPayment, '#43e97b', '#38f9d7'), // Teal
-                         createGradient(ctxPayment, '#a78bfa', '#7c3aed'), // Soft Violet
-                         createGradient(ctxPayment, '#4facfe', '#00f2fe'), // Cyan
-                         createGradient(ctxPayment, '#30cfd0', '#330867'), // Sea-Blue
-                         createGradient(ctxPayment, '#fa709a', '#fee140'), // Yellow-Red (Extra)
-                         createGradient(ctxPayment, '#667eea', '#764ba2')  // Deep Purple (Extra)
-                     ];
+                     // Solid colors matching chart palette
+                     const paymentColors = chartPalette;
      
                      try {
                          if (charts.payment) charts.payment.destroy();
@@ -2261,7 +2240,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                   labels: paymentLabels,
                                   datasets: [{
                                       data: paymentData,
-                                      backgroundColor: paymentGradients,
+                                      backgroundColor: paymentColors,
                                       borderWidth: 0,
                                       hoverOffset: 12
                                   }]
@@ -2275,7 +2254,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                          labels: {
                                              usePointStyle: true,
                                              padding: 20,
-                                             font: { family: '"Outfit", sans-serif', size: 13 }
+                                             font: { family: '"DM Sans", sans-serif', size: 13 }
                                          }
                                      },
                                      tooltip: {
@@ -2324,11 +2303,11 @@ document.addEventListener('DOMContentLoaded', function() {
                                               ctx.shadowBlur = 4;
                                               
                                               // Draw value
-                                              ctx.font = 'bold 11px "Outfit", sans-serif';
+                                              ctx.font = 'bold 11px "DM Sans", sans-serif';
                                               ctx.fillText(amountText, center.x, center.y - 7);
                                               
                                               // Draw percentage
-                                              ctx.font = 'bold 10px "Outfit", sans-serif';
+                                              ctx.font = 'bold 10px "DM Sans", sans-serif';
                                               ctx.fillText(pctText, center.x, center.y + 7);
                                           }
                                       });
@@ -2370,23 +2349,23 @@ document.addEventListener('DOMContentLoaded', function() {
                                  {
                                      label: '{% trans "Actual Spend" %}',
                                      data: projHistorical,
-                                     borderColor: '#219EBC',
-                                     backgroundColor: 'rgba(33, 158, 188, 0.1)',
+                                     borderColor: '#2d6a4f',
+                                     backgroundColor: 'rgba(45, 106, 79, 0.08)',
                                      fill: true,
                                      tension: 0.4,
                                      pointRadius: 4,
-                                     pointBackgroundColor: '#219EBC',
+                                     pointBackgroundColor: '#2d6a4f',
                                      spanGaps: true
                                  },
                                  {
                                      label: '{% trans "Projected Spend" %}',
                                      data: projForecast,
-                                     borderColor: '#8ecae6',
+                                     borderColor: '#e07b39',
                                      borderDash: [5, 5],
                                      backgroundColor: 'transparent',
                                      tension: 0.4,
                                      pointRadius: 4,
-                                     pointBackgroundColor: '#8ecae6',
+                                     pointBackgroundColor: '#e07b39',
                                      spanGaps: true
                                  }
                              ]

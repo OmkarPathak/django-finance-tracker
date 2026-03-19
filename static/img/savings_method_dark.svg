@@ -2,8 +2,8 @@
   <defs>
     <!-- Brand Gradients -->
     <linearGradient id="brandGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#00f260" stop-opacity="1" />
-      <stop offset="100%" stop-color="#0575e6" stop-opacity="1" />
+      <stop offset="0%" stop-color="#2d6a4f" stop-opacity="1" />
+      <stop offset="100%" stop-color="#3d8b6a" stop-opacity="1" />
     </linearGradient>
     
     <linearGradient id="incomeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -55,32 +55,32 @@
     <text x="100" y="78" font-family="'Bootstrap-icons'" font-size="24" fill="white" text-anchor="middle">₹</text>
     
     <!-- Text Block -->
-    <text x="100" y="125" font-family="'Outfit', 'Segoe UI', sans-serif" font-size="28" font-weight="700" fill="#e2e8f0" text-anchor="middle">Income</text>
-    <text x="100" y="150" font-family="'Outfit', 'Segoe UI', sans-serif" font-size="16" fill="#a0aec0" text-anchor="middle">Monthly Salary</text>
+    <text x="100" y="125" font-family="'DM Sans', 'Segoe UI', sans-serif" font-size="28" font-weight="700" fill="#e2e8f0" text-anchor="middle">Income</text>
+    <text x="100" y="150" font-family="'DM Sans', 'Segoe UI', sans-serif" font-size="16" fill="#a0aec0" text-anchor="middle">Monthly Salary</text>
   </g>
 
   <!-- 2. Expenses Block -->
   <g transform="translate(280, 50)" filter="url(#softShadow)">
     <rect x="0" y="0" width="240" height="300" rx="24" ry="24" fill="#1a202c" stroke="#2d3748" stroke-width="1" />
     
-    <text x="120" y="45" font-family="'Outfit', 'Segoe UI', sans-serif" font-size="20" font-weight="600" fill="#cbd5e0" text-anchor="middle">Total Expenses</text>
+    <text x="120" y="45" font-family="'DM Sans', 'Segoe UI', sans-serif" font-size="20" font-weight="600" fill="#cbd5e0" text-anchor="middle">Total Expenses</text>
     
     <!-- Needs Sub-block -->
     <g transform="translate(20, 70)">
         <rect x="0" y="0" width="200" height="80" rx="16" ry="16" fill="#2d3748" stroke="#4a5568" stroke-width="1"/>
-        <text x="100" y="35" font-family="'Outfit', 'Segoe UI', sans-serif" font-size="16" font-weight="600" fill="#fc8181" text-anchor="middle">Needs &amp; Bills</text>
-        <text x="100" y="55" font-family="'Outfit', 'Segoe UI', sans-serif" font-size="13" fill="#fc8181" opacity="0.8" text-anchor="middle">Rent, Food, EMI</text>
+        <text x="100" y="35" font-family="'DM Sans', 'Segoe UI', sans-serif" font-size="16" font-weight="600" fill="#fc8181" text-anchor="middle">Needs &amp; Bills</text>
+        <text x="100" y="55" font-family="'DM Sans', 'Segoe UI', sans-serif" font-size="13" fill="#fc8181" opacity="0.8" text-anchor="middle">Rent, Food, EMI</text>
     </g>
 
     <!-- Savings Sub-block -->
     <g transform="translate(20, 170)">
         <rect x="0" y="0" width="200" height="110" rx="16" ry="16" fill="url(#brandGrad)" />
         
-        <text x="100" y="35" font-family="'Outfit', 'Segoe UI', sans-serif" font-size="18" font-weight="700" fill="white" text-anchor="middle" style="text-shadow: 0 2px 4px rgba(0,0,0,0.2)">Savings</text>
-        <text x="100" y="60" font-family="'Outfit', 'Segoe UI', sans-serif" font-size="14" fill="white" opacity="0.95" text-anchor="middle">SIPs, RDs, Gold</text>
+        <text x="100" y="35" font-family="'DM Sans', 'Segoe UI', sans-serif" font-size="18" font-weight="700" fill="white" text-anchor="middle" style="text-shadow: 0 2px 4px rgba(0,0,0,0.2)">Savings</text>
+        <text x="100" y="60" font-family="'DM Sans', 'Segoe UI', sans-serif" font-size="14" fill="white" opacity="0.95" text-anchor="middle">SIPs, RDs, Gold</text>
         
         <rect x="40" y="75" width="120" height="24" rx="12" fill="white" fill-opacity="0.2" />
-        <text x="100" y="91" font-family="'Outfit', 'Segoe UI', sans-serif" font-size="11" font-weight="500" fill="white" text-anchor="middle">Treated as Expense</text>
+        <text x="100" y="91" font-family="'DM Sans', 'Segoe UI', sans-serif" font-size="11" font-weight="500" fill="white" text-anchor="middle">Treated as Expense</text>
     </g>
   </g>
 
@@ -94,8 +94,8 @@
     <!-- Checkmark Icon -->
     <path d="M86 70 L96 80 L114 62" stroke="white" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round" />
 
-    <text x="100" y="125" font-family="'Outfit', 'Segoe UI', sans-serif" font-size="28" font-weight="700" fill="#e2e8f0" text-anchor="middle">Balance</text>
-    <text x="100" y="150" font-family="'Outfit', 'Segoe UI', sans-serif" font-size="16" fill="#a0aec0" text-anchor="middle">Peace of Mind</text>
+    <text x="100" y="125" font-family="'DM Sans', 'Segoe UI', sans-serif" font-size="28" font-weight="700" fill="#e2e8f0" text-anchor="middle">Balance</text>
+    <text x="100" y="150" font-family="'DM Sans', 'Segoe UI', sans-serif" font-size="16" fill="#a0aec0" text-anchor="middle">Peace of Mind</text>
   </g>
 
   <!-- Math Symbols -->

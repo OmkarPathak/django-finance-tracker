@@ -1,11 +1,11 @@
 /* Global Font Import - Unified Source */
-@import url("https://fonts.googleapis.com/css2?family=Clash+Display:wght@400;500;600;700&family=Outfit:wght@300;400;500;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap");
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap");
 
 body {
-  /* Main body font - Outfit */
+  /* Main body font - DM Sans */
   font-family:
-    "Outfit",
+    "DM Sans",
     "Inter",
     system-ui,
     -apple-system,
@@ -13,7 +13,7 @@ body {
   transition:
     background-color 0.3s ease,
     color 0.3s ease;
-  background-color: #f3f4f6; /* Fresh Gray Background */
+  background-color: #faf9f6; /* Warm Parchment Background */
 }
 
 /* Global Card Refinements */
@@ -37,15 +37,15 @@ body {
 @keyframes fab-pulse {
   0% {
     transform: scale(1);
-    box-shadow: 0 0 0 0 rgba(5, 117, 230, 0.4);
+    box-shadow: 0 0 0 0 rgba(45, 106, 79, 0.4);
   }
   70% {
     transform: scale(1.04);
-    box-shadow: 0 0 0 12px rgba(5, 117, 230, 0);
+    box-shadow: 0 0 0 12px rgba(45, 106, 79, 0);
   }
   100% {
     transform: scale(1);
-    box-shadow: 0 0 0 0 rgba(5, 117, 230, 0);
+    box-shadow: 0 0 0 0 rgba(45, 106, 79, 0);
   }
 }
 
@@ -96,27 +96,107 @@ body {
 /* --- Global Dashboard Theme Overrides --- */
 
 :root {
-  --color-primary: #023047; /* Dark Blue */
-  --color-secondary: #8ecae6; /* Light Blue */
-  --color-success: #219ebc; /* Teal */
-  --color-danger: #dc3545; /* Red */
-  --color-warning: #ffb703; /* Yellow */
-  --bg-color: #f8f9fa; /* Light mode bg default */
+  --color-primary: #1a1a18; /* Warm Ink Black */
+  --color-secondary: #2d6a4f; /* Forest Green */
+  --color-success: #2d6a4f; /* Forest Green */
+  --color-danger: #c0392b; /* Warm Danger Red */
+  --color-warning: #e07b39; /* Warm Amber */
+  --bg-color: #faf9f6; /* Warm Parchment */
   --surface-color: #ffffff;
-  --text-main: #212529;
-  --primary-gradient: linear-gradient(135deg, #00f260 0%, #0575e6 100%);
+  --text-main: #1a1a18; /* Warm Ink Black */
+  --color-accent: #2d6a4f;
+  --color-accent2: #e07b39;
+  --border-color: rgba(26,26,24,0.1);
+  --paper: #faf9f6;
+  --paper2: #f2f0eb;
+  --paper3: #e8e5de;
+  --ink: #1a1a18;
+  --ink2: #4a4a46;
+  --ink3: #8a8a84;
+
+  /* Override Bootstrap info color (default cyan is too bright) */
+  --bs-info: #3d7a8a;
+  --bs-info-rgb: 61, 122, 138;
+
+  /* Override Bootstrap primary (default blue → Forest Green) */
+  --bs-primary: #2d6a4f;
+  --bs-primary-rgb: 45, 106, 79;
+
+  /* Override Bootstrap danger (default red → Warm Red) */
+  --bs-danger: #c0392b;
+  --bs-danger-rgb: 192, 57, 43;
+
+  /* Override Bootstrap success */
+  --bs-success: #2d6a4f;
+  --bs-success-rgb: 45, 106, 79;
+
+  /* Override Bootstrap warning */
+  --bs-warning: #e07b39;
+  --bs-warning-rgb: 224, 123, 57;
+}
+
+/* Override Bootstrap form check/switch colors */
+.form-check-input:checked {
+  background-color: #2d6a4f;
+  border-color: #2d6a4f;
+}
+.form-check-input:focus {
+  border-color: #2d6a4f;
+  box-shadow: 0 0 0 0.25rem rgba(45, 106, 79, 0.25);
+}
+
+/* Override Bootstrap button component colors globally */
+.btn-primary {
+  --bs-btn-bg: #2d6a4f;
+  --bs-btn-border-color: #2d6a4f;
+  --bs-btn-hover-bg: #245a42;
+  --bs-btn-hover-border-color: #245a42;
+  --bs-btn-active-bg: #1e4d38;
+  --bs-btn-active-border-color: #1e4d38;
+  --bs-btn-disabled-bg: #2d6a4f;
+  --bs-btn-disabled-border-color: #2d6a4f;
+}
+.btn-outline-primary {
+  --bs-btn-color: #2d6a4f;
+  --bs-btn-border-color: #2d6a4f;
+  --bs-btn-hover-bg: #2d6a4f;
+  --bs-btn-hover-border-color: #2d6a4f;
+  --bs-btn-active-bg: #2d6a4f;
+  --bs-btn-active-border-color: #2d6a4f;
+  --bs-btn-disabled-color: #2d6a4f;
+  --bs-btn-disabled-border-color: #2d6a4f;
+}
+.btn-outline-danger {
+  --bs-btn-color: #c0392b;
+  --bs-btn-border-color: #c0392b;
+  --bs-btn-hover-bg: #c0392b;
+  --bs-btn-hover-border-color: #c0392b;
+  --bs-btn-active-bg: #a5311f;
+  --bs-btn-active-border-color: #a5311f;
+  --bs-btn-disabled-color: #c0392b;
+  --bs-btn-disabled-border-color: #c0392b;
+}
+.btn-outline-success {
+  --bs-btn-color: #2d6a4f;
+  --bs-btn-border-color: #2d6a4f;
+  --bs-btn-hover-bg: #2d6a4f;
+  --bs-btn-hover-border-color: #2d6a4f;
+  --bs-btn-active-bg: #245a42;
+  --bs-btn-active-border-color: #245a42;
 }
 
 [data-bs-theme="dark"] {
-  --color-primary: #0575e6; /* Bright Blue for Dark Mode */
+  --color-primary: #3d8b6a; /* Lighter Forest Green for Dark Mode */
   --color-background: #111315; /* Landing Page BG */
   --color-surface: #1a1d21; /* Landing Page Surface */
-  --color-text: #ffffff;
+  --color-text: #faf9f6;
+  --bg-color: #111315;
+  --surface-color: #1a1d21;
 }
 
 body {
   font-family:
-    "Outfit",
+    "DM Sans",
     "Inter",
     system-ui,
     -apple-system,
@@ -129,16 +209,6 @@ body {
 [data-bs-theme="dark"] body {
   background-color: var(--color-background) !important;
   color: var(--color-text) !important;
-}
-
-h1,
-h2,
-h3,
-.h1,
-.h2,
-.h3,
-.navbar-brand {
-  font-family: "Clash Display", "Outfit", sans-serif;
 }
 
 /* Navbar Unification */
@@ -177,43 +247,43 @@ h3,
   background-color: var(--color-primary) !important;
 }
 
-/* Primary Button (Teal - Custom) */
+/* Primary Button */
 .btn-primary {
-  background: var(--primary-gradient);
+  background-color: #2d6a4f;
   border: none;
   font-weight: 500;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   height: 38px;
+  color: #fff;
 }
 .btn-primary:hover,
 .btn-primary:active,
 .btn-primary:focus {
-  opacity: 0.9;
-  background: var(--primary-gradient);
-  box-shadow: 0 4px 12px rgba(5, 117, 230, 0.3);
+  background-color: #245a42;
+  box-shadow: 0 4px 12px rgba(45, 106, 79, 0.25);
 }
 
-/* Success Button (Teal) */
+/* Success Button (Forest Green) */
 .btn-success {
-  background: var(--primary-gradient);
+  background-color: #2d6a4f;
   border: none;
   font-weight: 500;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   height: 38px;
+  color: #fff;
 }
 .btn-success:hover,
 .btn-success:active,
 .btn-success:focus {
-  opacity: 0.9;
-  background: var(--primary-gradient);
-  box-shadow: 0 4px 12px rgba(0, 242, 96, 0.3);
+  background-color: #245a42;
+  box-shadow: 0 4px 12px rgba(45, 106, 79, 0.25);
 }
 
-/* Danger Button (Red) */
+/* Danger Button (Warm Red) */
 .btn-danger {
   background-color: var(--color-danger);
   border: 1px solid var(--color-danger);
@@ -226,8 +296,8 @@ h3,
 .btn-danger:hover,
 .btn-danger:active,
 .btn-danger:focus {
-  background-color: #bb2d3b;
-  border-color: #b02a37;
+  background-color: #a5311f;
+  border-color: #962c1b;
   color: #fff;
 }
 
@@ -252,8 +322,8 @@ a:hover {
 }
 .btn-outline-primary:hover,
 .btn-outline-primary:active {
-  background: var(--primary-gradient) !important;
-  border: 1px solid transparent !important;
+  background-color: #2d6a4f !important;
+  border: 1px solid #2d6a4f !important;
   color: #fff !important;
 }
 
@@ -274,15 +344,14 @@ a:hover {
 
 /* Specific Link Overrides */
 .btn-link {
-  color: var(--color-success); /* Teal for actions */
+  color: var(--color-success); /* Forest Green for actions */
   text-decoration: none;
 }
 .btn-link:hover {
-  color: #1a7fa8;
+  color: #1a4a35;
 }
 
-/* Navbar Links (Dark Blue on Light Background) */
-/* Navbar Links (Dark Blue on Light Background) */
+/* Navbar Links */
 .nav-link {
   color: var(--color-primary);
   height: 38px !important; /* Force standard height */
@@ -301,27 +370,27 @@ a:hover {
 }
 .page-link:hover {
   color: var(--color-success);
-  background-color: #f8f9fa;
-  border-color: #dee2e6;
+  background-color: #faf9f6;
+  border-color: #e8e5de;
 }
 .page-item.active .page-link {
-  background-color: var(--color-primary); /* Dark Blue selected page */
-  border-color: var(--color-primary);
+  background-color: var(--color-success); /* Forest Green selected page */
+  border-color: var(--color-success);
   color: #fff;
 }
 
 /* Sidebar / List Group Active State */
 .list-group-item.active {
-  background-color: var(--color-success); /* Teal */
+  background-color: var(--color-success); /* Forest Green */
   border-color: var(--color-success);
 }
 
 /* Text Colors */
 .text-primary {
-  color: var(--color-success) !important; /* Teal to match Primary Buttons */
+  color: var(--color-success) !important; /* Forest Green to match Primary Buttons */
 }
 .text-secondary {
-  color: var(--color-primary) !important; /* Dark Blue for secondary text */
+  color: var(--color-primary) !important; /* Warm Ink Black for secondary text */
 }
 .text-success {
   color: var(--color-success) !important;
@@ -333,15 +402,11 @@ a:hover {
   color: var(--color-warning) !important;
 }
 
-/* Gradient Text Utility */
-/* Gradient Text Utility */
+/* Accent Text Utility */
 .text-gradient-primary {
-  background: var(--primary-gradient) !important;
-  -webkit-background-clip: text !important;
-  background-clip: text !important;
-  -webkit-text-fill-color: transparent !important;
-  color: transparent !important;
-  display: inline-block; /* Required for transform effects sometimes */
+  color: #2d6a4f !important;
+  -webkit-text-fill-color: #2d6a4f !important;
+  display: inline-block;
 }
 
 /* Dark Mode Overrides */
@@ -350,7 +415,7 @@ a:hover {
 }
 [data-bs-theme="dark"] .nav-link:hover,
 [data-bs-theme="dark"] .nav-link.active {
-  color: var(--color-success) !important; /* Teal for hover/active */
+  color: var(--color-success) !important; /* Forest Green for hover/active */
 }
 
 /* Small Buttons height override */
@@ -362,33 +427,21 @@ a:hover {
 
 /* Donation Button Styling */
 .donation-btn {
-  background: linear-gradient(
-    135deg,
-    rgba(251, 133, 0, 0.1) 0%,
-    rgba(255, 183, 3, 0.1) 100%
-  );
-  border: 1px solid rgba(251, 133, 0, 0.3);
+  background-color: rgba(224, 123, 57, 0.1);
+  border: 1px solid rgba(224, 123, 57, 0.3);
   color: var(--color-warning) !important;
   font-weight: 600 !important;
   transition: all 0.3s ease;
 }
 
 .donation-btn:hover {
-  background: linear-gradient(
-    135deg,
-    rgba(251, 133, 0, 0.2) 0%,
-    rgba(255, 183, 3, 0.2) 100%
-  );
+  background-color: rgba(224, 123, 57, 0.18);
   border-color: var(--color-warning);
   transform: scale(1.05);
 }
 
 [data-bs-theme="dark"] .donation-btn {
-  background: linear-gradient(
-    135deg,
-    rgba(251, 133, 0, 0.2) 0%,
-    rgba(255, 183, 3, 0.2) 100%
-  );
+  background-color: rgba(224, 123, 57, 0.18);
 }
 
 /* Fix for gray background behind inputs in Expense Form (Dark Mode) */
@@ -464,7 +517,7 @@ a:hover {
 }
 
 .driver-popover-title {
-  font-family: "Clash Display", sans-serif !important;
+  font-family: "DM Sans", sans-serif !important;
   font-weight: 600 !important;
   font-size: 1.1rem !important;
   margin-bottom: 8px !important;
@@ -489,7 +542,7 @@ a:hover {
 }
 
 .driver-popover-next-btn {
-  background-color: var(--color-success) !important; /* Teal */
+  background-color: var(--color-success) !important; /* Forest Green */
   color: white !important;
   border: none !important;
 }
@@ -644,6 +697,9 @@ a:hover {
 }
 
 /* Progress Bars */
+.progress-bar {
+  --bs-progress-bar-bg: #2d6a4f;
+}
 .progress-thin {
   height: 6px;
   border-radius: 3px;
@@ -653,35 +709,35 @@ a:hover {
   background-color: rgba(0, 0, 0, 0.05);
 }
 
-/* Category Colors (cycling) */
+/* Category Colors (cycling) - Flat solid colors */
 .cat-color-0 {
-  background: linear-gradient(45deg, #ffb703, #ff8e00);
-} /* Honey Yellow */
+  background-color: #2d6a4f;
+} /* Forest Green */
 .cat-color-1 {
-  background: linear-gradient(45deg, #2ecc71, #25d366);
-} /* Green */
+  background-color: #e07b39;
+} /* Warm Amber */
 .cat-color-2 {
-  background: linear-gradient(45deg, #ff6b6b, #ff4500);
-} /* OrangeRed */
+  background-color: #c0392b;
+} /* Warm Red */
 .cat-color-3 {
-  background: linear-gradient(45deg, #3498db, #0077b5);
-} /* Blue */
+  background-color: #8b6f47;
+} /* Warm Brown */
 .cat-color-4 {
-  background: linear-gradient(45deg, #8e2de2, #4a00e0);
-} /* Purple */
+  background-color: #6b8f71;
+} /* Sage Green */
 
-/* Semantic Gradient Colors */
+/* Semantic Progress Bar Colors - Flat solid */
 .progress-gradient-success {
-  background: linear-gradient(45deg, #2ecc71, #25d366);
+  background-color: #2d6a4f;
 }
 .progress-gradient-warning {
-  background: linear-gradient(45deg, #ffb703, #ff8e00);
+  background-color: #e07b39;
 }
 .progress-gradient-danger {
-  background: linear-gradient(45deg, #ff6b6b, #ff4500);
+  background-color: #c0392b;
 }
 .progress-gradient-info {
-  background: linear-gradient(45deg, #3498db, #0077b5);
+  background-color: #8b6f47;
 }
 
 /* Fix for Multiselect Dropdown Visibility */
@@ -839,7 +895,7 @@ a:hover {
 }
 
 .payment-method-item.active .icon-wrapper {
-  background: var(--primary-gradient);
+  background-color: #2d6a4f;
   color: white;
   transform: scale(1.1);
 }
@@ -955,7 +1011,7 @@ a:hover {
 
 .form-card:hover {
   box-shadow: 0 8px 30px rgba(0,0,0,0.08);
-  border-color: rgba(5, 117, 230, 0.2);
+  border-color: rgba(45, 106, 79, 0.2);
 }
 
 .form-card .form-label {
@@ -976,9 +1032,9 @@ a:hover {
 
 .form-card .form-control:focus,
 .form-card .form-select:focus {
-  border-color: #0575e6;
+  border-color: #2d6a4f;
   background-color: #fff;
-  box-shadow: 0 0 0 4px rgba(5, 117, 230, 0.1);
+  box-shadow: 0 0 0 4px rgba(45, 106, 79, 0.1);
 }
 
 .remove-item-container {
@@ -1255,7 +1311,7 @@ a:hover {
 }
 
 .mobile-nav-item.active {
-  color: var(--color-success); /* Match desktop active color */
+  color: var(--color-success); /* Forest Green to match desktop */
 }
 
 .mobile-nav-item.active i {
@@ -1279,7 +1335,7 @@ a:hover {
 .fab-icon {
   width: 58px;
   height: 58px;
-  background: var(--primary-gradient); /* Match theme primary gradient */
+  background-color: #2d6a4f;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -1296,7 +1352,7 @@ a:hover {
 
 .mobile-fab:active .fab-icon {
   transform: scale(0.9) translateY(4px);
-  box-shadow: 0 4px 8px rgba(0, 245, 160, 0.2);
+  box-shadow: 0 4px 8px rgba(45, 106, 79, 0.2);
 }
 
 [data-bs-theme="dark"] .mobile-bottom-nav {
@@ -1326,12 +1382,12 @@ a:hover {
 }
 
 .profile-avatar {
-  background: linear-gradient(135deg, rgba(var(--bs-primary-rgb), 0.1), rgba(var(--bs-primary-rgb), 0.05));
+  background-color: rgba(45, 106, 79, 0.08);
   transition: all 0.3s ease;
 }
 
 [data-bs-theme="dark"] .profile-avatar {
-  background: linear-gradient(135deg, rgba(var(--bs-primary-rgb), 0.2), rgba(var(--bs-primary-rgb), 0.1));
+  background-color: rgba(45, 106, 79, 0.15);
   border-color: rgba(255, 255, 255, 0.1) !important;
 }
 

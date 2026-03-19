@@ -182,7 +182,7 @@
         color: var(--bs-body-color);
     }
     .header-action-btn.btn-primary {
-        background: var(--primary-gradient) !important;
+        background-color: #2d6a4f !important;
         color: white !important;
         border: none !important;
     }
@@ -196,7 +196,7 @@
     }
     .view-toggle-btn.active, .filter-toggle-btn[aria-expanded="true"] {
         background: rgba(2, 48, 71, 0.08) !important;
-        color: #023047 !important;
+        color: #1a1a18 !important;
         border-color: rgba(2, 48, 71, 0.3) !important;
         box-shadow: none !important;
     }
@@ -419,7 +419,7 @@
 
     <!-- Filter Form -->
     <div class="collapse" id="expenseFilters" style="z-index: 1040; position: relative;">
-        <form method="get" class="mb-4 bg-body-tertiary p-3 rounded shadow-sm" id="filter-form">
+        <form method="get" class="mb-4 bg-body p-3 rounded shadow-sm" id="filter-form">
         <div class="row g-3 align-items-end flex-lg-nowrap">
             <!-- Search -->
             <div class="col-12 col-md-auto filter-w-search">
@@ -509,7 +509,7 @@
     <div class="mb-4 mt-3 mt-md-0">
         <div class="row g-3">
             <div class="col-6 col-md-auto">
-                <div class="p-2 px-3 border rounded bg-body-tertiary stats-card h-100 d-flex align-items-center gap-3">
+                <div class="p-2 px-3 border rounded bg-body stats-card h-100 d-flex align-items-center gap-3">
                     <div class="stats-icon text-primary">
                         <i class="bi bi-layers" style="font-size: 1.1rem;"></i>
                     </div>
@@ -520,7 +520,7 @@
                 </div>
             </div>
             <div class="col-6 col-md-auto">
-                <div class="p-2 px-3 border rounded bg-body-tertiary stats-card h-100 d-flex align-items-center gap-3">
+                <div class="p-2 px-3 border rounded bg-body stats-card h-100 d-flex align-items-center gap-3">
                     <div class="stats-icon text-success">
                         <i class="bi bi-wallet2" style="font-size: 1.1rem;"></i>
                     </div>
@@ -793,7 +793,7 @@
             {% csrf_token %}
             
             <!-- Mobile Bulk Actions (Hidden by default, shown via JS) -->
-            <div id="mobileBulkActions" class="d-md-none p-2 bg-body-tertiary border-bottom d-none justify-content-end align-items-center gap-2">
+            <div id="mobileBulkActions" class="d-md-none p-2 bg-body border-bottom d-none justify-content-end align-items-center gap-2">
                 <span class="small text-muted me-auto">{% trans "Items Selected" %}</span>
                 <button type="button" class="btn btn-outline-primary btn-sm bulk-edit-btn" disabled data-bs-toggle="modal" data-bs-target="#bulkEditModal">
                     <i class="bi bi-pencil me-1"></i> {% trans "Edit" %}

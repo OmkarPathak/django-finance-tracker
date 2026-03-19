@@ -429,13 +429,13 @@
     var options = {
       sankey: {
         node: {
-          label: { color: textColor, fontName: 'Outfit', fontSize: 14, bold: true },
+          label: { color: textColor, fontName: 'DM Sans', fontSize: 14, bold: true },
           nodePadding: 30,
-          colors: ['#0072ff', '#38f9d7', '#a78bfa', '#00f2fe', '#43e97b', '#f97316', '#6366f1', '#0dcaf0', '#7c3aed', '#94a3b8']
+          colors: ['#2d6a4f', '#e07b39', '#c0392b', '#8b6f47', '#6b8f71', '#b5651d', '#7a5c58', '#4a7c59', '#d4956a', '#5c6b5e']
         },
         link: {
-          colorMode: 'gradient',
-          colors: ['#0072ff', '#38f9d7', '#a78bfa', '#00f2fe', '#43e97b', '#f97316', '#6366f1', '#0dcaf0', '#7c3aed', '#94a3b8']
+          colorMode: 'source',
+          colors: ['#2d6a4f', '#e07b39', '#c0392b', '#8b6f47', '#6b8f71', '#b5651d', '#7a5c58', '#4a7c59', '#d4956a', '#5c6b5e']
         }
       }
     };
@@ -473,7 +473,7 @@
         const catData = JSON.parse(document.getElementById('cat-data').textContent);
 
         // --- Common Config ---
-        Chart.defaults.font.family = "'Outfit', sans-serif";
+        Chart.defaults.font.family = "'DM Sans', sans-serif";
         const isDark = document.documentElement.getAttribute('data-bs-theme') === 'dark';
         Chart.defaults.color = isDark ? '#adb5bd' : '#6c757d';
         const gridColor = isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)';
@@ -512,7 +512,7 @@
                         }
                         text = translateDigits(text);
 
-                        ctx.font = 'bold 10px "Outfit", sans-serif';
+                        ctx.font = 'bold 10px "DM Sans", sans-serif';
                         ctx.fillStyle = isDark ? '#adb5bd' : '#6c757d';
                         ctx.textAlign = 'center';
                         ctx.textBaseline = 'bottom';
@@ -530,15 +530,6 @@
         };        // 1. Balance Chart (Triple Line)
         const ctxBalance = document.getElementById('balanceChart').getContext('2d');
         
-        // Define gradients for premium look
-        const gradientInc = ctxBalance.createLinearGradient(0, 0, 0, 400);
-        gradientInc.addColorStop(0, 'rgba(0, 114, 255, 0.4)');
-        gradientInc.addColorStop(1, 'rgba(0, 114, 255, 0.0)');
-
-        const gradientExp = ctxBalance.createLinearGradient(0, 0, 0, 400);
-        gradientExp.addColorStop(0, 'rgba(124, 58, 237, 0.4)');
-        gradientExp.addColorStop(1, 'rgba(124, 58, 237, 0.0)');
-
         new Chart(ctxBalance, {
             type: 'line',
             data: {
@@ -547,8 +538,8 @@
                     {
                         label: '{% trans "Income" %}',
                         data: incomeData,
-                        borderColor: '#0072ff',
-                        backgroundColor: gradientInc,
+                        borderColor: '#2d6a4f',
+                        backgroundColor: 'rgba(45, 106, 79, 0.08)',
                         fill: true,
                         tension: 0.4,
                         pointRadius: 4,
@@ -558,8 +549,8 @@
                     {
                         label: '{% trans "Expense" %}',
                         data: expenseData,
-                        borderColor: '#7c3aed',
-                        backgroundColor: gradientExp,
+                        borderColor: '#c0392b',
+                        backgroundColor: 'rgba(192, 57, 43, 0.08)',
                         fill: true,
                         tension: 0.4,
                         pointRadius: 4,
@@ -569,11 +560,11 @@
                     {
                         label: '{% trans "Savings Rate (%)" %}',
                         data: rateData,
-                        borderColor: '#38f9d7',
+                        borderColor: '#e07b39',
                         borderWidth: 3,
                         borderDash: [5, 5],
                         pointRadius: 4,
-                        pointBackgroundColor: '#38f9d7',
+                        pointBackgroundColor: '#e07b39',
                         tension: 0.4,
                         fill: false,
                         yAxisID: 'y1'
@@ -659,13 +650,13 @@
         const ctxDonut = document.getElementById('categoryDonutChart').getContext('2d');
         // Generate nice colors (matching other charts)
         const bgColors = [
-            'rgba(0, 114, 255, 0.6)', // Blue (matches bar chart)
-            '#38f9d7',           // Teal
-            '#a78bfa',           // Soft Violet
-            '#00f2fe',           // Cyan
-            '#43e97b',           // Green
-            '#f97316',           // Orange
-            '#6366f1'            // Indigo
+            '#2d6a4f', // Forest Green
+            '#e07b39', // Warm Amber
+            '#c0392b', // Warm Red
+            '#8b6f47', // Warm Brown
+            '#6b8f71', // Sage Green
+            '#b5651d', // Burnt Orange
+            '#7a5c58'  // Dusty Rose
         ];
         
         // Enhance labels with values and percentages for the Legend
@@ -702,7 +693,7 @@
                          // Calculate position (centroid of arc)
                          const { x, y } = element.tooltipPosition();
 
-                         ctx.font = 'bold 11px "Outfit", sans-serif';
+                         ctx.font = 'bold 11px "DM Sans", sans-serif';
                          ctx.fillStyle = '#fff'; 
                          ctx.textAlign = 'center';
                          ctx.textBaseline = 'middle';
@@ -744,9 +735,6 @@
         
         // 3. Rate Chart (Line)
         const ctxRate = document.getElementById('rateChart').getContext('2d');
-        const gradientRate = ctxRate.createLinearGradient(0, 0, 0, 400);
-        gradientRate.addColorStop(0, 'rgba(13, 202, 240, 0.7)');
-        gradientRate.addColorStop(1, 'rgba(13, 202, 240, 0.0)');
 
         new Chart(ctxRate, {
             type: 'line',
@@ -755,13 +743,13 @@
                 datasets: [{
                     label: '{% trans "Balance Rate (%)" %}',
                     data: rateData,
-                    borderColor: '#0dcaf0',
-                    backgroundColor: gradientRate,
+                    borderColor: '#2d6a4f',
+                    backgroundColor: 'rgba(45, 106, 79, 0.08)',
                     fill: true,
                     tension: 0.4,
                     pointRadius: 4,
                     pointBackgroundColor: '#fff',
-                    pointBorderColor: '#0dcaf0',
+                    pointBorderColor: '#2d6a4f',
                     pointHoverRadius: 6
                 }]
             },
@@ -805,8 +793,8 @@
                 datasets: [{
                     label: '{% trans "Total Spend" %}',
                     data: dowData,
-                    backgroundColor: 'rgba(56, 249, 215, 0.85)',
-                    borderColor: '#38f9d7',
+                    backgroundColor: 'rgba(45, 106, 79, 0.85)',
+                    borderColor: '#2d6a4f',
                     borderWidth: 1,
                     borderRadius: 4
                 }]
@@ -843,7 +831,7 @@
                 labels: recLabelsWithValues,
                 datasets: [{
                     data: recData,
-                    backgroundColor: ['#6366f1', '#38f9d7'],
+                    backgroundColor: ['#8b6f47', '#2d6a4f'],
                     borderWidth: 0
                 }]
             },
@@ -878,8 +866,8 @@
                         {
                             label: '{% trans "Cumulative Spent" %}',
                             data: burnSpent,
-                            borderColor: '#7c3aed',
-                            backgroundColor: 'rgba(124, 58, 237, 0.1)',
+                            borderColor: '#c0392b',
+                            backgroundColor: 'rgba(192, 57, 43, 0.08)',
                             fill: true,
                             tension: 0.2,
                             pointRadius: 3,
@@ -887,14 +875,14 @@
                                 borderColor: ctx => {
                                     const val = burnSpent[ctx.p0DataIndex];
                                     const budget = burnBudget[ctx.p0DataIndex];
-                                    return (val > budget) ? '#dc3545' : '#7c3aed';
+                                    return (val > budget) ? '#c0392b' : '#8b6f47';
                                 }
                             }
                         },
                         {
                             label: '{% trans "Projected Path" %}',
                             data: burnProjection,
-                            borderColor: '#7c3aed',
+                            borderColor: '#8b6f47',
                             borderDash: [5, 5],
                             pointRadius: 0,
                             fill: false,
@@ -904,7 +892,7 @@
                         {
                             label: '{% trans "Ideal Budget Line" %}',
                             data: burnBudget,
-                            borderColor: '#38f9d7',
+                            borderColor: '#2d6a4f',
                             borderDash: [3, 3],
                             fill: false,
                             pointRadius: 0,

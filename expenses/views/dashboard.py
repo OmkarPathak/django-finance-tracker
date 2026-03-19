@@ -45,8 +45,8 @@ def home_view(request):
     # Base QuerySet - All user expenses
     expenses = Expense.objects.filter(user=request.user).order_by('-date')
     
-    # Wealth Growth (Investments) - Now handled via Transfers to Investment accounts
-    investments = Expense.objects.none()
+    # Wealth Growth (Investments) - Transfers to Investment accounts
+    investments = Transfer.objects.filter(user=request.user, to_account__account_type='INVESTMENT')
     
     # Logic for EOM projection
     now = datetime.now()
@@ -97,7 +97,6 @@ def home_view(request):
 
     if selected_categories:
         expenses = expenses.filter(category__in=selected_categories)
-        investments = investments.filter(category__in=selected_categories)
         
     # Income Logic (Mirroring Expense Filters)
     incomes = Income.objects.filter(user=request.user)
@@ -122,7 +121,7 @@ def home_view(request):
             investments = investments.filter(date__lte=end_date)
     
     total_income = incomes.aggregate(Sum('base_amount'))['base_amount__sum'] or 0
-    total_investments = investments.aggregate(Sum('base_amount'))['base_amount__sum'] or 0
+    total_investments = investments.aggregate(Sum('amount'))['amount__sum'] or 0
     all_dates = Expense.objects.filter(user=request.user).dates('date', 'year', order='DESC')
     years = sorted(list(set([d.year for d in all_dates] + [datetime.now().year])), reverse=True)
     all_categories = Expense.objects.filter(user=request.user).values_list('category', flat=True).distinct().order_by('category')
@@ -362,7 +361,10 @@ def home_view(request):
             # Current year-month stats
             prev_expenses_all = Expense.objects.filter(user=request.user, date__year=prev_year, date__month=prev_month)
             prev_expenses_op = prev_expenses_all.aggregate(Sum('base_amount'))['base_amount__sum'] or 0
-            prev_investments = 0  # Replaced by Transfers
+            prev_investments = Transfer.objects.filter(
+                user=request.user, to_account__account_type='INVESTMENT',
+                date__year=prev_year, date__month=prev_month
+            ).aggregate(Sum('amount'))['amount__sum'] or 0
 
             prev_income = Income.objects.filter(user=request.user, date__year=prev_year, date__month=prev_month).aggregate(Sum('base_amount'))['base_amount__sum'] or 0
             prev_savings = prev_income - prev_expenses_op
