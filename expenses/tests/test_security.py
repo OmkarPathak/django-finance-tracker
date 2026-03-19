@@ -8,11 +8,15 @@ class DataSegregationTest(TestCase):
     def setUp(self):
         # User A
         self.user_a = User.objects.create_user(username='usera', password='password')
+        self.user_a.profile.has_seen_tutorial = True
+        self.user_a.profile.save()
         self.client_a = Client()
         self.client_a.login(username='usera', password='password')
         
         # User B
         self.user_b = User.objects.create_user(username='userb', password='password')
+        self.user_b.profile.has_seen_tutorial = True
+        self.user_b.profile.save()
         self.client_b = Client()
         self.client_b.login(username='userb', password='password')
 
@@ -28,11 +32,11 @@ class DataSegregationTest(TestCase):
         response = self.client_b.get(reverse('home'))
         self.assertEqual(response.status_code, 200)
         
-        expenses = response.context['recent_transactions']
+        activity = response.context['recent_activity']
         
         # Check Expenses
-        self.assertTrue(any(e.description == 'User B Expense' for e in expenses))
-        self.assertFalse(any(e.description == 'User A Expense' for e in expenses))
+        self.assertTrue(any(getattr(e, 'description', '') == 'User B Expense' for e in activity))
+        self.assertFalse(any(getattr(e, 'description', '') == 'User A Expense' for e in activity))
         
         # Check Income (User B has 0 income)
         self.assertEqual(response.context['total_income'], 0)

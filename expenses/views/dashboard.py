@@ -5,7 +5,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import TemplateView
-from django.db.models import Sum, Count, Q
+from django.db.models import Sum, Count, Q, Avg
 from django.db.models.functions import TruncMonth, TruncDay, ExtractWeekDay
 from django.urls import reverse
 from django.utils.translation import gettext as _
@@ -1401,10 +1401,52 @@ def home_view(request):
     remaining_days = max(1, days_in_current_month - today.day + 1)
     safe_to_spend = max(Decimal('0.00'), remaining_month_budget / remaining_days)
 
-    # Enrich today_expenses with category icons
+    # --- Category split for today (for right sidebar) ---
+    today_category_split = []
+    for cat_row in today_cat_data:
+        cat_name = cat_row['category']
+        cat_total = float(cat_row['total'])
+        cat_pct = round(cat_total / float(today_spent) * 100) if float(today_spent) > 0 else 0
+        cat_obj = user_categories.get(cat_name.strip()) if cat_name else None
+        today_category_split.append({
+            'name': cat_name,
+            'amount': cat_total,
+            'pct': cat_pct,
+            'icon': cat_obj.icon if cat_obj else 'bi-tag',
+        })
+
+    # --- Recurring descriptions set (for tagging) ---
+    recurring_descriptions = set(
+        RecurringTransaction.objects.filter(
+            user=request.user, is_active=True, transaction_type='EXPENSE'
+        ).values_list('description', flat=True)
+    )
+
+    # --- Average per-category spend (last 30 days) for "unusual" tagging ---
+    thirty_days_ago = today - timedelta(days=30)
+    cat_avg_30d = {}
+    cat_avg_qs = Expense.objects.filter(
+        user=request.user, date__gte=thirty_days_ago, date__lt=today
+    ).values('category').annotate(avg_amt=Avg('base_amount'))
+    for row in cat_avg_qs:
+        cat_avg_30d[row['category']] = float(row['avg_amt'])
+
+    # --- Quick stats for right sidebar ---
+    avg_daily_spend_month = float(month_spent_so_far) / max(1, today.day - 1) if today.day > 1 else float(today_spent)
+    month_transaction_count = Expense.objects.filter(
+        user=request.user, date__year=today.year, date__month=today.month
+    ).count()
+
+    # Enrich today_expenses with category icons + tags
     today_expenses_list = []
     for exp in today_expenses:
         cat_obj = user_categories.get(exp.category.strip()) if exp.category else None
+        # Tag: recurring
+        is_recurring = exp.description in recurring_descriptions
+        # Tag: unusual (amount > 1.5x category avg over last 30 days)
+        cat_avg = cat_avg_30d.get(exp.category, 0)
+        is_unusual = float(exp.base_amount) > cat_avg * 1.5 and cat_avg > 0
+
         today_expenses_list.append({
             'id': exp.id,
             'description': exp.description,
@@ -1413,10 +1455,17 @@ def home_view(request):
             'icon': cat_obj.icon if cat_obj else 'bi-tag',
             'payment_method': exp.payment_method,
             'date': exp.date,
+            'is_recurring': is_recurring,
+            'is_unusual': is_unusual,
         })
 
-    # Daily insight
+    # Daily insight (enhanced for over-budget urgency)
     daily_insight = None
+    # Build recovery tip for over-budget
+    recovery_tip = None
+    if daily_budget_status == 'over' and daily_top_category:
+        recovery_tip = _("Reduce %(category)s spending to recover") % {'category': daily_top_category.lower()}
+
     if daily_top_category and daily_top_category_pct >= 50:
         daily_insight = {
             'type': 'warning',
@@ -1456,14 +1505,23 @@ def home_view(request):
         'daily_budget_allowed': round(daily_budget_allowed, 0),
         'daily_left': round(daily_left, 0),  # can be negative when over budget
         'daily_used_pct': min(daily_used_pct, 100),
+        'raw_used_pct': round(daily_used_pct, 1),  # uncapped for overspend display
         'daily_budget_status': daily_budget_status,
         'daily_top_category': daily_top_category,
         'daily_top_category_pct': daily_top_category_pct,
         'safe_to_spend': round(safe_to_spend, 0),
         'show_safe_to_spend': show_safe_to_spend,
         'daily_insight': daily_insight,
+        'recovery_tip': recovery_tip,
         'has_budget': total_monthly_budget > 0,
         'transaction_count': today_expenses.count(),
+        # Right sidebar data
+        'today_category_split': today_category_split,
+        'month_spent_so_far': round(month_spent_so_far, 0),
+        'remaining_month_budget': round(max(remaining_month_budget, Decimal('0.00')), 0),
+        'avg_daily_spend': round(Decimal(str(avg_daily_spend_month)), 0),
+        'month_transaction_count': month_transaction_count,
+        'total_monthly_budget': round(Decimal(str(total_monthly_budget)), 0),
     }
 
     return render(request, 'home.html', context)

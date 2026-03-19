@@ -180,6 +180,8 @@
         /* HERO */
         .hero {
             padding: 90px 5% 70px;
+        }
+        .hero-inner {
             max-width: 1100px; margin: 0 auto;
             display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: center;
         }
@@ -452,7 +454,8 @@
 
         /* RESPONSIVE */
         @media (max-width: 800px) {
-            .hero { grid-template-columns: 1fr; gap: 40px; padding: 60px 5% 50px; }
+            .hero { padding: 60px 5% 50px; }
+            .hero-inner { grid-template-columns: 1fr; gap: 40px; }
             .floating-alert { right: 0; }
             .pain-grid, .features-grid, .pricing-grid, .privacy-row, .before-after { grid-template-columns: 1fr; }
             .networth-split, .accounts-row { grid-template-columns: 1fr; }
@@ -466,8 +469,8 @@
             from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
         }
-        .hero > * { animation: fadeUp .6s ease both; }
-        .hero > *:nth-child(2) { animation-delay: .1s; }
+        .hero-inner > * { animation: fadeUp .6s ease both; }
+        .hero-inner > *:nth-child(2) { animation-delay: .1s; }
 
         /* PWA / Mobile Notch Safe Area Fixes */
         .is-mobile-app .landing-nav {
@@ -496,6 +499,7 @@
 
 <!-- HERO -->
 <div class="hero">
+<div class="hero-inner">
     <div class="hero-left">
         <div class="hero-eyebrow">{% trans "Built for Indian salaried professionals" %}</div>
         <h1>{% trans "Finally know" %} <em>{% trans "exactly" %}</em> {% trans "where your salary goes" %}</h1>
@@ -556,6 +560,7 @@
             <div class="alert-val">+42% {% trans "vs last month" %}</div>
         </div>
     </div>
+</div>
 </div>
 
 <!-- PAIN SECTION -->

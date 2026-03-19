@@ -23,7 +23,7 @@ class DashboardViewTest(BaseViewTest):
     def test_dashboard_access(self):
         response = self.client.get(reverse('home'))
         self.assertEqual(response.status_code, 200)
-        self.assertIn('recent_transactions', response.context)
+        self.assertIn('recent_activity', response.context)
         self.assertIn('total_income', response.context)
         self.assertIn('savings', response.context)
 
@@ -36,9 +36,10 @@ class DashboardViewTest(BaseViewTest):
         Expense.objects.create(user=self.user, date=date.today(), amount=100, description='Visible', category='Food')
         
         response = self.client.get(reverse('home'))
-        target_expenses = response.context['recent_transactions']
-        self.assertEqual(len(target_expenses), 1)
-        self.assertEqual(target_expenses[0].description, 'Visible')
+        target_activity = response.context['recent_activity']
+        expense_descriptions = [e.description for e in target_activity if getattr(e, 'transaction_type', None) == 'EXPENSE']
+        self.assertEqual(len(expense_descriptions), 1)
+        self.assertIn('Visible', expense_descriptions)
 
     def test_dashboard_filters(self):
         """Test year, month, and date range filters on dashboard."""
@@ -50,16 +51,20 @@ class DashboardViewTest(BaseViewTest):
         Expense.objects.create(user=self.user, date=today, amount=200, category='Food', description='This Year', currency='₹')
         
         response = self.client.get(reverse('home'), {'year': [str(today.year)]})
-        self.assertEqual(len(response.context['recent_transactions']), 1)
-        self.assertEqual(response.context['recent_transactions'][0].description, 'This Year')
+        activity = response.context['recent_activity']
+        expense_descriptions = [e.description for e in activity if getattr(e, 'transaction_type', None) == 'EXPENSE']
+        self.assertEqual(len(expense_descriptions), 1)
+        self.assertIn('This Year', expense_descriptions)
         
         # 2. Date Range Filter
         response = self.client.get(reverse('home'), {
             'start_date': (today - timedelta(days=1)).strftime('%Y-%m-%d'),
             'end_date': (today + timedelta(days=1)).strftime('%Y-%m-%d')
         })
-        self.assertEqual(len(response.context['recent_transactions']), 1)
-        self.assertEqual(response.context['recent_transactions'][0].description, 'This Year')
+        activity = response.context['recent_activity']
+        expense_descriptions = [e.description for e in activity if getattr(e, 'transaction_type', None) == 'EXPENSE']
+        self.assertEqual(len(expense_descriptions), 1)
+        self.assertIn('This Year', expense_descriptions)
 
     def test_dashboard_category_merging(self):
         """Test that categories with leading/trailing whitespace are merged."""
@@ -332,4 +337,4 @@ class DashboardAggregationTest(BaseViewTest):
         
         response = self.client.get(reverse('home'))
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.context['recent_transactions']), 0)
+        self.assertEqual(len(response.context['recent_activity']), 0)

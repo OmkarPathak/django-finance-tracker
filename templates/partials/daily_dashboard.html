@@ -1,6 +1,9 @@
 {% load currency_filters i18n digit_filters humanize %}
 
 <div id="daily-mode-view" class="daily-mode-container" style="display: none;">
+  <div class="daily-mode-grid">
+    <!-- LEFT COLUMN — Main Content -->
+    <div class="daily-left-col">
 
     <!-- Budget Status Card -->
     <div class="card border-0 shadow-sm rounded-4 mb-4 overflow-hidden fade-in">
@@ -22,13 +25,21 @@
                     <h5 class="mb-0 fw-bold" style="color: #e07b39;">{% trans "Approaching daily limit" %}</h5>
                 </div>
             {% elif daily_mode.daily_budget_status == 'over' %}
-            <div class="card-body p-4 bg-body-primary">
-                <div class="d-flex align-items-center gap-2 mb-3">
-                    <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0 bg-danger bg-opacity-10" style="width: 36px; height: 36px;">
-                        <i class="bi bi-exclamation-octagon-fill text-danger" style="font-size: 1.1rem;"></i>
+            <div class="card-body p-4 bg-body-primary daily-over-budget-card">
+                <div class="d-flex align-items-center gap-2 mb-2">
+                    <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0 bg-danger bg-opacity-10 daily-over-pulse" style="width: 40px; height: 40px;">
+                        <i class="bi bi-exclamation-octagon-fill text-danger" style="font-size: 1.2rem;"></i>
                     </div>
-                    <h5 class="mb-0 fw-bold text-danger">{% trans "Over budget today" %}</h5>
+                    <h5 class="mb-0 fw-bold text-danger">
+                        {% trans "You overspent" %} {{ currency_symbol }}{{ daily_mode.daily_left|floatformat:0|cut:"-"|humanize_currency:currency_symbol|translate_digits }} {% trans "today" %}
+                    </h5>
                 </div>
+                {% if daily_mode.recovery_tip %}
+                <div class="d-flex align-items-center gap-2 mb-3 ms-5">
+                    <i class="bi bi-arrow-return-right text-danger flex-shrink-0" style="font-size: 0.85rem;"></i>
+                    <span class="text-danger fw-semibold" style="font-size: 0.85rem;">{{ daily_mode.recovery_tip }}</span>
+                </div>
+                {% endif %}
             {% else %}
             <div class="card-body p-4 bg-body-primary">
                 <div class="d-flex align-items-center gap-2 mb-3">
@@ -68,22 +79,45 @@
                     </div>
                 </div>
 
-                <!-- Progress Bar -->
-                <div class="position-relative mb-2" style="height: 12px;">
-                    <div class="rounded-pill w-100 h-100" style="background: var(--bs-primary-bg);"></div>
-                    <div class="position-absolute top-0 start-0 rounded-pill h-100 {% if daily_mode.daily_used_pct > 90 %}bg-danger{% elif daily_mode.daily_used_pct > 70 %}bg-warning{% else %}bg-success{% endif %}"
-                        style="width: {{ daily_mode.daily_used_pct }}%; transition: width 1.5s ease-in-out; z-index: 1;">
-                        {% if daily_mode.daily_used_pct > 30 %}
-                        <div class="d-flex align-items-center justify-content-end h-100 pe-2" style="min-width: fit-content;">
-                            <span style="font-size: 0.5rem; color: rgba(255,255,255,0.9);"></span>
-                        </div>
-                        {% endif %}
+                <!-- Enhanced Progress Bar with markers -->
+                <div class="daily-progress-wrapper mb-2">
+                    <!-- Zone labels -->
+                    <div class="d-flex justify-content-between mb-1" style="font-size: 0.65rem; font-weight: 600; letter-spacing: 0.03em;">
+                        <span class="text-success text-uppercase">{% trans "Safe" %}</span>
+                        <span class="text-body-secondary text-uppercase" style="margin-left: auto; margin-right: auto;">{% trans "Limit" %}</span>
+                        <span class="text-danger text-uppercase">{% trans "Over" %}</span>
                     </div>
-                </div>
-                <div class="text-end">
-                    <small class="fw-bold {% if daily_mode.daily_used_pct > 90 %}text-danger{% elif daily_mode.daily_used_pct > 70 %}{% else %}text-success{% endif %}" style="font-size: 0.8rem;{% if daily_mode.daily_used_pct > 70 and daily_mode.daily_used_pct <= 90 %} color: #e07b39;{% endif %}">
-                        {{ daily_mode.daily_used_pct|floatformat:0|translate_digits }}% {% trans "used" %}
-                    </small>
+                    <!-- Track -->
+                    <div class="position-relative" style="height: 14px;">
+                        <!-- Background zones -->
+                        <div class="d-flex rounded-pill overflow-hidden w-100 h-100" style="background: var(--bs-primary-bg);">
+                            <div style="width: 80%; background: rgba(var(--bs-success-rgb), 0.10);"></div>
+                            <div style="width: 20%; background: rgba(var(--bs-warning-rgb), 0.15);"></div>
+                        </div>
+                        <!-- Fill bar -->
+                        <div class="position-absolute top-0 start-0 rounded-pill h-100 {% if daily_mode.daily_budget_status == 'over' %}bg-danger{% elif daily_mode.daily_used_pct > 70 %}bg-warning{% else %}bg-success{% endif %}"
+                             style="width: {{ daily_mode.daily_used_pct }}%; transition: width 1.5s ease-in-out; z-index: 2;">
+                        </div>
+                        <!-- 80% marker (limit) -->
+                        <div class="position-absolute top-0 h-100" style="left: 80%; z-index: 3; width: 2px; background: var(--bs-body-color); opacity: 0.25;"></div>
+                    </div>
+                    <!-- Labels below bar -->
+                    <div class="d-flex justify-content-between align-items-center mt-1">
+                        <small class="text-muted" style="font-size: 0.72rem;">
+                            {% if daily_mode.daily_budget_status == 'over' %}
+                                {% trans "Budget crossed at" %} {{ currency_symbol }}{{ daily_mode.daily_budget_allowed|humanize_currency:currency_symbol|translate_digits }}
+                            {% else %}
+                                {{ daily_mode.daily_used_pct|floatformat:0|translate_digits }}% {% trans "of daily budget" %}
+                            {% endif %}
+                        </small>
+                        <small class="fw-bold {% if daily_mode.daily_budget_status == 'over' %}text-danger{% elif daily_mode.daily_used_pct > 70 %}{% else %}text-success{% endif %}" style="font-size: 0.78rem;{% if daily_mode.daily_used_pct > 70 and daily_mode.daily_budget_status != 'over' %} color: #e07b39;{% endif %}">
+                            {% if daily_mode.daily_budget_status == 'over' %}
+                                {% trans "Now at" %} {{ currency_symbol }}{{ daily_mode.today_spent|humanize_currency:currency_symbol|translate_digits }}
+                            {% else %}
+                                {{ daily_mode.daily_used_pct|floatformat:0|translate_digits }}% {% trans "used" %}
+                            {% endif %}
+                        </small>
+                    </div>
                 </div>
             </div>
         {% else %}
@@ -105,7 +139,7 @@
     {% if daily_mode.daily_insight %}
     <div class="card border-0 shadow-sm rounded-4 mb-4 overflow-hidden fade-in" style="animation-delay: 0.1s;">
         <div class="card-body p-3 px-4 bg-body-primary">
-            <div class="d-flex align-items-start gap-3">
+            <div class="d-flex align-items-center gap-3">
                 {% if daily_mode.daily_insight.type == 'warning' %}
                     <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0 bg-warning bg-opacity-10" style="width: 36px; height: 36px;">
                         <i class="bi bi-exclamation-triangle-fill" style="font-size: 1rem; color: #e07b39;"></i>
@@ -121,7 +155,7 @@
                 {% endif %}
                 <div>
                     <h6 class="fw-bold mb-1 text-body">{{ daily_mode.daily_insight.message }}</h6>
-                    <p class="text-muted small mb-0"><i class="bi bi-arrow-right me-1"></i>{{ daily_mode.daily_insight.tip }}</p>
+                    <p class="text-muted small mb-0 d-flex align-items-center gap-1"><i class="bi bi-arrow-right flex-shrink-0"></i><span>{{ daily_mode.daily_insight.tip }}</span></p>
                 </div>
             </div>
         </div>
@@ -142,22 +176,43 @@
             {% if daily_mode.today_expenses %}
                 <div class="list-group list-group-flush">
                     {% for exp in daily_mode.today_expenses %}
-                    <div class="list-group-item border-0 px-4 py-3 d-flex align-items-center gap-3 hover-bg-light">
+                    <div class="list-group-item border-0 px-4 py-3 d-flex align-items-center gap-3 daily-txn-row position-relative">
                         <!-- Category Icon -->
                         <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" 
                              style="width: 44px; height: 44px; background: var(--bs-primary-bg);">
                             <i class="{{ exp.icon }} text-primary" style="font-size: 1.1rem;"></i>
                         </div>
-                        <!-- Description & Category -->
+                        <!-- Description & Category & Tags -->
                         <div class="flex-grow-1 min-width-0">
-                            <h6 class="mb-0 fw-bold text-truncate" style="font-size: 0.95rem;">
-                                {{ exp.description|truncatechars:30 }}
-                            </h6>
+                            <div class="d-flex align-items-center gap-2 flex-wrap">
+                                <h6 class="mb-0 fw-bold text-truncate" style="font-size: 0.95rem;">
+                                    {{ exp.description|truncatechars:30 }}
+                                </h6>
+                                {% if exp.is_recurring %}
+                                <span class="badge daily-tag-recurring">
+                                    <i class="bi bi-arrow-repeat me-1"></i>{% trans "Recurring" %}
+                                </span>
+                                {% endif %}
+                                {% if exp.is_unusual %}
+                                <span class="badge daily-tag-unusual">
+                                    <i class="bi bi-graph-up-arrow me-1"></i>{% trans "Unusual" %}
+                                </span>
+                                {% endif %}
+                            </div>
                             <small class="text-muted">{{ exp.category }}</small>
                         </div>
                         <!-- Amount -->
                         <div class="text-end flex-shrink-0">
                             <span class="fw-bold text-body-emphasis" style="font-size: 1rem;">{{ currency_symbol }}{{ exp.amount|humanize_currency:currency_symbol|translate_digits }}</span>
+                        </div>
+                        <!-- Hover Actions (desktop only) -->
+                        <div class="daily-txn-actions d-none d-md-flex">
+                            <a href="{% url 'expense-edit' exp.id %}?next={% url 'home' %}" class="btn btn-sm btn-light rounded-circle daily-txn-action-btn" title="{% trans 'Quick edit' %}">
+                                <i class="bi bi-pencil-fill"></i>
+                            </a>
+                            <a href="{% url 'expense-create' %}?duplicate={{ exp.id }}&next={% url 'home' %}" class="btn btn-sm btn-light rounded-circle daily-txn-action-btn" title="{% trans 'Duplicate' %}">
+                                <i class="bi bi-copy"></i>
+                            </a>
                         </div>
                     </div>
                     {% endfor %}
@@ -181,9 +236,11 @@
     <!-- Safe to Spend Tip -->
     {% if daily_mode.show_safe_to_spend %}
     <div class="card border-0 shadow-sm rounded-4 mb-4 overflow-hidden fade-in" style="animation-delay: 0.3s;">
-        <div class="card-body px-4 py-3 bg-body-primary text-center">
-            <i class="bi bi-lightbulb-fill text-warning me-1"></i>
-            <span class="text-success fw-bold ms-1">{% trans "You can still spend" %} {{ currency_symbol }}{{ daily_mode.safe_to_spend|humanize_currency:currency_symbol|translate_digits }} {% trans "safely today" %}</span>
+        <div class="card-body px-4 py-3 bg-body-primary">
+            <div class="d-flex align-items-center justify-content-center gap-2">
+                <i class="bi bi-lightbulb-fill text-warning flex-shrink-0"></i>
+                <span class="text-success fw-bold">{% trans "You can still spend" %} {{ currency_symbol }}{{ daily_mode.safe_to_spend|humanize_currency:currency_symbol|translate_digits }} {% trans "safely today" %}</span>
+            </div>
         </div>
     </div>
     {% endif %}
@@ -195,4 +252,103 @@
         </button>
     </div>
 
+    </div><!-- /daily-left-col -->
+
+    <!-- RIGHT COLUMN — Context Sidebar -->
+    <div class="daily-right-col">
+
+        <!-- Today Summary Card -->
+        <div class="card border-0 shadow-sm rounded-4 mb-4 overflow-hidden fade-in" style="animation-delay: 0.15s;">
+            <div class="card-body p-4 bg-body-primary">
+                <h6 class="fw-bold mb-3 text-body-secondary text-uppercase d-flex align-items-center gap-1" style="font-size: 0.75rem; letter-spacing: 0.08em;">
+                    <i class="bi bi-calendar-day"></i><span>{% trans "Today's Summary" %}</span>
+                </h6>
+                <div class="d-flex align-items-baseline gap-2 mb-2">
+                    <span class="fw-bold text-body-emphasis" style="font-size: 2rem; line-height: 1;">{{ currency_symbol }}{{ daily_mode.today_spent|humanize_currency:currency_symbol|translate_digits }}</span>
+                    <span class="text-muted" style="font-size: 0.85rem;">{% trans "spent" %}</span>
+                </div>
+                <div class="d-flex gap-3 flex-wrap">
+                    <div class="d-flex align-items-center gap-1">
+                        <i class="bi bi-receipt text-primary flex-shrink-0" style="font-size: 0.85rem; line-height: 1;"></i>
+                        <span class="text-muted" style="font-size: 0.82rem; line-height: 1;">{{ daily_mode.transaction_count|translate_digits }} {% trans "transactions" %}</span>
+                    </div>
+                    {% if daily_mode.daily_top_category %}
+                    <div class="d-flex align-items-center gap-1">
+                        <i class="bi bi-tag text-primary flex-shrink-0" style="font-size: 0.85rem; line-height: 1;"></i>
+                        <span class="text-muted" style="font-size: 0.82rem; line-height: 1;">{% trans "Top:" %} {{ daily_mode.daily_top_category }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Mini Category Split -->
+        {% if daily_mode.today_category_split %}
+        <div class="card border-0 shadow-sm rounded-4 mb-4 overflow-hidden fade-in" style="animation-delay: 0.25s;">
+            <div class="card-body p-4 bg-body-primary">
+                <h6 class="fw-bold mb-3 text-body-secondary text-uppercase d-flex align-items-center gap-1" style="font-size: 0.75rem; letter-spacing: 0.08em;">
+                    <i class="bi bi-pie-chart"></i><span>{% trans "Category Split" %}</span>
+                </h6>
+                {% for cat in daily_mode.today_category_split %}
+                <div class="d-flex align-items-center gap-2 {% if not forloop.last %}mb-3{% endif %}">
+                    <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 32px; height: 32px; background: var(--bs-primary-bg);">
+                        <i class="{{ cat.icon }} text-primary" style="font-size: 0.85rem;"></i>
+                    </div>
+                    <div class="flex-grow-1 min-width-0">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <span class="fw-semibold text-body" style="font-size: 0.85rem;">{{ cat.name }}</span>
+                            <span class="text-muted" style="font-size: 0.78rem;">{{ cat.pct|translate_digits }}%</span>
+                        </div>
+                        <div class="progress rounded-pill" style="height: 5px;">
+                            <div class="progress-bar bg-primary rounded-pill" style="width: {{ cat.pct }}%;"></div>
+                        </div>
+                    </div>
+                    <span class="fw-bold text-body-emphasis flex-shrink-0" style="font-size: 0.82rem;">
+                        {{ currency_symbol }}{{ cat.amount|floatformat:0|translate_digits }}
+                    </span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Quick Stats -->
+        <div class="card border-0 shadow-sm rounded-4 mb-4 overflow-hidden fade-in" style="animation-delay: 0.35s;">
+            <div class="card-body p-4 bg-body-primary">
+                <h6 class="fw-bold mb-3 text-body-secondary text-uppercase d-flex align-items-center gap-1" style="font-size: 0.75rem; letter-spacing: 0.08em;">
+                    <i class="bi bi-speedometer2"></i><span>{% trans "Quick Stats" %}</span>
+                </h6>
+                <div class="row g-3">
+                    <div class="col-6">
+                        <div class="text-center p-2 rounded-3" style="background: rgba(var(--bs-primary-rgb), 0.05);">
+                            <div class="fw-bold text-body-emphasis" style="font-size: 1.1rem;">{{ currency_symbol }}{{ daily_mode.avg_daily_spend|humanize_currency:currency_symbol|translate_digits }}</div>
+                            <div class="text-muted" style="font-size: 0.72rem;">{% trans "Avg/day this month" %}</div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="text-center p-2 rounded-3" style="background: rgba(var(--bs-primary-rgb), 0.05);">
+                            <div class="fw-bold text-body-emphasis" style="font-size: 1.1rem;">{{ daily_mode.month_transaction_count|translate_digits }}</div>
+                            <div class="text-muted" style="font-size: 0.72rem;">{% trans "This month txns" %}</div>
+                        </div>
+                    </div>
+                    {% if daily_mode.has_budget %}
+                    <div class="col-6">
+                        <div class="text-center p-2 rounded-3" style="background: rgba(var(--bs-primary-rgb), 0.05);">
+                            <div class="fw-bold text-body-emphasis" style="font-size: 1.1rem;">{{ currency_symbol }}{{ daily_mode.month_spent_so_far|humanize_currency:currency_symbol|translate_digits }}</div>
+                            <div class="text-muted" style="font-size: 0.72rem;">{% trans "Month spent" %}</div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="text-center p-2 rounded-3" style="background: rgba(var(--bs-primary-rgb), 0.05);">
+                            <div class="fw-bold {% if daily_mode.remaining_month_budget > 0 %}text-success{% else %}text-danger{% endif %}" style="font-size: 1.1rem;">{{ currency_symbol }}{{ daily_mode.remaining_month_budget|humanize_currency:currency_symbol|translate_digits }}</div>
+                            <div class="text-muted" style="font-size: 0.72rem;">{% trans "Month remaining" %}</div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+    </div><!-- /daily-right-col -->
+  </div><!-- /daily-mode-grid -->
 </div>
