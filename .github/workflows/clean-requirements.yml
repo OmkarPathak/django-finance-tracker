@@ -30,7 +30,7 @@ jobs:
 
     - name: Compile pinned requirements.txt
       run: |
-        pip-compile requirements.in --output-file requirements.txt
+        pip-compile --upgrade requirements.in --output-file requirements.txt
 
     - name: Show cleaned requirements
       run: cat requirements.txt
