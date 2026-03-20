@@ -63,6 +63,9 @@
                     <div>
                         <span class="fw-bold text-body-emphasis" style="font-size: 1.25rem;">{{ currency_symbol }}{{ daily_mode.today_spent|humanize_currency:currency_symbol|translate_digits }}</span>
                         <span class="text-muted ms-1" style="font-size: 0.85rem;">{% trans "spent today" %}</span>
+                        <div class="text-muted mt-1 fw-medium" style="font-size: 0.75rem;">
+                            {% trans "Usually" %} {{ currency_symbol }}{{ daily_mode.avg_daily_spend|humanize_currency:currency_symbol|translate_digits }}/{% trans "day" %}
+                        </div>
                     </div>
                 </div>
 
@@ -155,7 +158,7 @@
                 {% endif %}
                 <div>
                     <h6 class="fw-bold mb-1 text-body">{{ daily_mode.daily_insight.message }}</h6>
-                    <p class="text-muted small mb-0 d-flex align-items-center gap-1"><i class="bi bi-arrow-right flex-shrink-0"></i><span>{{ daily_mode.daily_insight.tip }}</span></p>
+                    <p class="text-muted small mb-0"><span>{{ daily_mode.daily_insight.tip|safe }}</span></p>
                 </div>
             </div>
         </div>

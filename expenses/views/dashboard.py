@@ -41,6 +41,9 @@ def home_view(request):
     
     # Global currency symbol for insights/metrics
     currency_symbol = request.user.profile.currency if hasattr(request.user, 'profile') else '₹'
+    
+    def format_currency(amount):
+        return f"{currency_symbol}{int(amount):,}"
 
     # Helper: sum transfer amounts converted to user's base currency
     def sum_transfers_base(qs):
@@ -436,7 +439,9 @@ def home_view(request):
         'savings_rate': round(savings_rate_value, 1),
         'status': hero_status,
         'trend_text': trend_text,
-        'trend_type': trend_type
+        'trend_type': trend_type,
+        'savings_diff_pct': prev_month_data.get('savings_pct') if prev_month_data else None,
+        'savings_diff_pct_abs': prev_month_data.get('savings_pct_abs') if prev_month_data else None,
     }
 
     # Prepare display labels for the template
@@ -1130,6 +1135,27 @@ def home_view(request):
                             'theme': 'success'
                         })
 
+    # --- Financial Coach Moments ---
+    # 1. Net Worth Milestone
+    net_worth = Account.objects.filter(user=request.user).aggregate(Sum('balance'))['balance__sum'] or 0
+    if float(net_worth) >= 100000:
+        if not any(c.get('icon') == 'bi-trophy' for c in smart_bullet_insights):
+            smart_bullet_insights.insert(0, {
+                'text': format_html(_("Milestone Reached! 🎉 You crossed <span class='fw-bold'>{}</span> in net worth."), format_currency(100000)),
+                'icon': 'bi-trophy',
+                'theme': 'warning'
+            })
+            
+    # 2. Good Month Moment
+    if prev_month_data and prev_month_data.get('savings', 0) > 0 and savings > prev_month_data['savings'] * Decimal('1.2'):
+        if not any(c.get('icon') == 'bi-stars' for c in smart_bullet_insights):
+            projected_annual = savings * 12
+            smart_bullet_insights.insert(0, {
+                'text': format_html(_("🔥 You're saving more than usual this month! <br> Keep this up and you could hit <span class='fw-bold text-success'>{}</span> in savings this year."), format_currency(projected_annual)),
+                'icon': 'bi-stars',
+                'theme': 'success'
+            })
+
     # Fallback/Empty state for smart insights
     if not smart_bullet_insights:
         smart_bullet_insights.append({
@@ -1488,14 +1514,44 @@ def home_view(request):
             'is_unusual': is_unusual,
         })
 
-    # Daily insight (enhanced for over-budget urgency)
+    # Daily insight (enhanced for over-budget urgency and coaching)
     daily_insight = None
     # Build recovery tip for over-budget
     recovery_tip = None
     if daily_budget_status == 'over' and daily_top_category:
         recovery_tip = _("Reduce %(category)s spending to recover") % {'category': daily_top_category.lower()}
 
-    if daily_top_category and daily_top_category_pct >= 50:
+    # Check overspending streak (Last 3 days > daily_budget_allowed)
+    streak_count = 0
+    if daily_budget_allowed > 0:
+        last_3_days = today - timedelta(days=2)
+        recent_spend_raw = Expense.objects.filter(user=request.user, date__gte=last_3_days, date__lte=today).values('date').annotate(total=Sum('base_amount'))
+        recent_spend = {item['date']: item['total'] for item in recent_spend_raw}
+        
+        for i in range(3):
+            d = today - timedelta(days=i)
+            if float(recent_spend.get(d, 0)) > float(daily_budget_allowed):
+                streak_count += 1
+            else:
+                break
+
+    if streak_count >= 3:
+        daily_insight = {
+            'type': 'danger',
+            'message': _("3 days of overspending in a row"),
+            'tip': format_html(_("This usually leads to a budget miss. Rein it in!")),
+        }
+    elif daily_budget_status == 'over':
+        ratio = float(today_spent) / float(avg_daily_spend_month) if avg_daily_spend_month > 0 else 1
+        top_cats = " + ".join([c['name'] for c in today_category_split[:2]]) if today_category_split else _("various categories")
+        ratio_str = f"{round(ratio, 1)}x" if ratio >= 1.5 else f"{int((ratio-1)*100)}% more than"
+        
+        daily_insight = {
+            'type': 'danger',
+            'message': _("You overspent %(amount)s today") % {'amount': format_currency(today_spent)},
+            'tip': format_html(_("This is <strong>{}</strong> your usual daily spend<br>Mostly from <span class='fw-bold'>{}</span>"), ratio_str, top_cats),
+        }
+    elif daily_top_category and daily_top_category_pct >= 50:
         daily_insight = {
             'type': 'warning',
             'message': _("You spent %(pct)s%% on %(category)s today") % {
@@ -1503,12 +1559,6 @@ def home_view(request):
                 'category': daily_top_category,
             },
             'tip': _("Try to limit %(category)s spending") % {'category': daily_top_category.lower()},
-        }
-    elif daily_budget_status == 'over':
-        daily_insight = {
-            'type': 'danger',
-            'message': _("You've exceeded today's budget"),
-            'tip': _("Consider postponing non-essential purchases"),
         }
     elif daily_budget_status == 'within' and float(today_spent) > 0:
         daily_insight = {
