@@ -498,6 +498,12 @@
         Chart.defaults.color = isDark ? '#adb5bd' : '#6c757d';
         const gridColor = isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)';
 
+        // Premium Animation Defaults
+        Chart.defaults.animation = {
+            duration: 1500,
+            easing: 'easeOutQuart'
+        };
+
         const CHART_COLORS = {
             green: '#2d6a4f',
             amber: '#ee9b00',

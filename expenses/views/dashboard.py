@@ -596,7 +596,7 @@ def home_view(request):
         
     # --- "Where Did My Salary Go?" Data ---
     salary_breakdown = None
-    if total_income > 0 and total_expenses > 0:
+    if total_expenses > 0:
         # 1. Top 5 Categories
         top_5_categories = category_data[:5]
         
@@ -1318,6 +1318,26 @@ def home_view(request):
         if acc.account_type == 'INVESTMENT':
             investment_accounts_balance += converted
 
+    # Net Worth Change Calculation (Growth this month)
+    # We estimate start-of-month net worth as current net worth minus this month's net cashflow (income - expense)
+    # This assumes all income/expense transactions affect the total net worth.
+    net_worth_change = Decimal('0.00')
+    net_worth_percent = Decimal('0.00')
+    
+    # Get income and expense sums for the current month ONLY (for change indicators)
+    curr_mon_start = timezone.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    month_income_sum = Income.objects.filter(user=request.user, date__gte=curr_mon_start).aggregate(Sum('base_amount'))['base_amount__sum'] or Decimal('0.00')
+    month_expense_sum = Expense.objects.filter(user=request.user, date__gte=curr_mon_start).aggregate(Sum('base_amount'))['base_amount__sum'] or Decimal('0.00')
+    
+    # Net change (savings) is the growth in net worth
+    net_worth_change = month_income_sum - month_expense_sum
+    start_net_worth = net_worth - net_worth_change
+    
+    if start_net_worth > 0:
+        net_worth_percent = (net_worth_change / start_net_worth * 100).quantize(Decimal('0.1'))
+    elif start_net_worth == 0 and net_worth_change > 0:
+        net_worth_percent = Decimal('100.0')
+
     # Group by account type for Asset Allocation chart (using converted balances)
     from collections import defaultdict
     type_totals = defaultdict(Decimal)
@@ -1357,9 +1377,15 @@ def home_view(request):
         reverse=True
     )[:10]
 
+    # Add Savings Amount to hero_metrics for the hero card
+    hero_metrics['savings_amount'] = net_worth_change
+
     context = {
         'net_worth': net_worth,
+        'net_worth_change': net_worth_change,
+        'net_worth_percent': net_worth_percent,
         'accounts': accounts,
+        'account_base_balances': account_base_balances,
         'asset_allocation': asset_allocation,
         'recent_activity': recent_activity,
         'investment_accounts_balance': investment_accounts_balance,

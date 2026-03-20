@@ -940,90 +940,87 @@ document.addEventListener('DOMContentLoaded', function() {
             </div>
 
             <div class="card-body p-4">
-                <!-- Net Worth Block -->
-                <div class="nw-hero-block rounded-4 p-3 p-md-4 mb-3">
-                    <div class="d-flex justify-content-between align-items-start mb-2">
-                        <p class="text-muted small text-uppercase fw-bold mb-0" style="letter-spacing: 0.5px; font-size: 0.65rem;">{% trans "Total Net Worth" %}</p>
-                        {% if hero_metrics.trend_type == 'positive' %}
-                            <span class="nw-trend-badge bg-success bg-opacity-10 text-success" role="button" data-bs-toggle="tooltip" data-bs-placement="bottom" title="{{ hero_metrics.trend_text }}">↑ {% trans "Growing" %}</span>
-                        {% elif hero_metrics.trend_type == 'negative' %}
-                            <span class="nw-trend-badge bg-danger bg-opacity-10 text-danger" role="button" data-bs-toggle="tooltip" data-bs-placement="bottom" title="{{ hero_metrics.trend_text }}">↓ {% trans "Declining" %}</span>
-                        {% elif hero_metrics.income > 0 or hero_metrics.spent > 0 %}
-                            <span class="nw-trend-badge bg-secondary bg-opacity-10 text-secondary" role="button" data-bs-toggle="tooltip" data-bs-placement="bottom" title="{% trans 'Savings rate unchanged vs last month' %}">→ {% trans "Stable" %}</span>
-                        {% endif %}
+                <!-- Net Worth Block (Image Match) -->
+                <div class="px-2 mb-2">
+                    <div class="d-flex justify-content-between align-items-end mb-1">
+                        <div>
+                            <h5 class="fw-bold mb-0" style="font-size: 1.1rem;">{% trans "Net Worth" %}</h5>
+                            <p class="text-muted small mb-0">{% trans "All accounts" %}</p>
+                        </div>
+                        <a href="{% url 'account-list' %}" class="btn btn-link btn-sm text-muted text-decoration-none fw-bold p-0">{% trans "Manage" %} →</a>
                     </div>
-                    <a href="{% url 'account-list' %}" class="text-decoration-none">
-                        <h1 class="text-body-emphasis mb-1 fw-bold" style="font-family: 'DM Sans', 'Inter', sans-serif; font-size: clamp(1.6rem, 4vw, 2.2rem); letter-spacing: -0.5px;">
+
+                    <div class="mt-3">
+                        <h1 class="text-body-emphasis mb-1 fw-bold" style="font-family: 'DM Sans', 'Inter', sans-serif; font-size: clamp(2rem, 5vw, 2.5rem); letter-spacing: -1px;">
                             {{ currency_symbol }}{{ net_worth|humanize_currency:currency_symbol|translate_digits }}
                         </h1>
-                    </a>
-                    {% if hero_metrics.savings_rate > 0 or hero_metrics.income > 0 %}
-                    <div class="d-flex align-items-center gap-3 mt-1" style="font-size: 0.75rem;">
-                        {% if hero_metrics.savings_rate > 0 %}
-                        <span class="d-inline-flex align-items-center gap-1 text-success fw-semibold">
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
-                            {{ hero_metrics.savings_rate|translate_digits }}% {% trans "savings rate" %}
-                        </span>
-                        {% endif %}
-                        {% if asset_allocation|length > 0 %}
-                        <span class="text-muted">
-                            {{ asset_allocation|length }} {% trans "account types" %}
-                        </span>
-                        {% endif %}
-                    </div>
-                    {% endif %}
-                </div>
-
-                <!-- Aggregated Account Type Pills -->
-                <div class="nw-accounts-grid mb-3">
-                    {% for alloc in asset_allocation %}
-                    <a href="{% url 'account-list' %}" class="bg-body-tertiary rounded-3 p-3 text-decoration-none d-block nw-account-pill" style="transition: background 0.15s;">
-                        <div class="text-muted mb-1" style="font-size: 0.85rem; letter-spacing: 0.03em;">{{ alloc.type }}</div>
-                        <div class="fw-bold text-body-emphasis" style="font-size: 1rem;">{{ currency_symbol }}{{ alloc.total|floatformat:0|humanize_currency:currency_symbol|translate_digits }}</div>
-                    </a>
-                    {% empty %}
-                    <div class="text-center py-3 w-100">
-                        <p class="text-muted small mb-0">{% trans "No accounts found." %} <a href="{% url 'account-create' %}">{% trans "Add one" %}</a></p>
-                    </div>
-                    {% endfor %}
-                </div>
-
-                <!-- Individual Accounts (expandable) -->
-                {% if accounts.count > 0 %}
-                <div class="mt-3">
-                    <a class="btn btn-sm btn-link text-muted text-decoration-none p-0 d-flex align-items-center gap-1" data-bs-toggle="collapse" href="#accountsDetailList" role="button" aria-expanded="false" style="font-size: 0.75rem;">
-                        <i class="bi bi-chevron-down" style="font-size: 0.6rem; transition: transform 0.2s;"></i>
-                        {% blocktrans with count=accounts.count %}{{ count }} accounts{% endblocktrans %}
-                    </a>
-                    <div class="collapse mt-2" id="accountsDetailList">
-                        <div class="accounts-grid-container overflow-auto no-scrollbar" style="max-height: 200px;">
-                            {% for account in accounts %}
-                            <a href="{% url 'account-detail' account.pk %}" class="d-flex align-items-center text-decoration-none text-body px-1 py-2 rounded-3 account-row {% if not forloop.last %}border-bottom{% endif %}" style="transition: background 0.15s;">
-                                <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0 me-3
-                                    {% if account.account_type == 'CREDIT_CARD' %}bg-warning bg-opacity-10 text-warning
-                                    {% elif account.account_type == 'INVESTMENT' %}bg-success bg-opacity-10 text-success
-                                    {% elif account.account_type == 'CASH' %}bg-info bg-opacity-10 text-info
-                                    {% else %}bg-primary bg-opacity-10 text-primary{% endif %}"
-                                    style="width: 28px; height: 28px;">
-                                    <i class="bi
-                                        {% if account.account_type == 'CREDIT_CARD' %}bi-credit-card
-                                        {% elif account.account_type == 'INVESTMENT' %}bi-graph-up-arrow
-                                        {% elif account.account_type == 'CASH' %}bi-cash-stack
-                                        {% else %}bi-bank{% endif %}"
-                                        style="font-size: 0.7rem;"></i>
-                                </div>
-                                <div class="flex-grow-1 min-width-0">
-                                    <div class="fw-semibold text-truncate" style="font-size: 0.8rem;">{{ account.name }}</div>
-                                </div>
-                                <div class="text-end flex-shrink-0 ms-3">
-                                    <div class="fw-bold" style="font-size: 0.8rem;">{{ account.currency }}{{ account.balance|humanize_currency:account.currency|translate_digits }}</div>
-                                </div>
-                            </a>
-                            {% endfor %}
+                        <div class="d-flex align-items-center gap-2" style="font-size: 0.85rem;">
+                            {% if net_worth_change >= 0 %}
+                                <span class="text-success fw-bold">↑ {{ currency_symbol }}{{ net_worth_change|humanize_currency:currency_symbol|translate_digits }}</span>
+                            {% else %}
+                                <span class="text-danger fw-bold">↓ {{ currency_symbol }}{{ net_worth_change|abs_val|humanize_currency:currency_symbol|translate_digits }}</span>
+                            {% endif %}
+                            <span class="text-muted">{% trans "this month" %}</span>
+                            <span class="fw-bold {% if net_worth_change >= 0 %}text-success{% else %}text-danger{% endif %}">
+                                {% if net_worth_change >= 0 %}+{% endif %}{{ net_worth_percent|translate_digits }}%
+                            </span>
                         </div>
                     </div>
+                    <hr>
                 </div>
-                {% endif %}
+
+                <!-- Premium Account List (Image Match) -->
+                <div class="nw-accounts-list-premium px-2">
+                    {% for account in accounts %}
+                        {% if forloop.counter == 4 %}
+                            <div class="collapse" id="moreAccountsCollapse">
+                        {% endif %}
+                        
+                        <a href="{% url 'account-detail' account.pk %}" class="account-item-premium text-decoration-none">
+                            <div class="account-status-bar 
+                                {% if account.account_type == 'CREDIT_CARD' %}bg-danger
+                                {% elif account.account_type == 'INVESTMENT' %}bg-primary
+                                {% elif account.account_type == 'CASH' %}bg-warning
+                                {% else %}bg-info{% endif %}">
+                            </div>
+                            <div class="account-info">
+                                <span class="account-name-bold text-truncate">{{ account.name }}</span>
+                                <span class="account-type-subtext">{{ account.get_account_type_display }}</span>
+                            </div>
+                            <div class="account-amount-bold text-body-emphasis">
+                                {% with balance=account_base_balances|get_dict_item:account.pk %}
+                                    {% if balance < 0 %}
+                                        <span class="text-negative">{{ currency_symbol }}{{ balance|abs_val|humanize_currency:currency_symbol|translate_digits }}</span>
+                                    {% else %}
+                                        {{ currency_symbol }}{{ balance|humanize_currency:currency_symbol|translate_digits }}
+                                    {% endif %}
+                                {% endwith %}
+                            </div>
+                        </a>
+
+                        {% if forloop.last and forloop.counter > 3 %}
+                            </div> <!-- Close collapse -->
+                            <div class="text-center mt-2">
+                                <button class="btn btn-sm btn-link text-muted text-decoration-none fw-bold w-100 py-2" 
+                                        type="button" 
+                                        data-bs-toggle="collapse" 
+                                        data-bs-target="#moreAccountsCollapse" 
+                                        aria-expanded="false" 
+                                        aria-controls="moreAccountsCollapse"
+                                        data-text-more="{% trans 'Show' %} {{ accounts.count|add:'-3' }} {% trans 'more accounts' %}"
+                                        data-text-less="{% trans 'Show less' %}"
+                                        onclick="this.innerText.trim() == this.getAttribute('data-text-more').trim() ? this.innerText = this.getAttribute('data-text-less') : this.innerText = this.getAttribute('data-text-more')">
+                                    {% trans "Show" %} {{ accounts.count|add:"-3" }} {% trans "more accounts" %}
+                                </button>
+                            </div>
+                        {% endif %}
+                    {% empty %}
+                        <div class="text-center py-4">
+                            <p class="text-muted small">{% trans "No accounts found." %}</p>
+                            <a href="{% url 'account-create' %}" class="btn btn-sm btn-outline-primary rounded-pill">{% trans "Add Account" %}</a>
+                        </div>
+                    {% endfor %}
+                </div>
             </div>
         </div>
     </div>
@@ -1059,10 +1056,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     </h1>
                     
                     <div class="mx-auto mb-3" style="max-width: 300px;">
-                        <div class="progress rounded-pill bg-secondary bg-opacity-10 mb-2" style="height: 10px;">
+                        <div class="progress rounded-pill bg-secondary bg-opacity-10 mb-2 progress-animate" style="height: 10px;">
                             <div class="progress-bar rounded-pill {% if hero_metrics.savings_rate >= 20 %}bg-success{% elif hero_metrics.savings_rate > 0 %}bg-primary{% else %}bg-danger{% endif %}" 
                                  role="progressbar" 
-                                 style="width: {% if hero_metrics.savings_rate < 0 %}0{% else %}{{ hero_metrics.savings_rate|floatformat:1 }}{% endif %}%; transition: width 1.5s ease-in-out;" 
+                                 style="--progress-width: {% if hero_metrics.savings_rate < 0 %}0{% else %}{{ hero_metrics.savings_rate|floatformat:1 }}{% endif %}%; width: {% if hero_metrics.savings_rate < 0 %}0{% else %}{{ hero_metrics.savings_rate|floatformat:1 }}{% endif %}%;" 
                                  aria-valuenow="{{ hero_metrics.savings_rate|floatformat:1 }}" aria-valuemin="0" aria-valuemax="100">
                             </div>
                         </div>
@@ -1184,12 +1181,16 @@ document.addEventListener('DOMContentLoaded', function() {
                     {% trans "Spending Pace" %}
                 </div>
                 {% if hero_metrics.income > 0 or hero_metrics.spent > 0 %}
-                    {% if salary_breakdown.spending_pace.status == 'on_track' %}
-                        <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-2 py-1 small border border-success border-opacity-10">{% trans "On Track" %}</span>
-                    {% elif salary_breakdown.spending_pace.status == 'near_limit' %}
-                        <span class="badge bg-warning bg-opacity-10 rounded-pill px-2 py-1 small border border-warning border-opacity-10" style="color: #e07b39;">{% trans "Near Limit" %}</span>
+                    {% if salary_breakdown.total_monthly_budget > 0 %}
+                        {% if salary_breakdown.spending_pace.status == 'on_track' %}
+                            <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-2 py-1 small border border-success border-opacity-10">{% trans "On Track" %}</span>
+                        {% elif salary_breakdown.spending_pace.status == 'near_limit' %}
+                            <span class="badge bg-warning bg-opacity-10 rounded-pill px-2 py-1 small border border-warning border-opacity-10" style="color: #e07b39;">{% trans "Near Limit" %}</span>
+                        {% else %}
+                            <span class="badge bg-danger bg-opacity-10 text-danger rounded-pill px-2 py-1 small border border-danger border-opacity-10">{% trans "Over Budget" %}</span>
+                        {% endif %}
                     {% else %}
-                        <span class="badge bg-danger bg-opacity-10 text-danger rounded-pill px-2 py-1 small border border-danger border-opacity-10">{% trans "Over Budget" %}</span>
+                        <span class="badge bg-secondary bg-opacity-10 text-secondary rounded-pill px-2 py-1 small border border-secondary border-opacity-10">{% trans "No Budget" %}</span>
                     {% endif %}
                 {% else %}
                     <span class="badge bg-secondary bg-opacity-10 text-secondary rounded-pill px-2 py-1 small border border-secondary border-opacity-10">{% trans "No Data" %}</span>
@@ -1472,19 +1473,19 @@ document.addEventListener('DOMContentLoaded', function() {
                             
                             <!-- Progress Bar -->
                             {% if item.limit %}
-                            <div class="progress w-100 progress-thin">
+                            <div class="progress w-100 progress-thin progress-animate">
                                 <div class="progress-bar {% if item.used_percent > 90 %}progress-gradient-danger{% elif item.used_percent > 80 %}progress-gradient-warning{% else %}progress-gradient-success{% endif %}" 
                                      role="progressbar" 
-                                     style="width: {{ item.used_percent }}%" 
+                                     style="--progress-width: {{ item.used_percent }}%; width: {{ item.used_percent }}%" 
                                      aria-valuenow="{{ item.used_percent }}" 
                                      aria-valuemin="0" 
                                      aria-valuemax="100"></div>
                             </div>
                             {% else %}
-                            <div class="progress w-100 progress-thin">
+                            <div class="progress w-100 progress-thin progress-animate">
                                 <div class="progress-bar progress-gradient-info" 
                                      role="progressbar" 
-                                     style="width: 100%; opacity: 0.5;" 
+                                     style="--progress-width: 100%; width: 100%; opacity: 0.5;" 
                                      title="{% trans 'No limit set' %}"></div>
                             </div>
                             {% endif %}
@@ -1914,12 +1915,18 @@ document.addEventListener('DOMContentLoaded', function() {
 
         const CATEGORY_PALETTE = [
             CHART_COLORS.green, CHART_COLORS.amber, CHART_COLORS.teal, 
-            CHART_COLORS.indigo, CHART_COLORS.red, CHART_COLORS.emerald, 
+            CHART_COLORS.slate, CHART_COLORS.red, CHART_COLORS.emerald, 
             CHART_COLORS.gold, CHART_COLORS.blue, CHART_COLORS.mint, 
             CHART_COLORS.crimson
         ];
         Chart.defaults.font.family = "'DM Sans', 'Inter', sans-serif";
         Chart.defaults.color = currentColors.text;
+        
+        // Premium Animation Defaults
+        Chart.defaults.animation = {
+            duration: 1500,
+            easing: 'easeOutQuart'
+        };
         
         const charts = {};
 
@@ -2110,9 +2117,14 @@ document.addEventListener('DOMContentLoaded', function() {
                         const points = chart.getElementsAtEventForMode(evt, 'index', { intersect: false }, true);
                         if (points.length > 0) {
                             const index = points[0].index;
-                            const dateStr = trendIsoDates[index];
-                            if (dateStr) {
-                                let url = `{% url 'expense-list' %}?start_date=${dateStr}&end_date=${dateStr}`;
+                            const startDateStr = trendIsoDates[index];
+                            if (startDateStr) {
+                                // For monthly view, calculate end of month
+                                const d = new Date(startDateStr);
+                                const lastDay = new Date(d.getFullYear(), d.getMonth() + 1, 0);
+                                const endDateStr = lastDay.toISOString().split('T')[0];
+                                
+                                let url = `{% url 'expense-list' %}?start_date=${startDateStr}&end_date=${endDateStr}`;
                                 if (selectedCategories && selectedCategories.length > 0) {
                                     selectedCategories.forEach(cat => {
                                         url += `&category=${encodeURIComponent(cat)}`;
