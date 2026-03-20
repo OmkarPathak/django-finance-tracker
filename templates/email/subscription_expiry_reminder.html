@@ -4,7 +4,7 @@
 {% block title %}{% trans "Subscription Expiring Soon - TrackMyRupee" %}{% endblock %}
 
 {% block content %}
-<h2 style="color: #023047; font-family: 'Clash Display', sans-serif;">{% trans "Your Premium Access is Ending" %}</h2>
+<h2 style="color: #1a1a18; font-family: 'Instrument Serif', sans-serif;">{% trans "Your Premium Access is Ending" %}</h2>
 
 <p>{% blocktrans with name=user.first_name|default:user.username %}Hello {{ name }},{% endblocktrans %}</p>
 
@@ -14,14 +14,14 @@
     {% endblocktrans %}
 </p>
 
-<div style="background: linear-gradient(135deg, rgba(5, 117, 230, 0.05) 0%, rgba(33, 158, 188, 0.05) 100%); border: 1px solid rgba(5, 117, 230, 0.1); border-radius: 12px; padding: 24px; margin: 24px 0; text-align: center;">
-    <h3 style="margin-top: 0; color: #023047;">{% trans "Don't lose your features!" %}</h3>
+<div style="background-color: rgba(45, 106, 79, 0.05); border: 1px solid rgba(45, 106, 79, 0.1); border-radius: 12px; padding: 24px; margin: 24px 0; text-align: center;">
+    <h3 style="margin-top: 0; color: #1a1a18;">{% trans "Don't lose your features!" %}</h3>
     <p style="color: #6c757d; font-size: 14px;">
         {% trans "Renew your subscription now to continue enjoying unlimited categories, recurring transactions, automation, and advanced analytics." %}
     </p>
     <div style="margin-top: 20px;">
         <a href="https://trackmyrupee.com/pricing/" 
-           style="background: linear-gradient(135deg, #00f260 0%, #0575e6 100%); color: white; padding: 12px 24px; border-radius: 50px; text-decoration: none; font-weight: bold; display: inline-block; box-shadow: 0 4px 12px rgba(5, 117, 230, 0.3);">
+           style="background-color: #2d6a4f; color: white; padding: 12px 24px; border-radius: 50px; text-decoration: none; font-weight: bold; display: inline-block; box-shadow: 0 4px 12px rgba(45, 106, 79, 0.3);">
             {% trans "Upgrade / Renew Now" %}
         </a>
     </div>

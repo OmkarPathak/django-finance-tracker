@@ -40,13 +40,13 @@ class CalendarView(TemplateView):
             user=self.request.user,
             date__year=year,
             date__month=month
-        ).values('date').annotate(total=Sum('amount'))
+        ).values('date').annotate(total=Sum('base_amount'))
         
         incomes = Income.objects.filter(
             user=self.request.user,
             date__year=year,
             date__month=month
-        ).values('date').annotate(total=Sum('amount'))
+        ).values('date').annotate(total=Sum('base_amount'))
         
         # Map data for easy lookup by day
         # Keys are integers (day of month)

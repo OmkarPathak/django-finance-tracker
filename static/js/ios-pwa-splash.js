@@ -13,7 +13,7 @@
 
     // Configuration
     const iconUrl = '/static/img/pwa-icon-512.png';
-    const backgroundColor = '#023047'; // Brand Dark Blue
+    const backgroundColor = '#1a1a18'; // Brand Dark
 
     function createSplashScreen() {
         const width = window.screen.width * window.devicePixelRatio;

@@ -104,13 +104,13 @@
 
     <!-- Google Fonts (Unifying with Landing Page) -->
     <link
-        href="https://fonts.googleapis.com/css2?family=Clash+Display:wght@400;500;600;700&family=Outfit:wght@300;400;500;700&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap"
         rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
     <!-- PWA -->
     <link rel="manifest" href="{% url 'manifest' %}">
-    <meta name="theme-color" content="#023047">
+    <meta name="theme-color" content="#2d6a4f">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -282,8 +282,8 @@
         .multiselect.dropdown-toggle:focus,
         .multiselect.dropdown-toggle:active,
         .btn-group.show .multiselect.dropdown-toggle {
-            border-color: #00f2fe !important;
-            box-shadow: 0 0 0 0.25rem rgba(0, 242, 254, 0.15) !important;
+            border-color: #2d6a4f !important;
+            box-shadow: 0 0 0 0.25rem rgba(45, 106, 79, 0.15) !important;
             outline: 0;
             color: var(--bs-body-color);
             background-color: var(--bs-body-bg);
@@ -342,12 +342,12 @@
         }
 
         .multiselect-container>li>a:hover {
-            background-color: rgba(0, 242, 254, 0.05);
+            background-color: rgba(45, 106, 79, 0.05);
             color: var(--bs-body-color);
         }
 
         .multiselect-container>li.active>a {
-            background-color: rgba(0, 242, 254, 0.1);
+            background-color: rgba(45, 106, 79, 0.1);
             color: var(--bs-body-color);
         }
 
@@ -422,7 +422,7 @@
         }
 
         .multiselect-container input[type="checkbox"]:checked {
-            background: var(--primary-gradient);
+            background-color: #2d6a4f;
             border-color: transparent;
         }
 
@@ -469,7 +469,7 @@
         }
     </style>
 
-    <meta name="theme-color" content="#023047">
+    <meta name="theme-color" content="#2d6a4f">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="TrackMyRupee">
@@ -485,7 +485,7 @@
     {% if request.user.username == 'demo' %}
     <div class="alert alert-warning text-center fw-bold m-0 rounded-0 py-2 small shadow-sm position-relative z-3 d-flex justify-content-center align-items-center gap-2"
         role="alert">
-        <span><i class="bi bi-exclamation-triangle-fill me-1"></i> DEMO MODE: Read-only access.</span>
+        <span class="d-inline-flex align-items-center"><i class="bi bi-exclamation-triangle-fill me-1"></i> DEMO MODE: Read-only access.</span>
         <span class="opacity-50">|</span>
         <a href="{% url 'demo_signup' %}" class="text-reset text-decoration-underline">Create Account</a>
         <span class="opacity-50">|</span>
@@ -1095,6 +1095,209 @@
             initGlobalMultiselects();
         });
     </script>
+
+    <!-- Searchable Single-Select Component -->
+    <script>
+    (function() {
+        function initSearchableSelects() {
+            document.querySelectorAll('select.searchable-select').forEach(function(sel) {
+                if (sel.dataset.searchableInit) return;
+                sel.dataset.searchableInit = '1';
+
+                // Hide original select
+                sel.style.display = 'none';
+
+                // Build wrapper
+                const wrapper = document.createElement('div');
+                wrapper.className = 'searchable-select-wrapper';
+                sel.parentNode.insertBefore(wrapper, sel);
+                wrapper.appendChild(sel);
+
+                // Trigger button (looks like form-select)
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'form-select text-start searchable-select-btn';
+                btn.textContent = sel.options[sel.selectedIndex]?.text || '{% trans "Select..." %}';
+                wrapper.appendChild(btn);
+
+                // Dropdown panel
+                const dropdown = document.createElement('div');
+                dropdown.className = 'searchable-select-dropdown';
+                wrapper.appendChild(dropdown);
+
+                // Search input
+                const search = document.createElement('input');
+                search.type = 'text';
+                search.className = 'form-control form-control-sm searchable-select-search';
+                search.placeholder = '{% trans "Search..." %}';
+                search.autocomplete = 'off';
+                dropdown.appendChild(search);
+
+                // Options list
+                const list = document.createElement('div');
+                list.className = 'searchable-select-list';
+                dropdown.appendChild(list);
+
+                function buildOptions(filter) {
+                    list.innerHTML = '';
+                    const term = (filter || '').toLowerCase();
+                    let hasVisible = false;
+                    Array.from(sel.options).forEach(function(opt) {
+                        if (!opt.value && opt.text.trim() === '---------') return; // skip blank
+                        const text = opt.text;
+                        if (term && text.toLowerCase().indexOf(term) === -1) return;
+                        hasVisible = true;
+                        const item = document.createElement('div');
+                        item.className = 'searchable-select-item' + (opt.value === sel.value ? ' active' : '');
+                        item.textContent = text;
+                        item.dataset.value = opt.value;
+                        item.addEventListener('click', function() {
+                            sel.value = opt.value;
+                            sel.dispatchEvent(new Event('change', { bubbles: true }));
+                            btn.textContent = text;
+                            close();
+                        });
+                        list.appendChild(item);
+                    });
+                    if (!hasVisible) {
+                        const empty = document.createElement('div');
+                        empty.className = 'searchable-select-empty';
+                        empty.textContent = '{% trans "No matches" %}';
+                        list.appendChild(empty);
+                    }
+                }
+
+                function open() {
+                    dropdown.classList.add('show');
+                    wrapper.classList.add('open');
+                    search.value = '';
+                    buildOptions('');
+                    setTimeout(function() { search.focus(); }, 50);
+                }
+
+                function close() {
+                    dropdown.classList.remove('show');
+                    wrapper.classList.remove('open');
+                }
+
+                function toggle() {
+                    dropdown.classList.contains('show') ? close() : open();
+                }
+
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    // Close any other open searchable selects
+                    document.querySelectorAll('.searchable-select-dropdown.show').forEach(function(d) {
+                        if (d !== dropdown) {
+                            d.classList.remove('show');
+                            d.closest('.searchable-select-wrapper')?.classList.remove('open');
+                        }
+                    });
+                    toggle();
+                });
+
+                search.addEventListener('input', function() {
+                    buildOptions(search.value);
+                });
+
+                search.addEventListener('keydown', function(e) {
+                    if (e.key === 'Escape') close();
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        const first = list.querySelector('.searchable-select-item');
+                        if (first) first.click();
+                    }
+                });
+
+                // Close on outside click
+                document.addEventListener('click', function(e) {
+                    if (!wrapper.contains(e.target)) close();
+                });
+
+                // Sync if value changes programmatically
+                sel.addEventListener('change', function() {
+                    const opt = sel.options[sel.selectedIndex];
+                    if (opt) btn.textContent = opt.text;
+                });
+            });
+        }
+
+        // Run on DOM ready and expose for dynamic forms
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initSearchableSelects);
+        } else {
+            initSearchableSelects();
+        }
+        window.initSearchableSelects = initSearchableSelects;
+    })();
+    </script>
+
+    <style>
+    .searchable-select-wrapper {
+        position: relative;
+    }
+    .searchable-select-btn {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        cursor: pointer;
+    }
+    .searchable-select-btn:focus {
+        border-color: var(--bs-primary);
+        box-shadow: 0 0 0 0.2rem rgba(var(--bs-primary-rgb), 0.15);
+    }
+    .searchable-select-dropdown {
+        display: none;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        z-index: 1055;
+        background: var(--bs-body-bg);
+        border: 1px solid var(--bs-border-color);
+        border-radius: 0.5rem;
+        box-shadow: 0 0.5rem 1rem rgba(0,0,0,.12);
+        margin-top: 4px;
+        padding: 0.5rem;
+        max-height: 280px;
+        overflow: hidden;
+        display: none;
+    }
+    .searchable-select-dropdown.show {
+        display: block;
+    }
+    .searchable-select-search {
+        margin-bottom: 0.4rem;
+        border-radius: 0.375rem;
+    }
+    .searchable-select-list {
+        max-height: 200px;
+        overflow-y: auto;
+        scrollbar-width: thin;
+    }
+    .searchable-select-item {
+        padding: 0.45rem 0.75rem;
+        cursor: pointer;
+        border-radius: 0.375rem;
+        font-size: 0.9rem;
+        transition: background 0.12s;
+    }
+    .searchable-select-item:hover {
+        background: var(--bs-primary-bg-subtle);
+    }
+    .searchable-select-item.active {
+        background: var(--bs-primary-bg-subtle);
+        color: var(--bs-primary);
+        font-weight: 600;
+    }
+    .searchable-select-empty {
+        padding: 0.75rem;
+        text-align: center;
+        color: var(--bs-secondary-color);
+        font-size: 0.85rem;
+    }
+    </style>
     <!-- Donation Notification Toast -->
     <div class="toast-container position-fixed bottom-0 start-0 p-3" style="z-index: 1100;">
         <div id="donationToast" class="toast border-0 shadow-lg" role="alert" aria-live="assertive" aria-atomic="true"

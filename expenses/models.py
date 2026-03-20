@@ -275,6 +275,7 @@ class RecurringTransaction(models.Model):
     TRANSACTION_TYPE_CHOICES = [
         ('EXPENSE', _('Expense')),
         ('INCOME', _('Income')),
+        ('TRANSFER', _('Transfer')),
     ]
 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -291,6 +292,10 @@ class RecurringTransaction(models.Model):
     base_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0.0, verbose_name=_('Amount in Base Currency'))
 
     account = models.ForeignKey(Account, on_delete=models.SET_NULL, null=True, blank=True, verbose_name=_('Account'))
+
+    # Transfer-specific fields
+    from_account = models.ForeignKey(Account, on_delete=models.SET_NULL, null=True, blank=True, related_name='recurring_transfers_out', verbose_name=_('From Account'))
+    to_account = models.ForeignKey(Account, on_delete=models.SET_NULL, null=True, blank=True, related_name='recurring_transfers_in', verbose_name=_('To Account'))
 
     frequency = models.CharField(max_length=10, choices=FREQUENCY_CHOICES, verbose_name=_('Frequency'))
     start_date = models.DateField(verbose_name=_('Start Date'))
@@ -338,6 +343,14 @@ class RecurringTransaction(models.Model):
             self.base_amount = (self.amount * self.exchange_rate).quantize(Decimal('0.01'))
             
         super().save(*args, **kwargs)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['user', 'transaction_type', 'amount', 'currency', 'description', 'frequency', 'start_date'],
+                name='unique_recurring_transaction'
+            )
+        ]
 
     def __str__(self):
         return f"{self.transaction_type} - {self.description} ({self.frequency})"

@@ -59,7 +59,7 @@
     .yir-bg-5 { background: #111; } /* Dark theme for summary card */
 
     .yir-title {
-        font-family: 'Clash Display', sans-serif;
+        font-family: 'Instrument Serif', sans-serif;
         font-weight: 700;
         font-size: 3rem;
         margin-bottom: 1rem;
@@ -71,7 +71,7 @@
     }
 
     .yir-text {
-        font-family: 'Outfit', sans-serif;
+        font-family: 'DM Sans', sans-serif;
         font-size: 1.5rem;
         opacity: 0.9;
         max-width: 600px;
@@ -81,9 +81,8 @@
     .yir-highlight {
         font-weight: 800;
         font-size: 4rem;
-        background: -webkit-linear-gradient(45deg, #f3ec78, #af4261);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
+        color: #faf9f6;
+        -webkit-text-fill-color: #faf9f6;
         display: block;
         margin: 1rem 0;
         pointer-events: none;
@@ -143,7 +142,7 @@
 
     /* Summary Card Styling */
     #share-card {
-        background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+        background-color: #1a1a18;
         border-radius: 20px;
         padding: 2.5rem;
         width: 100%;
@@ -210,9 +209,9 @@
 <div class="yir-slide yir-bg-2" id="slide-1">
     <h1 class="yir-title">The Big Picture</h1>
     <p class="yir-text">You earned a total of</p>
-    <span class="yir-highlight" style="background: -webkit-linear-gradient(45deg, #00b09b, #96c93d); -webkit-background-clip: text;">{{ currency_symbol }}{{ review_data.total_earned|humanize_currency:currency_symbol|translate_digits }}</span>
+    <span class="yir-highlight" style="color: #6b8f71; -webkit-text-fill-color: #6b8f71;">{{ currency_symbol }}{{ review_data.total_earned|humanize_currency:currency_symbol|translate_digits }}</span>
     <p class="yir-text mt-2">and tracked {{ review_data.transaction_count|translate_digits }} expenses totalling</p>
-    <span class="yir-highlight" style="background: -webkit-linear-gradient(45deg, #ff416c, #ff4b2b); -webkit-background-clip: text;">{{ currency_symbol }}{{ review_data.total_spent|humanize_currency:currency_symbol|translate_digits }}</span>
+    <span class="yir-highlight" style="color: #c0392b; -webkit-text-fill-color: #c0392b;">{{ currency_symbol }}{{ review_data.total_spent|humanize_currency:currency_symbol|translate_digits }}</span>
 </div>
 
 <!-- Slide 3: Top Categories -->

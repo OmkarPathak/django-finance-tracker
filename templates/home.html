@@ -4,6 +4,20 @@
 {% block content %}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style>
+    /* ── Typography Scale ─────────────────────────────────
+       Hero KPI:      1.5rem   (main number per card)
+       Secondary KPI: 1.1rem   (projected, net commitment)
+       Value:         0.9rem   (stat amounts, pill values)
+       Body:          0.85rem  (descriptions, list items)
+       Small:         0.75-0.8rem (secondary info, subtext)
+       Micro label:   0.65rem  (uppercase section labels)
+       Badge:         0.7rem   (header badges)
+       Icon:          16×16    (card header SVGs)
+    ────────────────────────────────────────────────────── */
+
+    /* Unified card header title size */
+    /* Unified card header title size - Standardized to use default body size */
+
     .icon-shape {
         display: inline-flex;
         align-items: center;
@@ -76,6 +90,9 @@
     @keyframes card-slide { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(5px); } }
     .anim-card-empty { animation: card-slide 3s ease-in-out infinite; }
 
+    @keyframes wallet-coin { 0%,100% { transform: translateX(0); opacity: 0.4; } 50% { transform: translateX(-3px); opacity: 1; } }
+    .anim-wallet-coin { animation: wallet-coin 3s ease-in-out infinite; }
+
     @keyframes trend-draw { 0% { stroke-dasharray: 0 40; } 100% { stroke-dasharray: 40 40; } }
     .anim-trend { animation: trend-draw 3s ease-in-out infinite alternate; }
 
@@ -146,6 +163,150 @@
     .anim-speedometer { animation: speedometer-wiggle 4s ease-in-out infinite; transform-origin: 12px 12px; }
 
 </style>
+
+<!-- Daily Mode / Full Report Toggle -->
+<div class="d-flex justify-content-center mb-4 fade-in">
+    <div class="bg-body-tertiary rounded-pill p-1 d-inline-flex align-items-center shadow-sm" role="group" id="dashboard-mode-toggle" style="border: 1px solid var(--bs-border-color-translucent);">
+        <button type="button" class="btn btn-sm rounded-pill px-4 py-2 fw-bold daily-mode-btn active d-inline-flex align-items-center justify-content-center" id="btn-daily-mode" onclick="switchToDailyMode()" style="min-width: 120px; transition: all 0.3s ease; line-height: 1.2;">
+            {% trans "Daily Mode" %}
+        </button>
+        <button type="button" class="btn btn-sm rounded-pill px-4 py-2 fw-bold full-report-btn d-inline-flex align-items-center justify-content-center" id="btn-full-report" onclick="switchToFullReport()" style="min-width: 120px; transition: all 0.3s ease; line-height: 1.2;">
+            {% trans "Full Report" %}
+        </button>
+    </div>
+</div>
+
+<style>
+    /* Dashboard Mode Toggle Styles */
+    #dashboard-mode-toggle .active {
+        background-color: var(--bs-primary) !important;
+        color: #fff !important;
+        box-shadow: 0 2px 8px rgba(var(--bs-primary-rgb), 0.3);
+    }
+    #dashboard-mode-toggle .btn:not(.active) {
+        background: transparent;
+        color: var(--bs-body-color);
+        border: none;
+    }
+    #dashboard-mode-toggle .btn:not(.active):hover {
+        background: rgba(var(--bs-primary-rgb), 0.08);
+    }
+
+    /* Daily Mode responsive adjustments for desktop */
+    /* Mobile: single column, full width */
+    .daily-mode-container {
+        width: 100%;
+    }
+    /* Ensure all Bootstrap Icons inside daily mode align perfectly with text */
+    .daily-mode-container .bi {
+        vertical-align: middle;
+        line-height: 1;
+    }
+    .daily-mode-grid {
+        display: flex;
+        flex-direction: column;
+    }
+    .daily-left-col,
+    .daily-right-col {
+        width: 100%;
+    }
+
+    /* Tablet: slightly constrained single column */
+    @media (min-width: 768px) and (max-width: 991.98px) {
+        .daily-mode-container {
+            max-width: 720px;
+            margin: 0 auto;
+        }
+    }
+
+    /* Desktop: 2-column layout */
+    @media (min-width: 992px) {
+        .daily-mode-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .daily-mode-grid {
+            display: grid;
+            grid-template-columns: 3fr 2fr;
+            gap: 1.5rem;
+            align-items: start;
+        }
+        .daily-right-col {
+            position: sticky;
+            top: 1rem;
+        }
+    }
+
+    /* Transaction row hover actions */
+    .daily-txn-row {
+        transition: background 0.15s ease;
+    }
+    .daily-txn-row:hover {
+        background: rgba(var(--bs-primary-rgb), 0.04);
+    }
+    .daily-txn-actions {
+        position: absolute;
+        right: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        gap: 4px;
+        opacity: 0;
+        transition: opacity 0.2s ease;
+        z-index: 5;
+    }
+    .daily-txn-row:hover .daily-txn-actions {
+        opacity: 1;
+    }
+    .daily-txn-action-btn {
+        width: 30px;
+        height: 30px;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.75rem;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+    }
+    .daily-txn-action-btn:hover {
+        background: var(--bs-primary) !important;
+        color: #fff !important;
+    }
+
+    /* Smart tags */
+    .daily-tag-recurring {
+        background: rgba(var(--bs-primary-rgb), 0.10);
+        color: var(--bs-primary);
+        font-size: 0.65rem;
+        font-weight: 600;
+        padding: 2px 8px;
+        border-radius: 20px;
+        white-space: nowrap;
+    }
+    .daily-tag-unusual {
+        background: rgba(var(--bs-warning-rgb), 0.15);
+        color: #b45309;
+        font-size: 0.65rem;
+        font-weight: 600;
+        padding: 2px 8px;
+        border-radius: 20px;
+        white-space: nowrap;
+    }
+
+    @keyframes dailyOverPulse {
+        0%, 100% { box-shadow: 0 0 0 0 rgba(var(--bs-danger-rgb), 0.4); }
+        50% { box-shadow: 0 0 0 8px rgba(var(--bs-danger-rgb), 0); }
+    }
+    .daily-over-pulse {
+        animation: dailyOverPulse 2s ease-in-out infinite;
+    }
+</style>
+
+<!-- Include Daily Dashboard View -->
+{% include 'partials/daily_dashboard.html' %}
+
+<!-- Full Report View (Existing Dashboard) -->
+<div id="full-report-view" style="display: none;">
+
 <div class="d-flex flex-column flex-md-row justify-content-between align-items-center mb-4 gap-3 fade-in" style="position: relative; z-index: 100;">
     <!-- Mobile Header (One Line) -->
     <div class="d-flex d-md-none justify-content-between align-items-center w-100">
@@ -343,13 +504,13 @@
             <div class="accordion-body p-3 p-md-4">
             {% if has_any_budget or total_income > 0 %}
             <div class="card shadow-lg border-0 mb-4 fade-in" id="tour-money-flow-card" style="animation-delay: 0.2s;">
-                <div class="card-header bg-transparent border-bottom py-2 px-4">
-                    <h6 class="mb-0 fw-bold text-uppercase text-muted" style="letter-spacing: 0.6px; font-size: 0.9rem;">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="me-2 text-primary" style="vertical-align: -2px;">
+                <div class="card-header bg-transparent border-bottom py-2 px-4 fw-bold">
+                    <div class="text-uppercase text-muted d-inline-flex align-items-center" style="letter-spacing: 0.6px; font-size: 0.9rem;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="me-2 text-primary flex-shrink-0">
                             <path d="M21.21 15.89A10 10 0 1 1 8 2.83" class="anim-pie" fill="currentColor" fill-opacity="0.3"/>
                             <path d="M22 12A10 10 0 0 0 12 2v10z"/>
                         </svg> {% trans "Where Did My Salary Go?" %}
-                    </h6>
+                    </div>
                 </div>
                 <div class="card-body p-3 p-md-4">
                     {% if category_data or hero_metrics.saved > 0 %}
@@ -401,20 +562,20 @@
                 <!-- SMART INSIGHTS (Layer 3) -->
                 <div class="col-12 col-md-6">
                     <div class="card shadow-lg border-0 h-100 fade-in" id="tour-smart-insights-card" style="animation-delay: 0.3s;">
-                        <div class="card-header bg-transparent border-bottom py-3">
-                            <h6 class="mb-0 fw-bold text-uppercase text-muted" style="letter-spacing: 0.6px;">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="me-2 text-primary" style="vertical-align: -2px;">
+                        <div class="card-header bg-transparent border-bottom py-3 fw-bold">
+                            <div class="text-uppercase text-muted d-inline-flex align-items-center" style="letter-spacing: 0.6px;">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="me-2 text-primary flex-shrink-0">
                                     <polyline points="22 7 13.5 15.5 8.5 10.5 2 17" class="anim-trend"/>
                                     <polyline points="16 7 22 7 22 13" class="anim-trend"/>
                                 </svg> {% trans "Money Flow Analysis" %}
-                            </h6>
+                            </div>
                         </div>
                         <div class="card-body p-4">
                             {% if smart_insights or salary_breakdown.viral_insight or salary_breakdown.relatable_metric %}
                             <div class="d-flex flex-column gap-4">
                                 {% if salary_breakdown.viral_insight %}
                                     <div class="d-flex align-items-start gap-3">
-                                        <div class="d-flex align-items-center justify-content-center rounded-circle border flex-shrink-0" style="width: 42px; height: 42px; background-color: rgba(13, 110, 253, 0.1);">
+                                        <div class="d-flex align-items-center justify-content-center rounded-circle border flex-shrink-0" style="width: 42px; height: 42px; background-color: rgba(45, 106, 79, 0.1);">
                                             <i class="bi bi-magic text-primary" style="font-size: 1.2rem;"></i>
                                         </div>
                                         <div class="flex-grow-1">
@@ -426,7 +587,7 @@
                                 
                                 {% for insight in smart_insights %}
                                 <div class="d-flex align-items-start gap-3">
-                                    <div class="d-flex align-items-center justify-content-center rounded-circle border flex-shrink-0" style="width: 42px; height: 42px; background-color: rgba(25, 135, 84, 0.1);">
+                                    <div class="d-flex align-items-center justify-content-center rounded-circle border flex-shrink-0" style="width: 42px; height: 42px; background-color: rgba(45, 106, 79, 0.1);">
                                         <i class="bi bi-{{ insight.icon }} text-success" style="font-size: 1.2rem;"></i>
                                     </div>
                                     <div class="flex-grow-1">
@@ -438,7 +599,7 @@
                                 
                                 {% if salary_breakdown.relatable_metric %}
                                     <div class="d-flex align-items-start gap-3">
-                                        <div class="d-flex align-items-center justify-content-center rounded-circle border flex-shrink-0" style="width: 42px; height: 42px; background-color: rgba(255, 193, 7, 0.1);">
+                                        <div class="d-flex align-items-center justify-content-center rounded-circle border flex-shrink-0" style="width: 42px; height: 42px; background-color: rgba(224, 123, 57, 0.1);">
                                             <i class="bi bi-{{ salary_breakdown.relatable_metric.icon }} text-warning" style="font-size: 1.2rem;"></i>
                                         </div>
                                         <div class="flex-grow-1">
@@ -465,13 +626,13 @@
                 <!-- ACTIONABLE ALERTS (Layer 4) -->
                 <div class="col-12 col-md-6">
                     <div class="card shadow-lg border-0 h-100 fade-in" id="tour-actionable-alerts-card" style="animation-delay: 0.4s;">
-                        <div class="card-header bg-transparent border-bottom py-3">
-                            <h6 class="mb-0 fw-bold text-uppercase text-muted" style="letter-spacing: 0.6px;">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="me-2 text-danger animate-pulse-light" style="vertical-align: -2px;">
+                        <div class="card-header bg-transparent border-bottom py-3 fw-bold">
+                            <div class="text-uppercase text-muted d-inline-flex align-items-center" style="letter-spacing: 0.6px;">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="me-2 text-danger animate-pulse-light flex-shrink-0">
                                     <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
                                     <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
                                 </svg> {% trans "Actionable Alerts" %}
-                            </h6>
+                            </div>
                         </div>
                         <div class="card-body p-4">
                             {% if actionable_alerts %}
@@ -533,7 +694,7 @@
 <div id="capture-container" style="position: absolute; left: -9999px; top: -9999px;">
     {% if salary_breakdown or total_income > 0 %}
 
-    <div id="salary-wrapped-card" style="width: 400px; padding: 40px; background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); color: #ffffff; border-radius: 0;">
+    <div id="salary-wrapped-card" style="width: 400px; padding: 40px; background-color: #1a1a18; color: #ffffff; border-radius: 0;">
         <div style="margin-bottom: 30px; display: flex; align-items: center; justify-content: space-between;">
             <div>
                 <h2 style="margin: 0; font-weight: 800; font-size: 24px; letter-spacing: -0.5px; color: #ffffff;">{% trans "My salary journey" %}</h2>
@@ -566,7 +727,7 @@
             </div>
         </div>
 
-        <div style="background: rgba(255,255,255,0.1); padding: 20px; border-radius: 15px; border-left: 4px solid #4facfe; margin-bottom: 25px;">
+        <div style="background: rgba(255,255,255,0.1); padding: 20px; border-radius: 15px; border-left: 4px solid #2d6a4f; margin-bottom: 25px;">
              <div style="font-weight: 700; font-size: 14px; margin-bottom: 6px; color: #ffffff;">✨ {% trans "AI Insight" %}</div>
              <div style="font-size: 14px; opacity: 0.9; line-height: 1.5; color: #ffffff;">
                 {% if salary_breakdown.viral_insight %}
@@ -594,7 +755,7 @@
 <!-- Year in Review Banner -->
 {% if show_year_in_review %}
 <div id="yir-banner-container" style="display: none;">
-    <div class="alert alert-primary border-0 shadow-sm d-flex flex-column flex-sm-row align-items-sm-center justify-content-between fade-in mb-4 gap-3 position-relative pe-5" role="alert" style="background: linear-gradient(135deg, rgba(30,60,114,0.05) 0%, rgba(42,82,152,0.05) 100%);">
+    <div class="alert alert-primary border-0 shadow-sm d-flex flex-column flex-sm-row align-items-sm-center justify-content-between fade-in mb-4 gap-3 position-relative pe-5" role="alert" style="background-color: rgba(45, 106, 79, 0.06);">
         
         <!-- Dismiss Button -->
         <button type="button" class="btn-close position-absolute top-0 end-0 m-2 mt-2 me-2" id="dismiss-yir-btn" aria-label="Close" style="font-size: 0.75rem;"></button>
@@ -604,7 +765,7 @@
                 <i class="bi bi-stars fs-5"></i>
             </div>
             <div>
-                <h6 class="alert-heading fw-bold mb-0 text-primary" style="font-family: 'Clash Display', sans-serif;">{% blocktrans %}Your {{ year_in_review_year }} in Review is Ready ✨{% endblocktrans %}</h6>
+                <h6 class="alert-heading fw-bold mb-0 text-primary" style="font-family: 'Instrument Serif', sans-serif;">{% blocktrans %}Your {{ year_in_review_year }} in Review is Ready ✨{% endblocktrans %}</h6>
                 <p class="mb-0 small text-muted" style="opacity: 0.85;">{% trans "See your financial year wrapped and discover your top spending habits." %}</p>
             </div>
         </div>
@@ -694,6 +855,17 @@ document.addEventListener('DOMContentLoaded', function() {
         mask-image: linear-gradient(to bottom, #000 85%, transparent 100%);
     }
     .accounts-grid-container::-webkit-scrollbar { display: none; }
+
+    /* Net Worth - Account type pills grid */
+    .nw-accounts-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        gap: 8px;
+    }
+    .nw-account-pill:hover {
+        background: rgba(var(--bs-primary-rgb), 0.06) !important;
+    }
+
     /* Remove fade mask when content fits */
     .accounts-grid-container:not(.has-overflow) {
         -webkit-mask-image: none;
@@ -701,94 +873,176 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     .account-row:hover { background: var(--bs-tertiary-bg); }
     .min-width-0 { min-width: 0; }
+
+    /* Unified hero card header height */
+    #tour-hero-card .card-header {
+        min-height: 52px;
+        padding-top: 0.65rem !important;
+        padding-bottom: 0.65rem !important;
+    }
+
+    /* Net Worth hero block */
+    .nw-hero-block {
+        position: relative;
+        background: linear-gradient(135deg, rgba(45, 106, 79, 0.06) 0%, rgba(45, 106, 79, 0.02) 100%);
+        border: 1px solid rgba(45, 106, 79, 0.08);
+        overflow: hidden;
+    }
+    [data-bs-theme="dark"] .nw-hero-block {
+        background: linear-gradient(135deg, rgba(45, 106, 79, 0.15) 0%, rgba(45, 106, 79, 0.05) 100%);
+        border-color: rgba(45, 106, 79, 0.15);
+    }
+
+    .nw-trend-badge {
+        font-size: 0.7rem;
+        font-weight: 600;
+        padding: 3px 10px;
+        border-radius: 20px;
+        display: inline-flex;
+        align-items: center;
+        gap: 3px;
+    }
 </style>
 
 <!-- LAYER 2: FINANCIAL HEALTH & SPENDING PACE -->
 <div class="row g-4 mb-4 fade-in" id="tour-hero-card" style="animation-delay: 0.1s;">
-    <!-- Net Worth & Accounts Selection -->
-    <div class="col-12 col-lg-8">
+    <!-- Net Worth & Accounts Card -->
+    <div class="col-12 col-lg-6">
         <div class="card shadow-lg border-0 rounded-4 overflow-hidden h-100">
-            <div class="card-header bg-transparent border-bottom d-flex justify-content-between align-items-center px-3">
-                <h6 class="mb-0 fw-bold text-uppercase text-muted" style="letter-spacing: 0.3px; font-size: 0.85rem;">
-                    <i class="bi bi-wallet2 me-2 text-primary"></i> {% trans "Your Accounts & Net Worth" %}
-                </h6>
-                <div class="dropdown">
-                    <button class="btn btn-sm btn-outline-primary rounded-pill fw-bold px-2" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="font-size: 0.85rem;">
-                        <i class="bi bi-plus me-1"></i> {% trans "Add" %}
-                    </button>
-                    <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2">
-                        <li><a class="dropdown-item py-2" href="{% url 'transfer-create' %}"><i class="bi bi-arrow-left-right text-info me-2"></i> {% trans "Internal Transfer" %}</a></li>
-                        <li><a class="dropdown-item py-2" href="{% url 'account-create' %}"><i class="bi bi-bank text-primary me-2"></i> {% trans "New Account" %}</a></li>
-                    </ul>
+            <!-- Header: Month + Health Badge -->
+            <div class="card-header bg-transparent border-bottom d-flex justify-content-between align-items-center px-4 py-3 fw-bold">
+                <div class="d-inline-flex align-items-center" style="line-height: 1;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="me-2 text-muted flex-shrink-0" style="vertical-align: middle;">
+                        <rect x="2" y="6" width="20" height="12" rx="2" opacity="0.2"/>
+                        <rect x="2" y="6" width="20" height="12" rx="2"/>
+                        <path d="M22 10H18a2 2 0 0 0 0 4h4"/>
+                        <circle cx="18" cy="12" r="1" fill="currentColor" class="anim-wallet-coin"/>
+                    </svg>
+                    {% trans "Total Net Worth" %} – 
+                    {% if selected_month and selected_year %}
+                        {{ selected_month }} {{ selected_year|translate_digits }}
+                    {% else %}
+                        {% trans "Dashboard" %}
+                    {% endif %}
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <div class="dropdown">
+                        <button class="btn btn-sm btn-outline-primary rounded-pill fw-bold px-2" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="font-size: 0.8rem;">
+                            <i class="bi bi-plus-lg"></i>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2">
+                            <li><a class="dropdown-item py-2" href="{% url 'transfer-create' %}"><i class="bi bi-arrow-left-right text-info me-2"></i> {% trans "Internal Transfer" %}</a></li>
+                            <li><a class="dropdown-item py-2" href="{% url 'account-create' %}"><i class="bi bi-bank text-primary me-2"></i> {% trans "New Account" %}</a></li>
+                        </ul>
+                    </div>
                 </div>
             </div>
+
             <div class="card-body p-4">
-                <!-- Net Worth Summary Row -->
-                <div class="d-flex flex-column flex-sm-row align-items-sm-center justify-content-between mb-3 pb-3 border-bottom">
-                    <div class="text-center text-sm-start mb-2 mb-sm-0">
-                        <p class="text-muted small text-uppercase fw-bold mb-1" style="letter-spacing: 0.5px;">{% trans "Total Net Worth" %}</p>
-                        <h1 class="display-5 fw-black text-primary mb-0" style="font-family: 'Clash Display', sans-serif;">
+                <!-- Net Worth Block -->
+                <div class="nw-hero-block rounded-4 p-3 p-md-4 mb-3">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <p class="text-muted small text-uppercase fw-bold mb-0" style="letter-spacing: 0.5px; font-size: 0.65rem;">{% trans "Total Net Worth" %}</p>
+                        {% if hero_metrics.trend_type == 'positive' %}
+                            <span class="nw-trend-badge bg-success bg-opacity-10 text-success" role="button" data-bs-toggle="tooltip" data-bs-placement="bottom" title="{{ hero_metrics.trend_text }}">↑ {% trans "Growing" %}</span>
+                        {% elif hero_metrics.trend_type == 'negative' %}
+                            <span class="nw-trend-badge bg-danger bg-opacity-10 text-danger" role="button" data-bs-toggle="tooltip" data-bs-placement="bottom" title="{{ hero_metrics.trend_text }}">↓ {% trans "Declining" %}</span>
+                        {% elif hero_metrics.income > 0 or hero_metrics.spent > 0 %}
+                            <span class="nw-trend-badge bg-secondary bg-opacity-10 text-secondary" role="button" data-bs-toggle="tooltip" data-bs-placement="bottom" title="{% trans 'Savings rate unchanged vs last month' %}">→ {% trans "Stable" %}</span>
+                        {% endif %}
+                    </div>
+                    <a href="{% url 'account-list' %}" class="text-decoration-none">
+                        <h1 class="text-body-emphasis mb-1 fw-bold" style="font-family: 'DM Sans', 'Inter', sans-serif; font-size: clamp(1.6rem, 4vw, 2.2rem); letter-spacing: -0.5px;">
                             {{ currency_symbol }}{{ net_worth|humanize_currency:currency_symbol|translate_digits }}
                         </h1>
-                    </div>
-                    <div class="text-center text-sm-end">
-                        <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-3 py-2 fw-semibold" style="font-size: 0.75rem;">
-                            {% blocktrans with count=accounts.count %}{{ count }} accounts{% endblocktrans %}
+                    </a>
+                    {% if hero_metrics.savings_rate > 0 or hero_metrics.income > 0 %}
+                    <div class="d-flex align-items-center gap-3 mt-1" style="font-size: 0.75rem;">
+                        {% if hero_metrics.savings_rate > 0 %}
+                        <span class="d-inline-flex align-items-center gap-1 text-success fw-semibold">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
+                            {{ hero_metrics.savings_rate|translate_digits }}% {% trans "savings rate" %}
                         </span>
+                        {% endif %}
+                        {% if asset_allocation|length > 0 %}
+                        <span class="text-muted">
+                            {{ asset_allocation|length }} {% trans "account types" %}
+                        </span>
+                        {% endif %}
                     </div>
+                    {% endif %}
                 </div>
 
-                <!-- Accounts List -->
-                <div class="accounts-grid-container overflow-auto no-scrollbar" style="max-height: 200px;">
-                    {% for account in accounts %}
-                    <a href="{% url 'account-detail' account.pk %}" class="d-flex align-items-center text-decoration-none text-body px-1 py-2 rounded-3 account-row {% if not forloop.last %}border-bottom{% endif %}" style="transition: background 0.15s;">
-                        <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0 me-3
-                            {% if account.account_type == 'CREDIT_CARD' %}bg-warning bg-opacity-10 text-warning
-                            {% elif account.account_type == 'INVESTMENT' %}bg-success bg-opacity-10 text-success
-                            {% elif account.account_type == 'CASH' %}bg-info bg-opacity-10 text-info
-                            {% else %}bg-primary bg-opacity-10 text-primary{% endif %}"
-                            style="width: 32px; height: 32px;">
-                            <i class="bi
-                                {% if account.account_type == 'CREDIT_CARD' %}bi-credit-card
-                                {% elif account.account_type == 'INVESTMENT' %}bi-graph-up-arrow
-                                {% elif account.account_type == 'CASH' %}bi-cash-stack
-                                {% else %}bi-bank{% endif %}"
-                                style="font-size: 0.8rem;"></i>
-                        </div>
-                        <div class="flex-grow-1 min-width-0">
-                            <div class="fw-semibold text-truncate" style="font-size: 0.85rem;">{{ account.name }}</div>
-                            <div class="text-muted" style="font-size: 0.7rem;">{{ account.get_account_type_display }}</div>
-                        </div>
-                        <div class="text-end flex-shrink-0 ms-3">
-                            <div class="fw-bold" style="font-size: 0.9rem;">{{ currency_symbol }}{{ account.balance|humanize_currency:currency_symbol|translate_digits }}</div>
-                        </div>
+                <!-- Aggregated Account Type Pills -->
+                <div class="nw-accounts-grid mb-3">
+                    {% for alloc in asset_allocation %}
+                    <a href="{% url 'account-list' %}" class="bg-body-tertiary rounded-3 p-3 text-decoration-none d-block nw-account-pill" style="transition: background 0.15s;">
+                        <div class="text-muted mb-1" style="font-size: 0.85rem; letter-spacing: 0.03em;">{{ alloc.type }}</div>
+                        <div class="fw-bold text-body-emphasis" style="font-size: 1rem;">{{ currency_symbol }}{{ alloc.total|floatformat:0|humanize_currency:currency_symbol|translate_digits }}</div>
                     </a>
                     {% empty %}
-                    <div class="text-center py-3">
-                        <p class="text-muted small mb-0">{% trans "No accounts found. Start by adding one!" %}</p>
+                    <div class="text-center py-3 w-100">
+                        <p class="text-muted small mb-0">{% trans "No accounts found." %} <a href="{% url 'account-create' %}">{% trans "Add one" %}</a></p>
                     </div>
                     {% endfor %}
                 </div>
+
+                <!-- Individual Accounts (expandable) -->
+                {% if accounts.count > 0 %}
+                <div class="mt-3">
+                    <a class="btn btn-sm btn-link text-muted text-decoration-none p-0 d-flex align-items-center gap-1" data-bs-toggle="collapse" href="#accountsDetailList" role="button" aria-expanded="false" style="font-size: 0.75rem;">
+                        <i class="bi bi-chevron-down" style="font-size: 0.6rem; transition: transform 0.2s;"></i>
+                        {% blocktrans with count=accounts.count %}{{ count }} accounts{% endblocktrans %}
+                    </a>
+                    <div class="collapse mt-2" id="accountsDetailList">
+                        <div class="accounts-grid-container overflow-auto no-scrollbar" style="max-height: 200px;">
+                            {% for account in accounts %}
+                            <a href="{% url 'account-detail' account.pk %}" class="d-flex align-items-center text-decoration-none text-body px-1 py-2 rounded-3 account-row {% if not forloop.last %}border-bottom{% endif %}" style="transition: background 0.15s;">
+                                <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0 me-3
+                                    {% if account.account_type == 'CREDIT_CARD' %}bg-warning bg-opacity-10 text-warning
+                                    {% elif account.account_type == 'INVESTMENT' %}bg-success bg-opacity-10 text-success
+                                    {% elif account.account_type == 'CASH' %}bg-info bg-opacity-10 text-info
+                                    {% else %}bg-primary bg-opacity-10 text-primary{% endif %}"
+                                    style="width: 28px; height: 28px;">
+                                    <i class="bi
+                                        {% if account.account_type == 'CREDIT_CARD' %}bi-credit-card
+                                        {% elif account.account_type == 'INVESTMENT' %}bi-graph-up-arrow
+                                        {% elif account.account_type == 'CASH' %}bi-cash-stack
+                                        {% else %}bi-bank{% endif %}"
+                                        style="font-size: 0.7rem;"></i>
+                                </div>
+                                <div class="flex-grow-1 min-width-0">
+                                    <div class="fw-semibold text-truncate" style="font-size: 0.8rem;">{{ account.name }}</div>
+                                </div>
+                                <div class="text-end flex-shrink-0 ms-3">
+                                    <div class="fw-bold" style="font-size: 0.8rem;">{{ account.currency }}{{ account.balance|humanize_currency:account.currency|translate_digits }}</div>
+                                </div>
+                            </a>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
             </div>
         </div>
     </div>
     <!-- Financial Health Card -->
-    <div class="col-12 col-lg-4">
+    <div class="col-12 col-lg-6">
         <div class="card shadow-lg border-0 rounded-4 h-100 overflow-hidden transition-all">
-            <div class="card-header bg-transparent border-bottom d-flex justify-content-between align-items-center py-2.5">
-                <h6 class="mb-0 fw-bold text-uppercase text-muted" style="letter-spacing: 0.3px; font-size: 0.85rem;">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="me-1 text-muted" style="vertical-align: -2px;">
+            <div class="card-header bg-transparent border-bottom d-flex justify-content-between align-items-center px-4 fw-bold">
+                <div class="d-inline-flex align-items-center" style="line-height: 1;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="me-2 text-muted flex-shrink-0" style="vertical-align: middle;">
                         <path d="M22 12h-4l-3 9L9 3l-3 9H2" class="anim-heartbeat"/>
-                    </svg> 
-                    {% trans "Financial Health" %} ({% if salary_breakdown.month_name %} {{ salary_breakdown.month_name }} {% else %} Custom Range {% endif %})
-                </h6>
+                    </svg>
+                    {% trans "Financial Health" %} – {% if salary_breakdown.month_name %} {{ salary_breakdown.month_name }} {% else %} Custom Range {% endif %}
+                </div>
                 {% if hero_metrics.income > 0 or hero_metrics.spent > 0 %}
                     {% if hero_metrics.status == 'excellent' %}
-                        <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-3 border border-success border-opacity-10"><i class="bi bi-star-fill me-1"></i> {% trans "Excellent" %}</span>
+                        <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-3 border border-success border-opacity-10 d-inline-flex align-items-center"><i class="bi bi-star-fill me-1"></i> {% trans "Excellent" %}</span>
                     {% elif hero_metrics.status == 'good' %}
-                        <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-3 border border-primary border-opacity-10"><i class="bi bi-check-circle-fill me-1"></i> {% trans "Good" %}</span>
+                        <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-3 border border-primary border-opacity-10 d-inline-flex align-items-center"><i class="bi bi-check-circle-fill me-1"></i> {% trans "Good" %}</span>
                     {% else %}
-                        <span class="badge bg-warning bg-opacity-10 text-warning rounded-pill px-3 border border-warning border-opacity-10"><i class="bi bi-exclamation-triangle-fill me-1"></i> {% trans "Needs Attention" %}</span>
+                        <span class="badge bg-warning bg-opacity-10 text-warning rounded-pill px-3 border border-warning border-opacity-10 d-inline-flex align-items-center"><i class="bi bi-exclamation-triangle-fill me-1"></i> {% trans "Needs Attention" %}</span>
                     {% endif %}
                 {% else %}
                     <span class="badge bg-secondary bg-opacity-10 text-secondary rounded-pill px-3 border border-secondary border-opacity-10">{% trans "No Data" %}</span>
@@ -799,7 +1053,7 @@ document.addEventListener('DOMContentLoaded', function() {
             <div class="card-body px-4 py-3 text-center">
                 <!-- Savings Rate Hero -->
                 <div class="mb-4 mt-2 px-3 text-center">
-                    <h1 class="fw-black mb-2 text-body-emphasis" style="font-family: 'Clash Display', sans-serif; font-size: 2rem; letter-spacing: -1px;">
+                    <h1 class="fw-black mb-2 text-body-emphasis" style="font-family: 'DM Sans', 'Inter', sans-serif; font-size: 2rem; letter-spacing: -1px;">
                         {{ hero_metrics.savings_rate|translate_digits }}<span class="fs-4 text-muted fw-bold">%</span>
                     </h1>
                     
@@ -830,10 +1084,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 <!-- Stats Row -->
                 <div class="row g-0 py-3 border-top border-bottom">
                     <a href="{% url 'income-list' %}?{% url_replace %}" class="col-4 border-end px-2 text-decoration-none transition-all">
-                        <small class="text-muted text-uppercase fw-bold d-block mb-1" style="font-size: 0.6rem; letter-spacing: 0.5px;">{% trans "Total Income" %}</small>
-                        <h4 class="fw-bold mb-0 text-body text-truncate">{{ currency_symbol }}{{ total_income|floatformat:0|humanize_currency:currency_symbol|translate_digits }}</h4>
+                        <small class="text-muted text-uppercase fw-bold d-block mb-1" style="font-size: 0.65rem; letter-spacing: 0.5px;">{% trans "Total Income" %}</small>
+                        <div class="fw-bold mb-0 text-body text-truncate" style="font-size: 0.95rem;">{{ currency_symbol }}{{ total_income|floatformat:0|humanize_currency:currency_symbol|translate_digits }}</div>
                         {% if prev_month_data.income_pct %}
-                            <div class="mt-1 d-flex align-items-center justify-content-center gap-1" style="font-size: 0.6rem;">
+                            <div class="mt-1 d-flex align-items-center justify-content-center gap-1" style="font-size: 0.65rem;">
                                 <span class="{% if prev_month_data.income_pct > 0 %}text-success{% elif prev_month_data.income_pct < 0 %}text-danger{% else %}text-muted{% endif %} fw-bold">
                                     {% if prev_month_data.income_pct > 0 %}↑{% elif prev_month_data.income_pct < 0 %}↓{% endif %} {{ prev_month_data.income_pct_abs|floatformat:0|translate_digits }}%
                                 </span>
@@ -842,10 +1096,10 @@ document.addEventListener('DOMContentLoaded', function() {
                         {% endif %}
                     </a>
                     <a href="{% url 'expense-list' %}?{% url_replace is_investment='false' %}" class="col-4 border-end px-2 text-decoration-none transition-all">
-                        <small class="text-muted text-uppercase fw-bold d-block mb-1" style="font-size: 0.6rem; letter-spacing: 0.5px;">{% trans "Operating Spent" %}</small>
-                        <h4 class="fw-bold mb-0 text-body text-truncate">{{ currency_symbol }}{{ hero_metrics.spent|floatformat:0|humanize_currency:currency_symbol|translate_digits }}</h4>
+                        <small class="text-muted text-uppercase fw-bold d-block mb-1" style="font-size: 0.65rem; letter-spacing: 0.5px;">{% trans "Operating Spent" %}</small>
+                        <div class="fw-bold mb-0 text-body text-truncate" style="font-size: 0.95rem;">{{ currency_symbol }}{{ hero_metrics.spent|floatformat:0|humanize_currency:currency_symbol|translate_digits }}</div>
                         {% if prev_month_data.expense_pct %}
-                            <div class="mt-1 d-flex align-items-center justify-content-center gap-1" style="font-size: 0.6rem;">
+                            <div class="mt-1 d-flex align-items-center justify-content-center gap-1" style="font-size: 0.65rem;">
                                 <span class="{% if prev_month_data.expense_pct < 0 %}text-success{% elif prev_month_data.expense_pct > 0 %}text-danger{% else %}text-muted{% endif %} fw-bold">
                                     {% if prev_month_data.expense_pct > 0 %}↑{% elif prev_month_data.expense_pct < 0 %}↓{% endif %} {{ prev_month_data.expense_pct_abs|floatformat:0|translate_digits }}%
                                 </span>
@@ -854,10 +1108,10 @@ document.addEventListener('DOMContentLoaded', function() {
                         {% endif %}
                     </a>
                     <a href="{% url 'account-list' %}" class="col-4 px-2 text-decoration-none transition-all">
-                        <small class="text-muted text-uppercase fw-bold d-block mb-1" style="font-size: 0.6rem; letter-spacing: 0.5px;">{% trans "Wealth" %}</small>
-                        <h4 class="fw-bold mb-0 text-info text-truncate">{{ currency_symbol }}{{ investment_accounts_balance|floatformat:0|humanize_currency:currency_symbol|translate_digits }}</h4>
+                        <small class="text-muted text-uppercase fw-bold d-block mb-1" style="font-size: 0.65rem; letter-spacing: 0.5px;">{% trans "Wealth" %}</small>
+                        <div class="fw-bold mb-0 text-info text-truncate" style="font-size: 0.95rem;">{{ currency_symbol }}{{ investment_accounts_balance|floatformat:0|humanize_currency:currency_symbol|translate_digits }}</div>
                         {% if prev_month_data.investments_pct %}
-                            <div class="mt-1 d-flex align-items-center justify-content-center gap-1" style="font-size: 0.6rem;">
+                            <div class="mt-1 d-flex align-items-center justify-content-center gap-1" style="font-size: 0.65rem;">
                                 <span class="{% if prev_month_data.investments_pct > 0 %}text-success{% elif prev_month_data.investments_pct < 0 %}text-danger{% else %}text-muted{% endif %} fw-bold">
                                     {% if prev_month_data.investments_pct > 0 %}↑{% elif prev_month_data.investments_pct < 0 %}↓{% endif %} {{ prev_month_data.investments_pct_abs|floatformat:0|translate_digits }}%
                                 </span>
@@ -879,7 +1133,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         </span>
                         <i class="bi bi-chevron-right text-muted ms-auto" style="font-size: 0.65rem;"></i>
                     </a>
-                    <div class="text-muted text-center mt-1" style="font-size: 0.6rem;">{% trans "Internal transfers are excluded from income & expenses" %}</div>
+                    <div class="text-muted text-center mt-1" style="font-size: 0.65rem;">{% trans "Internal transfers are excluded from income & expenses" %}</div>
                 </div>
                 {% endif %}
 
@@ -910,20 +1164,20 @@ document.addEventListener('DOMContentLoaded', function() {
     <!-- Spending Pace Card -->
     <div class="col-12 col-lg-4">
         <div class="card shadow-lg border-0 h-100 glass-card rounded-4">
-            <div class="card-header bg-transparent border-bottom d-flex justify-content-between align-items-center">
-                <span class="fw-bold">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="me-1 text-muted" style="vertical-align: -2px;">
+            <div class="card-header bg-transparent border-bottom d-flex justify-content-between align-items-center fw-bold">
+                <div class="d-inline-flex align-items-center">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="me-1 text-muted flex-shrink-0">
                         <path d="M12 2a10 10 0 0 1 10 10"/>
                         <circle cx="12" cy="12" r="10" opacity="0.2"/>
                         <path d="M12 12l3-3" class="anim-speedometer"/>
                     </svg>
                     {% trans "Spending Pace" %}
-                </span>
+                </div>
                 {% if hero_metrics.income > 0 or hero_metrics.spent > 0 %}
                     {% if salary_breakdown.spending_pace.status == 'on_track' %}
                         <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-2 py-1 small border border-success border-opacity-10">{% trans "On Track" %}</span>
                     {% elif salary_breakdown.spending_pace.status == 'near_limit' %}
-                        <span class="badge bg-warning bg-opacity-10 rounded-pill px-2 py-1 small border border-warning border-opacity-10" style="color: #e67e22;">{% trans "Near Limit" %}</span>
+                        <span class="badge bg-warning bg-opacity-10 rounded-pill px-2 py-1 small border border-warning border-opacity-10" style="color: #e07b39;">{% trans "Near Limit" %}</span>
                     {% else %}
                         <span class="badge bg-danger bg-opacity-10 text-danger rounded-pill px-2 py-1 small border border-danger border-opacity-10">{% trans "Over Budget" %}</span>
                     {% endif %}
@@ -959,7 +1213,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 <!-- Daily Spend Hero -->
                 <div class="text-center mb-3">
-                    <h2 class="fw-black mb-0 p-0 text-body-emphasis">{{ currency_symbol }}{{ salary_breakdown.spending_pace.daily_spending_pace|compact_amount:currency_symbol|translate_digits }} <span class="fs-6 fw-normal text-muted">/ {% trans "day" %}</span></h2>
+                    <h2 class="fw-black mb-0 p-0 text-body-emphasis" style="font-size: 1.5rem;">{{ currency_symbol }}{{ salary_breakdown.spending_pace.daily_spending_pace|compact_amount:currency_symbol|translate_digits }} <span class="fs-6 fw-normal text-muted">/ {% trans "day" %}</span></h2>
                     <small class="text-muted text-uppercase fw-bold opacity-75" style="letter-spacing: 0.5px; font-size: 0.65rem;">{% trans "Your Burn Rate" %}</small>
                 </div>
 
@@ -968,8 +1222,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 <div class="bg-secondary bg-opacity-10 rounded-4 p-3 mb-2">
                     <!-- Budget progress bar -->
                     <div class="d-flex justify-content-between align-items-baseline mb-2">
-                        <small class="text-muted fw-bold text-uppercase" style="font-size: 0.6rem; letter-spacing: 0.5px;">{% trans "Budget Used" %}</small>
-                        <small class="fw-bold {% if salary_breakdown.spending_pace.spent_percent > 100 %}text-danger{% elif salary_breakdown.spending_pace.spent_percent > 80 %}{% else %}text-success{% endif %}" style="font-size: 0.8rem;{% if salary_breakdown.spending_pace.spent_percent > 80 and salary_breakdown.spending_pace.spent_percent <= 100 %} color: #e67e22;{% endif %}">{{ salary_breakdown.spending_pace.spent_percent|floatformat:0|translate_digits }}%</small>
+                        <small class="text-muted fw-bold text-uppercase" style="font-size: 0.65rem; letter-spacing: 0.5px;">{% trans "Budget Used" %}</small>
+                        <small class="fw-bold {% if salary_breakdown.spending_pace.spent_percent > 100 %}text-danger{% elif salary_breakdown.spending_pace.spent_percent > 80 %}{% else %}text-success{% endif %}" style="font-size: 0.8rem;{% if salary_breakdown.spending_pace.spent_percent > 80 and salary_breakdown.spending_pace.spent_percent <= 100 %} color: #e07b39;{% endif %}">{{ salary_breakdown.spending_pace.spent_percent|floatformat:0|translate_digits }}%</small>
                     </div>
                     <div class="position-relative" style="height: 10px;">
                         <div class="rounded-pill w-100 h-100" style="background: var(--bs-tertiary-bg);"></div>
@@ -986,14 +1240,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
                     <!-- Projected line -->
                     <div class="text-center mt-3 pt-2 border-top border-secondary border-opacity-10">
-                        <small class="text-muted text-uppercase fw-bold" style="font-size: 0.6rem; letter-spacing: 0.5px;">{% trans "Projected" %}</small>
+                        <small class="text-muted text-uppercase fw-bold" style="font-size: 0.65rem; letter-spacing: 0.5px;">{% trans "Projected" %}</small>
                         <div class="fw-bold text-body-emphasis" style="font-size: 1.1rem;">{{ currency_symbol }}{{ salary_breakdown.spending_pace.projected_month_spend|floatformat:0|humanize_currency:currency_symbol|translate_digits }}</div>
                         {% if salary_breakdown.spending_pace.status == 'over_budget' %}
-                            <small class="text-danger fw-bold"><i class="bi bi-exclamation-triangle-fill me-1"></i>{{ salary_breakdown.spending_pace.budget_multiplier|translate_digits }}× {% trans "over budget" %}</small>
+                            <small class="text-danger fw-bold d-inline-flex align-items-center"><i class="bi bi-exclamation-triangle-fill me-1"></i>{{ salary_breakdown.spending_pace.budget_multiplier|translate_digits }}× {% trans "over budget" %}</small>
                         {% elif salary_breakdown.spending_pace.status == 'near_limit' %}
-                            <small class="fw-bold" style="color: #e67e22;"><i class="bi bi-info-circle-fill me-1"></i>{% trans "Nearly at limit" %}</small>
+                            <small class="fw-bold d-inline-flex align-items-center" style="color: #e07b39;"><i class="bi bi-info-circle-fill me-1"></i>{% trans "Nearly at limit" %}</small>
                         {% else %}
-                            <small class="text-success fw-bold"><i class="bi bi-check-circle-fill me-1"></i>{% trans "Within budget" %}</small>
+                            <small class="text-success fw-bold d-inline-flex align-items-center"><i class="bi bi-check-circle-fill me-1"></i>{% trans "Within budget" %}</small>
                         {% endif %}
                     </div>
                 </div>
@@ -1001,8 +1255,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 <!-- No budget set fallback -->
                 <div class="bg-secondary bg-opacity-10 rounded-4 p-3 mb-2 text-center">
                     <small class="text-muted text-uppercase fw-bold d-block mb-1" style="letter-spacing: 0.5px; font-size: 0.65rem;">{% trans "Projected Monthly Spend" %}</small>
-                    <h3 class="fw-black mb-1 text-body-emphasis lh-1">{{ currency_symbol }}{{ salary_breakdown.spending_pace.projected_month_spend|floatformat:0|humanize_currency:currency_symbol|translate_digits }}</h3>
-                    <a href="{% url 'budget' %}" class="text-primary small text-decoration-none fw-bold"><i class="bi bi-plus-circle me-1"></i>{% trans "Set a budget to track pace" %}</a>
+                    <div class="fw-black mb-1 text-body-emphasis lh-1" style="font-size: 1.3rem;">{{ currency_symbol }}{{ salary_breakdown.spending_pace.projected_month_spend|floatformat:0|humanize_currency:currency_symbol|translate_digits }}</div>
+                    <a href="{% url 'budget' %}" class="text-primary small text-decoration-none fw-bold d-inline-flex align-items-center"><i class="bi bi-plus-circle me-1"></i>{% trans "Set a budget to track pace" %}</a>
                 </div>
                 {% endif %}
 
@@ -1027,20 +1281,20 @@ document.addEventListener('DOMContentLoaded', function() {
     <!-- Income vs Expenses Breakdown Card -->
     <div class="col-12 col-lg-4">
         <div class="card shadow-lg border-0 h-100 glass-card rounded-4">
-            <div class="card-header bg-transparent border-bottom d-flex justify-content-between align-items-center">
-                <span class="fw-bold">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="me-1 text-muted" style="vertical-align: -2px;">
+            <div class="card-header bg-transparent border-bottom d-flex justify-content-between align-items-center fw-bold">
+                <div class="d-inline-flex align-items-center">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="me-1 text-muted flex-shrink-0">
                         <rect x="2" y="3" width="20" height="14" rx="2" ry="2" opacity="0.2"/>
                         <line x1="7" y1="21" x2="17" y2="21"/>
                         <line x1="12" y1="17" x2="12" y2="21"/>
                     </svg>
                     {% trans "Asset Allocation" %}
-                </span>
+                </div>
             </div>
             {% if asset_allocation %}
             <div class="card-body p-4 d-flex flex-column justify-content-center align-items-center text-center">
                 <!-- SVG Donut Chart for Allocation -->
-                <div class="position-relative mb-3" style="width: 140px; height: 140px;">
+                <div class="position-relative mb-3" style="width: 170px; height: 170px;">
                     <svg viewBox="0 0 120 120" class="w-100 h-100" style="transform: rotate(-90deg);">
                         <circle cx="60" cy="60" r="45" fill="none" stroke="var(--bs-tertiary-bg)" stroke-width="12"/>
                         {% for item in asset_allocation %}
@@ -1048,30 +1302,32 @@ document.addEventListener('DOMContentLoaded', function() {
                             stroke-width="12"
                             stroke-dasharray="{{ item.arc_length|floatformat:2 }} 282.74"
                             stroke-dashoffset="-{{ item.offset_length|floatformat:2 }}"
-                            style="transition: stroke-dashoffset 1.2s ease, stroke-dasharray 1.2s ease; stroke: {% if item.type == 'Cash' %}#059669{% elif item.type == 'Bank Account' %}#4f46e5{% elif item.type == 'Credit Card' %}#e11d48{% elif item.type == 'Investment Account' %}#d97706{% else %}#94a3b8{% endif %};"/>
+                            style="transition: stroke-dashoffset 1.2s ease, stroke-dasharray 1.2s ease; stroke: {% if item.type == 'Cash' %}#6b8f71{% elif item.type == 'Bank Account' %}#2d6a4f{% elif item.type == 'Credit Card' %}#c0392b{% elif item.type == 'Investment Account' %}#e07b39{% else %}#b5c4b1{% endif %};"/>
                         {% endfor %}
                     </svg>
                     <div class="position-absolute top-50 start-50 translate-middle text-center">
-                        <span class="fw-black text-body-emphasis" style="font-size: 1.1rem;">{{ asset_allocation.0.percent|translate_digits }}%</span>
-                        <span class="d-block text-muted" style="font-size: 0.6rem; margin-top: -2px;">{{ asset_allocation.0.type }}</span>
+                        <span class="fw-black text-body-emphasis" style="font-size: 1.4rem;">{{ asset_allocation.0.percent|translate_digits }}%</span>
+                        <span class="d-block text-muted" style="font-size: 0.75rem; margin-top: -2px;">{{ asset_allocation.0.type }}</span>
                     </div>
                 </div>
                 <!-- Legend -->
-                <div class="d-flex flex-wrap justify-content-center gap-2 mb-3">
+                <div class="d-flex flex-wrap justify-content-center gap-3 mb-3">
                     {% for item in asset_allocation %}
                     <div class="text-center px-1">
-                        <span class="rounded-circle d-inline-block me-2" style="width: 10px; height: 10px; background-color: {% if item.type == 'Cash' %}#059669{% elif item.type == 'Bank Account' %}#4f46e5{% elif item.type == 'Credit Card' %}#e11d48{% elif item.type == 'Investment Account' %}#d97706{% else %}#94a3b8{% endif %};"></span>
-                        <span class="text-muted" style="font-size: 0.7rem;">{{ item.type }}</span>
-                        <div class="fw-bold" style="font-size: 0.75rem;">{{ item.percent|translate_digits }}%</div>
+                        <div class="d-flex align-items-center justify-content-center gap-1 mb-1">
+                            <span class="rounded-circle d-inline-block flex-shrink-0" style="width: 10px; height: 10px; background-color: {% if item.type == 'Cash' %}#6b8f71{% elif item.type == 'Bank Account' %}#2d6a4f{% elif item.type == 'Credit Card' %}#c0392b{% elif item.type == 'Investment Account' %}#e07b39{% else %}#b5c4b1{% endif %};"></span>
+                            <span class="text-muted" style="font-size: 0.8rem;">{{ item.type }}</span>
+                        </div>
+                        <div class="fw-bold" style="font-size: 0.9rem;">{{ item.percent|translate_digits }}%</div>
                     </div>
                     {% endfor %}
                 </div>
                 <!-- Net Worth Link -->
                 <div class="bg-secondary bg-opacity-10 rounded-4 px-3 py-2 w-100">
                     <small class="text-muted text-uppercase fw-bold" style="font-size: 0.65rem; letter-spacing: 0.5px;">{% trans "Net Worth" %}</small>
-                    <h5 class="fw-bold mb-0 text-primary">
+                    <div class="fw-bold mb-0 text-primary" style="font-size: 1.1rem;">
                         {{ currency_symbol }}{{ net_worth|humanize_currency:currency_symbol|translate_digits }}
-                    </h5>
+                    </div>
                 </div>
             </div>
             {% else %}
@@ -1093,17 +1349,17 @@ document.addEventListener('DOMContentLoaded', function() {
     <!-- NEW: Smart Insights Card -->
     <div class="col-lg-4">
         <div class="card shadow-lg border-0 h-100 glass-card rounded-4">
-            <div class="card-header bg-transparent border-bottom d-flex justify-content-between align-items-center">
-                 <span class="fw-bold">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="me-1 text-muted" style="vertical-align: -2px;">
+            <div class="card-header bg-transparent border-bottom d-flex justify-content-between align-items-center fw-bold">
+                 <div class="d-inline-flex align-items-center">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="me-1 text-muted flex-shrink-0">
                         <path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.9 1.2 1.5 1.5 2.5"/>
                         <path d="M9 18h6"/>
                         <path d="M10 22h4"/>
                         <path d="M12 2v2" class="anim-twinkle" fill="currentColor"/>
                         <path d="M12 6v2" class="anim-twinkle" fill="currentColor"/>
                     </svg> 
-                    {% trans "Smart Insights" %} ({% if salary_breakdown.month_name %} {{ salary_breakdown.month_name }} {% else %} Custom Range {% endif %})
-                 </span>
+                    {% trans "Smart Insights" %} – {% if salary_breakdown.month_name %} {{ salary_breakdown.month_name }} {% else %} Custom Range {% endif %}
+                 </div>
             </div>
             <div class="card-body p-4 d-flex flex-column justify-content-center">
                 {% if smart_bullet_insights %}
@@ -1111,9 +1367,9 @@ document.addEventListener('DOMContentLoaded', function() {
                         {% for insight in smart_bullet_insights %}
                         <div class="d-flex align-items-start mb-4">
                             <div class="rounded-circle bg-opacity-10 text-{{ insight.theme }} d-flex align-items-center justify-content-center me-1 mt-1 pb-1 flex-shrink-0" style="width: 28px; height: 28px;">
-                                <i class="bi {{ insight.icon }}" style="font-size: 0.95rem;"></i>
+                                <i class="bi {{ insight.icon }}" style="font-size: 0.9rem;"></i>
                             </div>
-                            <p class="mb-0 lh-sm mt-1" style="font-size: 0.95rem;">{{ insight.text|safe }}</p>
+                            <p class="mb-0 lh-sm mt-1" style="font-size: 0.85rem;">{{ insight.text|safe }}</p>
                         </div>
                         {% endfor %}
                     </div>
@@ -1144,7 +1400,10 @@ document.addEventListener('DOMContentLoaded', function() {
     <div class="col-md-6">
         <div class="card shadow-lg border-0 h-100 rounded-4">
             <div class="card-header bg-transparent border-bottom fw-bold d-flex justify-content-between">
-                <span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1 text-muted" style="vertical-align: -2px;"><polyline points="4 18 8 12 14 16 20 6" class="anim-trend"/></svg> {{ trend_title }}</span>
+                <div class="d-inline-flex align-items-center">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1 text-muted flex-shrink-0"><polyline points="4 18 8 12 14 16 20 6" class="anim-trend"/></svg> 
+                    {{ trend_title }}
+                </div>
             </div>
             <div class="card-body">
                 {% if trend_labels %}
@@ -1169,8 +1428,11 @@ document.addEventListener('DOMContentLoaded', function() {
     <!-- Category Summary List -->
     <div class="col-md-6">
         <div class="card shadow-lg border-0 h-100 rounded-4">
-            <div class="card-header bg-transparent border-bottom d-flex justify-content-between align-items-center">
-                <span class="fw-bold mb-0"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1 text-muted" style="vertical-align: -2px;"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z" class="anim-tag"/><line x1="7" y1="7" x2="7.01" y2="7" class="anim-tag"/></svg> {% trans "Top Categories" %}</span>
+            <div class="card-header bg-transparent border-bottom d-flex justify-content-between align-items-center fw-bold">
+                <div class="mb-0 d-inline-flex align-items-center">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="me-1 text-muted flex-shrink-0"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z" class="anim-tag"/><line x1="7" y1="7" x2="7.01" y2="7" class="anim-tag"/></svg> 
+                    {% trans "Top Categories" %}
+                </div>
                 <a href="{% url 'category-list' %}" class="btn btn-sm text-decoration-none opacity-25"><i class="bi bi-box-arrow-up-right"></i></a>
             </div>
             <div class="card-body p-0">
@@ -1241,9 +1503,11 @@ document.addEventListener('DOMContentLoaded', function() {
     <!-- Category Chart -->
     <div class="col-md-6">
         <div class="card shadow-lg border-0 h-100 rounded-4">
-            <div class="card-header bg-transparent border-bottom fw-bold">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1 text-muted" style="vertical-align: -2px;"><circle cx="12" cy="12" r="10" class="anim-donut" stroke-dasharray="15 8 8 8"/></svg>
-                {% trans "Category Distribution" %}
+            <div class="card-header bg-transparent border-bottom fw-bold d-flex align-items-center">
+                <div class="d-inline-flex align-items-center">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="me-1 text-muted flex-shrink-0"><circle cx="12" cy="12" r="10" class="anim-donut" stroke-dasharray="15 8 8 8"/></svg>
+                    {% trans "Category Distribution" %}
+                </div>
             </div>
             <div class="card-body">
                 {% if categories %}
@@ -1268,13 +1532,16 @@ document.addEventListener('DOMContentLoaded', function() {
     <!-- Recent Transactions Table -->
     <div class="col-md-6">
         <div class="card shadow-lg border-0 h-100 rounded-4">
-            <div class="card-header bg-transparent border-bottom d-flex justify-content-between align-items-center">
-                <span class="fw-bold"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1 text-muted" style="vertical-align: -2px;"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14" class="anim-clk"/></svg> {% trans "Recent Activity" %}</span>
+            <div class="card-header bg-transparent border-bottom d-flex justify-content-between align-items-center fw-bold">
+                <div class="d-inline-flex align-items-center">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="me-1 text-muted flex-shrink-0"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14" class="anim-clk"/></svg> 
+                    {% trans "Recent Activity" %}
+                </div>
                 <a href="{% url 'expense-list' %}" class="btn btn-sm text-decoration-none opacity-25" title="{% trans 'View All' %}"><i class="bi bi-box-arrow-up-right"></i></a>
             </div>
             <div class="card-body p-0">
                 <div class="list-group list-group-flush">
-                    {% for item in recent_activity %}
+                    {% for item in recent_activity|slice:":5" %}
                     <div class="list-group-item bg-transparent border-0 d-flex align-items-center py-3 px-2 px-md-3 hover-bg-light position-relative">
                         <!-- Icon / Avatar -->
                         <div class="icon-shape icon-shape-md fw-bold fs-5 me-2 me-md-3 d-flex align-items-center justify-content-center flex-shrink-0 rounded-circle
@@ -1345,42 +1612,46 @@ document.addEventListener('DOMContentLoaded', function() {
     <!-- Upcoming Recurring Transactions Card -->
     <div class="col-lg-6" id="tour-recurring-card">
         <div class="card shadow-lg border-0 h-100 glass-card rounded-4">
-            <div class="card-header bg-transparent border-bottom d-flex justify-content-between align-items-center">
-                <span class="fw-bold">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1 text-muted" style="vertical-align: -2px;">
+            <div class="card-header bg-transparent border-bottom d-flex justify-content-between align-items-center fw-bold">
+                <div class="d-inline-flex align-items-center">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="me-1 text-muted flex-shrink-0">
                         <path d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9" class="anim-rotate"/>
                     </svg> 
                     {% trans "Recurring Commitments" %}
-                </span>
+                </div>
                 <a href="{% url 'recurring-list' %}" class="btn btn-sm text-decoration-none opacity-25"><i class="bi bi-box-arrow-up-right"></i></a>
             </div>
             <div class="card-body bg-transparent p-0 d-flex flex-column h-100">
                 <!-- 1. Top Summary Totals -->
                 <div class="p-4 border-bottom bg-transparent bg-opacity-10">
                     <div class="row g-2 text-center mb-4">
-                        <div class="col-4 border-end">
+                        <div class="col-3 border-end">
                             <p class="text-muted small-xs text-uppercase fw-bold mb-1">{% trans "Income" %}</p>
                             <span class="text-success fw-bold" style="font-size: 0.9rem;">{{ currency_symbol }}{{ recurring_groups.INCOME.total|compact_amount:currency_symbol|translate_digits }}</span>
                         </div>
-                        <div class="col-4 border-end">
+                        <div class="col-3 border-end">
                             <p class="text-muted small-xs text-uppercase fw-bold mb-1">{% trans "Expenses" %}</p>
                             <span class="text-danger fw-bold" style="font-size: 0.9rem;">{{ currency_symbol }}{{ recurring_groups.EXPENSE.total|compact_amount:currency_symbol|translate_digits }}</span>
                         </div>
-                        <div class="col-4">
+                        <div class="col-3 border-end">
                             <p class="text-muted small-xs text-uppercase fw-bold mb-1">{% trans "Invest" %}</p>
                             <span class="text-info fw-bold" style="font-size: 0.9rem;">{{ currency_symbol }}{{ recurring_groups.INVESTMENT.total|compact_amount:currency_symbol|translate_digits }}</span>
+                        </div>
+                        <div class="col-3">
+                            <p class="text-muted small-xs text-uppercase fw-bold mb-1">{% trans "Transfers" %}</p>
+                            <span class="text-secondary fw-bold" style="font-size: 0.9rem;">{{ currency_symbol }}{{ recurring_groups.TRANSFER.total|compact_amount:currency_symbol|translate_digits }}</span>
                         </div>
                     </div>
                     
                     <div class="d-flex justify-content-between align-items-center pt-3 border-top border-secondary border-opacity-10">
                         <div>
-                            <span class="text-muted text-uppercase fw-bold d-block" style="font-size: 0.8rem; letter-spacing: 0.5px;">{% trans "Recurring Net Commitment" %}</span>
-                            <small class="text-muted opacity-50" style="font-size: 0.8rem;">{% trans "Based on recurring transactions" %}</small>
+                            <span class="text-muted text-uppercase fw-bold d-block" style="font-size: 0.85rem; letter-spacing: 0.3px;">{% trans "Recurring Net Commitment" %}</span>
+                            <small class="text-muted opacity-50" style="font-size: 0.75rem;">{% trans "Based on recurring transactions" %}</small>
                         </div>
                         <div class="text-end">
-                            <h4 class="fw-bold mb-0 {% if recurring_net_balance > 0 %}text-success{% elif recurring_net_balance == 0 %}text-muted{% else %}text-danger{% endif %}" style="letter-spacing: -0.5px;">
+                            <div class="fw-bold mb-0 {% if recurring_net_balance > 0 %}text-success{% elif recurring_net_balance == 0 %}text-muted{% else %}text-danger{% endif %}" style="font-size: 1.1rem; letter-spacing: -0.5px;">
                                 {% if recurring_net_balance > 0 %}+{% endif %}{{ currency_symbol }}{{ recurring_net_balance|compact_amount:currency_symbol|translate_digits }}
-                            </h4>
+                            </div>
                         </div>
                     </div>
 
@@ -1395,9 +1666,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 </div>
 
                 <!-- 2. Simplified Item List -->
-                {% if recurring_groups.INCOME.items or recurring_groups.EXPENSE.items or recurring_groups.INVESTMENT.items %}
+                {% if recurring_groups.INCOME.items or recurring_groups.EXPENSE.items or recurring_groups.INVESTMENT.items or recurring_groups.TRANSFER.items %}
                     <div class="px-3 py-2 bg-transparent bg-opacity-10 border-bottom">
-                        <small class="text-muted bg-transparent fw-bold text-uppercase" style="font-size: 0.7rem; letter-spacing: 1px;">
+                        <small class="text-muted bg-transparent fw-bold text-uppercase" style="font-size: 0.75rem; letter-spacing: 0.5px;">
                             {% trans "Recurring Items" %}
                         </small>
                     </div>
@@ -1407,14 +1678,14 @@ document.addEventListener('DOMContentLoaded', function() {
                                 {% for item in group.items %}
                                 <a href="{% url 'recurring-edit' item.id %}" class="list-group-item list-group-item-action bg-transparent border-0 d-flex align-items-center py-2 px-3 hover-bg-light transition-all text-decoration-none text-inherit">
                                     <div class="d-flex flex-column flex-grow-1 min-w-0">
-                                        <h6 class="mb-0 text-truncate fw-bold text-inherit" style="font-size: 1rem;">{{ item.description }}</h6>
-                                        <small class="text-muted opacity-75" style="font-size: 0.8rem; font-weight: 400;">
-                                            {{ item.date|date:"d M"|translate_digits }} · {{ item.category }}
+                                        <h6 class="mb-0 text-truncate fw-bold text-inherit" style="font-size: 0.85rem;">{{ item.description }}</h6>
+                                        <small class="text-muted opacity-75" style="font-size: 0.85rem; font-weight: 400;">
+                                            {{ item.date|date:"d M"|translate_digits }} · {% if item.type == 'TRANSFER' %}{{ item.from_account }} → {{ item.to_account }}{% else %}{{ item.category }}{% endif %}
                                         </small>
                                     </div>
                                     <div class="text-end">
-                                        <span class="fw-bold" style="font-size: 1rem; color: {% if item.type == 'INCOME' %}#10b981{% elif item.type == 'INVESTMENT' %}#0ea5e9{% else %}#ef4444{% endif %};">
-                                            {% if item.type == 'INCOME' %}+{% else %}-{% endif %}{{ currency_symbol }}{{ item.amount|compact_amount:currency_symbol|translate_digits }}
+                                        <span class="fw-bold" style="font-size: 0.901rem; color: {% if item.type == 'INCOME' %}#2d6a4f;{% elif item.type == 'INVESTMENT' %}#8b6f47;{% elif item.type == 'TRANSFER' %}#6c757d;{% else %}#c0392b;{% endif %}">
+                                            {% if item.type == 'INCOME' %}+{% elif item.type == 'TRANSFER' %}{% else %}-{% endif %}{{ currency_symbol }}{{ item.amount|compact_amount:currency_symbol|translate_digits }}
                                         </span>
                                     </div>
                                 </a>
@@ -1449,8 +1720,8 @@ document.addEventListener('DOMContentLoaded', function() {
     <!-- Payment Method Distribution -->
     <div class="col-lg-6">
         <div class="card shadow-lg border-0 h-100 glass-card rounded-4">
-            <div class="card-header bg-transparent border-bottom fw-bold">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1 text-muted" style="vertical-align: -2px;"><rect x="2" y="5" width="20" height="14" rx="2" class="anim-card"/><line x1="2" y1="10" x2="22" y2="10" class="anim-card"/></svg>
+            <div class="card-header bg-transparent border-bottom fw-bold d-flex align-items-center">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1 text-muted flex-shrink-0"><rect x="2" y="5" width="20" height="14" rx="2" class="anim-card"/><line x1="2" y1="10" x2="22" y2="10" class="anim-card"/></svg>
                 {% trans "Payment Method" %}
             </div>
             <div class="card-body d-flex flex-column justify-content-center h-100 p-4">
@@ -1477,22 +1748,22 @@ document.addEventListener('DOMContentLoaded', function() {
 
 <!-- SECTION: FORECAST -->
 <h6 class="text-muted small text-uppercase fw-bold mb-4 mt-4 px-1 d-flex align-items-center fade-in" style="letter-spacing: 1px; opacity: 0.7; animation-delay: 1.0s;">
-    <span class="me-2 text-info">●</span> {% trans "Future Forecast" %}
+    <span class="me-2 text-success">●</span> {% trans "Future Forecast" %}
 </h6>
 <div class="row g-4 mb-4 fade-in" style="animation-delay: 1.1s;">
     <!-- Expense Projection Chart Card -->
     <div class="col-12">
         <div class="card shadow-lg border-0 h-100 glass-card rounded-4">
             <div class="card-header bg-transparent border-bottom fw-bold d-flex justify-content-between align-items-center">
-                <span>
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1 text-muted" style="vertical-align: -2px;">
+                <div class="d-inline-flex align-items-center">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="me-1 text-muted flex-shrink-0">
                         <path d="M3 3v18h18" stroke-linecap="round" stroke-linejoin="round"/>
                         <path d="M18.5 9.5l-3 3-2.5-4.5-3 6.5-4-4" stroke-linecap="round" stroke-linejoin="round"/>
                         <path d="M19 12v7" stroke-dasharray="2 2" stroke-linecap="round"/>
                     </svg>
                     {% trans "Expense Projection" %}
-                </span>
-                <span class="badge bg-info bg-opacity-10 text-info rounded-pill px-3 py-1 small border border-info border-opacity-10" style="font-size: 0.65rem;">
+                </div>
+                <span class="badge bg-info bg-opacity-10 text-info rounded-pill px-3 py-1 small border border-info border-opacity-10 d-inline-flex align-items-center" style="font-size: 0.7rem;">
                     <i class="bi bi-info-circle me-1"></i> {% trans "Based on last 6 months" %}
                 </span>
             </div>
@@ -1570,6 +1841,9 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 
     document.addEventListener('DOMContentLoaded', function() {
+        // Init Bootstrap tooltips
+        document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(el => new bootstrap.Tooltip(el));
+
         // Accounts grid: add fade mask only when content overflows
         const agc = document.querySelector('.accounts-grid-container');
         if (agc && agc.scrollHeight > agc.clientHeight) {
@@ -1615,18 +1889,24 @@ document.addEventListener('DOMContentLoaded', function() {
         };
 
         let currentColors = getThemeColor();
-        Chart.defaults.font.family = "'Segoe UI', 'Roboto', 'Helvetica', 'Arial', sans-serif";
+        Chart.defaults.font.family = "'DM Sans', 'Inter', sans-serif";
         Chart.defaults.color = currentColors.text;
         
         const charts = {};
 
-        // --- Gradient Helper ---
-        const createGradient = (ctx, colorStart, colorEnd) => {
-            const gradient = ctx.createLinearGradient(0, 0, 0, 400);
-            gradient.addColorStop(0, colorStart);
-            gradient.addColorStop(1, colorEnd);
-            return gradient;
-        };
+        // --- Solid Color Helper ---
+        const chartPalette = [
+            '#2d6a4f', // Forest Green
+            '#e07b39', // Warm Amber
+            '#c0392b', // Warm Red
+            '#8b6f47', // Warm Brown
+            '#6b8f71', // Sage Green
+            '#b5651d', // Burnt Orange
+            '#7a5c58', // Dusty Rose
+            '#4a7c59', // Muted Jade
+            '#d4956a', // Sandy Peach
+            '#5c6b5e'  // Olive Gray
+        ];
 
         // --- 0. Income vs Expenses Chart (SVG Animation) ---
         const totalIncome = {{ total_income|stringformat:"f"|default:0 }};
@@ -1642,17 +1922,17 @@ document.addEventListener('DOMContentLoaded', function() {
         const gaugeFill = document.getElementById('gauge-fill-path');
         const percentageText = document.getElementById('ie-percentage');
         
-        let chartColor = '#219EBC'; // Default Blue
+        let chartColor = '#2d6a4f'; // Forest Green
 
         if (percentageText) {
             if (iePercentage > 100) {
-                chartColor = '#E74C3C'; // Red
+                chartColor = '#c0392b'; // Warm Red
                 percentageText.classList.add('text-danger');
             } else if (iePercentage > 80) {
-                chartColor = '#F39C12'; // Orange
+                chartColor = '#e07b39'; // Warm Amber
                 percentageText.classList.add('text-warning');
             } else {
-                chartColor = '#219EBC';
+                chartColor = '#2d6a4f';
                 percentageText.classList.add('text-primary');
             }
         }
@@ -1694,23 +1974,21 @@ document.addEventListener('DOMContentLoaded', function() {
 
         if (trendIsDaily && trendLabels.length > 1) {
             // --- Daily view: Area line + 7-day moving average ---
-            const areaGradient = ctxTrend.createLinearGradient(0, 0, 0, 350);
-            areaGradient.addColorStop(0, 'rgba(0, 114, 255, 0.22)');
-            areaGradient.addColorStop(1, 'rgba(0, 198, 255, 0.02)');
+            const areaGradient = 'rgba(45, 106, 79, 0.12)';
 
             const dailyDatasets = [
                 {
                     label: '{% trans "Daily Spend" %}',
                     data: trendDatasets[0].data,
-                    borderColor: '#0072ff',
+                    borderColor: '#2d6a4f',
                     backgroundColor: areaGradient,
                     fill: true,
                     tension: 0.35,
                     borderWidth: 2,
                     pointRadius: 3,
-                    pointBackgroundColor: '#0072ff',
+                    pointBackgroundColor: '#2d6a4f',
                     pointHoverRadius: 6,
-                    pointHoverBackgroundColor: '#00c6ff',
+                    pointHoverBackgroundColor: '#245a42',
                     pointHoverBorderColor: '#fff',
                     pointHoverBorderWidth: 2,
                     order: 1
@@ -1718,7 +1996,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 {
                     label: '{% trans "7-Day Average" %}',
                     data: trend7dAvg,
-                    borderColor: '#38f9d7',
+                    borderColor: '#e07b39',
                     backgroundColor: 'transparent',
                     fill: false,
                     tension: 0.4,
@@ -1726,7 +2004,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     borderDash: [6, 3],
                     pointRadius: 0,
                     pointHoverRadius: 4,
-                    pointHoverBackgroundColor: '#43e97b',
+                    pointHoverBackgroundColor: '#e07b39',
                     order: 0
                 }
             ];
@@ -1783,15 +2061,8 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         } else {
             // --- Monthly view: Keep as bar chart ---
-            const trendGradients = [
-                createGradient(ctxTrend, '#00c6ff', '#0072ff'),
-                createGradient(ctxTrend, '#43e97b', '#38f9d7'),
-                createGradient(ctxTrend, '#a78bfa', '#7c3aed'),
-                createGradient(ctxTrend, '#4facfe', '#00f2fe'),
-                createGradient(ctxTrend, '#30cfd0', '#330867')
-            ];
             trendDatasets.forEach((ds, i) => {
-                ds.backgroundColor = trendGradients[i % trendGradients.length];
+                ds.backgroundColor = chartPalette[i % chartPalette.length];
                 ds.borderRadius = 2;
             });
 
@@ -1854,16 +2125,16 @@ document.addEventListener('DOMContentLoaded', function() {
             const flowLabels = ['{% trans "Lifestyle" %}', '{% trans "Investments" %}', '{% trans "Remaining" %}'];
             const flowData = [lifestyleTotal, investmentTotal, remainingTotal];
             
-            const flowGradients = [
-                createGradient(ctxFlow, '#818cf8', '#6366f1'), // Lifestyle (Indigo)
-                createGradient(ctxFlow, '#34d399', '#10b981'), // Investments (Emerald)
-                createGradient(ctxFlow, '#0ea5e9', '#0284c7')  // Remaining (Sky Blue)
+            const flowColors = [
+                '#2d6a4f', // Lifestyle (Forest Green)
+                '#e07b39', // Investments (Warm Amber)
+                '#d5d0c8'  // Remaining (Muted Stone)
             ];
 
             const flowDatasets = flowLabels.map((label, index) => ({
                 label: label,
                 data: [flowData[index]],
-                backgroundColor: flowGradients[index],
+                backgroundColor: flowColors[index],
                 borderWidth: 0, 
                 borderRadius: 0,
                 barPercentage: 1.0,
@@ -1923,13 +2194,11 @@ document.addEventListener('DOMContentLoaded', function() {
                             if (sYears && sYears.length) sYears.forEach(y => queryParams.append('year', y));
 
                             if (label === '{% trans "Lifestyle" %}') {
-                                queryParams.append('is_investment', 'false');
                                 showLoader();
                                 window.location.href = "{% url 'expense-list' %}?" + queryParams.toString();
                             } else if (label === '{% trans "Investments" %}') {
-                                queryParams.append('is_investment', 'true');
                                 showLoader();
-                                window.location.href = "{% url 'expense-list' %}?" + queryParams.toString();
+                                window.location.href = "{% url 'account-list' %}";
                             } else if (label === '{% trans "Remaining" %}') {
                                 return; // No link for remaining
                             } else if (label !== '{% trans "Unallocated" %}' && label !== '{% trans "Balance" %}') {
@@ -1959,15 +2228,17 @@ document.addEventListener('DOMContentLoaded', function() {
                             if (percentage >= 8) {
                                 ctx.textAlign = 'center';
                                 ctx.textBaseline = 'middle';
-                                ctx.fillStyle = '#ffffff';
-                                ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
-                                ctx.shadowBlur = 4;
+                                // Use dark text on light "Remaining" segment
+                                const isLight = dataset.backgroundColor === '#d5d0c8';
+                                ctx.fillStyle = isLight ? '#1a1a18' : '#ffffff';
+                                ctx.shadowColor = isLight ? 'rgba(255,255,255,0.3)' : 'rgba(0, 0, 0, 0.5)';
+                                ctx.shadowBlur = isLight ? 2 : 4;
                                 
                                 const x = bar.x - (bar.width / 2);
                                 const y = bar.y;
                                 
                                 // 1. Label (e.g., Lifestyle)
-                                ctx.font = '700 10px "Outfit", sans-serif';
+                                ctx.font = '700 10px "DM Sans", sans-serif';
                                 ctx.fillText(dataset.label.toUpperCase(), x, y - 8);
                                 
                                 // 2. Amount (e.g., ₹43k)
@@ -1981,14 +2252,15 @@ document.addEventListener('DOMContentLoaded', function() {
                                 }
                                 const amountText = '{{ currency_symbol }}' + translateDigits(displayVal.toLocaleString()) + suffix;
                                 
-                                ctx.font = '700 13px "Outfit", sans-serif';
+                                ctx.font = '700 13px "DM Sans", sans-serif';
                                 ctx.fillText(amountText, x, y + 8);
                                 
                                 ctx.shadowBlur = 0;
                             } else if (percentage >= 4) {
                                 // Fallback for smaller segments: just the amount
-                                ctx.font = '700 11px "Outfit", sans-serif';
-                                ctx.fillStyle = '#ffffff';
+                                const isLightSmall = dataset.backgroundColor === '#d5d0c8';
+                                ctx.font = '700 11px "DM Sans", sans-serif';
+                                ctx.fillStyle = isLightSmall ? '#1a1a18' : '#ffffff';
                                 ctx.textAlign = 'center';
                                 ctx.textBaseline = 'middle';
                                 const x = bar.x - (bar.width / 2);
@@ -2006,19 +2278,8 @@ document.addEventListener('DOMContentLoaded', function() {
         if (categoryCanvas && categories.length > 0) {
             const ctxCategory = categoryCanvas.getContext('2d');
             
-            // Generate distinct gradients matching the old aesthetic
-            const doughnutGradients = [
-                 createGradient(ctxCategory, '#00c6ff', '#0072ff'), // Blue
-                 createGradient(ctxCategory, '#43e97b', '#38f9d7'), // Teal
-                 createGradient(ctxCategory, '#a78bfa', '#7c3aed'), // Soft Violet
-                 createGradient(ctxCategory, '#f7b733', '#fc4a1a'), // Orange
-                 createGradient(ctxCategory, '#4facfe', '#00f2fe'), // Cyan
-                 createGradient(ctxCategory, '#30cfd0', '#330867'), // Sea-Blue
-                 createGradient(ctxCategory, '#fa709a', '#fee140'), // Yellow-Red
-                 createGradient(ctxCategory, '#667eea', '#764ba2')  // Deep Purple
-            ];
-
-            const bgGradients = categories.map((_, i) => doughnutGradients[i % doughnutGradients.length]);
+            // Solid colors matching the warm palette
+            const bgColors = categories.map((_, i) => chartPalette[i % chartPalette.length]);
 
             charts.categoryChart = new Chart(ctxCategory, {
                 type: 'doughnut',
@@ -2026,7 +2287,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     labels: categories,
                     datasets: [{
                         data: categoryAmounts,
-                        backgroundColor: bgGradients,
+                        backgroundColor: bgColors,
                         borderWidth: 0,
                         hoverOffset: 8
                     }]
@@ -2050,7 +2311,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             const pctText = translateDigits(percentage) + '%';
                                                         // Only draw text if the slice is large enough
                              if (arc.circumference > 0.3) {
-                                 ctx.font = 'bold 12px "Outfit", sans-serif';
+                                 ctx.font = 'bold 12px "DM Sans", sans-serif';
                                  ctx.textAlign = 'center';
                                  ctx.textBaseline = 'middle';
                                  ctx.fillStyle = '#ffffff';
@@ -2127,11 +2388,11 @@ document.addEventListener('DOMContentLoaded', function() {
             const spentData = withLimits.map(item => Math.min((item.total / item.limit) * 100, 100));
             const remainingData = spentData.map(spentPct => 100 - spentPct);
             
-            // Dynamic Gradients for Budgets
+            // Dynamic colors for Budgets - flat solid
             const spentColors = withLimits.map(item => {
-                if (item.total > item.limit) return createGradient(ctxBudget, '#ed213a', '#93291e'); // Red (Over)
-                if (item.total > item.limit * 0.8) return createGradient(ctxBudget, '#f7b733', '#fc4a1a'); // Orange (Warning)
-                return createGradient(ctxBudget, '#11998e', '#38ef7d'); // Green (Safe)
+                if (item.total > item.limit) return '#c0392b'; // Red (Over)
+                if (item.total > item.limit * 0.8) return '#e07b39'; // Warm Amber (Warning)
+                return '#2d6a4f'; // Forest Green (Safe)
             });
 
             charts.budget = new Chart(ctxBudget, {
@@ -2242,16 +2503,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (canvas) {
                      const ctxPayment = canvas.getContext('2d');
                      
-                     // Match Category Chart Gradients
-                     const paymentGradients = [
-                         createGradient(ctxPayment, '#00c6ff', '#0072ff'), // Blue
-                         createGradient(ctxPayment, '#43e97b', '#38f9d7'), // Teal
-                         createGradient(ctxPayment, '#a78bfa', '#7c3aed'), // Soft Violet
-                         createGradient(ctxPayment, '#4facfe', '#00f2fe'), // Cyan
-                         createGradient(ctxPayment, '#30cfd0', '#330867'), // Sea-Blue
-                         createGradient(ctxPayment, '#fa709a', '#fee140'), // Yellow-Red (Extra)
-                         createGradient(ctxPayment, '#667eea', '#764ba2')  // Deep Purple (Extra)
-                     ];
+                     // Solid colors matching chart palette
+                     const paymentColors = chartPalette;
      
                      try {
                          if (charts.payment) charts.payment.destroy();
@@ -2261,7 +2514,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                   labels: paymentLabels,
                                   datasets: [{
                                       data: paymentData,
-                                      backgroundColor: paymentGradients,
+                                      backgroundColor: paymentColors,
                                       borderWidth: 0,
                                       hoverOffset: 12
                                   }]
@@ -2275,7 +2528,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                          labels: {
                                              usePointStyle: true,
                                              padding: 20,
-                                             font: { family: '"Outfit", sans-serif', size: 13 }
+                                             font: { family: '"DM Sans", sans-serif', size: 13 }
                                          }
                                      },
                                      tooltip: {
@@ -2324,11 +2577,11 @@ document.addEventListener('DOMContentLoaded', function() {
                                               ctx.shadowBlur = 4;
                                               
                                               // Draw value
-                                              ctx.font = 'bold 11px "Outfit", sans-serif';
+                                              ctx.font = 'bold 11px "DM Sans", sans-serif';
                                               ctx.fillText(amountText, center.x, center.y - 7);
                                               
                                               // Draw percentage
-                                              ctx.font = 'bold 10px "Outfit", sans-serif';
+                                              ctx.font = 'bold 10px "DM Sans", sans-serif';
                                               ctx.fillText(pctText, center.x, center.y + 7);
                                           }
                                       });
@@ -2370,23 +2623,23 @@ document.addEventListener('DOMContentLoaded', function() {
                                  {
                                      label: '{% trans "Actual Spend" %}',
                                      data: projHistorical,
-                                     borderColor: '#219EBC',
-                                     backgroundColor: 'rgba(33, 158, 188, 0.1)',
+                                     borderColor: '#2d6a4f',
+                                     backgroundColor: 'rgba(45, 106, 79, 0.08)',
                                      fill: true,
                                      tension: 0.4,
                                      pointRadius: 4,
-                                     pointBackgroundColor: '#219EBC',
+                                     pointBackgroundColor: '#2d6a4f',
                                      spanGaps: true
                                  },
                                  {
                                      label: '{% trans "Projected Spend" %}',
                                      data: projForecast,
-                                     borderColor: '#8ecae6',
+                                     borderColor: '#e07b39',
                                      borderDash: [5, 5],
                                      backgroundColor: 'transparent',
                                      tension: 0.4,
                                      pointRadius: 4,
-                                     pointBackgroundColor: '#8ecae6',
+                                     pointBackgroundColor: '#e07b39',
                                      spanGaps: true
                                  }
                              ]
@@ -2527,4 +2780,41 @@ document.addEventListener('DOMContentLoaded', function() {
         transition: color 0.2s ease-in-out;
     }
 </style>
+
+</div><!-- END #full-report-view -->
+
+<script>
+// Dashboard Mode Toggle Logic
+function switchToDailyMode() {
+    document.getElementById('daily-mode-view').style.display = 'block';
+    document.getElementById('full-report-view').style.display = 'none';
+    document.getElementById('btn-daily-mode').classList.add('active');
+    document.getElementById('btn-full-report').classList.remove('active');
+    localStorage.setItem('tmr_dashboard_mode', 'daily');
+}
+
+function switchToFullReport() {
+    document.getElementById('daily-mode-view').style.display = 'none';
+    document.getElementById('full-report-view').style.display = 'block';
+    document.getElementById('btn-daily-mode').classList.remove('active');
+    document.getElementById('btn-full-report').classList.add('active');
+    localStorage.setItem('tmr_dashboard_mode', 'full');
+    
+    // Trigger Chart.js resize since canvases are now visible
+    if (window.dispatchEvent) {
+        window.dispatchEvent(new Event('resize'));
+    }
+}
+
+// Restore last-used mode on page load
+document.addEventListener('DOMContentLoaded', function() {
+    const savedMode = localStorage.getItem('tmr_dashboard_mode');
+    if (savedMode === 'full') {
+        switchToFullReport();
+    } else {
+        switchToDailyMode();
+    }
+});
+</script>
+
 {% endblock %}

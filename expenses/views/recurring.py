@@ -18,7 +18,7 @@ class RecurringTransactionListView(LoginRequiredMixin, ListView):
     def get_queryset(self):
         queryset = RecurringTransaction.objects.filter(user=self.request.user)
         if self.filter_expenses_only:
-            queryset = queryset.filter(transaction_type='EXPENSE')
+            queryset = queryset.filter(transaction_type__in=['EXPENSE', 'TRANSFER'])
         queryset = queryset.order_by('-created_at')
         
         # Filter by Category
@@ -56,11 +56,13 @@ class RecurringTransactionListView(LoginRequiredMixin, ListView):
             
         cancelled_subs = [t for t in all_transactions if not t.is_active]
         
-        # Calculate Totals (Monthly & Yearly)
+        # Calculate Totals (Monthly & Yearly) - exclude transfers since they aren't costs
         total_monthly = 0
         total_yearly = 0
         
         for sub in active_subs:
+            if sub.transaction_type == 'TRANSFER':
+                continue
             amount = sub.base_amount
             if sub.frequency == 'DAILY':
                 total_monthly += amount * 30
@@ -143,7 +145,7 @@ class RecurringTransactionListView(LoginRequiredMixin, ListView):
             
             # Determine urgency
             is_renewing = False
-            if sub.transaction_type == 'EXPENSE':
+            if sub.transaction_type in ('EXPENSE', 'TRANSFER'):
                 if sub.annotated_days_until <= 30: # Show mostly anything coming up soon
                      is_renewing = True
             
@@ -200,6 +202,7 @@ class RecurringTransactionCreateView(LoginRequiredMixin, CreateView):
     form_class = RecurringTransactionForm
     template_name = 'expenses/recurring_transaction_form.html'
     success_url = reverse_lazy('recurring-list')
+    
     def dispatch(self, request, *args, **kwargs):
         profile = request.user.profile
         limit = float('inf') if profile.is_pro else (3 if profile.is_plus else 0)
@@ -208,9 +211,25 @@ class RecurringTransactionCreateView(LoginRequiredMixin, CreateView):
             messages.error(request, _("Subscription limit reached. Please upgrade."))
             return redirect('pricing')
         return super().dispatch(request, *args, **kwargs)
+    
     def form_valid(self, form):
         form.instance.user = self.request.user
+        # Prevent exact duplicate recurring transactions
+        dup = RecurringTransaction.objects.filter(
+            user=self.request.user,
+            transaction_type=form.instance.transaction_type,
+            amount=form.instance.amount,
+            currency=form.instance.currency,
+            description=form.instance.description,
+            frequency=form.instance.frequency,
+            start_date=form.instance.start_date,
+            is_active=True,
+        ).exists()
+        if dup:
+            messages.warning(self.request, _("A recurring transaction with the same details already exists."))
+            return self.form_invalid(form)
         return super().form_valid(form)
+    
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs(); kwargs['user'] = self.request.user
         return kwargs

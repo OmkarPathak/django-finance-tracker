@@ -47,7 +47,7 @@
 
     <!-- Collapsible Filter Form -->
     <div class="collapse d-md-block" id="incomeFilters">
-        <form method="get" class="mb-4 bg-body-tertiary p-3 rounded shadow-sm border-0">
+        <form method="get" class="mb-4 bg-body p-3 rounded shadow-sm border-0">
             <div class="row g-3 align-items-end">
                 <div class="col-6 col-md-3">
                     <label for="date_from" class="form-label small text-muted">{% trans "Date From" %}</label>
@@ -77,13 +77,13 @@
     <div class="mb-3 mt-3 mt-md-0">
         <div class="row g-2">
             <div class="col-6 col-md-auto">
-                <div class="p-2 border rounded bg-body-tertiary shadow-sm text-center text-md-start">
+                <div class="p-2 border rounded bg-body shadow-sm text-center text-md-start">
                     <small class="text-muted d-block text-uppercase" style="font-size: 0.7rem; letter-spacing: 0.5px;">{% trans "Total Records" %}</small>
                     <span class="fw-bold text-body-emphasis">{{ filtered_count|translate_digits }}</span>
                 </div>
             </div>
              <div class="col-6 col-md-auto">
-                <div class="p-2 border rounded bg-body-tertiary shadow-sm text-center text-md-start">
+                <div class="p-2 border rounded bg-body shadow-sm text-center text-md-start">
                     <small class="text-muted d-block text-uppercase" style="font-size: 0.7rem; letter-spacing: 0.5px;">{% trans "Total Amount" %}</small>
                     <span class="fw-bold text-info">{{ user.profile.currency }}{{ filtered_amount|compact_amount:user.profile.currency|translate_digits }}</span>
                 </div>
@@ -263,7 +263,7 @@
                         
                         <div class="mb-4">
                             <label for="edit_account" class="form-label text-muted small text-uppercase">{% trans "Account" %}</label>
-                            <select class="form-select" id="edit_account" name="account" required>
+                            <select class="form-select searchable-select" id="edit_account" name="account" required>
                                 {% for account in accounts %}
                                     <option value="{{ account.pk }}">{{ account.name }}</option>
                                 {% endfor %}
@@ -350,6 +350,8 @@
                     amountInput.value = amount;
                     currencyInput.value = currency;
                     accountInput.value = button.getAttribute('data-account');
+                    // Sync searchable-select button text with selected value
+                    accountInput.dispatchEvent(new Event('change', { bubbles: true }));
 
                     var freq = button.getAttribute('data-frequency');
                     if (freq) {

@@ -5,7 +5,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import TemplateView
-from django.db.models import Sum, Count, Q
+from django.db.models import Sum, Count, Q, Avg
 from django.db.models.functions import TruncMonth, TruncDay, ExtractWeekDay
 from django.urls import reverse
 from django.utils.translation import gettext as _
@@ -42,11 +42,22 @@ def home_view(request):
     # Global currency symbol for insights/metrics
     currency_symbol = request.user.profile.currency if hasattr(request.user, 'profile') else '₹'
 
+    # Helper: sum transfer amounts converted to user's base currency
+    def sum_transfers_base(qs):
+        total = Decimal('0.00')
+        for t in qs.select_related('from_account'):
+            if t.from_account and t.from_account.currency != currency_symbol:
+                rate = get_exchange_rate(t.from_account.currency, currency_symbol)
+                total += (t.amount * rate).quantize(Decimal('0.01'))
+            else:
+                total += t.amount
+        return total
+
     # Base QuerySet - All user expenses
     expenses = Expense.objects.filter(user=request.user).order_by('-date')
     
-    # Wealth Growth (Investments) - Now handled via Transfers to Investment accounts
-    investments = Expense.objects.none()
+    # Wealth Growth (Investments) - Transfers to Investment accounts
+    investments = Transfer.objects.filter(user=request.user, to_account__account_type='INVESTMENT')
     
     # Logic for EOM projection
     now = datetime.now()
@@ -97,7 +108,6 @@ def home_view(request):
 
     if selected_categories:
         expenses = expenses.filter(category__in=selected_categories)
-        investments = investments.filter(category__in=selected_categories)
         
     # Income Logic (Mirroring Expense Filters)
     incomes = Income.objects.filter(user=request.user)
@@ -122,7 +132,7 @@ def home_view(request):
             investments = investments.filter(date__lte=end_date)
     
     total_income = incomes.aggregate(Sum('base_amount'))['base_amount__sum'] or 0
-    total_investments = investments.aggregate(Sum('base_amount'))['base_amount__sum'] or 0
+    total_investments = sum_transfers_base(investments)
     all_dates = Expense.objects.filter(user=request.user).dates('date', 'year', order='DESC')
     years = sorted(list(set([d.year for d in all_dates] + [datetime.now().year])), reverse=True)
     all_categories = Expense.objects.filter(user=request.user).values_list('category', flat=True).distinct().order_by('category')
@@ -313,7 +323,7 @@ def home_view(request):
             transfers_qs = transfers_qs.filter(date__year__in=selected_years)
         if selected_months:
             transfers_qs = transfers_qs.filter(date__month__in=selected_months)
-    total_transfers = transfers_qs.aggregate(Sum('amount'))['amount__sum'] or 0
+    total_transfers = sum_transfers_base(transfers_qs)
     transfer_count = transfers_qs.count()
 
     # --- NEW: Savings Projection (Linear Extrapolation) ---
@@ -362,7 +372,10 @@ def home_view(request):
             # Current year-month stats
             prev_expenses_all = Expense.objects.filter(user=request.user, date__year=prev_year, date__month=prev_month)
             prev_expenses_op = prev_expenses_all.aggregate(Sum('base_amount'))['base_amount__sum'] or 0
-            prev_investments = 0  # Replaced by Transfers
+            prev_investments = sum_transfers_base(Transfer.objects.filter(
+                user=request.user, to_account__account_type='INVESTMENT',
+                date__year=prev_year, date__month=prev_month
+            ))
 
             prev_income = Income.objects.filter(user=request.user, date__year=prev_year, date__month=prev_month).aggregate(Sum('base_amount'))['base_amount__sum'] or 0
             prev_savings = prev_income - prev_expenses_op
@@ -1139,6 +1152,7 @@ def home_view(request):
         'INCOME': {'items': [], 'total': Decimal('0.00'), 'icon': '💰', 'label': _('Income')},
         'EXPENSE': {'items': [], 'total': Decimal('0.00'), 'icon': '💸', 'label': _('Expenses')},
         'INVESTMENT': {'items': [], 'total': Decimal('0.00'), 'icon': '📈', 'label': _('Investments')},
+        'TRANSFER': {'items': [], 'total': Decimal('0.00'), 'icon': '🔄', 'label': _('Transfers')},
     }
     
     total_recurring_commitment = Decimal('0.00')
@@ -1163,16 +1177,19 @@ def home_view(request):
                 'amount': rt.base_amount,
                 'date': due_date,
                 'type': rtype,
-                'category': rt.category or (rt.source if rt.transaction_type == 'INCOME' else _('Recurring')),
-                'frequency_label': rt.get_frequency_display()
+                'category': rt.category or (rt.source if rt.transaction_type == 'INCOME' else (_('Transfer') if rt.transaction_type == 'TRANSFER' else _('Recurring'))),
+                'frequency_label': rt.get_frequency_display(),
+                'from_account': getattr(rt.from_account, 'name', '') if rt.transaction_type == 'TRANSFER' else '',
+                'to_account': getattr(rt.to_account, 'name', '') if rt.transaction_type == 'TRANSFER' else '',
             }
             
             recurring_groups[rtype]['items'].append(item)
             recurring_groups[rtype]['total'] += rt.base_amount
             
+            # Transfers are neutral - they move money between accounts, not income/expense
             if rtype == 'INCOME':
                 total_recurring_commitment -= rt.base_amount
-            else:
+            elif rtype != 'TRANSFER':
                 total_recurring_commitment += rt.base_amount
 
     # Sorting items within groups by date
@@ -1244,22 +1261,40 @@ def home_view(request):
         proj_historical.append(None)
         proj_forecast.append(float(avg_spend))
 
-    # Net Worth & Asset Allocation Calculation
+    # Net Worth & Asset Allocation Calculation (multi-currency aware)
     accounts = Account.objects.filter(user=request.user)
-    net_worth = accounts.aggregate(Sum('balance'))['balance__sum'] or Decimal('0.00')
-    investment_accounts_balance = accounts.filter(account_type='INVESTMENT').aggregate(Sum('balance'))['balance__sum'] or Decimal('0.00')
-    
-    # Group by account type for Asset Allocation chart
-    allocation_qs = accounts.values('account_type').annotate(total=Sum('balance')).order_by('-total')
+    base_currency = currency_symbol  # user's profile currency
+
+    # Convert each account balance to user's base currency
+    net_worth = Decimal('0.00')
+    investment_accounts_balance = Decimal('0.00')
+    account_base_balances = {}  # account.pk -> converted balance
+    for acc in accounts:
+        if acc.currency == base_currency:
+            converted = acc.balance
+        else:
+            rate = get_exchange_rate(acc.currency, base_currency)
+            converted = (acc.balance * rate).quantize(Decimal('0.01'))
+        account_base_balances[acc.pk] = converted
+        net_worth += converted
+        if acc.account_type == 'INVESTMENT':
+            investment_accounts_balance += converted
+
+    # Group by account type for Asset Allocation chart (using converted balances)
+    from collections import defaultdict
+    type_totals = defaultdict(Decimal)
+    for acc in accounts:
+        type_totals[acc.account_type] += account_base_balances[acc.pk]
+
     asset_allocation = []
     account_type_display = dict(Account.ACCOUNT_TYPES)
     cumulative_percent = 0
     circumference = 2 * 3.14159 * 45
-    for item in allocation_qs:
-        percent = round((float(item['total']) / float(net_worth) * 100), 1) if net_worth > 0 else 0
+    for account_type, total in sorted(type_totals.items(), key=lambda x: x[1], reverse=True):
+        percent = round((float(total) / float(net_worth) * 100), 1) if net_worth > 0 else 0
         asset_allocation.append({
-            'type': account_type_display.get(item['account_type'], item['account_type']),
-            'total': float(item['total']),
+            'type': account_type_display.get(account_type, account_type),
+            'total': float(total),
             'percent': percent,
             'arc_length': (percent / 100) * circumference,
             'offset_length': (cumulative_percent / 100) * circumference
@@ -1352,6 +1387,172 @@ def home_view(request):
         'proj_historical': proj_historical,
         'proj_forecast': proj_forecast,
     }
+
+    # --- DAILY MODE DATA ---
+    today = date.today()
+    today_expenses = Expense.objects.filter(user=request.user, date=today).order_by('-created_at')
+    today_spent = today_expenses.aggregate(Sum('base_amount'))['base_amount__sum'] or Decimal('0.00')
+
+    # Daily budget allowance: total_monthly_budget / days_in_month
+    days_in_current_month = calendar.monthrange(today.year, today.month)[1]
+    daily_budget_allowed = Decimal(str(total_monthly_budget)) / days_in_current_month if total_monthly_budget > 0 else Decimal('0.00')
+    daily_left = daily_budget_allowed - today_spent
+    daily_used_pct = round(float(today_spent) / float(daily_budget_allowed) * 100, 1) if daily_budget_allowed > 0 else 0
+
+    # Budget status for today
+    if daily_budget_allowed > 0:
+        if today_spent <= daily_budget_allowed * Decimal('0.8'):
+            daily_budget_status = 'within'
+        elif today_spent <= daily_budget_allowed:
+            daily_budget_status = 'near'
+        else:
+            daily_budget_status = 'over'
+    else:
+        daily_budget_status = 'no_budget'
+
+    # Today's top spending category
+    today_cat_data = today_expenses.values('category').annotate(
+        total=Sum('base_amount')
+    ).order_by('-total')
+
+    daily_top_category = None
+    daily_top_category_pct = 0
+    if today_cat_data.exists() and float(today_spent) > 0:
+        top_cat_today = today_cat_data[0]
+        daily_top_category = top_cat_today['category']
+        daily_top_category_pct = round(float(top_cat_today['total']) / float(today_spent) * 100)
+
+    # Safe to spend today (remaining budget for the rest of the month / remaining days)
+    month_spent_so_far = Expense.objects.filter(
+        user=request.user, date__year=today.year, date__month=today.month
+    ).aggregate(Sum('base_amount'))['base_amount__sum'] or Decimal('0.00')
+    remaining_month_budget = Decimal(str(total_monthly_budget)) - month_spent_so_far
+    remaining_days = max(1, days_in_current_month - today.day + 1)
+    safe_to_spend = max(Decimal('0.00'), remaining_month_budget / remaining_days)
+
+    # --- Category split for today (for right sidebar) ---
+    today_category_split = []
+    for cat_row in today_cat_data:
+        cat_name = cat_row['category']
+        cat_total = float(cat_row['total'])
+        cat_pct = round(cat_total / float(today_spent) * 100) if float(today_spent) > 0 else 0
+        cat_obj = user_categories.get(cat_name.strip()) if cat_name else None
+        today_category_split.append({
+            'name': cat_name,
+            'amount': cat_total,
+            'pct': cat_pct,
+            'icon': cat_obj.icon if cat_obj else 'bi-tag',
+        })
+
+    # --- Recurring descriptions set (for tagging) ---
+    recurring_descriptions = set(
+        RecurringTransaction.objects.filter(
+            user=request.user, is_active=True, transaction_type='EXPENSE'
+        ).values_list('description', flat=True)
+    )
+
+    # --- Average per-category spend (last 30 days) for "unusual" tagging ---
+    thirty_days_ago = today - timedelta(days=30)
+    cat_avg_30d = {}
+    cat_avg_qs = Expense.objects.filter(
+        user=request.user, date__gte=thirty_days_ago, date__lt=today
+    ).values('category').annotate(avg_amt=Avg('base_amount'))
+    for row in cat_avg_qs:
+        cat_avg_30d[row['category']] = float(row['avg_amt'])
+
+    # --- Quick stats for right sidebar ---
+    avg_daily_spend_month = float(month_spent_so_far) / max(1, today.day - 1) if today.day > 1 else float(today_spent)
+    month_transaction_count = Expense.objects.filter(
+        user=request.user, date__year=today.year, date__month=today.month
+    ).count()
+
+    # Enrich today_expenses with category icons + tags
+    today_expenses_list = []
+    for exp in today_expenses:
+        cat_obj = user_categories.get(exp.category.strip()) if exp.category else None
+        # Tag: recurring
+        is_recurring = exp.description in recurring_descriptions
+        # Tag: unusual (amount > 1.5x category avg over last 30 days)
+        cat_avg = cat_avg_30d.get(exp.category, 0)
+        is_unusual = float(exp.base_amount) > cat_avg * 1.5 and cat_avg > 0
+
+        today_expenses_list.append({
+            'id': exp.id,
+            'description': exp.description,
+            'category': exp.category,
+            'amount': exp.base_amount,
+            'icon': cat_obj.icon if cat_obj else 'bi-tag',
+            'payment_method': exp.payment_method,
+            'date': exp.date,
+            'is_recurring': is_recurring,
+            'is_unusual': is_unusual,
+        })
+
+    # Daily insight (enhanced for over-budget urgency)
+    daily_insight = None
+    # Build recovery tip for over-budget
+    recovery_tip = None
+    if daily_budget_status == 'over' and daily_top_category:
+        recovery_tip = _("Reduce %(category)s spending to recover") % {'category': daily_top_category.lower()}
+
+    if daily_top_category and daily_top_category_pct >= 50:
+        daily_insight = {
+            'type': 'warning',
+            'message': _("You spent %(pct)s%% on %(category)s today") % {
+                'pct': daily_top_category_pct,
+                'category': daily_top_category,
+            },
+            'tip': _("Try to limit %(category)s spending") % {'category': daily_top_category.lower()},
+        }
+    elif daily_budget_status == 'over':
+        daily_insight = {
+            'type': 'danger',
+            'message': _("You've exceeded today's budget"),
+            'tip': _("Consider postponing non-essential purchases"),
+        }
+    elif daily_budget_status == 'within' and float(today_spent) > 0:
+        daily_insight = {
+            'type': 'success',
+            'message': _("You're within budget today"),
+            'tip': _("Great financial discipline! Keep it up"),
+        }
+
+    # Only show "safe to spend" when it's meaningful:
+    # - Must have budget
+    # - Must have remaining monthly budget (safe_to_spend > 0)
+    # - Should NOT show if user is already over their daily limit (contradictory)
+    show_safe_to_spend = (
+        total_monthly_budget > 0
+        and safe_to_spend > 0
+        and daily_budget_status != 'over'
+    )
+
+    context['daily_mode'] = {
+        'today': today,
+        'today_expenses': today_expenses_list,
+        'today_spent': today_spent,
+        'daily_budget_allowed': round(daily_budget_allowed, 0),
+        'daily_left': round(daily_left, 0),  # can be negative when over budget
+        'daily_used_pct': min(daily_used_pct, 100),
+        'raw_used_pct': round(daily_used_pct, 1),  # uncapped for overspend display
+        'daily_budget_status': daily_budget_status,
+        'daily_top_category': daily_top_category,
+        'daily_top_category_pct': daily_top_category_pct,
+        'safe_to_spend': round(safe_to_spend, 0),
+        'show_safe_to_spend': show_safe_to_spend,
+        'daily_insight': daily_insight,
+        'recovery_tip': recovery_tip,
+        'has_budget': total_monthly_budget > 0,
+        'transaction_count': today_expenses.count(),
+        # Right sidebar data
+        'today_category_split': today_category_split,
+        'month_spent_so_far': round(month_spent_so_far, 0),
+        'remaining_month_budget': round(max(remaining_month_budget, Decimal('0.00')), 0),
+        'avg_daily_spend': round(Decimal(str(avg_daily_spend_month)), 0),
+        'month_transaction_count': month_transaction_count,
+        'total_monthly_budget': round(Decimal(str(total_monthly_budget)), 0),
+    }
+
     return render(request, 'home.html', context)
 
 @login_required

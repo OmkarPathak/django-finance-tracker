@@ -7,7 +7,7 @@
             <span class="fs-4">TrackMyRupee</span>
         </a>
         
-        {% if not user.is_authenticated %}
+        {% if not user.is_authenticated and is_landing %}
             <a href="{% url 'account_login' %}" class="btn btn-primary btn-sm d-lg-none ms-auto me-2">{% trans "Login" %}</a>
         {% endif %}
 
@@ -58,7 +58,7 @@
             </div>
         {% endif %}
 
-        <button class="navbar-toggler border-0 shadow-none {% if user.is_authenticated %}d-none{% endif %}" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent" aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
+        <button class="navbar-toggler border-0 shadow-none {% if user.is_authenticated or not is_landing %}d-none{% endif %}" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent" aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
 

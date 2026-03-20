@@ -32,32 +32,31 @@ class IncomeListView(LoginRequiredMixin, RecurringTransactionMixin, ListView):
         selected_months = [m for m in selected_months if m]
 
         # Date Range Logic (Precedence)
+        # Default to current year if no filters are provided
+        now = timezone.now()
+        default_from = f"{now.year}-01-01"
+        default_to = f"{now.year}-12-31"
+
         if date_from or date_to:
+            self.date_from = date_from or ''
+            self.date_to = date_to or ''
             if date_from:
                 queryset = queryset.filter(date__gte=date_from)
-                self.date_from = date_from
-            else:
-                self.date_from = ''
-            
             if date_to:
                 queryset = queryset.filter(date__lte=date_to)
-                self.date_to = date_to
-            else:
-                self.date_to = ''
-        else:
-            # If no explicit date range, check for year/month filters
-            # If neither exist, default to current month/year for consistency with dashboard
-            if not selected_years and not selected_months and not source:
-                 selected_years = [str(timezone.now().year)]
-                 selected_months = [str(timezone.now().month)]
-            
+        elif selected_years or selected_months:
             if selected_years:
                 queryset = queryset.filter(date__year__in=selected_years)
             if selected_months:
                 queryset = queryset.filter(date__month__in=selected_months)
-            
             self.date_from = ''
             self.date_to = ''
+        else:
+            # No filters at all — default to current year
+            if not source:
+                queryset = queryset.filter(date__gte=default_from, date__lte=default_to)
+            self.date_from = default_from
+            self.date_to = default_to
 
         # Source Filter
         if source:
