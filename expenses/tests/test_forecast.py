@@ -1,9 +1,11 @@
-from django.test import TestCase
+from datetime import date
+
 from django.contrib.auth.models import User
-from expenses.models import Expense, Income, RecurringTransaction, Category
+from django.test import TestCase
 from django.urls import reverse
-from datetime import date, timedelta
-from django.utils import timezone
+
+from expenses.models import Category, Expense, Income, RecurringTransaction
+
 
 class AnalyticsForecastTest(TestCase):
     def setUp(self):

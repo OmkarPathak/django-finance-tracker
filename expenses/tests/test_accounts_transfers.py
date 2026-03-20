@@ -1,9 +1,12 @@
-from django.test import TestCase, Client
-from django.urls import reverse
-from django.contrib.auth.models import User
-from expenses.models import Account, Transfer, Expense, Income, Category
 from datetime import date
 from decimal import Decimal
+
+from django.contrib.auth.models import User
+from django.test import Client, TestCase
+from django.urls import reverse
+
+from expenses.models import Account, Category, Expense, Income, Transfer
+
 
 class AccountTransferTest(TestCase):
     def setUp(self):

@@ -1,8 +1,11 @@
-from django.test import TestCase, Client
-from django.urls import reverse
-from django.contrib.auth.models import User
-from expenses.models import UserProfile, Expense, Category
 from datetime import date
+
+from django.contrib.auth.models import User
+from django.test import Client, TestCase
+from django.urls import reverse
+
+from expenses.models import Category, Expense
+
 
 class BaseFeatureTest(TestCase):
     def setUp(self):
@@ -70,6 +73,7 @@ class FeatureViewTest(BaseFeatureTest):
 
 from expenses.models import RecurringTransaction
 
+
 class RecurringCRUDTest(BaseFeatureTest):
     def test_create_recurring(self):
         # Upgrade user to Pro for unlimited recurring transactions
@@ -132,6 +136,7 @@ class RecurringCRUDTest(BaseFeatureTest):
         self.assertEqual(RecurringTransaction.objects.count(), 0)
 
 from expenses.models import Notification
+
 
 class NotificationViewTest(BaseFeatureTest):
     def test_notification_list(self):

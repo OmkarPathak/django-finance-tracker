@@ -1,10 +1,12 @@
 
-import unittest
-from unittest.mock import patch, MagicMock
 from decimal import Decimal
-from django.test import TestCase
+from unittest.mock import MagicMock, patch
+
 from django.core.cache import cache
+from django.test import TestCase
+
 from expenses.utils import get_exchange_rate
+
 
 class ExchangeRateFallbackTest(TestCase):
     def setUp(self):

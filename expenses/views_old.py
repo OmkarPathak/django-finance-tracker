@@ -1,44 +1,70 @@
-from django.shortcuts import render, redirect, get_object_or_404
-from django.http import HttpResponse
-from django.db import IntegrityError
-import csv
-from django.forms import modelformset_factory
-from django.contrib.auth.models import User
-from django.contrib.auth.forms import UserCreationForm
-from django.contrib.auth.decorators import login_required
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django.contrib.auth import login, logout
-from django.contrib import messages
-from django.urls import reverse_lazy, reverse
-from django.views import generic
-from django.views.generic import TemplateView, ListView, CreateView, UpdateView, DeleteView, View
-from django.views.decorators.csrf import csrf_exempt
-from django.db.models import Sum, Q, Avg, Count
-from django.http import JsonResponse, HttpResponse
-import json
-from django.utils import timezone
-from django.utils.translation import gettext as _
-from datetime import datetime, date, timedelta
 import calendar
+import csv
+import json
+import traceback
+from datetime import date, datetime, timedelta
 from decimal import Decimal
 
-from .models import Expense, Category, Income, RecurringTransaction, UserProfile, SubscriptionPlan, Notification, CURRENCY_CHOICES, SavingsGoal, GoalContribution
-from .utils import get_exchange_rate, generate_year_in_review_data, BOOTSTRAP_ICONS
-from finance_tracker.ai_utils import predict_category_ai
-from .forms import ExpenseForm, IncomeForm, RecurringTransactionForm, ProfileUpdateForm, CustomSignupForm, ContactForm, LanguageUpdateForm, SavingsGoalForm, GoalContributionForm, CategoryForm
-from allauth.socialaccount.models import SocialAccount
 import openpyxl
-import requests
-import traceback
-from django.core.management import call_command
 from allauth.account.models import EmailAddress
-from django.core.mail import send_mail
+from allauth.socialaccount.models import SocialAccount
 from django.conf import settings
+from django.contrib import messages
+from django.contrib.auth import login, logout
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.models import User
 from django.core.cache import cache
-from django.db.models.functions import TruncMonth, TruncDay, ExtractWeekDay
-from django.utils.html import mark_safe, escape, format_html, format_html_join
+from django.core.mail import send_mail
+from django.core.management import call_command
+from django.db import IntegrityError
+from django.db.models import Count, Q, Sum
+from django.db.models.functions import ExtractWeekDay, TruncDay, TruncMonth
+from django.forms import modelformset_factory
+from django.http import HttpResponse, JsonResponse
+from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse, reverse_lazy
+from django.utils import timezone
 from django.utils.formats import date_format
+from django.utils.html import escape, format_html, format_html_join, mark_safe
+from django.utils.translation import gettext as _
+from django.views import generic
+from django.views.decorators.csrf import csrf_exempt
+from django.views.generic import (
+    CreateView,
+    DeleteView,
+    ListView,
+    TemplateView,
+    UpdateView,
+    View,
+)
 
+from finance_tracker.ai_utils import predict_category_ai
+
+from .forms import (
+    CategoryForm,
+    ContactForm,
+    CustomSignupForm,
+    ExpenseForm,
+    GoalContributionForm,
+    IncomeForm,
+    LanguageUpdateForm,
+    ProfileUpdateForm,
+    RecurringTransactionForm,
+    SavingsGoalForm,
+)
+from .models import (
+    CURRENCY_CHOICES,
+    Category,
+    Expense,
+    Income,
+    Notification,
+    RecurringTransaction,
+    SavingsGoal,
+    SubscriptionPlan,
+    UserProfile,
+)
+from .utils import BOOTSTRAP_ICONS, generate_year_in_review_data, get_exchange_rate
 
 
 def create_category_ajax(request):
@@ -1358,7 +1384,7 @@ class ExpenseCreateView(LoginRequiredMixin, generic.TemplateView):
                 if next_url:
                     return redirect(next_url)
                 return redirect('expense-list')
-            except IntegrityError as e:
+            except IntegrityError:
                 messages.error(request, _("Duplicate record found! You already have this expense recorded for this date."))
                 return render(request, self.template_name, {'formset': formset})
         return render(request, self.template_name, {'formset': formset})
@@ -2429,8 +2455,8 @@ class LanguageUpdateView(LoginRequiredMixin, UpdateView):
         return profile
 
     def form_valid(self, form):
-        from django.utils import translation
         from django.conf import settings
+        from django.utils import translation
         lang = form.cleaned_data.get('language')
         translation.activate(lang)
         messages.success(self.request, 'Language preference updated successfully.')
@@ -2664,7 +2690,7 @@ class ContactView(View):
             )
             messages.success(request, "Your message has been sent! We'll get back to you shortly.")
             return redirect('contact')
-        except Exception as e:
+        except Exception:
             # Log error if possible
             messages.error(request, "Something went wrong. Please try again later.")
             return render(request, self.template_name, {'form': form})

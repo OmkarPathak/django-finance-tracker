@@ -1,25 +1,35 @@
-from datetime import datetime, date, timedelta
 import calendar
-import json
+from datetime import date, datetime, timedelta
 from decimal import Decimal
-from django.shortcuts import render, redirect, get_object_or_404
+
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.views.generic import TemplateView
-from django.db.models import Sum, Count, Q, Avg
-from django.db.models.functions import TruncMonth, TruncDay, ExtractWeekDay
-from django.urls import reverse
-from django.utils.translation import gettext as _
-from django.utils.html import mark_safe, escape, format_html, format_html_join
+from django.db.models import Avg, Count, Sum
+from django.db.models.functions import ExtractWeekDay, TruncDay, TruncMonth
 from django.http import JsonResponse
+from django.shortcuts import redirect, render
+from django.urls import reverse
 from django.utils import timezone
 from django.utils.formats import date_format
-from django.contrib import messages
+from django.utils.html import escape, format_html, format_html_join, mark_safe
+from django.utils.translation import gettext as _
+from django.views.generic import TemplateView
 
-from ..models import Expense, Income, Category, UserProfile, RecurringTransaction, Account, Transfer, Notification
-from ..utils import get_exchange_rate, generate_year_in_review_data
-from .mixins import process_user_recurring_transactions
+from ..models import (
+    Account,
+    Category,
+    Expense,
+    Income,
+    Notification,
+    RecurringTransaction,
+    Transfer,
+    UserProfile,
+)
 from ..templatetags.digit_filters import compact_amount
+from ..utils import generate_year_in_review_data, get_exchange_rate
+from .mixins import process_user_recurring_transactions
+
 
 @login_required
 def home_view(request):
@@ -610,7 +620,7 @@ def home_view(request):
             top_amount = top_5_categories[0]['total']
             
             # Calculate Percentage of total lifestyle expenses
-            top_cat_pct = round((float(top_amount) / float(total_expenses) * 100)) if total_expenses > 0 else 0
+            top_cat_pct = round(float(top_amount) / float(total_expenses) * 100) if total_expenses > 0 else 0
             potential_savings = float(top_amount) * 0.20
             
             # POWER INSIGHT: Granular and Actionable
@@ -1003,8 +1013,8 @@ def home_view(request):
     # Calculate Future Growth (Total Surplus = Investments + Remaining Savings)
     # savings is already (income - lifestyle_expenses) because total_expenses excludes investments
     total_wealth_contribution = max(0, savings)
-    future_growth_pct = round((float(total_wealth_contribution) / float(total_income) * 100)) if total_income > 0 else 0
-    lifestyle_pct = round((float(total_expenses) / float(total_income) * 100)) if total_income > 0 else 0
+    future_growth_pct = round(float(total_wealth_contribution) / float(total_income) * 100) if total_income > 0 else 0
+    lifestyle_pct = round(float(total_expenses) / float(total_income) * 100) if total_income > 0 else 0
     
     income_bold = mark_safe(f"<b>{currency_symbol}{compact_amount(total_income, currency_symbol)}</b>")
     lifestyle_bold = mark_safe(f"<b>{currency_symbol}{compact_amount(total_expenses, currency_symbol)}</b>")
@@ -1059,7 +1069,7 @@ def home_view(request):
     if total_income > 0 and total_expenses > 0 and top_5_categories:
         top_cat = top_5_categories[0]['category']
         top_amount = top_5_categories[0]['total']
-        top_cat_pct = round((float(top_amount) / float(total_expenses) * 100)) if total_expenses > 0 else 0
+        top_cat_pct = round(float(top_amount) / float(total_expenses) * 100) if total_expenses > 0 else 0
         potential_savings = float(top_amount) * 0.20
         
         power_insight_text = format_html(
@@ -2422,7 +2432,6 @@ class YearInReviewView(LoginRequiredMixin, TemplateView):
         return context
 
     def dispatch(self, request, *args, **kwargs):
-        from django.contrib import messages
         from django.shortcuts import redirect
         if not request.user.profile.is_plus:
             messages.info(request, "Year in Review is a Premium feature. Upgrade to Plus or Pro to unlock your personalized financial story!")

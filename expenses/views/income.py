@@ -1,15 +1,15 @@
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django.views.generic import ListView, CreateView, UpdateView, DeleteView
-from django.urls import reverse_lazy, reverse
 from django.contrib import messages
-from django.utils.translation import gettext as _
-from django.utils import timezone
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Sum
+from django.urls import reverse_lazy
+from django.utils import timezone
+from django.utils.translation import gettext as _
+from django.views.generic import CreateView, DeleteView, ListView, UpdateView
 
-from ..models import Income, RecurringTransaction
 from ..forms import IncomeForm
+from ..models import Income, RecurringTransaction
 from .mixins import RecurringTransactionMixin
+
 
 class IncomeListView(LoginRequiredMixin, RecurringTransactionMixin, ListView):
     model = Income
@@ -195,8 +195,8 @@ class IncomeUpdateView(LoginRequiredMixin, UpdateView):
         return context
 
     def form_valid(self, form):
-        from django.db import IntegrityError
         from django.contrib import messages
+        from django.db import IntegrityError
         from django.utils.translation import gettext as _
         try:
             return super().form_valid(form)

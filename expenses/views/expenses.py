@@ -1,22 +1,19 @@
-import csv
 import calendar
-from datetime import datetime, date
-from decimal import Decimal
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django.contrib.auth.decorators import login_required
-from django.views.generic import ListView, CreateView, UpdateView, DeleteView, View
-from django.urls import reverse_lazy, reverse
-from django.db.models import Sum, Q, Count
+from datetime import datetime
+
 from django.contrib import messages
-from django.utils.translation import gettext as _
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.db.models import Count, Sum
 from django.forms import modelformset_factory
+from django.shortcuts import redirect, render
+from django.urls import reverse, reverse_lazy
+from django.utils.translation import gettext as _
+from django.views.generic import DeleteView, ListView, UpdateView, View
 
-from ..models import Expense, Category, CURRENCY_CHOICES
 from ..forms import ExpenseForm
-from .mixins import RecurringTransactionMixin
+from ..models import Category, Expense
+from .mixins import RecurringTransactionMixin, process_user_recurring_transactions
 
-from .mixins import process_user_recurring_transactions
 
 class ExpenseListView(LoginRequiredMixin, RecurringTransactionMixin, ListView):
     model = Expense
@@ -189,7 +186,7 @@ class ExpenseCreateView(LoginRequiredMixin, View):
                 if next_url:
                     return redirect(next_url)
                 return redirect('expense-list')
-            except IntegrityError as e:
+            except IntegrityError:
                 messages.error(request, _("Duplicate record found! You already have this expense recorded for this date."))
                 return render(request, self.template_name, {'formset': formset})
         return render(request, self.template_name, {'formset': formset})

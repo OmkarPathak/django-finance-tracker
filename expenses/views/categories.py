@@ -1,14 +1,15 @@
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django.contrib.auth.decorators import login_required
-from django.views.generic import ListView, CreateView, UpdateView, DeleteView
-from django.urls import reverse_lazy, reverse
 from django.contrib import messages
-from django.utils.translation import gettext as _
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import JsonResponse
+from django.shortcuts import redirect
+from django.urls import reverse_lazy
+from django.utils.translation import gettext as _
+from django.views.generic import CreateView, DeleteView, ListView, UpdateView
 
-from ..models import Category
 from ..forms import CategoryForm
+from ..models import Category
+
 
 class CategoryListView(LoginRequiredMixin, ListView):
     model = Category
@@ -70,7 +71,7 @@ def create_category_ajax(request):
                 
             category = Category.objects.create(user=request.user, name=name)
             return JsonResponse({'success': True, 'id': category.id, 'name': category.name})
-        except Exception as e:
+        except Exception:
             return JsonResponse({'success': False, 'error': _('Something went wrong. Please try again.')}, status=400)
     return JsonResponse({'success': False}, status=405)
 
@@ -143,8 +144,8 @@ class CategoryUpdateView(LoginRequiredMixin, UpdateView):
         return context
 
     def form_valid(self, form):
-        from django.db import IntegrityError
         from django.contrib import messages
+        from django.db import IntegrityError
         try:
             # Store old name to update related expenses
             old_name = self.get_object().name

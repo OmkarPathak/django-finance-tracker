@@ -1,5 +1,7 @@
-from .models import UserProfile, Notification
 from django.conf import settings
+
+from .models import Notification, UserProfile
+
 
 def webpush_vapid_key(request):
     """Provides the VAPID public key to all templates."""

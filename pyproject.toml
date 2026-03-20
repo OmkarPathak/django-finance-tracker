@@ -20,6 +20,7 @@ select = [
 ]
 ignore = [
     "E501",  # handled by formatter
+    "F601",
 ]
 
 [tool.ruff.lint.per-file-ignores]

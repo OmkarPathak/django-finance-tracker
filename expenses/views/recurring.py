@@ -1,14 +1,16 @@
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django.views.generic import ListView, CreateView, UpdateView, DeleteView
-from django.urls import reverse_lazy, reverse
-from django.contrib import messages
-from django.utils.translation import gettext as _
 from datetime import date, timedelta
 
-from ..models import RecurringTransaction
+from django.contrib import messages
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.shortcuts import redirect
+from django.urls import reverse_lazy
+from django.utils.translation import gettext as _
+from django.views.generic import CreateView, DeleteView, ListView, UpdateView
+
 from ..forms import RecurringTransactionForm
+from ..models import RecurringTransaction
 from .mixins import RecurringTransactionMixin
+
 
 class RecurringTransactionListView(LoginRequiredMixin, RecurringTransactionMixin, ListView):
     model = RecurringTransaction
@@ -289,8 +291,8 @@ class RecurringTransactionDeleteView(LoginRequiredMixin, DeleteView):
 
     def form_valid(self, form):
         # Calculate savings
-        from django.utils.translation import gettext as _
         from django.contrib import messages
+        from django.utils.translation import gettext as _
         obj = self.object
         amount = obj.amount
         if obj.frequency == 'DAILY':

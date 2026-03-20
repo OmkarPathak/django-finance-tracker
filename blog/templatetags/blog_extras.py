@@ -1,8 +1,8 @@
+import bleach
+import markdown as md
 from django import template
 from django.template.defaultfilters import stringfilter
-import markdown as md
 from django.utils.safestring import mark_safe
-import bleach
 
 register = template.Library()
 

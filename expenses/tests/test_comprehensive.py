@@ -9,13 +9,11 @@ Comprehensive unit tests for:
 """
 from datetime import date, timedelta
 from decimal import Decimal
-from unittest.mock import patch
 
 from django.contrib.auth.models import User
 from django.db import IntegrityError
 from django.test import Client, TestCase
 from django.urls import reverse
-from django.utils import timezone
 
 from expenses.models import (
     Account,
@@ -24,10 +22,8 @@ from expenses.models import (
     Income,
     RecurringTransaction,
     Transfer,
-    UserProfile,
 )
 from expenses.views.mixins import process_user_recurring_transactions
-
 
 # ---------------------------------------------------------------------------
 # Shared helpers

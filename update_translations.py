@@ -1,12 +1,13 @@
 import os
 import re
 
+
 def update_po_file(filepath, translations, complex_replacements=None):
     if not os.path.exists(filepath):
         print(f"File not found: {filepath}")
         return
 
-    with open(filepath, 'r', encoding='utf-8') as f:
+    with open(filepath, encoding='utf-8') as f:
         content = f.read()
 
     # 1. Handle simple translations loop

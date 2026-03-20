@@ -1,7 +1,7 @@
-from django.shortcuts import redirect
 from django.contrib import messages
-from django.conf import settings
+from django.shortcuts import redirect
 from django.urls import reverse
+
 
 class DemoReadOnlyMiddleware:
     """
@@ -32,6 +32,7 @@ class TimezoneMiddleware:
 
     def __call__(self, request):
         import zoneinfo
+
         from django.utils import timezone
         
         tzname = request.COOKIES.get('django_timezone')

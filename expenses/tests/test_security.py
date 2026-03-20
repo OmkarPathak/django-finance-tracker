@@ -1,8 +1,14 @@
-from django.test import TestCase, Client
-from django.contrib.auth.models import User
-from expenses.models import Expense, Income, Category, RecurringTransaction, Notification
-from django.urls import reverse
 from datetime import date
+
+from django.contrib.auth.models import User
+from django.test import Client, TestCase
+from django.urls import reverse
+
+from expenses.models import (
+    Expense,
+    Income,
+)
+
 
 class DataSegregationTest(TestCase):
     def setUp(self):

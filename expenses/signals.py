@@ -1,8 +1,10 @@
+import logging
+
+from django.contrib.auth.models import User
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-from django.contrib.auth.models import User
+
 from .models import Category, UserProfile
-import logging
 
 logger = logging.getLogger(__name__)
 
@@ -38,9 +40,9 @@ def send_welcome_email(sender, instance, created, **kwargs):
     """Send welcome email to new users (skip demo user)."""
     if created and instance.email and instance.username != 'demo':
         try:
+            from django.conf import settings
             from django.core.mail import send_mail
             from django.template.loader import render_to_string
-            from django.conf import settings
 
             html_message = render_to_string('email/welcome_email.html', {
                 'user': instance,

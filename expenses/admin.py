@@ -1,5 +1,15 @@
 from django.contrib import admin
-from .models import Expense, Category, Income, RecurringTransaction, Notification, Account, Transfer
+
+from .models import (
+    Account,
+    Category,
+    Expense,
+    Income,
+    Notification,
+    RecurringTransaction,
+    Transfer,
+)
+
 
 @admin.register(Notification)
 class NotificationAdmin(admin.ModelAdmin):
@@ -55,7 +65,8 @@ class TransferAdmin(admin.ModelAdmin):
     search_fields = ('description', 'user__username')
     ordering = ('-date',)
 
-from .models import UserProfile, PaymentHistory
+from .models import PaymentHistory, UserProfile
+
 
 @admin.register(UserProfile)
 class UserProfileAdmin(admin.ModelAdmin):
@@ -81,6 +92,7 @@ class PaymentHistoryAdmin(admin.ModelAdmin):
 
 from .models import SubscriptionPlan
 
+
 @admin.register(SubscriptionPlan)
 class SubscriptionPlanAdmin(admin.ModelAdmin):
     list_display = ('name', 'tier', 'duration', 'price', 'is_active')
@@ -89,9 +101,10 @@ class SubscriptionPlanAdmin(admin.ModelAdmin):
     ordering = ('tier', 'price')
 
 # Re-register User Admin to include Email Verification inline
-from django.contrib.auth.models import User
-from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from allauth.account.models import EmailAddress
+from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
+from django.contrib.auth.models import User
+
 
 class EmailAddressInline(admin.StackedInline):
     model = EmailAddress

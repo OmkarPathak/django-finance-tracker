@@ -1,22 +1,24 @@
-import json
-from django.shortcuts import render, redirect
-from django.http import JsonResponse
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django.contrib.auth.decorators import login_required
-from django.views.generic import TemplateView, View
-from django.utils.translation import gettext as _
-from django.db.models import Sum, Q, Count
-from django.contrib import messages
-from django.core.cache import cache
-from datetime import date, datetime
 import calendar
-from django.utils.formats import date_format
-import openpyxl
-import traceback
-import io
 import csv
-from ..models import Expense, Income, UserProfile, Category
+import io
+import traceback
+from datetime import date, datetime
+
+import openpyxl
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.core.cache import cache
+from django.db.models import Count, Q, Sum
+from django.http import JsonResponse
+from django.shortcuts import redirect, render
+from django.utils.formats import date_format
+from django.utils.translation import gettext as _
+from django.views.generic import TemplateView, View
+
 from ..forms import ContactForm
+from ..models import Category, Expense, Income
+
 
 class CalendarView(LoginRequiredMixin, TemplateView):
     template_name = 'expenses/calendar.html'
@@ -297,6 +299,7 @@ def export_expenses(request):
         return redirect('pricing')
         
     import csv
+
     from django.http import HttpResponse
     response = HttpResponse(content_type='text/csv')
     response['Content-Disposition'] = 'attachment; filename="expenses.csv"'

@@ -1,17 +1,19 @@
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django.views.generic import ListView, CreateView, UpdateView, DeleteView, View
-from django.urls import reverse_lazy
-from django.contrib import messages
-from django.utils.translation import gettext as _
-from django.db.models import Q
-from django.http import JsonResponse
-from itertools import chain
 from decimal import Decimal
-from ..models import Account, Transfer, Expense, Income
+from itertools import chain
+
+from django.contrib import messages
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404, render
+from django.urls import reverse_lazy
+from django.utils.translation import gettext as _
+from django.views.generic import CreateView, DeleteView, ListView, UpdateView, View
+
 from ..forms import AccountForm, TransferForm
+from ..models import Account, Expense, Income, Transfer
 from ..utils import get_exchange_rate
 from .mixins import RecurringTransactionMixin
+
 
 class AccountListView(LoginRequiredMixin, ListView):
     model = Account

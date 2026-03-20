@@ -1,10 +1,13 @@
-from django.test import TestCase, Client
-from django.contrib.auth.models import User
-from django.urls import reverse
-from expenses.models import UserProfile, Category, RecurringTransaction
+import json
 from datetime import date
 from unittest.mock import patch
-import json
+
+from django.contrib.auth.models import User
+from django.test import Client, TestCase
+from django.urls import reverse
+
+from expenses.models import Category, RecurringTransaction, UserProfile
+
 
 class SubscriptionTierTest(TestCase):
     def setUp(self):
@@ -132,8 +135,10 @@ class SubscriptionTierTest(TestCase):
     def test_email_reminder_gate(self):
         """Only Plus/Pro receive email reminders."""
         from io import StringIO
+
         from django.core.management import call_command
-        from expenses.models import RecurringTransaction, Notification
+
+        from expenses.models import Notification, RecurringTransaction
         
         rt = RecurringTransaction.objects.create(
             user=self.user,

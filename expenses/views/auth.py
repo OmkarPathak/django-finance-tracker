@@ -1,21 +1,26 @@
 import json
-from datetime import date, datetime
+from datetime import date
 from decimal import Decimal
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth import login, logout
-from django.contrib.auth.models import User
-from django.contrib.auth.decorators import login_required
-from django.contrib.auth.mixins import LoginRequiredMixin
+
 from django.contrib import messages
-from django.urls import reverse_lazy, reverse
-from django.views import generic
-from django.views.generic import TemplateView
-from django.http import JsonResponse
+from django.contrib.auth import login, logout
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.models import User
 from django.core.management import call_command
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404, redirect
 from django.utils.translation import gettext as _
-from ..models import Expense, Category, Income, UserProfile, SubscriptionPlan, CURRENCY_CHOICES, Account
-from ..forms import CustomSignupForm, LanguageUpdateForm, ProfileUpdateForm
-from .mixins import RecurringTransactionMixin
+from django.views.generic import TemplateView
+
+from ..models import (
+    CURRENCY_CHOICES,
+    Account,
+    Category,
+    Expense,
+    Income,
+    SubscriptionPlan,
+    UserProfile,
+)
 
 
 class OnboardingView(LoginRequiredMixin, TemplateView):

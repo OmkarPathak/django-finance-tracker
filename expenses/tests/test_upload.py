@@ -1,11 +1,13 @@
-from django.test import TestCase, Client
-from django.urls import reverse
-from django.contrib.auth.models import User
-from expenses.models import Expense, Category
-from datetime import date
-import io
-import openpyxl
 import csv
+import io
+
+import openpyxl
+from django.contrib.auth.models import User
+from django.test import Client, TestCase
+from django.urls import reverse
+
+from expenses.models import Category, Expense
+
 
 class UploadViewTest(TestCase):
     def setUp(self):

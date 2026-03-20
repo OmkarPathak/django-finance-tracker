@@ -1,14 +1,15 @@
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django.contrib.auth.decorators import login_required
-from django.views.generic import ListView
-from django.http import JsonResponse
-from django.contrib import messages
-from django.views.decorators.csrf import csrf_exempt
-from django.core.management import call_command
 from django.conf import settings
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.core.management import call_command
+from django.http import JsonResponse
+from django.shortcuts import redirect
+from django.views.decorators.csrf import csrf_exempt
+from django.views.generic import ListView
 
 from ..models import Notification
+
 
 class NotificationListView(LoginRequiredMixin, ListView):
     model = Notification

@@ -1,7 +1,6 @@
 
 import os
 import re
-from collections import defaultdict
 
 # Simple Rule-Based Keyword Mapping
 KEYWORD_MAPPING = {
@@ -49,8 +48,9 @@ def predict_category_ai(description, user=None):
     if user:
         try:
             # Avoid circular import
-            from expenses.models import Expense
             from django.db.models import Count
+
+            from expenses.models import Expense
             
             # Simple exact/contains match
             # Find expenses with similar description by this user

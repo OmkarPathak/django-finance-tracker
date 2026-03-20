@@ -1,13 +1,15 @@
-from django import template
-from django.utils.translation import gettext_lazy as _
-from django import forms
-from django.contrib.auth.models import User
-from django.contrib.auth.forms import UserCreationForm
+from datetime import date
+
 from allauth.socialaccount.models import SocialAccount
-from .models import Expense, Category, Income, RecurringTransaction, UserProfile
+from django import forms
+from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.models import User
+from django.utils.translation import gettext_lazy as _
 from django_recaptcha.fields import ReCaptchaField
 from django_recaptcha.widgets import ReCaptchaV3
-from datetime import date
+
+from .models import Category, Expense, Income, RecurringTransaction, UserProfile
+
 
 class ExpenseForm(forms.ModelForm):
     class Meta:
@@ -272,7 +274,8 @@ class ContactForm(forms.Form):
         if getattr(settings, 'RECAPTCHA_PUBLIC_KEY', None) and getattr(settings, 'RECAPTCHA_PRIVATE_KEY', None):
             self.fields['captcha'] = ReCaptchaField(widget=ReCaptchaV3)
 
-from .models import SavingsGoal, GoalContribution
+from .models import GoalContribution, SavingsGoal
+
 
 class SavingsGoalForm(forms.ModelForm):
     class Meta:
@@ -347,6 +350,7 @@ class CategoryForm(forms.ModelForm):
         return name
 
 from .models import Account, Transfer
+
 
 class AccountForm(forms.ModelForm):
     class Meta:

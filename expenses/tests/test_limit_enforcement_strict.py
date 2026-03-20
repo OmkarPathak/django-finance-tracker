@@ -1,10 +1,19 @@
 
-from django.test import TestCase
+from datetime import date, timedelta
+
 from django.contrib.auth.models import User
-from expenses.models import UserProfile, Category, SavingsGoal, RecurringTransaction, Expense, GoalContribution
-from expenses.forms import ExpenseForm
+from django.test import TestCase
 from django.utils import timezone
-from datetime import timedelta, date
+
+from expenses.forms import ExpenseForm
+from expenses.models import (
+    Category,
+    Expense,
+    GoalContribution,
+    RecurringTransaction,
+    SavingsGoal,
+)
+
 
 class StrictLimitEnforcementTest(TestCase):
     def setUp(self):
@@ -90,6 +99,7 @@ class StrictLimitEnforcementTest(TestCase):
 
     def test_recurring_transaction_update_limit_enforcement(self):
         from django.urls import reverse
+
         from expenses.models import RecurringTransaction
         
         # Clean up existing subs from setUp
@@ -112,6 +122,7 @@ class StrictLimitEnforcementTest(TestCase):
         
     def test_savings_goal_update_limit_enforcement(self):
         from django.urls import reverse
+
         from expenses.models import SavingsGoal
         
         # Clean up existing goals from setUp
@@ -138,6 +149,7 @@ class StrictLimitEnforcementTest(TestCase):
 
     def test_category_update_limit_enforcement(self):
         from django.urls import reverse
+
         from expenses.models import Category
         
         # Clean up existing categories from setUp and signal
@@ -160,9 +172,10 @@ class StrictLimitEnforcementTest(TestCase):
         self.assertIn(reverse('category-list'), response.url)
 
     def test_savings_goal_locked_status(self):
-        from django.test import RequestFactory
-        from expenses.views import SavingsGoalListView, SavingsGoalDetailView
         from django.contrib.sessions.middleware import SessionMiddleware
+        from django.test import RequestFactory
+
+        from expenses.views import SavingsGoalDetailView, SavingsGoalListView
         
         factory = RequestFactory()
         request = factory.get('/goals/')
@@ -188,7 +201,7 @@ class StrictLimitEnforcementTest(TestCase):
         request_post.session.save()
         
         from django.contrib.messages.storage.fallback import FallbackStorage
-        setattr(request_post, '_messages', FallbackStorage(request_post))
+        request_post._messages = FallbackStorage(request_post)
         
         view_detail = SavingsGoalDetailView()
         response = view_detail.post(request_post, pk=locked_goal.pk)

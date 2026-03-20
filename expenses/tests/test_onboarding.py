@@ -1,9 +1,16 @@
-from django.test import TestCase, Client
-from django.urls import reverse
-from django.contrib.auth.models import User
-from expenses.models import UserProfile, Income, Expense, Category, Account, RecurringTransaction
-from datetime import date
 import json
+
+from django.contrib.auth.models import User
+from django.test import Client, TestCase
+from django.urls import reverse
+
+from expenses.models import (
+    Account,
+    Expense,
+    Income,
+    RecurringTransaction,
+)
+
 
 class OnboardingViewTest(TestCase):
     def setUp(self):

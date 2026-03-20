@@ -1,6 +1,7 @@
 from django.test import TestCase
-from django.template import Context, Template
+
 from blog.templatetags.blog_extras import markdown
+
 
 class SecurityTests(TestCase):
     def test_markdown_xss_protection(self):

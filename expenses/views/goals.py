@@ -1,16 +1,16 @@
 import json
-from django.shortcuts import render, redirect, get_object_or_404
-from django.http import JsonResponse
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django.contrib.auth.decorators import login_required
-from django.views.generic import ListView, CreateView, UpdateView, DeleteView, View
-from django.urls import reverse_lazy, reverse
-from django.contrib import messages
-from django.utils.translation import gettext as _
-from django.db.models import Sum
 
-from ..models import SavingsGoal, GoalContribution
-from ..forms import SavingsGoalForm, GoalContributionForm
+from django.contrib import messages
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse_lazy
+from django.utils.translation import gettext as _
+from django.views.generic import CreateView, DeleteView, ListView, UpdateView, View
+
+from ..forms import GoalContributionForm, SavingsGoalForm
+from ..models import SavingsGoal
+
 
 class SavingsGoalListView(LoginRequiredMixin, ListView):
     model = SavingsGoal
@@ -72,8 +72,8 @@ class SavingsGoalUpdateView(LoginRequiredMixin, UpdateView):
         return super().get_queryset().filter(user=self.request.user)
 
     def form_valid(self, form):
-        from django.utils.translation import gettext as _
         from django.contrib import messages
+        from django.utils.translation import gettext as _
         messages.success(self.request, _("Savings goal updated successfully!"))
         return super().form_valid(form)
 
@@ -83,8 +83,8 @@ class SavingsGoalDeleteView(LoginRequiredMixin, DeleteView):
     def get_queryset(self): return SavingsGoal.objects.filter(user=self.request.user)
 
     def delete(self, request, *args, **kwargs):
-        from django.utils.translation import gettext as _
         from django.contrib import messages
+        from django.utils.translation import gettext as _
         messages.success(self.request, _("Savings goal deleted successfully."))
         return super().delete(request, *args, **kwargs)
 
