@@ -3,6 +3,7 @@ from decimal import Decimal
 
 from django.contrib.auth.models import User
 from django.db import models, transaction
+from django.db.models import F
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
@@ -77,8 +78,7 @@ class Expense(models.Model):
             if self.pk:
                 old_instance = Expense.objects.get(pk=self.pk)
                 if old_instance.account:
-                    old_instance.account.balance += old_instance.amount
-                    old_instance.account.save()
+                    Account.objects.filter(pk=old_instance.account.pk).update(balance=F('balance') + old_instance.amount)
 
             if self.category:
                 self.category = self.category.strip()
@@ -96,15 +96,12 @@ class Expense(models.Model):
             
             # Apply new balance
             if self.account:
-                self.account.refresh_from_db()
-                self.account.balance -= self.amount
-                self.account.save()
+                Account.objects.filter(pk=self.account.pk).update(balance=F('balance') - self.amount)
 
     def delete(self, *args, **kwargs):
         with transaction.atomic():
             if self.account:
-                self.account.balance += self.amount
-                self.account.save()
+                Account.objects.filter(pk=self.account.pk).update(balance=F('balance') + self.amount)
             super().delete(*args, **kwargs)
 
     class Meta:
@@ -168,8 +165,7 @@ class Income(models.Model):
             if self.pk:
                 old_instance = Income.objects.get(pk=self.pk)
                 if old_instance.account:
-                    old_instance.account.balance -= old_instance.amount
-                    old_instance.account.save()
+                    Account.objects.filter(pk=old_instance.account.pk).update(balance=F('balance') - old_instance.amount)
 
             if self.source:
                 self.source = self.source.strip()
@@ -187,15 +183,12 @@ class Income(models.Model):
 
             # Apply new balance
             if self.account:
-                self.account.refresh_from_db()
-                self.account.balance += self.amount
-                self.account.save()
+                Account.objects.filter(pk=self.account.pk).update(balance=F('balance') + self.amount)
 
     def delete(self, *args, **kwargs):
         with transaction.atomic():
             if self.account:
-                self.account.balance -= self.amount
-                self.account.save()
+                Account.objects.filter(pk=self.account.pk).update(balance=F('balance') - self.amount)
             super().delete(*args, **kwargs)
 
     class Meta:
@@ -218,6 +211,8 @@ class Transfer(models.Model):
     from_account = models.ForeignKey(Account, on_delete=models.CASCADE, related_name='transfers_out', verbose_name=_('From Account'))
     to_account = models.ForeignKey(Account, on_delete=models.CASCADE, related_name='transfers_in', verbose_name=_('To Account'))
     amount = models.DecimalField(max_digits=12, decimal_places=2, verbose_name=_('Amount'))
+    exchange_rate = models.DecimalField(max_digits=12, decimal_places=6, default=Decimal('1.0'), verbose_name=_('Exchange Rate'))
+    converted_amount = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal('0.00'), verbose_name=_('Converted Amount'))
     date = models.DateField(default=timezone.now, verbose_name=_('Date'))
     description = models.TextField(blank=True, null=True, verbose_name=_('Description'))
 
@@ -226,33 +221,30 @@ class Transfer(models.Model):
 
     def save(self, *args, **kwargs):
         with transaction.atomic():
-            # Revert-and-Apply pattern for updates
+            # Revert old balance for updates
             if self.pk:
                 old_instance = Transfer.objects.get(pk=self.pk)
-                # Revert old
-                old_instance.from_account.balance += old_instance.amount
-                old_instance.from_account.save()
-                old_instance.to_account.balance -= old_instance.amount
-                old_instance.to_account.save()
+                Account.objects.filter(pk=old_instance.from_account.pk).update(balance=F('balance') + old_instance.amount)
+                Account.objects.filter(pk=old_instance.to_account.pk).update(balance=F('balance') - old_instance.converted_amount)
+
+            # Calculate conversion if currencies differ
+            if self.from_account.currency != self.to_account.currency:
+                self.exchange_rate = get_exchange_rate(self.from_account.currency, self.to_account.currency)
+                self.converted_amount = (self.amount * self.exchange_rate).quantize(Decimal('0.01'))
+            else:
+                self.exchange_rate = Decimal('1.0')
+                self.converted_amount = self.amount
 
             super().save(*args, **kwargs)
 
-            # Apply new
-            # Refresh accounts to get reverted balances
-            self.from_account.refresh_from_db()
-            self.to_account.refresh_from_db()
-            
-            self.from_account.balance -= self.amount
-            self.from_account.save()
-            self.to_account.balance += self.amount
-            self.to_account.save()
+            # Apply new balance
+            Account.objects.filter(pk=self.from_account.pk).update(balance=F('balance') - self.amount)
+            Account.objects.filter(pk=self.to_account.pk).update(balance=F('balance') + self.converted_amount)
 
     def delete(self, *args, **kwargs):
         with transaction.atomic():
-            self.from_account.balance += self.amount
-            self.from_account.save()
-            self.to_account.balance -= self.amount
-            self.to_account.save()
+            Account.objects.filter(pk=self.from_account.pk).update(balance=F('balance') + self.amount)
+            Account.objects.filter(pk=self.to_account.pk).update(balance=F('balance') - self.converted_amount)
             super().delete(*args, **kwargs)
 
     def __str__(self):

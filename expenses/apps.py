@@ -6,4 +6,4 @@ class ExpensesConfig(AppConfig):
     name = 'expenses'
 
     def ready(self):
-        pass
+        import expenses.signals

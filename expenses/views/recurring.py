@@ -49,10 +49,8 @@ class RecurringTransactionListView(LoginRequiredMixin, RecurringTransactionMixin
         active_subs = [t for t in all_transactions if t.is_active]
         active_subs.sort(key=lambda x: x.created_at or x.id) # Fallback to ID if created_at is null
         
-        profile = self.request.user.profile
-        limit = float('inf')
         if not profile.is_pro:
-            limit = 3 if profile.is_plus else 1
+            limit = 3 if profile.is_plus else 0
             
         for i, sub in enumerate(active_subs):
             sub.is_locked = i >= limit
@@ -173,7 +171,7 @@ class RecurringTransactionListView(LoginRequiredMixin, RecurringTransactionMixin
         active_count = RecurringTransaction.objects.filter(user=self.request.user, is_active=True).count()
         limit = float('inf')
         if not profile.is_pro:
-            limit = 3 if profile.is_plus else 1
+            limit = 3 if profile.is_plus else 0
             
             if profile.is_plus:
                 upgrade_tier = 'PRO'
@@ -208,7 +206,7 @@ class RecurringTransactionCreateView(LoginRequiredMixin, CreateView):
     
     def dispatch(self, request, *args, **kwargs):
         profile = request.user.profile
-        limit = float('inf') if profile.is_pro else (3 if profile.is_plus else 1)
+        limit = float('inf') if profile.is_pro else (3 if profile.is_plus else 0)
         active_count = RecurringTransaction.objects.filter(user=request.user, is_active=True).count()
         if active_count >= limit:
             messages.error(request, _("Subscription limit reached. Please upgrade."))
@@ -255,7 +253,7 @@ class RecurringTransactionUpdateView(LoginRequiredMixin, UpdateView):
     success_url = reverse_lazy('recurring-list')
     def dispatch(self, request, *args, **kwargs):
         obj = self.get_object(); profile = request.user.profile
-        limit = float('inf') if profile.is_pro else (3 if profile.is_plus else 1)
+        limit = float('inf') if profile.is_pro else (3 if profile.is_plus else 0)
         subs = list(RecurringTransaction.objects.filter(user=request.user).order_by('created_at', 'id'))
         if obj in subs and subs.index(obj) >= limit:
             messages.error(request, _("This subscription is locked."))
