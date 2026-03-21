@@ -374,15 +374,15 @@
         </button>
         
         <!-- Desktop Filter Form (Realigned) -->
-        <form method="get" class="d-flex flex-wrap align-items-center gap-2 bg-body-tertiary p-2 rounded shadow-sm" id="filter-form" style="position: relative; z-index: 1040;">
+        <form method="get" class="d-flex flex-wrap align-items-center gap-2 bg-body p-2 rounded shadow-sm" id="filter-form" style="position: relative; z-index: 1040;">
             <!-- Date Range Group -->
             <div class="d-flex gap-2">
                 <div class="input-group input-group-sm" style="width: auto;">
-                    <span class="input-group-text bg-body-tertiary border-end-0">{% trans "From" %}</span>
+                    <span class="input-group-text bg-body border-end-0">{% trans "From" %}</span>
                     <input type="date" name="start_date" id="start_date" class="form-control" value="{{ start_date|default:'' }}">
                 </div>
                 <div class="input-group input-group-sm" style="width: auto;">
-                    <span class="input-group-text bg-body-tertiary border-end-0">{% trans "To" %}</span>
+                    <span class="input-group-text bg-body border-end-0">{% trans "To" %}</span>
                     <input type="date" name="end_date" id="end_date" class="form-control" value="{{ end_date|default:'' }}">
                 </div>
             </div>
@@ -509,7 +509,11 @@
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="me-2 text-primary flex-shrink-0">
                             <path d="M21.21 15.89A10 10 0 1 1 8 2.83" class="anim-pie" fill="currentColor" fill-opacity="0.3"/>
                             <path d="M22 12A10 10 0 0 0 12 2v10z"/>
-                        </svg> {% trans "Where Did My Salary Go?" %}
+                        </svg> 
+                        <span class="cursor-pointer" data-bs-toggle="tooltip" data-bs-placement="top" 
+                              title="{% trans 'Overview of how your income is distributed between categorised spending and savings.' %}">
+                            {% trans "Where Did My Salary Go?" %}
+                        </span>
                     </div>
                 </div>
                 <div class="card-body p-3 p-md-4">
@@ -567,7 +571,11 @@
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="me-2 text-primary flex-shrink-0">
                                     <polyline points="22 7 13.5 15.5 8.5 10.5 2 17" class="anim-trend"/>
                                     <polyline points="16 7 22 7 22 13" class="anim-trend"/>
-                                </svg> {% trans "Money Flow Analysis" %}
+                                </svg> 
+                                <span class="cursor-pointer" data-bs-toggle="tooltip" data-bs-placement="top" 
+                                      title="{% trans 'Analysis of your spending trends and notable financial habits.' %}">
+                                    {% trans "Money Flow Analysis" %}
+                                </span>
                             </div>
                         </div>
                         <div class="card-body p-4">
@@ -631,7 +639,11 @@
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="me-2 text-danger animate-pulse-light flex-shrink-0">
                                     <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
                                     <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
-                                </svg> {% trans "Actionable Alerts" %}
+                                </svg> 
+                                <span class="cursor-pointer" data-bs-toggle="tooltip" data-bs-placement="top" 
+                                      title="{% trans 'Urgent notifications regarding budget overruns or unusual spending.' %}">
+                                    {% trans "Actionable Alerts" %}
+                                </span>
                             </div>
                         </div>
                         <div class="card-body p-4">
@@ -919,7 +931,10 @@ document.addEventListener('DOMContentLoaded', function() {
                         <path d="M22 10H18a2 2 0 0 0 0 4h4"/>
                         <circle cx="18" cy="12" r="1" fill="currentColor" class="anim-wallet-coin"/>
                     </svg>
-                    {% trans "Total Net Worth" %} – 
+                    <span class="cursor-pointer" data-bs-toggle="tooltip" data-bs-placement="top" 
+                          title="{% trans 'The combined balance of all your accounts (Savings, Cash, Investments minus Credit Card debt).' %}">
+                        {% trans "Total Net Worth" %}
+                    </span> – 
                     {% if selected_month and selected_year %}
                         {{ selected_month }} {{ selected_year|translate_digits }}
                     {% else %}
@@ -1032,7 +1047,11 @@ document.addEventListener('DOMContentLoaded', function() {
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="me-2 text-muted flex-shrink-0" style="vertical-align: middle;">
                         <path d="M22 12h-4l-3 9L9 3l-3 9H2" class="anim-heartbeat"/>
                     </svg>
-                    {% trans "Financial Health" %} – {% if salary_breakdown.month_name %} {{ salary_breakdown.month_name }} {% else %} Custom Range {% endif %}
+                    <span class="cursor-pointer" data-bs-toggle="tooltip" data-bs-placement="top" 
+                          title="{% trans 'A summary of your savings rate and overall financial performance for the period.' %}">
+                        {% trans "Financial Health" %}
+                    </span>
+                    – {% if salary_breakdown.month_name %} {{ salary_breakdown.month_name }} {% else %} Custom Range {% endif %}
                 </div>
                 {% if hero_metrics.income > 0 or hero_metrics.spent > 0 %}
                     {% if hero_metrics.status == 'excellent' %}
@@ -1178,7 +1197,10 @@ document.addEventListener('DOMContentLoaded', function() {
                         <circle cx="12" cy="12" r="10" opacity="0.2"/>
                         <path d="M12 12l3-3" class="anim-speedometer"/>
                     </svg>
-                    {% trans "Spending Pace" %}
+                    <span class="cursor-pointer" data-bs-toggle="tooltip" data-bs-placement="top" 
+                          title="{% trans 'Tracks how fast you are spending your budget relative to the days passed in the month.' %}">
+                        {% trans "Spending Pace" %}
+                    </span>
                 </div>
                 {% if hero_metrics.income > 0 or hero_metrics.spent > 0 %}
                     {% if salary_breakdown.total_monthly_budget > 0 %}
@@ -1306,7 +1328,10 @@ document.addEventListener('DOMContentLoaded', function() {
                         <line x1="7" y1="21" x2="17" y2="21"/>
                         <line x1="12" y1="17" x2="12" y2="21"/>
                     </svg>
-                    {% trans "Asset Allocation" %}
+                    <span class="cursor-pointer" data-bs-toggle="tooltip" data-bs-placement="top" 
+                          title="{% trans 'Distribution of your total wealth across different account types like Cash, Bank, and Investments.' %}">
+                        {% trans "Asset Allocation" %}
+                    </span>
                 </div>
             </div>
             {% if asset_allocation %}
@@ -1369,7 +1394,11 @@ document.addEventListener('DOMContentLoaded', function() {
                         <path d="M12 2v2" class="anim-twinkle" fill="currentColor"/>
                         <path d="M12 6v2" class="anim-twinkle" fill="currentColor"/>
                     </svg> 
-                    {% trans "Smart Insights" %} – {% if salary_breakdown.month_name %} {{ salary_breakdown.month_name }} {% else %} Custom Range {% endif %}
+                    <span class="cursor-pointer" data-bs-toggle="tooltip" data-bs-placement="top" 
+                          title="{% trans 'AI-generated observations about your spending patterns and financial trends.' %}">
+                        {% trans "Smart Insights" %}
+                    </span>
+                    – {% if salary_breakdown.month_name %} {{ salary_breakdown.month_name }} {% else %} Custom Range {% endif %}
                  </div>
             </div>
             <div class="card-body p-4 d-flex flex-column justify-content-center">
@@ -1413,7 +1442,10 @@ document.addEventListener('DOMContentLoaded', function() {
             <div class="card-header bg-transparent border-bottom fw-bold d-flex justify-content-between">
                 <div class="d-inline-flex align-items-center">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1 text-muted flex-shrink-0"><polyline points="4 18 8 12 14 16 20 6" class="anim-trend"/></svg> 
-                    {{ trend_title }}
+                    <span class="cursor-pointer" data-bs-toggle="tooltip" data-bs-placement="top" 
+                          title="{% trans 'A visualization of your spending over time (Daily or Monthly view).' %}">
+                        {{ trend_title }}
+                    </span>
                 </div>
             </div>
             <div class="card-body">
@@ -1442,7 +1474,10 @@ document.addEventListener('DOMContentLoaded', function() {
             <div class="card-header bg-transparent border-bottom d-flex justify-content-between align-items-center fw-bold">
                 <div class="mb-0 d-inline-flex align-items-center">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="me-1 text-muted flex-shrink-0"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z" class="anim-tag"/><line x1="7" y1="7" x2="7.01" y2="7" class="anim-tag"/></svg> 
-                    {% trans "Top Categories" %}
+                    <span class="cursor-pointer" data-bs-toggle="tooltip" data-bs-placement="top" 
+                          title="{% trans 'Your highest spending categories for the selected period.' %}">
+                        {% trans "Top Categories" %}
+                    </span>
                 </div>
                 <a href="{% url 'category-list' %}" class="btn btn-sm text-decoration-none opacity-25"><i class="bi bi-box-arrow-up-right"></i></a>
             </div>
@@ -1517,7 +1552,10 @@ document.addEventListener('DOMContentLoaded', function() {
             <div class="card-header bg-transparent border-bottom fw-bold d-flex align-items-center">
                 <div class="d-inline-flex align-items-center">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="me-1 text-muted flex-shrink-0"><circle cx="12" cy="12" r="10" class="anim-donut" stroke-dasharray="15 8 8 8"/></svg>
-                    {% trans "Category Distribution" %}
+                    <span class="cursor-pointer" data-bs-toggle="tooltip" data-bs-placement="top" 
+                          title="{% trans 'A percentage breakdown of your expenses across all categories.' %}">
+                        {% trans "Category Distribution" %}
+                    </span>
                 </div>
             </div>
             <div class="card-body">
@@ -1546,7 +1584,10 @@ document.addEventListener('DOMContentLoaded', function() {
             <div class="card-header bg-transparent border-bottom d-flex justify-content-between align-items-center fw-bold">
                 <div class="d-inline-flex align-items-center">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="me-1 text-muted flex-shrink-0"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14" class="anim-clk"/></svg> 
-                    {% trans "Recent Activity" %}
+                    <span class="cursor-pointer" data-bs-toggle="tooltip" data-bs-placement="top" 
+                          title="{% trans 'Your most recent transactions across all accounts and categories.' %}">
+                        {% trans "Recent Activity" %}
+                    </span>
                 </div>
                 <a href="{% url 'expense-list' %}" class="btn btn-sm text-decoration-none opacity-25" title="{% trans 'View All' %}"><i class="bi bi-box-arrow-up-right"></i></a>
             </div>
@@ -1628,7 +1669,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="me-1 text-muted flex-shrink-0">
                         <path d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9" class="anim-rotate"/>
                     </svg> 
-                    {% trans "Recurring Commitments" %}
+                    <span class="cursor-pointer" data-bs-toggle="tooltip" data-bs-placement="top" 
+                          title="{% trans 'Fixed monthly obligations like rent, bills, and subscriptions.' %}">
+                        {% trans "Recurring Commitments" %}
+                    </span>
                 </div>
                 <a href="{% url 'recurring-list' %}" class="btn btn-sm text-decoration-none opacity-25"><i class="bi bi-box-arrow-up-right"></i></a>
             </div>
@@ -1733,7 +1777,10 @@ document.addEventListener('DOMContentLoaded', function() {
         <div class="card shadow-lg border-0 h-100 glass-card rounded-4">
             <div class="card-header bg-transparent border-bottom fw-bold d-flex align-items-center">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1 text-muted flex-shrink-0"><rect x="2" y="5" width="20" height="14" rx="2" class="anim-card"/><line x1="2" y1="10" x2="22" y2="10" class="anim-card"/></svg>
-                {% trans "Payment Method" %}
+                <span class="cursor-pointer" data-bs-toggle="tooltip" data-bs-placement="top" 
+                      title="{% trans 'Breakdown of your spending by how you paid (Cash, UPI, Credit Card, etc.).' %}">
+                    {% trans "Payment Method" %}
+                </span>
             </div>
             <div class="card-body d-flex flex-column justify-content-center h-100 p-4">
                 {% if payment_data %}
@@ -1772,7 +1819,10 @@ document.addEventListener('DOMContentLoaded', function() {
                         <path d="M18.5 9.5l-3 3-2.5-4.5-3 6.5-4-4" stroke-linecap="round" stroke-linejoin="round"/>
                         <path d="M19 12v7" stroke-dasharray="2 2" stroke-linecap="round"/>
                     </svg>
-                    {% trans "Expense Projection" %}
+                    <span class="cursor-pointer" data-bs-toggle="tooltip" data-bs-placement="top" 
+                          title="{% trans 'A forecast of your future spending based on your historical 6-month average.' %}">
+                        {% trans "Expense Projection" %}
+                    </span>
                 </div>
                 <span class="badge bg-info bg-opacity-10 text-info rounded-pill px-3 py-1 small border border-info border-opacity-10 d-inline-flex align-items-center" style="font-size: 0.7rem;">
                     <i class="bi bi-info-circle me-1"></i> {% trans "Based on last 6 months" %}
