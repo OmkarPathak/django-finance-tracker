@@ -60,6 +60,13 @@ class Command(BaseCommand):
             balance=Decimal('100000.00'), 
             currency='₹'
         )
+        acc_invest = Account.objects.create(
+            user=user, 
+            name="Zerodha Demat", 
+            account_type='INVESTMENT', 
+            balance=Decimal('250000.00'), 
+            currency='₹'
+        )
 
         self.stdout.write(self.style.SUCCESS('Created Bank and Cash Accounts'))
 
@@ -67,19 +74,19 @@ class Command(BaseCommand):
         categories_data = [
             # Needs
             {'name': 'Rent', 'limit': 25000, 'icon': 'bi-house-fill'},
-            {'name': 'Groceries', 'limit': 8000, 'icon': 'bi-cart-fill'},
-            {'name': 'Utilities', 'limit': 5000, 'icon': 'bi-lightning-charge-fill'},
-            {'name': 'Transport', 'limit': 6000, 'icon': 'bi-car-front-fill'},
+            {'name': 'Groceries', 'limit': 12000, 'icon': 'bi-cart-fill'},
+            {'name': 'Utilities', 'limit': 6000, 'icon': 'bi-lightning-charge-fill'},
+            {'name': 'Transport', 'limit': 8000, 'icon': 'bi-car-front-fill'},
             
             # Wants
-            {'name': 'Dining Out', 'limit': 5000, 'icon': 'bi-egg-fried'}, 
-            {'name': 'Shopping', 'limit': 7000, 'icon': 'bi-bag-heart-fill'},
-            {'name': 'Subscriptions', 'limit': 3000, 'icon': 'bi-tv-fill'},
-            {'name': 'Travel', 'limit': 15000, 'icon': 'bi-airplane-fill'},
+            {'name': 'Dining Out', 'limit': 10000, 'icon': 'bi-egg-fried'}, 
+            {'name': 'Shopping', 'limit': 10000, 'icon': 'bi-bag-heart-fill'},
+            {'name': 'Subscriptions', 'limit': 5000, 'icon': 'bi-tv-fill'},
+            {'name': 'Travel', 'limit': 20000, 'icon': 'bi-airplane-fill'},
             
             # General / Investment-related (Standard categories now)
-            {'name': 'Mutual Funds', 'limit': 20000, 'icon': 'bi-graph-up-arrow'},
-            {'name': 'Stocks', 'limit': 10000, 'icon': 'bi-bank'},
+            {'name': 'Mutual Funds', 'limit': 25000, 'icon': 'bi-graph-up-arrow'},
+            {'name': 'Stocks', 'limit': 15000, 'icon': 'bi-bank'},
             {'name': 'Savings Transfer', 'limit': None, 'icon': 'bi-piggy-bank-fill'},
         ]
         
@@ -178,6 +185,28 @@ class Command(BaseCommand):
             curr_date += timedelta(days=1)
 
         self.stdout.write(self.style.SUCCESS('Generated Realistic Expense History'))
+        
+        # 5.1 Enforce "Today" and "Yesterday" Expenses for Dashboard KPI
+        today_expenses = [
+            {'cat': 'Dining Out', 'amount': 180, 'desc': 'Morning Coffee & Maska Bun', 'date': today},
+            {'cat': 'Transport', 'amount': 240, 'desc': 'Uber to WeWork', 'date': today},
+            {'cat': 'Dining Out', 'amount': 450, 'desc': 'Lunch with Team', 'date': today},
+            {'cat': 'Groceries', 'amount': 850, 'desc': 'Milk, Eggs & Fruits', 'date': today - timedelta(days=1)},
+            {'cat': 'Transport', 'amount': 320, 'desc': 'Auto Rickshaw (Return)', 'date': today - timedelta(days=1)},
+        ]
+        
+        for te in today_expenses:
+            Expense.objects.get_or_create(
+                user=user,
+                category=te['cat'],
+                amount=Decimal(str(te['amount'])),
+                date=te['date'],
+                description=te['desc'],
+                payment_method='UPI',
+                account=acc_cash if te['cat'] in ['Groceries', 'Transport', 'Dining Out'] else acc_main
+            )
+        
+        self.stdout.write(self.style.SUCCESS('Injected Current Day Data for ROI Visibility'))
 
         # 6. Savings Goals & Contributions
         goals = [

@@ -176,12 +176,38 @@ class ExpenseCreateView(LoginRequiredMixin, View):
         ExpenseFormSet = modelformset_factory(Expense, form=ExpenseForm, extra=1, can_delete=True)
         formset = ExpenseFormSet(request.POST, form_kwargs={'user': request.user})
         if formset.is_valid():
+            instances = formset.save(commit=False)
+            
+            # Check monthly limit for FREE tier
+            if request.user.profile.active_tier == 'FREE':
+                now = datetime.now()
+                # Count expenses already in DB for this month
+                existing_count = Expense.objects.filter(
+                    user=request.user, 
+                    date__year=now.year, 
+                    date__month=now.month
+                ).count()
+                
+                # Count how many NEW expenses are being added for the CURRENT month
+                # (Ignoring deletions for simplicity in limit enforcement)
+                new_count = len([
+                    inst for inst in instances 
+                    if inst.date.year == now.year and inst.date.month == now.month and not inst.pk
+                ])
+                
+                if existing_count + new_count > 30:
+                    messages.error(request, _("You have reached the monthly limit of 30 expenses for the Free plan. Please upgrade to add more."))
+                    return redirect('pricing')
+
             try:
-                instances = formset.save(commit=False)
                 for instance in instances:
                     instance.user = request.user
                     instance.save()
                 
+                # Handle deletions from formset
+                for obj in formset.deleted_objects:
+                    obj.delete()
+
                 next_url = request.POST.get('next') or request.GET.get('next')
                 if next_url:
                     return redirect(next_url)

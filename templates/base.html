@@ -481,20 +481,36 @@
 
 <body class="d-flex flex-column min-vh-100 {% if user.is_authenticated %}is-authenticated{% endif %}">
     {% if request.user.username == 'demo' %}
-    <div class="alert alert-warning text-center fw-bold m-0 rounded-0 py-2 small shadow-sm position-relative z-3 d-flex justify-content-center align-items-center gap-2"
-        role="alert">
-        <span class="d-inline-flex align-items-center"><i class="bi bi-exclamation-triangle-fill me-1"></i> DEMO MODE: Read-only access.</span>
+    <div class="alert alert-primary text-center fw-bold m-0 rounded-0 py-2 small shadow-sm sticky-top d-flex justify-content-center align-items-center gap-2"
+        role="alert" style="z-index: 1050; border: none; background: linear-gradient(90deg, #2d6a4f, #1a4a35); color: white;">
+        <span class="d-inline-flex align-items-center">
+            <i class="bi bi-stars me-2"></i> 
+            {% trans "You're in Demo Mode." %}
+        </span>
         <span class="opacity-50">|</span>
-        <a href="{% url 'demo_signup' %}" class="text-reset text-decoration-underline">Create Account</a>
+        <a href="{% url 'demo_signup' %}" class="text-white text-decoration-none hover-underline">
+            {% trans "Save your data — Create free account →" %}
+        </a>
         <span class="opacity-50">|</span>
         <form action="{% url 'account_logout' %}" method="post" class="d-inline">
             {% csrf_token %}
-            <button type="submit" class="btn btn-link p-0 align-baseline text-reset text-decoration-underline fw-bold"
+            <button type="submit" class="btn btn-link p-0 align-baseline text-white text-decoration-underline fw-bold"
                 style="font-size: inherit;">
-                Exit Demo
+                {% trans "Exit" %}
             </button>
         </form>
     </div>
+    <style>
+        .hover-underline:hover { text-decoration: underline !important; }
+        /* Offset sticky navbar when demo banner is present */
+        .navbar.sticky-top {
+            top: 40px !important; /* height of the demo banner */
+            transition: top 0.3s;
+        }
+        @media (max-width: 991.98px) {
+            .navbar.sticky-top { top: 40px !important; }
+        }
+    </style>
     {% endif %}
     {% include "components/navbar.html" with is_landing=False %}
 
@@ -810,6 +826,37 @@
             <span class="visually-hidden">Loading...</span>
         </div>
     </div>
+
+    <script>
+        // Start 7-Day Pro Trial
+        window.startTrial = function() {
+            if (!confirm('{% trans "Start your 7-Day Pro Free Trial? No credit card required." %}')) return;
+            
+            showLoader();
+            fetch("{% url 'start-trial' %}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                hideLoader();
+                if (data.success) {
+                    alert(data.message);
+                    window.location.reload();
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            })
+            .catch(error => {
+                hideLoader();
+                console.error('Error:', error);
+                alert('{% trans "Something went wrong. Please try again." %}');
+            });
+        };
+    </script>
 
     <script>
         (function() {

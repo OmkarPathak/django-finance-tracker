@@ -310,10 +310,17 @@
         </div>
     </a>
 
-    <a href="{% url 'calendar' %}" class="mobile-nav-item {% if 'calendar' in request.resolver_match.url_name %}active{% endif %}">
-        <i class="bi bi-calendar3{% if 'calendar' in request.resolver_match.url_name %}-fill{% endif %}"></i>
-        <span>{% trans "Calendar" %}</span>
+    {% if user.profile.active_tier == 'PRO' %}
+    <a href="{% url 'analytics' %}" class="mobile-nav-item {% if 'analytics' in request.resolver_match.url_name %}active{% endif %}">
+        <i class="bi bi-graph-up-arrow"></i>
+        <span>{% trans "Analytics" %}</span>
     </a>
+    {% else %}
+    <a href="{% url 'goal-list' %}" class="mobile-nav-item {% if 'goal' in request.resolver_match.url_name %}active{% endif %}">
+        <i class="bi bi-bullseye{% if 'goal' in request.resolver_match.url_name %}-fill{% endif %}"></i>
+        <span>{% trans "Goals" %}</span>
+    </a>
+    {% endif %}
     <button class="mobile-nav-item mobile-nav-item-more position-relative" type="button" data-bs-toggle="offcanvas" data-bs-target="#moreMenuSheet" aria-controls="moreMenuSheet">
         <i class="bi bi-grid"></i>
         <span>{% trans "More" %}</span>
@@ -408,13 +415,15 @@
                 <i class="bi bi-arrow-repeat text-primary"></i>
                 <span>{% trans "Subscriptions" %}</span>
             </a>
+            {% if user.profile.active_tier == 'PRO' %}
             <a href="{% url 'goal-list' %}" class="list-group-item list-group-item-action">
                 <i class="bi bi-bullseye text-success"></i>
                 <span>{% trans "Savings Goals" %}</span>
             </a>
-            <a href="{% url 'analytics' %}" class="list-group-item list-group-item-action">
-                <i class="bi bi-graph-up-arrow text-info"></i>
-                <span>{% trans "Analytics" %}</span>
+            {% endif %}
+            <a href="{% url 'calendar' %}" class="list-group-item list-group-item-action">
+                <i class="bi bi-calendar3 text-info"></i>
+                <span>{% trans "Calendar" %}</span>
             </a>
             <a href="{% url 'settings-home' %}" class="list-group-item list-group-item-action">
                 <i class="bi bi-gear text-secondary"></i>

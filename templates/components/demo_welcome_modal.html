@@ -1,0 +1,54 @@
+{% load i18n %}
+<!-- Demo Welcome Modal -->
+<div class="modal fade" id="demoWelcomeModal" tabindex="-1" aria-labelledby="demoWelcomeModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-body p-0">
+                <div class="position-relative">
+                    <!-- Premium Header Image/Gradient -->
+                    <div class="p-4 text-white text-center rounded-top" style="background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);">
+                        <div class="display-4 mb-3">👋</div>
+                        <h4 class="fw-bold mb-1">{% trans "Welcome to TrackMyRupee!" %}</h4>
+                        <p class="small opacity-75 mb-0">{% trans "Interactive Live Demo" %}</p>
+                    </div>
+                    
+                    <div class="p-4">
+                        <p class="text-muted">
+                            {% blocktrans %}
+                            You're exploring the financial story of <b>Omkar</b>, a Pune-based indie developer. 
+                            We've pre-populated this dashboard with 3 months of data to show you how TrackMyRupee turns financial chaos into clarity.
+                            {% endblocktrans %}
+                        </p>
+                        
+                        <div class="bg-body-tertiary rounded-3 p-3 mb-4 border">
+                            <h6 class="fw-bold small text-uppercase tracking-wider mb-2">{% trans "What to explore:" %}</h6>
+                            <ul class="list-unstyled mb-0 small">
+                                <li class="mb-2"><i class="bi bi-graph-up-arrow text-primary me-2"></i> {% trans "Check the Net Worth trend & Sparklines" %}</li>
+                                <li class="mb-2"><i class="bi bi-pie-chart-fill text-info me-2"></i> {% trans "See Category-wise breakdown" %}</li>
+                                <li class="mb-2"><i class="bi bi-bell-fill text-warning me-2"></i> {% trans "View Budget Threshold alerts" %}</li>
+                                <li><i class="bi bi-phone-fill text-success me-2"></i> {% trans "Try it on your mobile (it's a PWA!)" %}</li>
+                            </ul>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="button" class="btn btn-primary fw-bold" data-bs-dismiss="modal">
+                                {% trans "Start Exploring →" %}
+                            </button>
+                            <a href="{% url 'demo_signup' %}" class="btn btn-outline-primary border-2 fw-bold">
+                                {% trans "Save your data — Create account" %}
+                            </a>
+                        </div>
+                        
+                        <p class="text-center mt-3 mb-0 micro-text text-muted">
+                            <i class="bi bi-info-circle me-1"></i> {% trans "Demo data is read-only and resets periodically." %}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .micro-text { font-size: 0.7rem; }
+</style>

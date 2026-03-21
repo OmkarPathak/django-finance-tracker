@@ -210,34 +210,6 @@ function updatePricing() {
 
 billingToggle.addEventListener('change', updatePricing);
 
-// Start 7-Day Trial
-function startTrial() {
-    if (!confirm('Start your 7-Day Pro Free Trial? No credit card required.')) return;
-    
-    showLoader();
-    fetch("{% url 'start-trial' %}", {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': '{{ csrf_token }}'
-        }
-    })
-    .then(response => response.json())
-    .then(data => {
-        hideLoader();
-        if (data.success) {
-            alert(data.message);
-            window.location.reload();
-        } else {
-            alert('Error: ' + data.error);
-        }
-    })
-    .catch(error => {
-        hideLoader();
-        console.error('Error:', error);
-        alert('Something went wrong. Please try again.');
-    });
-}
 
 async function startPayment(planType) {
     try {

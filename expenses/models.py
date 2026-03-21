@@ -27,6 +27,7 @@ class Account(models.Model):
         ('BANK', _('Bank Account')),
         ('CREDIT_CARD', _('Credit Card')),
         ('INVESTMENT', _('Investment Account')),
+        ('FIXED_DEPOSIT', _('Fixed Deposit')),
         ('OTHER', _('Other')),
     ]
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='accounts')
@@ -220,10 +221,13 @@ class Transfer(models.Model):
     amount = models.DecimalField(max_digits=12, decimal_places=2, verbose_name=_('Amount'))
     date = models.DateField(default=timezone.now, verbose_name=_('Date'))
     description = models.TextField(blank=True, null=True, verbose_name=_('Description'))
+    
+    # Multi-currency support (No currency field in DB yet for Transfer, using from_account.currency)
+    exchange_rate = models.DecimalField(max_digits=15, decimal_places=6, default=1.0, verbose_name=_('Exchange Rate'))
+    converted_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0.0, verbose_name=_('Amount in Base Currency'))
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-
     def save(self, *args, **kwargs):
         with transaction.atomic():
             # Revert-and-Apply pattern for updates
@@ -234,6 +238,17 @@ class Transfer(models.Model):
                 old_instance.from_account.save()
                 old_instance.to_account.balance -= old_instance.amount
                 old_instance.to_account.save()
+
+            # Multi-currency normalization (Transfers use the currency of the from_account usually)
+            currency = self.from_account.currency
+                
+            base_currency = self.user.profile.currency
+            if currency == base_currency:
+                self.exchange_rate = Decimal('1.0')
+                self.converted_amount = self.amount
+            else:
+                self.exchange_rate = get_exchange_rate(currency, base_currency)
+                self.converted_amount = (self.amount * self.exchange_rate).quantize(Decimal('0.01'))
 
             super().save(*args, **kwargs)
 
@@ -398,6 +413,46 @@ class UserProfile(models.Model):
                 return True # Assume active if no end date set manually
             if self.subscription_end_date > timezone.now():
                 return True
+        return False
+
+    @property
+    def has_net_worth_access(self):
+        """Net worth is a paid feature (Plus or Pro)."""
+        return self.is_plus or self.is_pro
+
+    def can_add_account(self):
+        """Free users are capped at 3 accounts."""
+        if self.active_tier == 'FREE':
+            return self.user.accounts.count() < 3
+        return True
+
+    def can_add_expense(self):
+        """Free users are capped at 30 expenses per month."""
+        if self.active_tier == 'FREE':
+            now = timezone.now()
+            month_count = Expense.objects.filter(
+                user=self.user, 
+                date__year=now.year, 
+                date__month=now.month
+            ).count()
+            return month_count < 30
+        return True
+
+    def can_add_recurring(self):
+        """Free users are capped at 0 recurring transactions."""
+        if self.active_tier == 'PLUS': # Plus: 3
+            return self.user.recurringtransaction_set.filter(is_active=True).count() < 3
+        if self.active_tier == 'FREE': # Free: 0
+            return False
+        return True # Pro: Unlimited
+
+    def is_recurring_locked(self, obj):
+        """Check if a specific recurring transaction is locked based on tier limits."""
+        if self.is_pro: return False
+        limit = 3 if self.is_plus else 0
+        subs = list(self.user.recurringtransaction_set.all().order_by('created_at', 'id'))
+        if obj in subs and subs.index(obj) >= limit:
+            return True
         return False
 
     @property

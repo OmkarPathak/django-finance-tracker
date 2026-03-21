@@ -50,12 +50,8 @@ class RecurringTransactionListView(LoginRequiredMixin, RecurringTransactionMixin
         active_subs.sort(key=lambda x: x.created_at or x.id) # Fallback to ID if created_at is null
         
         profile = self.request.user.profile
-        limit = float('inf')
-        if not profile.is_pro:
-            limit = 3 if profile.is_plus else 1
-            
-        for i, sub in enumerate(active_subs):
-            sub.is_locked = i >= limit
+        for sub in active_subs:
+            sub.is_locked = profile.is_recurring_locked(sub)
             
         cancelled_subs = [t for t in all_transactions if not t.is_active]
         
@@ -191,8 +187,8 @@ class RecurringTransactionListView(LoginRequiredMixin, RecurringTransactionMixin
             else:
                 context['show_nudge'] = active_count >= max(1, int(limit * 0.6))
         
-        context['is_limit_reached'] = active_count >= limit
-        context['current_limit'] = limit
+        context['is_limit_reached'] = not profile.can_add_recurring()
+        context['current_limit'] = float('inf') if profile.is_pro else (3 if profile.is_plus else 0)
         
         return context
 
@@ -207,10 +203,7 @@ class RecurringTransactionCreateView(LoginRequiredMixin, CreateView):
     success_url = reverse_lazy('recurring-list')
     
     def dispatch(self, request, *args, **kwargs):
-        profile = request.user.profile
-        limit = float('inf') if profile.is_pro else (3 if profile.is_plus else 1)
-        active_count = RecurringTransaction.objects.filter(user=request.user, is_active=True).count()
-        if active_count >= limit:
+        if not request.user.profile.can_add_recurring():
             messages.error(request, _("Subscription limit reached. Please upgrade."))
             return redirect('pricing')
         return super().dispatch(request, *args, **kwargs)
@@ -254,10 +247,8 @@ class RecurringTransactionUpdateView(LoginRequiredMixin, UpdateView):
     template_name = 'expenses/recurring_transaction_form.html'
     success_url = reverse_lazy('recurring-list')
     def dispatch(self, request, *args, **kwargs):
-        obj = self.get_object(); profile = request.user.profile
-        limit = float('inf') if profile.is_pro else (3 if profile.is_plus else 1)
-        subs = list(RecurringTransaction.objects.filter(user=request.user).order_by('created_at', 'id'))
-        if obj in subs and subs.index(obj) >= limit:
+        obj = self.get_object()
+        if request.user.profile.is_recurring_locked(obj):
             messages.error(request, _("This subscription is locked."))
             return redirect('recurring-list')
         return super().dispatch(request, *args, **kwargs)

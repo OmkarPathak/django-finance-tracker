@@ -44,7 +44,7 @@ def home_view(request):
                 return redirect('onboarding')
     except UserProfile.DoesNotExist:
         # Ensure profile exists, then redirect
-        UserProfile.objects.get_or_create(user=self.request.user if hasattr(self, 'request') else request.user)
+        UserProfile.objects.get_or_create(user=request.user)
         return redirect('onboarding')
 
     # Process recurring transactions
@@ -71,7 +71,7 @@ def home_view(request):
     expenses = Expense.objects.filter(user=request.user).order_by('-date')
     
     # Wealth Growth (Investments) - Transfers to Investment accounts
-    investments = Transfer.objects.filter(user=request.user, to_account__account_type='INVESTMENT')
+    investments = Transfer.objects.filter(user=request.user, to_account__account_type__in=['INVESTMENT', 'FIXED_DEPOSIT'])
     
     # Logic for EOM projection
     now = datetime.now()
@@ -387,7 +387,7 @@ def home_view(request):
             prev_expenses_all = Expense.objects.filter(user=request.user, date__year=prev_year, date__month=prev_month)
             prev_expenses_op = prev_expenses_all.aggregate(Sum('base_amount'))['base_amount__sum'] or 0
             prev_investments = sum_transfers_base(Transfer.objects.filter(
-                user=request.user, to_account__account_type='INVESTMENT',
+                user=request.user, to_account__account_type__in=['INVESTMENT', 'FIXED_DEPOSIT'],
                 date__year=prev_year, date__month=prev_month
             ))
 
@@ -1217,7 +1217,9 @@ def home_view(request):
             
         if due_date.year == v_year and due_date.month == v_month:
             rtype = rt.transaction_type
-            # Determine if it's an investment - Now handled via Transfers
+            # Determine if it's an investment
+            if rtype == 'TRANSFER' and rt.to_account and rt.to_account.account_type in ['INVESTMENT', 'FIXED_DEPOSIT']:
+                rtype = 'INVESTMENT'
                 
             item = {
                 'id': rt.id,
@@ -1325,7 +1327,7 @@ def home_view(request):
             converted = (acc.balance * rate).quantize(Decimal('0.01'))
         account_base_balances[acc.pk] = converted
         net_worth += converted
-        if acc.account_type == 'INVESTMENT':
+        if acc.account_type in ['INVESTMENT', 'FIXED_DEPOSIT']:
             investment_accounts_balance += converted
 
     # Net Worth Change Calculation (Growth this month)
@@ -1347,6 +1349,71 @@ def home_view(request):
         net_worth_percent = (net_worth_change / start_net_worth * 100).quantize(Decimal('0.1'))
     elif start_net_worth == 0 and net_worth_change > 0:
         net_worth_percent = Decimal('100.0')
+
+    # --- NEW: 6-Month Net Worth Trend for Sparkline ---
+    net_worth_trend = []
+    tmp_nw = net_worth
+    # Current month (point 0)
+    net_worth_trend.append(float(tmp_nw))
+    
+    # Last 5 full months
+    for i in range(1, 6):
+        # Calculate start of month i months ago
+        first_day_current_month = timezone.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+        # Move back i months
+        target_month_end = first_day_current_month - timedelta(days=1)
+        # If we are loop i=1, target_month_end is last day of prev month.
+        # So we need income/expense of the month that just ended to get net worth AT the start of current month.
+        
+        # Actually, simpler: 
+        # Point 0: Net Worth Now
+        # Point 1: Net Worth at Start of current month = Now - (Income_current - Expense_current)
+        # Point 2: Net Worth at Start of prev month = Point 1 - (Income_prev - Expense_prev)
+        
+        # Period i cashflow
+        period_start = (first_day_current_month - timedelta(days=1)).replace(day=1)
+        # This is not quite right for a loop. Let's use a cleaner date logic.
+        
+    # Redoing trend logic for clarity:
+    net_worth_trend = [float(net_worth)]
+    running_nw = net_worth
+    
+    # 1. Current month so far
+    curr_month_start = timezone.now().date().replace(day=1)
+    c_inc = Income.objects.filter(user=request.user, date__gte=curr_month_start).aggregate(Sum('base_amount'))['base_amount__sum'] or Decimal('0')
+    c_exp = Expense.objects.filter(user=request.user, date__gte=curr_month_start).aggregate(Sum('base_amount'))['base_amount__sum'] or Decimal('0')
+    running_nw -= (c_inc - c_exp)
+    net_worth_trend.append(float(running_nw))
+    
+    # 2. Previous 4 months
+    for i in range(1, 5):
+        m_start = (curr_month_start - timedelta(days=1)).replace(day=1)
+        m_end = curr_month_start - timedelta(days=1)
+        
+        m_inc = Income.objects.filter(user=request.user, date__range=[m_start, m_end]).aggregate(Sum('base_amount'))['base_amount__sum'] or Decimal('0')
+        m_exp = Expense.objects.filter(user=request.user, date__range=[m_start, m_end]).aggregate(Sum('base_amount'))['base_amount__sum'] or Decimal('0')
+        
+        running_nw -= (m_inc - m_exp)
+        net_worth_trend.append(float(running_nw))
+        curr_month_start = m_start
+    
+    # Reverse so it's oldest to newest for the sparkline
+    net_worth_trend.reverse()
+
+    # Calculate Sparkline points (normalize to 100x40 SVG)
+    sparkline_points = ""
+    if len(net_worth_trend) > 1:
+        min_val = min(net_worth_trend)
+        max_val = max(net_worth_trend)
+        range_val = max_val - min_val if max_val != min_val else 1
+        
+        points = []
+        for i, val in enumerate(net_worth_trend):
+            x = (i / (len(net_worth_trend) - 1)) * 100
+            # Flip Y (higher value = smaller Y in SVG)
+            y = 35 - ((val - min_val) / range_val) * 30 
+            points.append(f"{x},{y}")
+        sparkline_points = " ".join(points)
 
     # Group by account type for Asset Allocation chart (using converted balances)
     from collections import defaultdict
@@ -1394,6 +1461,9 @@ def home_view(request):
         'net_worth': net_worth,
         'net_worth_change': net_worth_change,
         'net_worth_percent': net_worth_percent,
+        'net_worth_trend': net_worth_trend,
+        'is_net_worth_locked': not request.user.profile.has_net_worth_access,
+        'sparkline_points': sparkline_points,
         'accounts': accounts,
         'account_base_balances': account_base_balances,
         'asset_allocation': asset_allocation,

@@ -4,7 +4,7 @@ from itertools import chain
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import JsonResponse
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
 from django.utils.translation import gettext as _
 from django.views.generic import CreateView, DeleteView, ListView, UpdateView, View
@@ -35,6 +35,9 @@ class AccountCreateView(LoginRequiredMixin, CreateView):
         return kwargs
 
     def form_valid(self, form):
+        if not self.request.user.profile.can_add_account():
+            messages.error(self.request, _("You have reached the limit of 3 accounts for the Free plan. Please upgrade to add more."))
+            return redirect('pricing')
         form.instance.user = self.request.user
         messages.success(self.request, _("Account created successfully!"))
         return super().form_valid(form)
@@ -69,6 +72,12 @@ class AccountQuickCreateView(LoginRequiredMixin, View):
     """AJAX endpoint for creating an account from a modal and returning JSON."""
 
     def post(self, request):
+        if not request.user.profile.can_add_account():
+            return JsonResponse({
+                'success': False, 
+                'errors': {'__all__': [_("Account limit reached. Please upgrade to add more.")]}
+            }, status=403)
+            
         form = AccountForm(request.POST, user=request.user)
         if form.is_valid():
             account = form.save(commit=False)

@@ -1,70 +1,185 @@
 {% extends 'base.html' %}
-{% load i18n %}
+{% load i18n static %}
 
-{% block title %}{% trans "About Us" %} - TrackMyRupee{% endblock %}
+{% block title %}{% trans "Our Story" %} - TrackMyRupee{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --story-accent: #2d6a4f;
+        --story-paper: #faf9f6;
+    }
+    .about-header {
+        background: var(--story-paper);
+        padding: 80px 0 60px;
+        border-bottom: 1px solid rgba(0,0,0,0.05);
+    }
+    .founder-image-container {
+        position: relative;
+        width: 120px;
+        height: 120px;
+        margin: 0 auto 24px;
+    }
+    .founder-image {
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 3px solid white;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    }
+    .story-section {
+        padding: 60px 0;
+        line-height: 1.8;
+        font-size: 1.1rem;
+    }
+    .quote-card {
+        background: var(--story-accent);
+        color: white;
+        padding: 40px;
+        border-radius: 24px;
+        margin-bottom: 40px;
+        position: relative;
+        overflow: hidden;
+    }
+    .quote-card::before {
+        content: '"';
+        position: absolute;
+        top: -20px;
+        left: 20px;
+        font-size: 120px;
+        opacity: 0.1;
+        font-family: serif;
+    }
+    .built-in-public {
+        background: #f8f9fa;
+        border-radius: 20px;
+        padding: 30px;
+        margin-top: 40px;
+    }
+    .stat-card {
+        text-align: center;
+        padding: 20px;
+    }
+    .stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--story-accent);
+    }
+    .stat-label {
+        font-size: 0.9rem;
+        color: #666;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+    .mission-badge {
+        display: inline-block;
+        padding: 6px 16px;
+        background: #e9f5ef;
+        color: var(--story-accent);
+        border-radius: 99px;
+        font-weight: 600;
+        font-size: 0.85rem;
+        margin-bottom: 16px;
+    }
+</style>
+{% endblock %}
 
 {% block content %}
-<div class="container py-5">
+<div class="about-header text-center">
+    <div class="container">
+        <div class="mission-badge">{% trans "The Human Story" %}</div>
+        <h1 class="display-3 fw-bold mb-3">{% trans "The Story Behind" %}<br><span style="color: var(--story-accent)">TrackMyRupee</span></h1>
+        <p class="lead text-muted mx-auto" style="max-width: 600px;">
+            {% trans "TrackMyRupee wasn't built for a boardroom. It was built for a dining table — between a husband and a wife asking one difficult question." %}
+        </p>
+    </div>
+</div>
+
+<div class="container story-section">
     <div class="row justify-content-center">
-        <div class="col-lg-10 col-xl-8">
-            <h1 class="display-4 fw-bold mb-4 text-center">{% trans "About Us" %}</h1>
+        <div class="col-lg-8">
+            <div class="quote-card text-center mb-5">
+                <h2 class="h3 fw-bold mb-3">"{% trans "My wife asked where our ₹80,000 salary went. I had no answer." %}"</h2>
+                <p class="mb-0 opacity-75">{% trans "That was the spark that started everything." %}</p>
+            </div>
+
+            <p class="mb-4">
+                {% blocktrans %}
+                Hi, I'm Omkar. Like most Indian professionals, I thought I was "good with money." I had a stable job, I did my SIPs, and I paid my bills on time. 
+                But every month-end, my bank balance told a story I couldn't explain.
+                {% endblocktrans %}
+            </p>
+
+            <p class="mb-4">
+                {% blocktrans %}
+                I tried Walnut, but it read my private SMS. I tried Money Manager, but it felt invasive. I tried Excel, but I stopped updating it after two weeks. 
+                I needed a tool that was <strong>private by default</strong>, <strong>simple enough for a 30-second daily log</strong>, and <strong>powerful enough to show my real net worth</strong>.
+                {% endblocktrans %}
+            </p>
+
+            <div class="row g-4 my-5">
+                <div class="col-md-6">
+                    <div class="card h-100 border-0 shadow-sm p-4 rounded-4">
+                        <i class="bi bi-shield-check display-5 text-success mb-3"></i>
+                        <h4 class="fw-bold">{% trans "Privacy First" %}</h4>
+                        <p class="text-muted small mb-0">{% trans "No bank logins. No SMS scraping. Your data stays in your control, exactly where it belongs." %}</p>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card h-100 border-0 shadow-sm p-4 rounded-4">
+                        <i class="bi bi-geo-alt display-5 text-primary mb-3"></i>
+                        <h4 class="fw-bold">{% trans "Locally Grown" %}</h4>
+                        <p class="text-muted small mb-0">{% trans "Built with care in Pune, India. Designed specifically for the Indian salary cycle and tax-saving goals." %}</p>
+                    </div>
+                </div>
+            </div>
+
+            <h3 class="fw-bold mt-5 mb-4 text-center">{% trans "Join the Journey" %}</h3>
             
-                    <p class="lead mb-5 text-center">
-                        {% blocktrans %}
-                        We are on a mission to simplify personal finance for everyone. TrackMyRupee is built to give you clarity, control, and confidence over your money.
-                        {% endblocktrans %}
-                    </p>
-
-                    <div class="mb-5">
-                        <h3 class="h4 fw-bold mb-3">{% trans "Our Story" %}</h3>
-                        <p class="text-muted">
-                            {% blocktrans %}
-                            TrackMyRupee started with a simple idea: understanding your finances shouldn't be complicated. We realized that many people struggle to keep track of their daily expenses, subscriptions, and budgets because existing tools were either too complex or too manual.
-                            {% endblocktrans %}
-                        </p>
-                        <p class="text-muted">
-                            {% blocktrans %}
-                            We built TrackMyRupee to be the intuitive, powerful, and privacy-focused solution we always wanted for ourselves. Today, we help thousands of users track their spending, spot trends, and make smarter financial decisions.
-                            {% endblocktrans %}
-                        </p>
+            <div class="built-in-public text-center">
+                <div class="founder-image-container">
+                    <img src="https://github.com/OmkarPathak.png" alt="Omkar Pathak" class="founder-image">
+                </div>
+                <h4 class="fw-bold mb-1">Omkar Pathak</h4>
+                <p class="text-muted mb-4">{% trans "Founder & Indie Developer" %}</p>
+                
+                <div class="row mb-4">
+                    <div class="col-6 col-md-3 stat-card">
+                        <div class="stat-value">500+</div>
+                        <div class="stat-label">{% trans "Users" %}</div>
                     </div>
-
-                    <div class="mb-5">
-                        <h3 class="h4 fw-bold mb-3">{% trans "What We Believe In" %}</h3>
-                        <ul class="text-muted">
-                            <li class="mb-3">
-                                <strong>{% trans "Simplicity First" %}:</strong>
-                                {% blocktrans %}
-                                Finance is hard enough. Your tools shouldn't be. We prioritize clean design and ease of use.
-                                {% endblocktrans %}
-                            </li>
-                            <li class="mb-3">
-                                <strong>{% trans "Privacy by Design" %}:</strong>
-                                {% blocktrans %}
-                                Your financial data is yours. We optimize for security and privacy in everything we build.
-                                {% endblocktrans %}
-                            </li>
-                            <li class="mb-3">
-                                <strong>{% trans "Empowerment" %}:</strong>
-                                {% blocktrans %}
-                                We believe that financial clarity leads to financial freedom. We give you the data you need to take charge.
-                                {% endblocktrans %}
-                            </li>
-                        </ul>
+                    <div class="col-6 col-md-3 stat-card">
+                        <div class="stat-value">2+</div>
+                        <div class="stat-label">{% trans "Years" %}</div>
                     </div>
-
-                    <div class="mb-0">
-                        <h3 class="h4 fw-bold mb-3">{% trans "Get in Touch" %}</h3>
-                        <p class="text-muted mb-0">
-                            {% blocktrans %}
-                            We love hearing from our users. Whether you have a feature request, feedback, or just want to say hi, feel free to reach out to us.
-                            {% endblocktrans %}
-                        </p>
+                    <div class="col-6 col-md-3 stat-card">
+                        <div class="stat-value">INR</div>
+                        <div class="stat-label">{% trans "Native" %}</div>
                     </div>
-            
+                    <div class="col-6 col-md-3 stat-card">
+                        <div class="stat-value">3</div>
+                        <div class="stat-label">{% trans "Langs" %}</div>
+                    </div>
+                </div>
+
+                <div class="d-flex flex-wrap justify-content-center gap-3">
+                    <a href="https://twitter.com/trackmyrupee" class="btn btn-dark rounded-pill px-4">
+                        <i class="bi bi-twitter-x me-2"></i>{% trans "Follow on X" %}
+                    </a>
+                    <a href="https://github.com/omkarpathak/trackmyrupee" class="btn btn-outline-dark rounded-pill px-4">
+                        <i class="bi bi-github me-2"></i>{% trans "View Source" %}
+                    </a>
+                    <a href="https://rzp.io/rzp/AP7kBG2" class="btn btn-success rounded-pill px-4">
+                        <i class="bi bi-heart-fill me-2"></i>{% trans "Support Us" %}
+                    </a>
+                </div>
+            </div>
+
             <div class="text-center mt-5">
-                <a href="{% url 'contact' %}" class="btn btn-primary btn-lg px-5 rounded-pill shadow-sm">
-                    {% trans "Contact Us" %}
+                <p class="text-muted">{% trans "Have a question or just want to say hi?" %}</p>
+                <a href="{% url 'contact' %}" class="btn btn-link text-decoration-none fw-bold">
+                    {% trans "Get in Touch" %} <i class="bi bi-arrow-right"></i>
                 </a>
             </div>
         </div>
