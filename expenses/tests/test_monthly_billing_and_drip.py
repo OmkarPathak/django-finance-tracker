@@ -1,12 +1,14 @@
-from django.test import TestCase
+from datetime import timedelta
+from io import StringIO
+from unittest.mock import patch
+
 from django.contrib.auth.models import User
 from django.core import mail
-from django.utils import timezone
-from io import StringIO
-from datetime import timedelta
-from unittest.mock import patch
 from django.core.management import call_command
-from expenses.models import UserProfile, SubscriptionPlan
+from django.test import TestCase
+from django.utils import timezone
+
+from expenses.models import SubscriptionPlan, UserProfile
 
 
 class LifecycleEmailTest(TestCase):
@@ -139,6 +141,7 @@ class MonthlyBillingPaymentTest(TestCase):
     def test_create_order_monthly(self, MockRazorpayClient):
         """Creating an order with MONTHLY duration should use the monthly plan price."""
         import json
+
         from django.urls import reverse
 
         mock_client_instance = MockRazorpayClient.return_value
@@ -159,6 +162,7 @@ class MonthlyBillingPaymentTest(TestCase):
     def test_create_order_yearly(self, MockRazorpayClient):
         """Creating an order with YEARLY duration should use the yearly plan price."""
         import json
+
         from django.urls import reverse
 
         mock_client_instance = MockRazorpayClient.return_value
@@ -178,6 +182,7 @@ class MonthlyBillingPaymentTest(TestCase):
     def test_create_order_invalid_duration(self, MockRazorpayClient):
         """Invalid duration should return 400."""
         import json
+
         from django.urls import reverse
 
         url = reverse('create-order')
@@ -191,7 +196,9 @@ class MonthlyBillingPaymentTest(TestCase):
     def test_verify_payment_monthly_sets_30_days(self, MockRazorpayClient):
         """Monthly payment should set subscription_end_date to ~30 days."""
         import json
+
         from django.urls import reverse
+
         from expenses.models import PaymentHistory
 
         PaymentHistory.objects.create(

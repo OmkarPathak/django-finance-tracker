@@ -1,7 +1,9 @@
-from django.views.generic import TemplateView
 import calendar
-from datetime import datetime, date
+from datetime import date, datetime
+
 from django.db.models import Sum
+from django.views.generic import TemplateView
+
 
 class CalendarView(TemplateView):
     template_name = 'expenses/calendar.html'

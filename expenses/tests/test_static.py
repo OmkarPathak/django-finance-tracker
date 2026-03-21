@@ -1,5 +1,6 @@
-from django.test import TestCase, Client, override_settings
+from django.test import Client, TestCase, override_settings
 from django.urls import reverse
+
 
 @override_settings(RECAPTCHA_PUBLIC_KEY=None, RECAPTCHA_PRIVATE_KEY=None)
 class StaticPageTest(TestCase):

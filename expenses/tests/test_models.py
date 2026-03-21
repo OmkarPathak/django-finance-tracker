@@ -1,9 +1,11 @@
-from django.test import TestCase
+from datetime import date, timedelta
+
 from django.contrib.auth.models import User
-from expenses.models import Expense, Income, Category, RecurringTransaction, UserProfile
-from datetime import date, datetime, timedelta
+from django.test import TestCase
 from django.utils import timezone
-from django.db import IntegrityError
+
+from expenses.models import Expense, Income, RecurringTransaction, UserProfile
+
 
 class ExpenseModelTest(TestCase):
     def setUp(self):

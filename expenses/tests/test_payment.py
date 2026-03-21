@@ -1,9 +1,12 @@
-from django.test import TestCase, Client
-from django.urls import reverse
-from unittest.mock import patch, MagicMock
-from django.contrib.auth.models import User
-from expenses.models import UserProfile, PaymentHistory, SubscriptionPlan
 import json
+from unittest.mock import patch
+
+from django.contrib.auth.models import User
+from django.test import Client, TestCase
+from django.urls import reverse
+
+from expenses.models import PaymentHistory, SubscriptionPlan
+
 
 class PaymentViewTest(TestCase):
     def setUp(self):

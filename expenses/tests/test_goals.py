@@ -1,9 +1,12 @@
-from django.test import TestCase, Client
-from django.urls import reverse
-from django.contrib.auth.models import User
 from decimal import Decimal
-from expenses.models import SavingsGoal, GoalContribution, UserProfile
-from expenses.forms import SavingsGoalForm, GoalContributionForm
+
+from django.contrib.auth.models import User
+from django.test import Client, TestCase
+from django.urls import reverse
+
+from expenses.forms import SavingsGoalForm
+from expenses.models import GoalContribution, SavingsGoal
+
 
 class SavingsGoalTests(TestCase):
     def setUp(self):

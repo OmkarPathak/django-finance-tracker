@@ -55,6 +55,9 @@
                     <span class="text-body-secondary" style="font-size: 0.9rem;">
                         <span class="fw-bold text-body-emphasis" style="font-size: 1.75rem;">{{ currency_symbol }}{{ daily_mode.daily_budget_allowed|humanize_currency:currency_symbol|translate_digits }}</span>
                         <span class="text-muted">/{% trans "day allowed" %}</span>
+                        <i class="bi bi-info-circle ms-1 text-muted cursor-pointer" style="font-size: 0.75rem;" 
+                           data-bs-toggle="tooltip" data-bs-placement="top" 
+                           title="{% trans '(Monthly Budget - Fixed Recurring Costs) / Number of Days in Month' %}"></i>
                     </span>
                 </div>
 
@@ -63,6 +66,12 @@
                     <div>
                         <span class="fw-bold text-body-emphasis" style="font-size: 1.25rem;">{{ currency_symbol }}{{ daily_mode.today_spent|humanize_currency:currency_symbol|translate_digits }}</span>
                         <span class="text-muted ms-1" style="font-size: 0.85rem;">{% trans "spent today" %}</span>
+                        <div class="text-muted mt-1 fw-medium d-flex align-items-center gap-1" style="font-size: 0.75rem;">
+                            {% trans "Usually" %} {{ currency_symbol }}{{ daily_mode.avg_daily_spend|humanize_currency:currency_symbol|translate_digits }}/{% trans "day" %}
+                            <i class="bi bi-info-circle cursor-pointer" style="font-size: 0.7rem;" 
+                               data-bs-toggle="tooltip" data-bs-placement="top" 
+                               title="{% trans '30-day moving average of your actual daily spending' %}"></i>
+                        </div>
                     </div>
                 </div>
 
@@ -155,7 +164,7 @@
                 {% endif %}
                 <div>
                     <h6 class="fw-bold mb-1 text-body">{{ daily_mode.daily_insight.message }}</h6>
-                    <p class="text-muted small mb-0 d-flex align-items-center gap-1"><i class="bi bi-arrow-right flex-shrink-0"></i><span>{{ daily_mode.daily_insight.tip }}</span></p>
+                    <p class="text-muted small mb-0"><span>{{ daily_mode.daily_insight.tip|safe }}</span></p>
                 </div>
             </div>
         </div>
@@ -240,6 +249,9 @@
             <div class="d-flex align-items-center justify-content-center gap-2">
                 <i class="bi bi-lightbulb-fill text-warning flex-shrink-0"></i>
                 <span class="text-success fw-bold">{% trans "You can still spend" %} {{ currency_symbol }}{{ daily_mode.safe_to_spend|humanize_currency:currency_symbol|translate_digits }} {% trans "safely today" %}</span>
+                <i class="bi bi-info-circle ms-1 cursor-pointer text-success" style="font-size: 0.8rem;" 
+                   data-bs-toggle="tooltip" data-bs-placement="top" 
+                   title="{% trans 'Amount you can spend today without exceeding your monthly budget, considering fixed costs.' %}"></i>
             </div>
         </div>
     </div>
@@ -262,6 +274,9 @@
             <div class="card-body p-4 bg-body-primary">
                 <h6 class="fw-bold mb-3 text-body-secondary text-uppercase d-flex align-items-center gap-1" style="font-size: 0.75rem; letter-spacing: 0.08em;">
                     <i class="bi bi-calendar-day"></i><span>{% trans "Today's Summary" %}</span>
+                    <i class="bi bi-info-circle ms-1 cursor-pointer" style="font-size: 0.7rem; text-transform: none;" 
+                       data-bs-toggle="tooltip" data-bs-placement="top" 
+                       title="{% trans 'Real-time summary of expenses recorded today' %}"></i>
                 </h6>
                 <div class="d-flex align-items-baseline gap-2 mb-2">
                     <span class="fw-bold text-body-emphasis" style="font-size: 2rem; line-height: 1;">{{ currency_symbol }}{{ daily_mode.today_spent|humanize_currency:currency_symbol|translate_digits }}</span>
@@ -322,26 +337,46 @@
                     <div class="col-6">
                         <div class="text-center p-2 rounded-3" style="background: rgba(var(--bs-primary-rgb), 0.05);">
                             <div class="fw-bold text-body-emphasis" style="font-size: 1.1rem;">{{ currency_symbol }}{{ daily_mode.avg_daily_spend|humanize_currency:currency_symbol|translate_digits }}</div>
-                            <div class="text-muted" style="font-size: 0.72rem;">{% trans "Avg/day this month" %}</div>
+                            <div class="text-muted d-flex align-items-center justify-content-center gap-1" style="font-size: 0.72rem;">
+                                {% trans "Avg/day this month" %}
+                                <i class="bi bi-info-circle cursor-pointer" style="font-size: 0.65rem;" 
+                                   data-bs-toggle="tooltip" data-bs-placement="top" 
+                                   title="{% trans 'Total spent this month / Days passed in month' %}"></i>
+                            </div>
                         </div>
                     </div>
                     <div class="col-6">
                         <div class="text-center p-2 rounded-3" style="background: rgba(var(--bs-primary-rgb), 0.05);">
                             <div class="fw-bold text-body-emphasis" style="font-size: 1.1rem;">{{ daily_mode.month_transaction_count|translate_digits }}</div>
-                            <div class="text-muted" style="font-size: 0.72rem;">{% trans "This month txns" %}</div>
+                            <div class="text-muted d-flex align-items-center justify-content-center gap-1" style="font-size: 0.72rem;">
+                                {% trans "This month txns" %}
+                                <i class="bi bi-info-circle cursor-pointer" style="font-size: 0.65rem;" 
+                                   data-bs-toggle="tooltip" data-bs-placement="top" 
+                                   title="{% trans 'Total number of transactions recorded this calendar month' %}"></i>
+                            </div>
                         </div>
                     </div>
                     {% if daily_mode.has_budget %}
                     <div class="col-6">
                         <div class="text-center p-2 rounded-3" style="background: rgba(var(--bs-primary-rgb), 0.05);">
                             <div class="fw-bold text-body-emphasis" style="font-size: 1.1rem;">{{ currency_symbol }}{{ daily_mode.month_spent_so_far|humanize_currency:currency_symbol|translate_digits }}</div>
-                            <div class="text-muted" style="font-size: 0.72rem;">{% trans "Month spent" %}</div>
+                            <div class="text-muted d-flex align-items-center justify-content-center gap-1" style="font-size: 0.72rem;">
+                                {% trans "Month spent" %}
+                                <i class="bi bi-info-circle cursor-pointer" style="font-size: 0.65rem;" 
+                                   data-bs-toggle="tooltip" data-bs-placement="top" 
+                                   title="{% trans 'Sum of all expenses (including recurring) for the current month' %}"></i>
+                            </div>
                         </div>
                     </div>
                     <div class="col-6">
                         <div class="text-center p-2 rounded-3" style="background: rgba(var(--bs-primary-rgb), 0.05);">
                             <div class="fw-bold {% if daily_mode.remaining_month_budget > 0 %}text-success{% else %}text-danger{% endif %}" style="font-size: 1.1rem;">{{ currency_symbol }}{{ daily_mode.remaining_month_budget|humanize_currency:currency_symbol|translate_digits }}</div>
-                            <div class="text-muted" style="font-size: 0.72rem;">{% trans "Month remaining" %}</div>
+                            <div class="text-muted d-flex align-items-center justify-content-center gap-1" style="font-size: 0.72rem;">
+                                {% trans "Month remaining" %}
+                                <i class="bi bi-info-circle cursor-pointer" style="font-size: 0.65rem;" 
+                                   data-bs-toggle="tooltip" data-bs-placement="top" 
+                                   title="{% trans 'Amount left of your monthly budget (Budget - Spent)' %}"></i>
+                            </div>
                         </div>
                     </div>
                     {% endif %}

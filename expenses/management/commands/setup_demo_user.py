@@ -1,10 +1,20 @@
-from django.core.management.base import BaseCommand
-from django.contrib.auth.models import User
-from expenses.models import Category, Expense, Income, UserProfile, RecurringTransaction, SavingsGoal, GoalContribution
-from datetime import date, timedelta, datetime
-from django.utils import timezone
-from decimal import Decimal
 import random
+from datetime import date, timedelta
+from decimal import Decimal
+
+from django.contrib.auth.models import User
+from django.core.management.base import BaseCommand
+
+from expenses.models import (
+    Category,
+    Expense,
+    GoalContribution,
+    Income,
+    RecurringTransaction,
+    SavingsGoal,
+    UserProfile,
+)
+
 
 class Command(BaseCommand):
     help = 'Sets up a read-only pro demo user with a rich, multi-month financial story'

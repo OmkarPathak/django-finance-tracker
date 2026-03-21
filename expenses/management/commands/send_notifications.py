@@ -1,12 +1,15 @@
 
-from django.core.management.base import BaseCommand
-from django.utils import timezone
-from django.core.mail import send_mail
-from django.template.loader import render_to_string
-from django.conf import settings
-from expenses.models import RecurringTransaction, Notification, UserProfile
-from webpush import send_user_notification
 from datetime import timedelta
+
+from django.conf import settings
+from django.core.mail import send_mail
+from django.core.management.base import BaseCommand
+from django.template.loader import render_to_string
+from django.utils import timezone
+from webpush import send_user_notification
+
+from expenses.models import Notification, RecurringTransaction, UserProfile
+
 
 class Command(BaseCommand):
     help = 'Sends notifications for recurring transactions due in 3 days'

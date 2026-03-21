@@ -1,15 +1,18 @@
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django.views.generic import ListView, CreateView, UpdateView, DeleteView
-from django.urls import reverse_lazy, reverse
-from django.contrib import messages
-from django.utils.translation import gettext as _
 from datetime import date, timedelta
 
-from ..models import RecurringTransaction
-from ..forms import RecurringTransactionForm
+from django.contrib import messages
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.shortcuts import redirect
+from django.urls import reverse_lazy
+from django.utils.translation import gettext as _
+from django.views.generic import CreateView, DeleteView, ListView, UpdateView
 
-class RecurringTransactionListView(LoginRequiredMixin, ListView):
+from ..forms import RecurringTransactionForm
+from ..models import RecurringTransaction
+from .mixins import RecurringTransactionMixin
+
+
+class RecurringTransactionListView(LoginRequiredMixin, RecurringTransactionMixin, ListView):
     model = RecurringTransaction
     template_name = 'expenses/recurring_transaction_list.html'
     context_object_name = 'recurring_transactions'
@@ -49,7 +52,7 @@ class RecurringTransactionListView(LoginRequiredMixin, ListView):
         profile = self.request.user.profile
         limit = float('inf')
         if not profile.is_pro:
-            limit = 3 if profile.is_plus else 0
+            limit = 3 if profile.is_plus else 1
             
         for i, sub in enumerate(active_subs):
             sub.is_locked = i >= limit
@@ -170,7 +173,7 @@ class RecurringTransactionListView(LoginRequiredMixin, ListView):
         active_count = RecurringTransaction.objects.filter(user=self.request.user, is_active=True).count()
         limit = float('inf')
         if not profile.is_pro:
-            limit = 3 if profile.is_plus else 0
+            limit = 3 if profile.is_plus else 1
             
             if profile.is_plus:
                 upgrade_tier = 'PRO'
@@ -205,7 +208,7 @@ class RecurringTransactionCreateView(LoginRequiredMixin, CreateView):
     
     def dispatch(self, request, *args, **kwargs):
         profile = request.user.profile
-        limit = float('inf') if profile.is_pro else (3 if profile.is_plus else 0)
+        limit = float('inf') if profile.is_pro else (3 if profile.is_plus else 1)
         active_count = RecurringTransaction.objects.filter(user=request.user, is_active=True).count()
         if active_count >= limit:
             messages.error(request, _("Subscription limit reached. Please upgrade."))
@@ -252,7 +255,7 @@ class RecurringTransactionUpdateView(LoginRequiredMixin, UpdateView):
     success_url = reverse_lazy('recurring-list')
     def dispatch(self, request, *args, **kwargs):
         obj = self.get_object(); profile = request.user.profile
-        limit = float('inf') if profile.is_pro else (3 if profile.is_plus else 0)
+        limit = float('inf') if profile.is_pro else (3 if profile.is_plus else 1)
         subs = list(RecurringTransaction.objects.filter(user=request.user).order_by('created_at', 'id'))
         if obj in subs and subs.index(obj) >= limit:
             messages.error(request, _("This subscription is locked."))
@@ -288,8 +291,8 @@ class RecurringTransactionDeleteView(LoginRequiredMixin, DeleteView):
 
     def form_valid(self, form):
         # Calculate savings
-        from django.utils.translation import gettext as _
         from django.contrib import messages
+        from django.utils.translation import gettext as _
         obj = self.object
         amount = obj.amount
         if obj.frequency == 'DAILY':

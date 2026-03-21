@@ -751,18 +751,36 @@ a:hover {
   background-color: #6b8f71;
 } /* Sage Green */
 
-/* Semantic Progress Bar Colors - Flat solid */
+/* Progress Bar Animation */
+@keyframes progress-fill {
+  from {
+    width: 0;
+  }
+  to {
+    width: var(--progress-width, 100%);
+  }
+}
+
+.progress-animate .progress-bar {
+  animation: progress-fill 1s ease-out forwards;
+}
+
+.progress {
+  overflow: hidden;
+}
+
+/* Semantic Progress Bar Colors - Premium Palette */
 .progress-gradient-success {
   background-color: #2d6a4f;
 }
 .progress-gradient-warning {
-  background-color: #e07b39;
+  background-color: #ee9b00;
 }
 .progress-gradient-danger {
-  background-color: #c0392b;
+  background-color: #ae2012;
 }
-.progress-gradient-info {
-  background-color: #8b6f47;
+.progress-gradient-teal {
+  background-color: #0a9396;
 }
 
 /* Fix for Multiselect Dropdown Visibility */
@@ -1450,4 +1468,85 @@ a:hover {
 
 .no-caret::after {
     display: none !important;
+}
+
+/* --- Premium Net Worth Card --- */
+.nw-accent-line {
+  height: 4px;
+  width: 100%;
+  background: var(--bs-primary);
+  border-radius: 10px;
+  margin: 1.5rem 0;
+  opacity: 0.8;
+}
+
+.account-item-premium {
+  display: flex;
+  align-items: center;
+  padding: 1rem 0;
+  border-bottom: 1px solid rgba(0,0,0,0.05);
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.account-item-premium:last-child {
+  border-bottom: none;
+}
+
+.account-item-premium:hover {
+  background: rgba(0,0,0,0.02);
+  transform: translateX(4px);
+}
+
+.account-status-bar {
+  width: 3px;
+  height: 32px;
+  border-radius: 4px;
+  margin-right: 1.25rem;
+  flex-shrink: 0;
+}
+
+.account-info {
+  flex-grow: 1;
+  min-width: 0;
+}
+
+.account-name-bold {
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--bs-body-color);
+  margin-bottom: 2px;
+  display: block;
+}
+
+.account-type-subtext {
+  font-size: 0.65rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: #6c757d;
+  letter-spacing: 0.05em;
+}
+
+.account-amount-bold {
+  font-weight: 700;
+  font-size: 1rem;
+  margin-left: 1rem;
+  flex-shrink: 0;
+}
+
+.text-negative {
+  color: #ae2012 !important;
+}
+
+/* Dark mode adjustments */
+[data-bs-theme="dark"] .account-item-premium {
+  border-bottom-color: rgba(255,255,255,0.05);
+}
+
+[data-bs-theme="dark"] .account-item-premium:hover {
+  background: rgba(255,255,255,0.03);
+}
+
+[data-bs-theme="dark"] .account-type-subtext {
+  color: #adb5bd;
 }

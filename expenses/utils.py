@@ -1,7 +1,8 @@
+from decimal import Decimal
+
 import requests
 from django.core.cache import cache
-from decimal import Decimal
-from django.db.models import Sum, Count, Max
+from django.db.models import Count, Sum
 from django.db.models.functions import ExtractMonth
 
 

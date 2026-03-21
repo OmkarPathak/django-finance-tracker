@@ -426,16 +426,36 @@
     const isDark = document.documentElement.getAttribute('data-bs-theme') === 'dark';
     const textColor = isDark ? '#f8f9fa' : '#212529';
 
+    const CHART_COLORS = {
+        green: '#2d6a4f',
+        amber: '#ee9b00',
+        red: '#ae2012',
+        teal: '#0a9396',
+        slate: '#006d77',
+        gold: '#ffb703',
+        blue: '#005f73',
+        mint: '#94d2bd',
+        crimson: '#9b2226'
+    };
+
+    const CATEGORY_PALETTE = [
+        CHART_COLORS.green, CHART_COLORS.amber, CHART_COLORS.teal, 
+        CHART_COLORS.slate, CHART_COLORS.red, CHART_COLORS.emerald, 
+        CHART_COLORS.gold, CHART_COLORS.blue, CHART_COLORS.mint, 
+        CHART_COLORS.crimson
+    ];
+
     var options = {
       sankey: {
         node: {
-          label: { color: textColor, fontName: 'DM Sans', fontSize: 14, bold: true },
-          nodePadding: 30,
-          colors: ['#2d6a4f', '#e07b39', '#c0392b', '#8b6f47', '#6b8f71', '#b5651d', '#7a5c58', '#4a7c59', '#d4956a', '#5c6b5e']
+          label: { color: textColor, fontName: 'DM Sans', fontSize: 12, bold: true },
+          nodePadding: 40,
+          labelPadding: 10,
+          colors: CATEGORY_PALETTE
         },
         link: {
-          colorMode: 'source',
-          colors: ['#2d6a4f', '#e07b39', '#c0392b', '#8b6f47', '#6b8f71', '#b5651d', '#7a5c58', '#4a7c59', '#d4956a', '#5c6b5e']
+          colorMode: 'gradient',
+          colors: CATEGORY_PALETTE
         }
       }
     };
@@ -477,6 +497,32 @@
         const isDark = document.documentElement.getAttribute('data-bs-theme') === 'dark';
         Chart.defaults.color = isDark ? '#adb5bd' : '#6c757d';
         const gridColor = isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)';
+
+        // Premium Animation Defaults
+        Chart.defaults.animation = {
+            duration: 1500,
+            easing: 'easeOutQuart'
+        };
+
+        const CHART_COLORS = {
+            green: '#2d6a4f',
+            amber: '#ee9b00',
+            red: '#ae2012',
+            teal: '#0a9396',
+            slate: '#006d77',
+            emerald: '#52b788',
+            gold: '#ffb703',
+            blue: '#005f73',
+            mint: '#94d2bd',
+            crimson: '#9b2226'
+        };
+
+        const CATEGORY_PALETTE = [
+            CHART_COLORS.green, CHART_COLORS.amber, CHART_COLORS.teal, 
+            CHART_COLORS.slate, CHART_COLORS.red, CHART_COLORS.emerald, 
+            CHART_COLORS.gold, CHART_COLORS.blue, CHART_COLORS.mint, 
+            CHART_COLORS.crimson
+        ];
 
         const compactAmount = (val) => {
             if (val >= 10000000) return (val / 10000000).toFixed(1) + 'Cr';
@@ -538,8 +584,8 @@
                     {
                         label: '{% trans "Income" %}',
                         data: incomeData,
-                        borderColor: '#2d6a4f',
-                        backgroundColor: 'rgba(45, 106, 79, 0.08)',
+                        borderColor: CHART_COLORS.green,
+                        backgroundColor: CHART_COLORS.green + '14', // ~0.08 alpha
                         fill: true,
                         tension: 0.4,
                         pointRadius: 4,
@@ -549,8 +595,8 @@
                     {
                         label: '{% trans "Expense" %}',
                         data: expenseData,
-                        borderColor: '#c0392b',
-                        backgroundColor: 'rgba(192, 57, 43, 0.08)',
+                        borderColor: CHART_COLORS.red,
+                        backgroundColor: CHART_COLORS.red + '14',
                         fill: true,
                         tension: 0.4,
                         pointRadius: 4,
@@ -560,11 +606,11 @@
                     {
                         label: '{% trans "Savings Rate (%)" %}',
                         data: rateData,
-                        borderColor: '#e07b39',
+                        borderColor: CHART_COLORS.amber,
                         borderWidth: 3,
                         borderDash: [5, 5],
                         pointRadius: 4,
-                        pointBackgroundColor: '#e07b39',
+                        pointBackgroundColor: CHART_COLORS.amber,
                         tension: 0.4,
                         fill: false,
                         yAxisID: 'y1'
@@ -649,15 +695,7 @@
         // 2. Spending Donut
         const ctxDonut = document.getElementById('categoryDonutChart').getContext('2d');
         // Generate nice colors (matching other charts)
-        const bgColors = [
-            '#2d6a4f', // Forest Green
-            '#e07b39', // Warm Amber
-            '#c0392b', // Warm Red
-            '#8b6f47', // Warm Brown
-            '#6b8f71', // Sage Green
-            '#b5651d', // Burnt Orange
-            '#7a5c58'  // Dusty Rose
-        ];
+        const bgColors = CATEGORY_PALETTE;
         
         // Enhance labels with values and percentages for the Legend
         const totalSpending = catData.reduce((acc, curr) => acc + curr, 0);
@@ -717,7 +755,7 @@
                 labels: donutLabelsWithValues,
                 datasets: [{
                     data: catData,
-                    backgroundColor: bgColors.slice(0, catLabels.length),
+                    backgroundColor: CATEGORY_PALETTE.slice(0, catLabels.length),
                     borderWidth: 0,
                     hoverOffset: 4
                 }]
@@ -743,13 +781,13 @@
                 datasets: [{
                     label: '{% trans "Balance Rate (%)" %}',
                     data: rateData,
-                    borderColor: '#2d6a4f',
-                    backgroundColor: 'rgba(45, 106, 79, 0.08)',
+                    borderColor: CHART_COLORS.green,
+                    backgroundColor: CHART_COLORS.green + '14',
                     fill: true,
                     tension: 0.4,
                     pointRadius: 4,
                     pointBackgroundColor: '#fff',
-                    pointBorderColor: '#2d6a4f',
+                    pointBorderColor: CHART_COLORS.green,
                     pointHoverRadius: 6
                 }]
             },
@@ -793,8 +831,8 @@
                 datasets: [{
                     label: '{% trans "Total Spend" %}',
                     data: dowData,
-                    backgroundColor: 'rgba(45, 106, 79, 0.85)',
-                    borderColor: '#2d6a4f',
+                    backgroundColor: CHART_COLORS.green + 'D9', // ~0.85 alpha
+                    borderColor: CHART_COLORS.green,
                     borderWidth: 1,
                     borderRadius: 4
                 }]
@@ -831,7 +869,7 @@
                 labels: recLabelsWithValues,
                 datasets: [{
                     data: recData,
-                    backgroundColor: ['#8b6f47', '#2d6a4f'],
+                    backgroundColor: [CHART_COLORS.amber, CHART_COLORS.green],
                     borderWidth: 0
                 }]
             },
@@ -866,8 +904,8 @@
                         {
                             label: '{% trans "Cumulative Spent" %}',
                             data: burnSpent,
-                            borderColor: '#c0392b',
-                            backgroundColor: 'rgba(192, 57, 43, 0.08)',
+                            borderColor: CHART_COLORS.red,
+                            backgroundColor: CHART_COLORS.red + '14',
                             fill: true,
                             tension: 0.2,
                             pointRadius: 3,
@@ -875,14 +913,14 @@
                                 borderColor: ctx => {
                                     const val = burnSpent[ctx.p0DataIndex];
                                     const budget = burnBudget[ctx.p0DataIndex];
-                                    return (val > budget) ? '#c0392b' : '#8b6f47';
+                                    return (val > budget) ? CHART_COLORS.red : CHART_COLORS.brown;
                                 }
                             }
                         },
                         {
                             label: '{% trans "Projected Path" %}',
                             data: burnProjection,
-                            borderColor: '#8b6f47',
+                            borderColor: CHART_COLORS.brown,
                             borderDash: [5, 5],
                             pointRadius: 0,
                             fill: false,
@@ -892,7 +930,7 @@
                         {
                             label: '{% trans "Ideal Budget Line" %}',
                             data: burnBudget,
-                            borderColor: '#2d6a4f',
+                            borderColor: CHART_COLORS.green,
                             borderDash: [3, 3],
                             fill: false,
                             pointRadius: 0,

@@ -1,6 +1,7 @@
 from django.urls import path
+from django.views.generic import RedirectView, TemplateView
+
 from . import views, views_payment
-from django.views.generic import TemplateView, RedirectView
 
 urlpatterns = [
     path('signup/', RedirectView.as_view(pattern_name='account_signup', permanent=True), name='signup'),

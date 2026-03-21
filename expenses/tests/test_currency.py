@@ -1,12 +1,15 @@
-from django.test import TestCase, Client
+from datetime import date
+from decimal import Decimal
+from unittest.mock import MagicMock, patch
+
+import requests
 from django.contrib.auth.models import User
 from django.core.cache import cache
-from decimal import Decimal
-from unittest.mock import patch, MagicMock
-import requests
-from datetime import date
+from django.test import Client, TestCase
+
 from expenses.models import Expense, Income, UserProfile
 from expenses.utils import get_exchange_rate
+
 
 class CurrencyConversionTest(TestCase):
     def setUp(self):
@@ -170,9 +173,10 @@ class CurrencySettingsCollisionTest(TestCase):
     @patch('expenses.models.get_exchange_rate')
     def test_currency_change_collision_handling(self, mock_get_rate):
         """Verify that CurrencyUpdateView handles IntegrityError during re-normalization."""
-        from django.urls import reverse
-        from django.db import IntegrityError
         from unittest.mock import patch
+
+        from django.db import IntegrityError
+        from django.urls import reverse
 
         # Mock exchange rate to return something different
         mock_get_rate.return_value = Decimal('80.0')

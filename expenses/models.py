@@ -1,10 +1,11 @@
-from decimal import Decimal
-from django.db import models
-from django.contrib.auth.models import User
 from datetime import timedelta
+from decimal import Decimal
+
+from django.contrib.auth.models import User
+from django.db import models, transaction
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
-from django.db import transaction
+
 from .utils import get_exchange_rate
 
 CURRENCY_CHOICES = [
@@ -255,15 +256,7 @@ class Transfer(models.Model):
             super().delete(*args, **kwargs)
 
     def __str__(self):
-        return f"Transfer {self.amount} from {self.from_account.name} to {self.to_account.name} on {self.date}"
-
-    class Meta:
-        indexes = [
-            models.Index(fields=['user', 'date']),
-        ]
-
-    def __str__(self):
-        return f"{self.date} - {self.source} - {self.amount}"
+        return f"{self.date} - Transfer {self.amount} from {self.from_account.name} to {self.to_account.name}"
 
 class RecurringTransaction(models.Model):
     FREQUENCY_CHOICES = [

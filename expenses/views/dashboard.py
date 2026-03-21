@@ -1,24 +1,35 @@
-from datetime import datetime, date, timedelta
 import calendar
+from datetime import date, datetime, timedelta
 from decimal import Decimal
-from django.shortcuts import render, redirect, get_object_or_404
+
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.views.generic import TemplateView
-from django.db.models import Sum, Count, Q, Avg
-from django.db.models.functions import TruncMonth, TruncDay, ExtractWeekDay
-from django.urls import reverse
-from django.utils.translation import gettext as _
-from django.utils.html import mark_safe, escape, format_html, format_html_join
+from django.db.models import Avg, Count, Sum
+from django.db.models.functions import ExtractWeekDay, TruncDay, TruncMonth
 from django.http import JsonResponse
+from django.shortcuts import redirect, render
+from django.urls import reverse
 from django.utils import timezone
 from django.utils.formats import date_format
-from django.contrib import messages
+from django.utils.html import escape, format_html, format_html_join, mark_safe
+from django.utils.translation import gettext as _
+from django.views.generic import TemplateView
 
-from ..models import Expense, Income, Category, UserProfile, RecurringTransaction, Account, Transfer
-from ..utils import get_exchange_rate, generate_year_in_review_data
-from .mixins import process_user_recurring_transactions
+from ..models import (
+    Account,
+    Category,
+    Expense,
+    Income,
+    Notification,
+    RecurringTransaction,
+    Transfer,
+    UserProfile,
+)
 from ..templatetags.digit_filters import compact_amount
+from ..utils import generate_year_in_review_data, get_exchange_rate
+from .mixins import process_user_recurring_transactions
+
 
 @login_required
 def home_view(request):
@@ -41,6 +52,9 @@ def home_view(request):
     
     # Global currency symbol for insights/metrics
     currency_symbol = request.user.profile.currency if hasattr(request.user, 'profile') else '₹'
+    
+    def format_currency(amount):
+        return f"{currency_symbol}{int(amount):,}"
 
     # Helper: sum transfer amounts converted to user's base currency
     def sum_transfers_base(qs):
@@ -385,6 +399,9 @@ def home_view(request):
                     return None
                 return ((current - previous) / previous) * 100
 
+            prev_num_days = calendar.monthrange(prev_year, prev_month)[1]
+            prev_daily_burn = float(prev_expenses_op) / prev_num_days if prev_num_days > 0 else 0
+
             prev_month_data = {
                 'income': prev_income,
                 'expense': prev_expenses_op,
@@ -398,6 +415,7 @@ def home_view(request):
                 'income_diff_amount': total_income - prev_income,
                 'expense_diff_amount': total_expenses - prev_expenses_op,
                 'investments_diff_amount': total_investments - prev_investments,
+                'daily_burn': prev_daily_burn,
             }
             # Add absolute versions for percentages for template display
             for key in list(prev_month_data.keys()):
@@ -436,7 +454,9 @@ def home_view(request):
         'savings_rate': round(savings_rate_value, 1),
         'status': hero_status,
         'trend_text': trend_text,
-        'trend_type': trend_type
+        'trend_type': trend_type,
+        'savings_diff_pct': prev_month_data.get('savings_pct') if prev_month_data else None,
+        'savings_diff_pct_abs': prev_month_data.get('savings_pct_abs') if prev_month_data else None,
     }
 
     # Prepare display labels for the template
@@ -586,7 +606,7 @@ def home_view(request):
         
     # --- "Where Did My Salary Go?" Data ---
     salary_breakdown = None
-    if total_income > 0 and total_expenses > 0:
+    if total_expenses > 0:
         # 1. Top 5 Categories
         top_5_categories = category_data[:5]
         
@@ -600,7 +620,7 @@ def home_view(request):
             top_amount = top_5_categories[0]['total']
             
             # Calculate Percentage of total lifestyle expenses
-            top_cat_pct = round((float(top_amount) / float(total_expenses) * 100)) if total_expenses > 0 else 0
+            top_cat_pct = round(float(top_amount) / float(total_expenses) * 100) if total_expenses > 0 else 0
             potential_savings = float(top_amount) * 0.20
             
             # POWER INSIGHT: Granular and Actionable
@@ -686,6 +706,11 @@ def home_view(request):
         spent_percent = round(float(total_expenses) / total_monthly_budget * 100, 1) if total_monthly_budget > 0 else 0
         ideal_percent = round(days_elapsed / num_days * 100, 1) if num_days > 0 else 0
 
+        # Daily burn comparison with last month
+        burn_diff_pct = None
+        if prev_month_data and prev_month_data.get('daily_burn', 0) > 0:
+            burn_diff_pct = ((daily_burn - prev_month_data['daily_burn']) / prev_month_data['daily_burn']) * 100
+
         spending_pace = {
             'daily_spending_pace': round(daily_burn, 0),
             'projected_month_spend': round(daily_burn * num_days, 0),
@@ -698,6 +723,8 @@ def home_view(request):
             'days_elapsed': days_elapsed,
             'num_days': num_days,
             'ideal_spent_so_far': round(ideal_spent_so_far, 0),
+            'burn_diff_pct': burn_diff_pct,
+            'burn_diff_pct_abs': abs(burn_diff_pct) if burn_diff_pct is not None else None,
         }
 
         short_insight = ""
@@ -885,9 +912,9 @@ def home_view(request):
                 'type': 'info', # Use Info for "Identity/Streak"
                 'icon': 'fire',
                 'title': _('On a Roll!'),
-                'message': _("🔥 This is your %(streak)s month in a row staying under budget.") % {'streak': streak},
+                'message': _("This is your %(streak)s month in a row staying under budget.") % {'streak': streak},
                 'allow_share': True,
-                'share_text': _("🔥 I've stayed under budget for %(streak)s months in a row! via TrackMyRupee") % {'streak': streak}
+                'share_text': _("I've stayed under budget for %(streak)s months in a row! via TrackMyRupee") % {'streak': streak}
             })
 
     # NEW: Wealth Projection
@@ -986,8 +1013,8 @@ def home_view(request):
     # Calculate Future Growth (Total Surplus = Investments + Remaining Savings)
     # savings is already (income - lifestyle_expenses) because total_expenses excludes investments
     total_wealth_contribution = max(0, savings)
-    future_growth_pct = round((float(total_wealth_contribution) / float(total_income) * 100)) if total_income > 0 else 0
-    lifestyle_pct = round((float(total_expenses) / float(total_income) * 100)) if total_income > 0 else 0
+    future_growth_pct = round(float(total_wealth_contribution) / float(total_income) * 100) if total_income > 0 else 0
+    lifestyle_pct = round(float(total_expenses) / float(total_income) * 100) if total_income > 0 else 0
     
     income_bold = mark_safe(f"<b>{currency_symbol}{compact_amount(total_income, currency_symbol)}</b>")
     lifestyle_bold = mark_safe(f"<b>{currency_symbol}{compact_amount(total_expenses, currency_symbol)}</b>")
@@ -1042,7 +1069,7 @@ def home_view(request):
     if total_income > 0 and total_expenses > 0 and top_5_categories:
         top_cat = top_5_categories[0]['category']
         top_amount = top_5_categories[0]['total']
-        top_cat_pct = round((float(top_amount) / float(total_expenses) * 100)) if total_expenses > 0 else 0
+        top_cat_pct = round(float(top_amount) / float(total_expenses) * 100) if total_expenses > 0 else 0
         potential_savings = float(top_amount) * 0.20
         
         power_insight_text = format_html(
@@ -1129,6 +1156,27 @@ def home_view(request):
                             'icon': icon_cls,
                             'theme': 'success'
                         })
+
+    # --- Financial Coach Moments ---
+    # 1. Net Worth Milestone
+    net_worth = Account.objects.filter(user=request.user).aggregate(Sum('balance'))['balance__sum'] or 0
+    if float(net_worth) >= 100000:
+        if not any(c.get('icon') == 'bi-trophy' for c in smart_bullet_insights):
+            smart_bullet_insights.insert(0, {
+                'text': format_html(_("Milestone Reached! You crossed <span class='fw-bold'>{}</span> in net worth."), format_currency(100000)),
+                'icon': 'bi-trophy',
+                'theme': 'warning'
+            })
+            
+    # 2. Good Month Moment
+    if prev_month_data and prev_month_data.get('savings', 0) > 0 and savings > prev_month_data['savings'] * Decimal('1.2'):
+        if not any(c.get('icon') == 'bi-stars' for c in smart_bullet_insights):
+            projected_annual = savings * 12
+            smart_bullet_insights.insert(0, {
+                'text': format_html(_(" You're saving more than usual this month! <br> Keep this up and you could hit <span class='fw-bold text-success'>{}</span> in savings this year."), format_currency(projected_annual)),
+                'icon': 'bi-stars',
+                'theme': 'success'
+            })
 
     # Fallback/Empty state for smart insights
     if not smart_bullet_insights:
@@ -1280,6 +1328,26 @@ def home_view(request):
         if acc.account_type == 'INVESTMENT':
             investment_accounts_balance += converted
 
+    # Net Worth Change Calculation (Growth this month)
+    # We estimate start-of-month net worth as current net worth minus this month's net cashflow (income - expense)
+    # This assumes all income/expense transactions affect the total net worth.
+    net_worth_change = Decimal('0.00')
+    net_worth_percent = Decimal('0.00')
+    
+    # Get income and expense sums for the current month ONLY (for change indicators)
+    curr_mon_start = timezone.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    month_income_sum = Income.objects.filter(user=request.user, date__gte=curr_mon_start).aggregate(Sum('base_amount'))['base_amount__sum'] or Decimal('0.00')
+    month_expense_sum = Expense.objects.filter(user=request.user, date__gte=curr_mon_start).aggregate(Sum('base_amount'))['base_amount__sum'] or Decimal('0.00')
+    
+    # Net change (savings) is the growth in net worth
+    net_worth_change = month_income_sum - month_expense_sum
+    start_net_worth = net_worth - net_worth_change
+    
+    if start_net_worth > 0:
+        net_worth_percent = (net_worth_change / start_net_worth * 100).quantize(Decimal('0.1'))
+    elif start_net_worth == 0 and net_worth_change > 0:
+        net_worth_percent = Decimal('100.0')
+
     # Group by account type for Asset Allocation chart (using converted balances)
     from collections import defaultdict
     type_totals = defaultdict(Decimal)
@@ -1319,9 +1387,15 @@ def home_view(request):
         reverse=True
     )[:10]
 
+    # Add Savings Amount to hero_metrics for the hero card
+    hero_metrics['savings_amount'] = net_worth_change
+
     context = {
         'net_worth': net_worth,
+        'net_worth_change': net_worth_change,
+        'net_worth_percent': net_worth_percent,
         'accounts': accounts,
+        'account_base_balances': account_base_balances,
         'asset_allocation': asset_allocation,
         'recent_activity': recent_activity,
         'investment_accounts_balance': investment_accounts_balance,
@@ -1488,14 +1562,94 @@ def home_view(request):
             'is_unusual': is_unusual,
         })
 
-    # Daily insight (enhanced for over-budget urgency)
+    # --- SMART CONTEXTUAL NUDGES ---
+    # Instead of showing on the dashboard, we add them to the notification system.
+    
+    # helper for creating nudges
+    def add_nudge_alt(title, message):
+        Notification.objects.get_or_create(
+            user=request.user,
+            title=title,
+            is_read=False,
+            defaults={'message': message}
+        )
+
+    # 1. Accounts Nudge: If only 1 account exists
+    if Account.objects.filter(user=request.user).count() == 1:
+        add_nudge_alt(
+            _('Smart Tip: Multiple Accounts'),
+            _('Add separate accounts (like cash, bank, or UPI) to track your money more accurately across all sources.')
+        )
+    
+    # 2. Expense Category Nudge: Check for "Miscellaneous" or "Other" usage
+    misc_usage = Expense.objects.filter(
+        user=request.user, 
+        category__in=['Miscellaneous', 'Other', 'Misc']
+    ).count()
+    if misc_usage >= 3:
+        add_nudge_alt(
+            _('Organize Your Spend'),
+            _('Categorizing helps you see exactly where your money goes. Try creating specific categories for better insights!')
+        )
+    
+    # 3. Potential Recurring Nudge: Looking for patterns
+    three_months_ago = now - timedelta(days=90)
+    repeating_expenses = Expense.objects.filter(
+        user=request.user, 
+        date__gte=three_months_ago
+    ).values('description', 'amount').annotate(
+        count=Count('id')
+    ).filter(count__gte=3).exclude(description__in=['', 'Miscellaneous', 'Other']).order_by('-count')
+    
+    if repeating_expenses.exists():
+        top_repeat = repeating_expenses.first()
+        add_nudge_alt(
+            _('Automate Repeat Bills?'),
+            format_html(
+                _('Looks like {desc} repeats monthly. Want to transition it to a recurring transaction?'),
+                desc=top_repeat['description']
+            )
+        )
+
+    # Existing insights (Layer 5/6)
+    # Daily insight (enhanced for over-budget urgency and coaching)
     daily_insight = None
     # Build recovery tip for over-budget
     recovery_tip = None
     if daily_budget_status == 'over' and daily_top_category:
         recovery_tip = _("Reduce %(category)s spending to recover") % {'category': daily_top_category.lower()}
 
-    if daily_top_category and daily_top_category_pct >= 50:
+    # Check overspending streak (Last 3 days > daily_budget_allowed)
+    streak_count = 0
+    if daily_budget_allowed > 0:
+        last_3_days = today - timedelta(days=2)
+        recent_spend_raw = Expense.objects.filter(user=request.user, date__gte=last_3_days, date__lte=today).values('date').annotate(total=Sum('base_amount'))
+        recent_spend = {item['date']: item['total'] for item in recent_spend_raw}
+        
+        for i in range(3):
+            d = today - timedelta(days=i)
+            if float(recent_spend.get(d, 0)) > float(daily_budget_allowed):
+                streak_count += 1
+            else:
+                break
+
+    if streak_count >= 3:
+        daily_insight = {
+            'type': 'danger',
+            'message': _("3 days of overspending in a row"),
+            'tip': format_html(_("This usually leads to a budget miss. Rein it in!")),
+        }
+    elif daily_budget_status == 'over':
+        ratio = float(today_spent) / float(avg_daily_spend_month) if avg_daily_spend_month > 0 else 1
+        top_cats = " + ".join([c['name'] for c in today_category_split[:2]]) if today_category_split else _("various categories")
+        ratio_str = f"{round(ratio, 1)}x" if ratio >= 1.5 else f"{int((ratio-1)*100)}% more than"
+        
+        daily_insight = {
+            'type': 'danger',
+            'message': _("You overspent %(amount)s today") % {'amount': format_currency(today_spent)},
+            'tip': format_html(_("This is <strong>{}</strong> your usual daily spend<br>Mostly from <span class='fw-bold'>{}</span>"), ratio_str, top_cats),
+        }
+    elif daily_top_category and daily_top_category_pct >= 50:
         daily_insight = {
             'type': 'warning',
             'message': _("You spent %(pct)s%% on %(category)s today") % {
@@ -1503,12 +1657,6 @@ def home_view(request):
                 'category': daily_top_category,
             },
             'tip': _("Try to limit %(category)s spending") % {'category': daily_top_category.lower()},
-        }
-    elif daily_budget_status == 'over':
-        daily_insight = {
-            'type': 'danger',
-            'message': _("You've exceeded today's budget"),
-            'tip': _("Consider postponing non-essential purchases"),
         }
     elif daily_budget_status == 'within' and float(today_spent) > 0:
         daily_insight = {
@@ -1552,7 +1700,6 @@ def home_view(request):
         'month_transaction_count': month_transaction_count,
         'total_monthly_budget': round(Decimal(str(total_monthly_budget)), 0),
     }
-
     return render(request, 'home.html', context)
 
 @login_required
@@ -2285,7 +2432,6 @@ class YearInReviewView(LoginRequiredMixin, TemplateView):
         return context
 
     def dispatch(self, request, *args, **kwargs):
-        from django.contrib import messages
         from django.shortcuts import redirect
         if not request.user.profile.is_plus:
             messages.info(request, "Year in Review is a Premium feature. Upgrade to Plus or Pro to unlock your personalized financial story!")

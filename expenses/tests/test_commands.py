@@ -1,11 +1,13 @@
-from django.test import TestCase
-from django.core.management import call_command
+from datetime import timedelta
+
 from django.contrib.auth.models import User
-from expenses.models import RecurringTransaction, Notification, UserProfile
-from django.utils import timezone
-from datetime import date, timedelta
 from django.core import mail
-from unittest.mock import patch
+from django.core.management import call_command
+from django.test import TestCase
+from django.utils import timezone
+
+from expenses.models import Notification, RecurringTransaction, UserProfile
+
 
 class SendNotificationsCommandTest(TestCase):
     def setUp(self):

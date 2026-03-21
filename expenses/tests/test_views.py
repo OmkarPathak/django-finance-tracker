@@ -1,10 +1,12 @@
-from django.test import TestCase, Client
-from django.urls import reverse
-from django.contrib.auth.models import User
-from expenses.models import Expense, Income, RecurringTransaction, Category
-from datetime import date, timedelta
-from django.utils import timezone
 import json
+from datetime import date, timedelta
+
+from django.contrib.auth.models import User
+from django.test import Client, TestCase
+from django.urls import reverse
+
+from expenses.models import Category, Expense, Income, RecurringTransaction
+
 
 class BaseViewTest(TestCase):
     def setUp(self):

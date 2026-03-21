@@ -1,19 +1,18 @@
-import json
-from django.shortcuts import render, redirect
-from django.contrib.auth.decorators import login_required
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django.contrib.auth import logout
-from django.views.generic import TemplateView, UpdateView, DeleteView
+from allauth.socialaccount.models import SocialAccount
+from django.conf import settings
 from django.contrib import messages
-from django.utils.translation import gettext as _
+from django.contrib.auth import logout
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.db import IntegrityError
+from django.shortcuts import redirect
 from django.urls import reverse_lazy
 from django.utils import timezone, translation
-from django.conf import settings
-from django.db import IntegrityError
-from allauth.socialaccount.models import SocialAccount
+from django.utils.translation import gettext as _
+from django.views.generic import DeleteView, TemplateView, UpdateView
 
-from ..models import UserProfile, Expense, Income, RecurringTransaction
-from ..forms import ProfileUpdateForm, LanguageUpdateForm
+from ..forms import LanguageUpdateForm, ProfileUpdateForm
+from ..models import Expense, Income, RecurringTransaction, UserProfile
+
 
 class SettingsHomeView(LoginRequiredMixin, TemplateView):
     template_name = 'expenses/settings_home.html'

@@ -1,13 +1,15 @@
 
-from django.core.management.base import BaseCommand
-from django.utils import timezone
-from django.core.mail import send_mail
-from django.template.loader import render_to_string
+import logging
+from datetime import timedelta
+
 from django.conf import settings
 from django.contrib.auth.models import User
-from datetime import timedelta
-from expenses.models import UserProfile, Expense, Income, Category, SubscriptionPlan
-import logging
+from django.core.mail import send_mail
+from django.core.management.base import BaseCommand
+from django.template.loader import render_to_string
+from django.utils import timezone
+
+from expenses.models import Category, Expense, Income, SubscriptionPlan
 
 logger = logging.getLogger(__name__)
 
@@ -90,7 +92,7 @@ class Command(BaseCommand):
 
                 send_mail(
                     subject=subject,
-                    message=f"Check out what's new on TrackMyRupee!",  # Plain text fallback
+                    message="Check out what's new on TrackMyRupee!",  # Plain text fallback
                     from_email=settings.DEFAULT_FROM_EMAIL,
                     recipient_list=[user.email],
                     html_message=html_message,
