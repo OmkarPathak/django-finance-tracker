@@ -3,7 +3,7 @@
 <nav class="navbar navbar-expand-lg sticky-top {% if user.is_authenticated %}d-none d-lg-flex{% endif %} {% if is_landing %}navbar-landing{% else %}bg-body-tertiary border-bottom{% endif %}">
     <div class="container">
         <a class="navbar-brand fw-bold d-flex align-items-center gap-2" href="{% if user.is_authenticated %}{% url 'home' %}{% else %}{% url 'landing' %}{% endif %}">
-            <img src="{% static 'img/logo.svg' %}" alt="TMR" width="32" height="32" class="d-inline-block align-text-top rounded-3">
+            <img src="{% static 'img/logo.svg' %}" alt="TrackMyRupee" width="32" height="32" class="d-inline-block align-text-top rounded-3">
             <span class="fs-4">TrackMyRupee</span>
         </a>
         
@@ -362,7 +362,7 @@
 <div class="offcanvas offcanvas-bottom mobile-bottom-sheet d-lg-none" tabindex="-1" id="moreMenuSheet" aria-labelledby="moreMenuSheetLabel">
     <div class="offcanvas-header border-bottom py-3">
         <div class="d-flex align-items-center gap-2">
-            <img src="{% static 'img/logo.svg' %}" alt="TMR" width="28" height="28" class="rounded-2">
+            <img src="{% static 'img/logo.svg' %}" alt="TrackMyRupee" width="28" height="28" class="rounded-2">
             <h5 class="offcanvas-title fw-bold mb-0" id="moreMenuSheetLabel">TrackMyRupee</h5>
         </div>
         <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>

@@ -6,12 +6,14 @@ from django.contrib.auth.models import User
 from django.core.management.base import BaseCommand
 
 from expenses.models import (
+    Account,
     Category,
     Expense,
     GoalContribution,
     Income,
     RecurringTransaction,
     SavingsGoal,
+    Transfer,
     UserProfile,
 )
 
@@ -35,6 +37,31 @@ class Command(BaseCommand):
         profile.save()
 
         self.stdout.write(self.style.SUCCESS(f'Created user: {username} (PRO Tier)'))
+        
+        # 1.1 Setup Accounts
+        acc_main = Account.objects.create(
+            user=user, 
+            name="HDFC Bank (Main)", 
+            account_type='BANK', 
+            balance=Decimal('500000.00'), 
+            currency='₹'
+        )
+        acc_savings = Account.objects.create(
+            user=user, 
+            name="SBI Savings", 
+            account_type='BANK', 
+            balance=Decimal('100000.00'), 
+            currency='₹'
+        )
+        acc_cash = Account.objects.create(
+            user=user, 
+            name="Cash Wallet", 
+            account_type='CASH', 
+            balance=Decimal('100000.00'), 
+            currency='₹'
+        )
+
+        self.stdout.write(self.style.SUCCESS('Created Bank and Cash Accounts'))
 
         # 2. Categories & Budgets
         categories_data = [
@@ -88,7 +115,8 @@ class Command(BaseCommand):
                         source=inc['source'],
                         amount=inc['amount'],
                         date=inc_date,
-                        description=f"{inc['source']} for {inc_date.strftime('%B %Y')}"
+                        description=f"{inc['source']} for {inc_date.strftime('%B %Y')}",
+                        account=acc_main
                     )
             # Next Month
             next_month = curr_month.replace(day=28) + timedelta(days=4)
@@ -132,13 +160,20 @@ class Command(BaseCommand):
                         variation = random.randint(-200, 500)
                         amt = Decimal(amt) + Decimal(variation)
 
+                    # Determine Account
+                    if pattern['cat'] in ['Groceries', 'Transport', 'Dining Out']:
+                        selected_account = acc_cash
+                    else:
+                        selected_account = acc_main
+
                     Expense.objects.create(
                         user=user,
                         category=pattern['cat'],
                         amount=amt,
                         date=curr_date,
                         description=pattern['desc'],
-                        payment_method='UPI' if 'Dining' in pattern['cat'] else 'Debit Card'
+                        payment_method='UPI' if 'Dining' in pattern['cat'] else 'Debit Card',
+                        account=selected_account
                     )
             curr_date += timedelta(days=1)
 
@@ -174,13 +209,42 @@ class Command(BaseCommand):
                 part = Decimal(total_contrib) / 3
                 for i in range(3):
                     contrib_date = today - timedelta(days=30 * i + 5)
+                    # We create a Transfer to represent the movement of money
+                    Transfer.objects.create(
+                        user=user,
+                        from_account=acc_main,
+                        to_account=acc_savings,
+                        amount=part,
+                        date=contrib_date,
+                        description=f"Savings for {goal.name}"
+                    )
+                    # Contribution auto-creates an Expense. 
+                    # We DON'T link it to an account here because the Transfer above 
+                    # already handled the balance movement.
                     GoalContribution.objects.create(
                         goal=goal,
                         amount=part,
                         date=contrib_date
                     )
 
-        self.stdout.write(self.style.SUCCESS('Created Savings Goals with Progress'))
+        # Monthly ATM Withdrawals
+        curr_month = three_months_ago
+        while curr_month <= today:
+            withdrawal_date = curr_month.replace(day=10)
+            if withdrawal_date <= today:
+                Transfer.objects.create(
+                    user=user,
+                    from_account=acc_main,
+                    to_account=acc_cash,
+                    amount=Decimal('15000.00'),
+                    date=withdrawal_date,
+                    description="ATM Withdrawal"
+                )
+            # Next Month
+            next_month = curr_month.replace(day=28) + timedelta(days=4)
+            curr_month = next_month.replace(day=1)
+
+        self.stdout.write(self.style.SUCCESS('Created Savings Goals, Contributions and Monthly Transfers'))
 
         # 7. Recurring Transactions (The Alerts)
         
@@ -194,7 +258,8 @@ class Command(BaseCommand):
             frequency='MONTHLY',
             start_date=three_months_ago,
             last_processed_date=today - timedelta(days=27),
-            payment_method='UPI'
+            payment_method='UPI',
+            account=acc_main
         )
 
         # Gym (Currently Inactive to show cancelled subs)
@@ -207,7 +272,8 @@ class Command(BaseCommand):
             frequency='MONTHLY',
             start_date=three_months_ago - timedelta(days=100),
             last_processed_date=three_months_ago - timedelta(days=10),
-            is_active=False
+            is_active=False,
+            account=acc_main
         )
 
         # SaaS Income (Freelance Retainer)
@@ -220,6 +286,7 @@ class Command(BaseCommand):
             frequency='MONTHLY',
             start_date=three_months_ago,
             last_processed_date=today - timedelta(days=10),
+            account=acc_main
         )
 
         self.stdout.write(self.style.SUCCESS('Created Complex Recurring Transactions'))

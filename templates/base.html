@@ -115,7 +115,13 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="TrackMyRupee">
-    <link rel="apple-touch-icon" href="{% static 'img/pwa-icon-512.png' %}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{% static 'img/pwa-icon-512.png' %}">
+    <link rel="apple-touch-startup-image" href="{% static 'img/pwa-icon-512.png' %}">
+    <script>
+        // Pass hashed static URL to iOS splash generator
+        window.PWA_ICON_URL = "{% static 'img/pwa-icon-512.png' %}";
+    </script>
+    <script src="{% static 'js/ios-pwa-splash.js' %}"></script>
 
     <!-- Service Worker -->
     <script>
@@ -469,14 +475,6 @@
         }
     </style>
 
-    <meta name="theme-color" content="#2d6a4f">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="TrackMyRupee">
-    <link rel="apple-touch-icon" sizes="180x180" href="{% static 'img/pwa-icon-512.png' %}">
-    <link rel="apple-touch-startup-image" href="{% static 'img/pwa-icon-512.png' %}">
-
-    <script src="{% static 'js/ios-pwa-splash.js' %}"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 </head>
@@ -609,7 +607,7 @@
                 <!-- Brand & Description -->
                 <div class="col-lg-4 mb-4 mb-lg-0">
                     <a href="/" class="d-flex align-items-center gap-2 mb-3 text-decoration-none">
-                        <img src="{% static 'img/logo.svg' %}" alt="TMR" width="32" height="32"
+                        <img src="{% static 'img/logo.svg' %}" alt="TrackMyRupee" width="32" height="32"
                             class="d-inline-block align-text-top rounded-3">
                         <span class="fs-4 fw-bold text-body">TrackMyRupee</span>
                     </a>

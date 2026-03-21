@@ -12,7 +12,7 @@
     }
 
     // Configuration
-    const iconUrl = '/static/img/pwa-icon-512.png';
+    const iconUrl = window.PWA_ICON_URL || '/static/icon.svg';
     const backgroundColor = '#1a1a18'; // Brand Dark
 
     function createSplashScreen() {
@@ -35,10 +35,11 @@
         img.src = iconUrl;
         
         img.onerror = function() {
-            console.error('Failed to load PWA icon for splash screen generation.');
+            console.error('PWA Splash: Failed to load icon from', iconUrl);
         };
         
         img.onload = function() {
+            console.log('PWA Splash: Icon loaded, generating canvas...');
             // Draw Icon Centered
             // Use 1/4th of the screen width or 512px, whichever is smaller
             const iconSize = Math.min(width * 0.4, 512); 
@@ -66,18 +67,20 @@
 
             // Create Link Tag
             const dataUrl = canvas.toDataURL('image/png');
+            console.log('PWA Splash: dataUrl generated (' + Math.round(dataUrl.length / 1024) + ' KB)');
             
             // Remove existing tag if any
             const existing = document.querySelector('link[rel="apple-touch-startup-image"]');
             if (existing) {
                 existing.href = dataUrl;
+                console.log('PWA Splash: Updated existing link tag');
             } else {
                 const link = document.createElement('link');
                 link.setAttribute('rel', 'apple-touch-startup-image');
                 link.setAttribute('href', dataUrl);
                 document.head.appendChild(link);
+                console.log('PWA Splash: Created new link tag');
             }
-            console.log('iOS Splash Screen generated successfully.');
         };
     }
 
