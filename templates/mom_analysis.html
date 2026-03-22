@@ -1,0 +1,436 @@
+{% extends 'base.html' %}
+{% load i18n humanize currency_filters digit_filters %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Dashboard Mode Toggle -->
+    <div class="d-flex justify-content-center mb-4 fade-in">
+        <div class="bg-body-tertiary rounded-pill p-1 d-inline-flex align-items-center shadow-sm" role="group" id="dashboard-mode-toggle" style="border: 1px solid var(--bs-border-color-translucent);">
+            <a href="{% url 'home' %}?mode=daily" class="btn btn-sm rounded-pill px-4 py-2 fw-bold d-inline-flex align-items-center justify-content-center" style="min-width: 120px; transition: all 0.3s ease; line-height: 1.2;">
+                {% trans "Daily Mode" %}
+            </a>
+            <a href="{% url 'home' %}?mode=full" class="btn btn-sm rounded-pill px-4 py-2 fw-bold d-inline-flex align-items-center justify-content-center" style="min-width: 120px; transition: all 0.3s ease; line-height: 1.2;">
+                {% trans "Full Report" %}
+            </a>
+            <button type="button" class="btn btn-sm rounded-pill px-4 py-2 fw-bold active d-inline-flex align-items-center justify-content-center" id="btn-mom" onclick="window.location.href='{% url 'analytics-mom' %}'" style="min-width: 120px; transition: all 0.3s ease; line-height: 1.2;">
+                {% trans "Trends" %}
+            </button>
+        </div>
+    </div>
+
+    <!-- Financial Story Bento Grid -->
+    <div class="row g-3 mb-4 fade-in">
+        <!-- Net Worth Tile -->
+        <div class="col-6 col-md-3">
+            <div class="card h-100 border-0 shadow-sm rounded-4">
+                <div class="card-body p-3">
+                    <label class="text-muted fw-bold mb-1 d-block" style="font-size: 0.85rem; letter-spacing: 0.5px;">
+                        {% trans "Net Worth" %}
+                        <i class="bi bi-info-circle ms-1" data-bs-toggle="tooltip" title="{% trans 'Current total value across all your accounts.' %}"></i>
+                    </label>
+                    <h5 class="mb-1 fw-bold">{{ currency_symbol }}{{ summary.net_worth|floatformat:0|intcomma }}</h5>
+                    <small class="text-success fw-bold" style="font-size: 0.7rem;">
+                        <i class="bi bi-arrow-up-short"></i>{{ currency_symbol }}{{ summary.nw_change_3m|floatformat:0|intcomma }}
+                    </small>
+                </div>
+            </div>
+        </div>
+        <!-- Savings Rate Tile -->
+        <div class="col-6 col-md-3">
+            <div class="card h-100 border-0 shadow-sm rounded-4">
+                <div class="card-body p-3">
+                    <label class="text-muted fw-bold mb-1 d-block" style="font-size: 0.85rem; letter-spacing: 0.5px;">
+                        {% trans "Savings Rate" %}
+                        <i class="bi bi-info-circle ms-1" data-bs-toggle="tooltip" title="{% trans 'Percentage of income saved. (Savings / Income) x 100.' %}"></i>
+                    </label>
+                    <h5 class="mb-1 fw-bold">{{ summary.savings_rate|floatformat:0 }}%</h5>
+                    <span class="badge {% if summary.savings_rate > 30 %}bg-success-subtle text-success{% elif summary.savings_rate > 15 %}bg-info-subtle text-info{% else %}bg-warning-subtle text-warning{% endif %} rounded-pill py-1 px-2" style="font-size: 0.65rem;">
+                        {% if summary.savings_rate > 30 %}{% trans "Excellent" %}{% elif summary.savings_rate > 15 %}{% trans "Great" %}{% else %}{% trans "Good" %}{% endif %}
+                    </span>
+                </div>
+            </div>
+        </div>
+        <!-- Top Expense Tile -->
+        <div class="col-12 col-md-3">
+            <div class="card h-100 border-0 shadow-sm rounded-4">
+                <div class="card-body p-3">
+                    <label class="text-muted fw-bold mb-1 d-block" style="font-size: 0.85rem; letter-spacing: 0.5px;">
+                        {% trans "Top Expense" %}
+                        <i class="bi bi-info-circle ms-1" data-bs-toggle="tooltip" title="{% trans 'The category where you spent the most money this month.' %}"></i>
+                    </label>
+                    <h6 class="mb-0 fw-bold text-truncate">{{ summary.top_category }}</h6>
+                    <small class="text-muted" style="font-size: 0.7rem;">{% trans "This month" %}</small>
+                </div>
+            </div>
+        </div>
+        <!-- Smart Insight Tile -->
+        <div class="col-12 col-md-3">
+            <div class="card h-100 border-0 shadow-sm rounded-4 bg-white border">
+                <div class="card-body p-3 d-flex align-items-center">
+                    <div class="fs-4 me-3"><i class="bi bi-lightbulb text-primary"></i></div>
+                    <div>
+                        <small class="fw-bold d-block text-primary" style="font-size: 0.85rem;">
+                            {% trans "Smart Insight" %}
+                            <i class="bi bi-info-circle ms-1" data-bs-toggle="tooltip" title="{% trans 'AI-powered highlights based on your recent spending and saving patterns.' %}"></i>
+                        </small>
+                        <span class="text-muted" style="font-size: 0.8rem; line-height: 1.2;">
+                            {% if summary.savings_streak > 2 %}
+                                {% trans "You're on a" %} {{ summary.savings_streak }}-{% trans "month savings streak! Keep it up!" %}
+                            {% elif summary.savings_rate > 20 %}
+                                {% trans "You're saving aggressively this month — great progress!" %}
+                            {% else %}
+                                {% trans "Consistent spending habits observed. You're staying on track!" %}
+                            {% endif %}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Section -->
+    <div class="row g-4 mb-5">
+        <!-- Net Worth Trend -->
+        <div class="col-md-6 fade-in">
+            <div class="card h-100 border-0 shadow-sm rounded-4">
+                <div class="card-header bg-transparent border-bottom p-3 px-md-4 pt-md-4 pb-md-3">
+                    <div class="d-flex justify-content-between align-items-start mb-1">
+                        <h6 class="text-muted fw-bold mb-0" style="font-size: 0.9rem; letter-spacing: 0.2px;">
+                            <i class="bi bi-wallet2 me-2 text-muted"></i>{% trans "Net Worth Trend" %}
+                            <i class="bi bi-info-circle ms-1 opacity-50" data-bs-toggle="tooltip" title="{% trans 'Track your total asset value over time. History is reconstructed using monthly cashflows.' %}"></i>
+                        </h6>
+                        {% if summary.nw_pct_3m > 0 %}
+                            <span class="badge bg-success-subtle text-success rounded-pill px-2 py-1" style="font-size: 0.65rem;">+{{ summary.nw_pct_3m }}% <span class="d-none d-sm-inline">{% trans "since Jan" %}</span></span>
+                        {% endif %}
+                    </div>
+                    <p class="text-muted mb-0" style="font-size: 0.75rem;">
+                        {% if summary.net_worth >= summary.nw_change_3m %}
+                            {% trans "Highest net worth ever recorded for you!" %}
+                        {% else %}
+                            {% trans "Growing steadily towards your goals." %}
+                        {% endif %}
+                    </p>
+                </div>
+                <div class="card-body px-4 pb-4">
+                    <div style="height: 300px;">
+                        <canvas id="nwChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Monthly Savings -->
+        <div class="col-md-6 fade-in">
+            <div class="card h-100 border-0 shadow-sm rounded-4">
+                <div class="card-header bg-transparent border-bottom p-3 px-md-4 pt-md-4 pb-md-3">
+                    <div class="d-flex justify-content-between align-items-start mb-1">
+                        <h6 class="text-muted fw-bold mb-0" style="font-size: 0.9rem; letter-spacing: 0.2px;">
+                            <i class="bi bi-piggy-bank me-2 text-muted"></i>{% trans "Monthly Savings" %}
+                            <i class="bi bi-info-circle ms-1 opacity-50" data-bs-toggle="tooltip" title="{% trans 'The money left over after all expenses each month. Positive is growth!' %}"></i>
+                        </h6>
+                        {% if summary.savings_streak > 1 %}
+                            <span class="badge bg-warning-subtle text-warning rounded-pill px-2 py-1" style="font-size: 0.65rem;">🔥 {{ summary.savings_streak }} <span class="d-none d-sm-inline">{% trans "month streak" %}</span></span>
+                        {% endif %}
+                    </div>
+                    <p class="text-muted mb-0" style="font-size: 0.75rem;">
+                        {% if summary.is_best_savings %}
+                            {% trans "This is your best savings month ever!" %}
+                        {% else %}
+                            {% trans "Your financial discipline is paying off." %}
+                        {% endif %}
+                    </p>
+                </div>
+                <div class="card-body px-4 pb-4">
+                    <div style="height: 300px;">
+                        <canvas id="savChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Income vs Expenses -->
+        <div class="col-md-6 fade-in">
+            <div class="card h-100 border-0 shadow-sm rounded-4">
+                <div class="card-header bg-transparent border-bottom p-3 px-md-4 pt-md-4 pb-md-3">
+                    <div class="d-flex justify-content-between align-items-start mb-1">
+                        <h6 class="text-muted fw-bold mb-0" style="font-size: 0.9rem; letter-spacing: 0.2px;">
+                            <i class="bi bi-arrow-down-up me-2 text-muted"></i>{% trans "Income vs Expenses" %}
+                            <i class="bi bi-info-circle ms-1 opacity-50" data-bs-toggle="tooltip" title="{% trans 'A direct monthly comparison of what you earned versus what you spent.' %}"></i>
+                        </h6>
+                        <span class="badge bg-primary-subtle text-primary rounded-pill px-2 py-1" style="font-size: 0.65rem;">{{ summary.savings_rate }}% <span class="d-none d-sm-inline">{% trans "Savings Rate" %}</span></span>
+                    </div>
+                    <p class="text-muted mb-0" style="font-size: 0.75rem;">
+                        {% if summary.exp_change < 0 %}
+                            {% trans "Expenses dropped by" %} {{ currency_symbol }}{{ summary.exp_change_abs|intcomma }} {% trans "from last month! Excellent!" %}
+                        {% else %}
+                            {% trans "Monitor your spending to maintain your savings rate." %}
+                        {% endif %}
+                    </p>
+                </div>
+                <div class="card-body px-4 pb-4">
+                    <div style="height: 300px;">
+                        <canvas id="ieChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Daily Burn Rate -->
+        <div class="col-md-6 fade-in">
+            <div class="card h-100 border-0 shadow-sm rounded-4">
+                <div class="card-header bg-transparent border-bottom p-3 px-md-4 pt-md-4 pb-md-3">
+                    <div class="d-flex justify-content-between align-items-start mb-1">
+                        <h6 class="text-muted fw-bold mb-0" style="font-size: 0.9rem; letter-spacing: 0.2px;">
+                            <i class="bi bi-fire me-2 text-muted"></i>{% trans "Daily Burn Rate" %}
+                            <i class="bi bi-info-circle ms-1 opacity-50" data-bs-toggle="tooltip" title="{% trans 'Average daily spending. Calculated as: Total Monthly Expenses / Days in Month (or current day).' %}"></i>
+                        </h6>
+                        <span class="badge bg-danger-subtle text-danger rounded-pill px-2 py-1" style="font-size: 0.65rem;">
+                            {{ currency_symbol }}{{ summary.burn_rate|floatformat:0|intcomma }}<span class="d-none d-sm-inline">/{% trans "day" %}</span>
+                        </span>
+                    </div>
+                    <p class="text-muted mb-0" style="font-size: 0.75rem;">
+                        {% if summary.burn_rate < summary.prev_burn %}
+                            {% trans "Your daily spending is lower than last month! Great control!" %}
+                        {% else %}
+                            {% trans "Your daily burn rate is slightly up. Keep an eye on small spends." %}
+                        {% endif %}
+                    </p>
+                </div>
+                <div class="card-body px-4 pb-4">
+                    <div style="height: 300px;">
+                        <canvas id="burnChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Shared Configuration
+        const labels = {{ labels|safe }};
+        const translateDigits = (val) => {
+            const lang = '{{ request.LANGUAGE_CODE }}';
+            if (lang !== 'mr' && lang !== 'hi') return val;
+            const map = {'0':'०','1':'१','2':'२','3':'३','4':'४','5':'५','6':'६','7':'७','8':'८','9':'९'};
+            return val.toString().split('').map(c => map[c] || c).join('');
+        };
+
+        const formatLakhs = (val) => {
+            if (val === null || val === undefined) return '';
+            const absVal = Math.abs(val);
+            if (absVal >= 100000) {
+                const formatted = (val / 100000).toFixed(1).replace('.0', '') + 'L';
+                return translateDigits(formatted);
+            }
+            return translateDigits(val.toLocaleString());
+        };
+
+        const chartOptions = {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
+            plugins: {
+                legend: { position: 'bottom', labels: { boxWidth: 12, padding: 20 } },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const val = context.parsed.y;
+                            return context.dataset.label + ': {{ currency_symbol }}' + translateDigits(val.toLocaleString());
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: { grid: { display: false } },
+                y: { 
+                    grid: { borderDash: [5, 5] },
+                    ticks: { callback: (val) => formatLakhs(val) }
+                }
+            }
+        };
+
+        // 1. Net Worth Chart (Line)
+        new Chart(document.getElementById('nwChart'), {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: '{% trans "Net Worth" %}',
+                    data: {{ nw_data|safe }},
+                    borderColor: '#2d6a4f',
+                    backgroundColor: 'rgba(45, 106, 79, 0.1)',
+                    fill: true,
+                    tension: 0.4,
+                    borderWidth: 3,
+                    spanGaps: false,
+                    pointRadius: (ctx) => (ctx.dataIndex === ctx.dataset.data.length - 1 ? 8 : 4),
+                    pointHoverRadius: (ctx) => (ctx.dataIndex === ctx.dataset.data.length - 1 ? 10 : 6),
+                    pointBackgroundColor: (ctx) => (ctx.dataIndex === ctx.dataset.data.length - 1 ? '#2d6a4f' : '#fff'),
+                    pointBorderColor: '#2d6a4f',
+                    pointBorderWidth: 2
+                }]
+            },
+            options: chartOptions
+        });
+
+        // 2. Income vs Expenses Chart (Line)
+        new Chart(document.getElementById('ieChart'), {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: '{% trans "Income" %}',
+                        data: {{ inc_data|safe }},
+                        borderColor: '#2d6a4f',
+                        backgroundColor: 'rgba(45, 106, 79, 0.1)',
+                        fill: true,
+                        tension: 0.4,
+                        borderWidth: 3,
+                        spanGaps: false,
+                        pointRadius: (ctx) => (ctx.dataIndex === ctx.dataset.data.length - 1 ? 8 : 0),
+                        pointHoverRadius: 8
+                    },
+                    {
+                        label: '{% trans "Expenses" %}',
+                        data: {{ exp_data|safe }},
+                        borderColor: '#c0392b',
+                        backgroundColor: 'rgba(192, 57, 43, 0.1)',
+                        fill: true,
+                        tension: 0.4,
+                        borderWidth: 3,
+                        spanGaps: false,
+                        pointRadius: (ctx) => (ctx.dataIndex === ctx.dataset.data.length - 1 ? 8 : 0),
+                        pointHoverRadius: 8
+                    },
+                    {
+                        label: '{% trans "Investments" %}',
+                        data: {{ inv_data|safe }},
+                        borderColor: '#f39c12',
+                        backgroundColor: 'rgba(243, 156, 18, 0.1)',
+                        fill: true,
+                        tension: 0.4,
+                        borderWidth: 3,
+                        spanGaps: false,
+                        pointRadius: (ctx) => (ctx.dataIndex === ctx.dataset.data.length - 1 ? 8 : 0),
+                        pointHoverRadius: 8
+                    }
+                ]
+            },
+            options: chartOptions
+        });
+ 
+        // 3. Savings Chart (Line)
+        new Chart(document.getElementById('savChart'), {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: '{% trans "Savings" %}',
+                    data: {{ sav_data|safe }},
+                    borderColor: '#219EBC',
+                    backgroundColor: 'rgba(33, 158, 188, 0.1)',
+                    fill: true,
+                    tension: 0.4,
+                    borderWidth: 3,
+                    spanGaps: false,
+                    pointRadius: (ctx) => (ctx.dataIndex === ctx.dataset.data.length - 1 ? 8 : 0),
+                    pointHoverRadius: 8
+                }]
+            },
+            options: chartOptions
+        });
+
+        // 4. Burn Rate Chart (Line)
+        new Chart(document.getElementById('burnChart'), {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: '{% trans "Daily Burn" %}',
+                    data: {{ burn_data|safe }},
+                    borderColor: '#e63946',
+                    backgroundColor: 'rgba(230, 57, 70, 0.1)',
+                    fill: true,
+                    tension: 0.4,
+                    borderWidth: 3,
+                    spanGaps: false,
+                    pointRadius: (ctx) => (ctx.dataIndex === ctx.dataset.data.length - 1 ? 8 : 0),
+                    pointHoverRadius: 8
+                }]
+            },
+            options: chartOptions
+        });
+
+        // Initialize Tooltips
+        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+    });
+</script>
+
+<style>
+    #dashboard-mode-toggle .active {
+        background-color: var(--bs-primary) !important;
+        color: #fff !important;
+        box-shadow: 0 4px 12px rgba(var(--bs-primary-rgb), 0.35);
+    }
+    #dashboard-mode-toggle .btn {
+        color: var(--bs-body-color);
+        border: none;
+        text-decoration: none;
+    }
+    #dashboard-mode-toggle .btn:not(.active):hover {
+        background: rgba(var(--bs-primary-rgb), 0.08);
+    }
+
+    /* Responsive Dashboard Toggle */
+    @media (max-width: 480px) {
+        #dashboard-mode-toggle {
+            width: 100%;
+            display: flex !important;
+        }
+        #dashboard-mode-toggle .btn {
+            min-width: 0 !important;
+            flex: 1;
+            padding-left: 0.25rem !important;
+            padding-right: 0.25rem !important;
+            font-size: 0.8rem !important;
+            white-space: nowrap;
+        }
+    }
+    .card { transition: transform 0.2s ease, box-shadow 0.2s ease; }
+    .card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.1) !important; }
+
+    .fade-in {
+        animation: fadeInUp 0.6s ease-out forwards;
+        opacity: 0;
+    }
+
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .border-end-md {
+        border-right: 1px solid var(--bs-border-color);
+    }
+    @media (max-width: 767.98px) {
+        .border-end-md {
+            border-right: none;
+            border-bottom: 1px solid var(--bs-border-color);
+            padding-bottom: 1rem;
+            margin-bottom: 1rem;
+        }
+    }
+</style>
+{% endblock %}

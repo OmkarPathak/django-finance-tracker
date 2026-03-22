@@ -214,6 +214,9 @@
         <button type="button" class="btn btn-sm rounded-pill px-4 py-2 fw-bold full-report-btn d-inline-flex align-items-center justify-content-center" id="btn-full-report" onclick="switchToFullReport()" style="min-width: 120px; transition: all 0.3s ease; line-height: 1.2;">
             {% trans "Full Report" %}
         </button>
+        <button type="button" class="btn btn-sm rounded-pill px-4 py-2 fw-bold d-inline-flex align-items-center justify-content-center" id="btn-mom" onclick="window.location.href='{% url 'analytics-mom' %}'" style="min-width: 120px; transition: all 0.3s ease; line-height: 1.2;">
+            {% trans "Trends" %}
+        </button>
     </div>
 </div>
 
@@ -231,6 +234,22 @@
     }
     #dashboard-mode-toggle .btn:not(.active):hover {
         background: rgba(var(--bs-primary-rgb), 0.08);
+    }
+
+    /* Responsive Dashboard Toggle */
+    @media (max-width: 480px) {
+        #dashboard-mode-toggle {
+            width: 100%;
+            display: flex !important;
+        }
+        #dashboard-mode-toggle .btn {
+            min-width: 0 !important;
+            flex: 1;
+            padding-left: 0.25rem !important;
+            padding-right: 0.25rem !important;
+            font-size: 0.8rem !important;
+            white-space: nowrap;
+        }
     }
 
     /* Daily Mode responsive adjustments for desktop */
@@ -2943,6 +2962,8 @@ function switchToDailyMode() {
     document.getElementById('full-report-view').style.display = 'none';
     document.getElementById('btn-daily-mode').classList.add('active');
     document.getElementById('btn-full-report').classList.remove('active');
+    const btnMom = document.getElementById('btn-mom');
+    if (btnMom) btnMom.classList.remove('active');
     localStorage.setItem('tmr_dashboard_mode', 'daily');
 }
 
@@ -2951,6 +2972,8 @@ function switchToFullReport() {
     document.getElementById('full-report-view').style.display = 'block';
     document.getElementById('btn-daily-mode').classList.remove('active');
     document.getElementById('btn-full-report').classList.add('active');
+    const btnMom = document.getElementById('btn-mom');
+    if (btnMom) btnMom.classList.remove('active');
     localStorage.setItem('tmr_dashboard_mode', 'full');
     
     // Trigger Chart.js resize since canvases are now visible
@@ -2961,8 +2984,11 @@ function switchToFullReport() {
 
 // Restore last-used mode on page load
 document.addEventListener('DOMContentLoaded', function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlMode = urlParams.get('mode');
     const savedMode = localStorage.getItem('tmr_dashboard_mode');
-    if (savedMode === 'full') {
+    
+    if (urlMode === 'full' || (urlMode === null && savedMode === 'full')) {
         switchToFullReport();
     } else {
         switchToDailyMode();

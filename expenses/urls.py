@@ -2,6 +2,7 @@ from django.urls import path
 from django.views.generic import RedirectView, TemplateView
 
 from . import views, views_payment
+from .views.mom_view import mom_analysis_view
 
 urlpatterns = [
     path('signup/', RedirectView.as_view(pattern_name='account_signup', permanent=True), name='signup'),
@@ -11,6 +12,7 @@ urlpatterns = [
     path('analytics/', views.AnalyticsView.as_view(), name='analytics'),
     path('year-in-review/', views.YearInReviewView.as_view(), name='year_in_review_default'),
     path('year-in-review/<int:year>/', views.YearInReviewView.as_view(), name='year_in_review'),
+    path('analytics/mom/', mom_analysis_view, name='analytics-mom'),
     path('demo/', views.demo_login, name='demo_login'),
     path('demo-signup/', views.demo_signup, name='demo_signup'),
     path('upload/', views.upload_view, name='upload'),

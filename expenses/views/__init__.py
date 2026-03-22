@@ -9,6 +9,7 @@ from .goals import *
 from .income import *
 from .misc import *
 from .mixins import *
+from .mom_view import *
 from .notifications import *
 from .recurring import *
 from .settings import *
