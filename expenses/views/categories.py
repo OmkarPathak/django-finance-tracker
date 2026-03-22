@@ -36,7 +36,7 @@ class CategoryListView(LoginRequiredMixin, ListView):
                 limit = 10
                 upgrade_tier = 'PRO'
             else:
-                limit = 5
+                limit = 3
                 upgrade_tier = 'PLUS'
             context['reached_limit'] = total_categories >= limit
             context['current_count'] = total_categories
@@ -62,7 +62,7 @@ def create_category_ajax(request):
                 return JsonResponse({'success': False, 'error': _('Name is required.')})
                 
             profile = request.user.profile
-            limit = float('inf') if profile.is_pro else (10 if profile.is_plus else 5)
+            limit = float('inf') if profile.is_pro else (10 if profile.is_plus else 3)
             if Category.objects.filter(user=request.user).count() >= limit:
                 return JsonResponse({'success': False, 'error': _('Category limit reached.')}, status=403)
 
@@ -83,7 +83,7 @@ class CategoryCreateView(LoginRequiredMixin, CreateView):
 
     def form_valid(self, form):
         profile = self.request.user.profile
-        limit = float('inf') if profile.is_pro else (10 if profile.is_plus else 5)
+        limit = float('inf') if profile.is_pro else (10 if profile.is_plus else 3)
         if Category.objects.filter(user=self.request.user).count() >= limit:
             messages.error(self.request, _("Category limit reached. Please upgrade."))
             return redirect('pricing')
@@ -101,7 +101,7 @@ class CategoryCreateView(LoginRequiredMixin, CreateView):
         context['bootstrap_icons'] = BOOTSTRAP_ICONS
         # Check Limits
         current_count = Category.objects.filter(user=self.request.user).count()
-        limit = 5 # Free
+        limit = 3 # Free
         if self.request.user.profile.is_plus:
             limit = 10
         if self.request.user.profile.is_pro:
@@ -120,7 +120,7 @@ class CategoryUpdateView(LoginRequiredMixin, UpdateView):
     def dispatch(self, request, *args, **kwargs):
         obj = self.get_object()
         profile = request.user.profile
-        limit = float('inf') if profile.is_pro else (10 if profile.is_plus else 5)
+        limit = float('inf') if profile.is_pro else (10 if profile.is_plus else 3)
         categories = list(Category.objects.filter(user=request.user).order_by('id'))
         if obj in categories and categories.index(obj) >= limit:
             messages.error(request, _("This category is locked."))

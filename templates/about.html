@@ -11,66 +11,68 @@
     }
     .about-header {
         background: var(--story-paper);
-        padding: 80px 0 60px;
+        padding: 100px 0 80px;
         border-bottom: 1px solid rgba(0,0,0,0.05);
     }
-    .founder-image-container {
-        position: relative;
-        width: 120px;
-        height: 120px;
-        margin: 0 auto 24px;
+    .founder-card {
+        background: white;
+        border-radius: 32px;
+        padding: 40px;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.03);
+        border: 1px solid rgba(0,0,0,0.05);
+        margin-top: 60px;
     }
-    .founder-image {
-        width: 100%;
-        height: 100%;
+    .founder-photo {
+        width: 100px;
+        height: 100px;
         border-radius: 50%;
         object-fit: cover;
-        border: 3px solid white;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        border: 4px solid #fff;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.1);
     }
-    .story-section {
-        padding: 60px 0;
-        line-height: 1.8;
-        font-size: 1.1rem;
-    }
-    .quote-card {
-        background: var(--story-accent);
-        color: white;
-        padding: 40px;
-        border-radius: 24px;
-        margin-bottom: 40px;
-        position: relative;
-        overflow: hidden;
-    }
-    .quote-card::before {
-        content: '"';
-        position: absolute;
-        top: -20px;
-        left: 20px;
-        font-size: 120px;
-        opacity: 0.1;
-        font-family: serif;
-    }
-    .built-in-public {
-        background: #f8f9fa;
+    .stat-tile {
+        background: #f8fafc;
         border-radius: 20px;
-        padding: 30px;
-        margin-top: 40px;
+        padding: 24px 16px;
+        transition: all 0.2s ease;
+        border: 1px solid rgba(0,0,0,0.03);
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
     }
-    .stat-card {
-        text-align: center;
-        padding: 20px;
+    .stat-tile:hover {
+        background: white;
+        transform: translateY(-4px);
+        box-shadow: 0 12px 24px rgba(0,0,0,0.05);
+        border-color: var(--story-accent);
     }
     .stat-value {
         font-size: 2rem;
-        font-weight: 700;
+        font-weight: 800;
         color: var(--story-accent);
+        line-height: 1;
     }
     .stat-label {
-        font-size: 0.9rem;
-        color: #666;
+        font-size: 0.7rem;
+        font-weight: 700;
+        color: #64748b;
         text-transform: uppercase;
-        letter-spacing: 1px;
+        letter-spacing: 1.2px;
+        margin-top: 8px;
+    }
+    .btn-support {
+        background: #2d6a4f;
+        color: white;
+        border: none;
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .btn-support:hover {
+        background: #1b4332;
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(45, 106, 79, 0.3);
     }
     .mission-badge {
         display: inline-block;
@@ -81,6 +83,30 @@
         font-weight: 600;
         font-size: 0.85rem;
         margin-bottom: 16px;
+    }
+
+    /* Dark Mode Support */
+    [data-bs-theme="dark"] .about-header {
+        background: #0f172a;
+    }
+    [data-bs-theme="dark"] .founder-card {
+        background: #1e293b;
+        border-color: rgba(255,255,255,0.1);
+    }
+    [data-bs-theme="dark"] .stat-tile {
+        background: #334155 !important;
+        border-color: rgba(255,255,255,0.05);
+    }
+    [data-bs-theme="dark"] .stat-tile:hover {
+        background: #475569 !important;
+        border-color: var(--story-accent);
+    }
+    [data-bs-theme="dark"] .stat-label {
+        color: #94a3b8;
+    }
+    [data-bs-theme="dark"] .mission-badge {
+        background: rgba(45, 106, 79, 0.1);
+        color: #4ade80;
     }
 </style>
 {% endblock %}
@@ -137,41 +163,40 @@
 
             <h3 class="fw-bold mt-5 mb-4 text-center">{% trans "Join the Journey" %}</h3>
             
-            <div class="built-in-public text-center">
-                <div class="founder-image-container">
-                    <img src="https://github.com/OmkarPathak.png" alt="Omkar Pathak" class="founder-image">
+            <div class="founder-card text-center">
+                <div class="mb-4">
+                    <img src="https://github.com/OmkarPathak.png" alt="Omkar Pathak" class="founder-photo">
                 </div>
                 <h4 class="fw-bold mb-1">Omkar Pathak</h4>
-                <p class="text-muted mb-4">{% trans "Founder & Indie Developer" %}</p>
+                <p class="text-muted mb-5">{% trans "Founder & Indie Developer" %}</p>
                 
-                <div class="row mb-4">
-                    <div class="col-6 col-md-3 stat-card">
-                        <div class="stat-value">500+</div>
-                        <div class="stat-label">{% trans "Users" %}</div>
+                <div class="row justify-content-center g-3 mb-5">
+                    <div class="col-6 col-md-3">
+                        <div class="stat-tile">
+                            <div class="stat-value">500+</div>
+                            <div class="stat-label">{% trans "Users" %}</div>
+                        </div>
                     </div>
-                    <div class="col-6 col-md-3 stat-card">
-                        <div class="stat-value">2+</div>
-                        <div class="stat-label">{% trans "Years" %}</div>
+                    <div class="col-6 col-md-3">
+                        <div class="stat-tile">
+                            <div class="stat-value">2+</div>
+                            <div class="stat-label">{% trans "Years" %}</div>
+                        </div>
                     </div>
-                    <div class="col-6 col-md-3 stat-card">
-                        <div class="stat-value">INR</div>
-                        <div class="stat-label">{% trans "Native" %}</div>
-                    </div>
-                    <div class="col-6 col-md-3 stat-card">
-                        <div class="stat-value">3</div>
-                        <div class="stat-label">{% trans "Langs" %}</div>
+                    <div class="col-6 col-md-3">
+                        <div class="stat-tile">
+                            <div class="stat-value">₹</div>
+                            <div class="stat-label">{% trans "Built For" %}</div>
+                        </div>
                     </div>
                 </div>
 
                 <div class="d-flex flex-wrap justify-content-center gap-3">
-                    <a href="https://twitter.com/trackmyrupee" class="btn btn-dark rounded-pill px-4">
-                        <i class="bi bi-twitter-x me-2"></i>{% trans "Follow on X" %}
+                    <a href="https://github.com/omkarpathak/trackmyrupee" class="btn btn-outline-success rounded-pill px-4 py-2 d-flex align-items-center gap-2">
+                        <i class="bi bi-github"></i>{% trans "Source Code" %}
                     </a>
-                    <a href="https://github.com/omkarpathak/trackmyrupee" class="btn btn-outline-dark rounded-pill px-4">
-                        <i class="bi bi-github me-2"></i>{% trans "View Source" %}
-                    </a>
-                    <a href="https://rzp.io/rzp/AP7kBG2" class="btn btn-success rounded-pill px-4">
-                        <i class="bi bi-heart-fill me-2"></i>{% trans "Support Us" %}
+                    <a href="https://rzp.io/rzp/AP7kBG2" class="btn btn-outline-success rounded-pill px-4 py-2 d-flex align-items-center gap-2">
+                        <i class="bi bi-heart-fill text-danger"></i>{% trans "Support Project" %}
                     </a>
                 </div>
             </div>

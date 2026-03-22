@@ -421,10 +421,13 @@ class UserProfile(models.Model):
         return self.is_plus or self.is_pro
 
     def can_add_account(self):
-        """Free users are capped at 3 accounts."""
+        """Free users are capped at 3 accounts, Plus users at 5."""
+        count = self.user.accounts.count()
+        if self.active_tier == 'PLUS':
+            return count < 5
         if self.active_tier == 'FREE':
-            return self.user.accounts.count() < 3
-        return True
+            return count < 3
+        return True # Pro: Unlimited
 
     def can_add_expense(self):
         """Free users are capped at 30 expenses per month."""

@@ -41,19 +41,21 @@ class StrictLimitEnforcementTest(TestCase):
     def test_category_limit_enforcement(self):
         # By default, profile is FREE
         self.user.refresh_from_db()
-        # Signals create 5 default categories. We created 6 more. Total 11.
-        self.assertEqual(Category.objects.filter(user=self.user).count(), 11)
+        # Signals create 3 default categories. We created 6 more. Total 9.
+        self.assertEqual(Category.objects.filter(user=self.user).count(), 9)
         
         form = ExpenseForm(user=self.user)
         choices = list(form.fields['category'].widget.choices)
-        # FREE limit is 5
-        self.assertEqual(len(choices), 5)
+        # FREE limit is 3
+        self.assertEqual(len(choices), 3)
         
         # Upgrade to PLUS
         p = self.user.profile
         p.tier = 'PLUS'
         p.subscription_end_date = timezone.now() + timedelta(days=30)
         p.save()
+        # Add a 10th category to test the limit of 10
+        Category.objects.create(user=self.user, name='Category 10')
         self.user.refresh_from_db()
         
         form = ExpenseForm(user=self.user)
@@ -160,7 +162,7 @@ class StrictLimitEnforcementTest(TestCase):
         # Order by ID is used, so cat 6 is index 5
         cat6 = cats[5]
         
-        # Downgrade to FREE (limit 5)
+        # Downgrade to FREE (limit 3)
         p = self.user.profile
         p.tier = 'FREE'
         p.save()

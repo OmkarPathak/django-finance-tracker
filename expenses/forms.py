@@ -38,7 +38,7 @@ class ExpenseForm(forms.ModelForm):
             # Enforce Tier Limits
             profile = user.profile
             if not profile.is_pro:
-                limit = 10 if profile.is_plus else 5
+                limit = 10 if profile.is_plus else 3
                 categories = categories[:limit]
             
             # Create choices list: [(name, name), ...]
@@ -144,7 +144,7 @@ class RecurringTransactionForm(forms.ModelForm):
             # Enforce Tier Limits
             profile = user.profile
             if not profile.is_pro:
-                limit = 10 if profile.is_plus else 5
+                limit = 10 if profile.is_plus else 3
                 categories = categories[:limit]
 
             category_choices = [('', '---------')] + [(cat.name, cat.name) for cat in categories]

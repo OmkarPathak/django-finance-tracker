@@ -69,24 +69,24 @@ class Command(BaseCommand):
         )
 
         self.stdout.write(self.style.SUCCESS('Created Bank and Cash Accounts'))
-
+        
         # 2. Categories & Budgets
         categories_data = [
             # Needs
-            {'name': 'Rent', 'limit': 25000, 'icon': 'bi-house-fill'},
-            {'name': 'Groceries', 'limit': 12000, 'icon': 'bi-cart-fill'},
-            {'name': 'Utilities', 'limit': 6000, 'icon': 'bi-lightning-charge-fill'},
-            {'name': 'Transport', 'limit': 8000, 'icon': 'bi-car-front-fill'},
+            {'name': 'Rent', 'limit': 30000, 'icon': 'bi-house-fill'},
+            {'name': 'Groceries', 'limit': 15000, 'icon': 'bi-cart-fill'},
+            {'name': 'Utilities', 'limit': 8000, 'icon': 'bi-lightning-charge-fill'},
+            {'name': 'Transport', 'limit': 10000, 'icon': 'bi-car-front-fill'},
             
             # Wants
-            {'name': 'Dining Out', 'limit': 10000, 'icon': 'bi-egg-fried'}, 
-            {'name': 'Shopping', 'limit': 10000, 'icon': 'bi-bag-heart-fill'},
+            {'name': 'Dining Out', 'limit': 15000, 'icon': 'bi-egg-fried'}, 
+            {'name': 'Shopping', 'limit': 15000, 'icon': 'bi-bag-heart-fill'},
             {'name': 'Subscriptions', 'limit': 5000, 'icon': 'bi-tv-fill'},
-            {'name': 'Travel', 'limit': 20000, 'icon': 'bi-airplane-fill'},
+            {'name': 'Travel', 'limit': 30000, 'icon': 'bi-airplane-fill'},
             
             # General / Investment-related (Standard categories now)
-            {'name': 'Mutual Funds', 'limit': 25000, 'icon': 'bi-graph-up-arrow'},
-            {'name': 'Stocks', 'limit': 15000, 'icon': 'bi-bank'},
+            {'name': 'Mutual Funds', 'limit': 30000, 'icon': 'bi-graph-up-arrow'},
+            {'name': 'Stocks', 'limit': 20000, 'icon': 'bi-bank'},
             {'name': 'Savings Transfer', 'limit': None, 'icon': 'bi-piggy-bank-fill'},
         ]
         
@@ -107,8 +107,8 @@ class Command(BaseCommand):
         
         # 4. Income History
         income_sources = [
-            {'source': '💼 Salary', 'amount': 85000, 'day': 5},
-            {'source': '🚀 Freelance Gig', 'amount': 25000, 'day': 20},
+            {'source': '💼 Salary', 'amount': 95000, 'day': 5},
+            {'source': '🚀 Freelance Gig', 'amount': 40000, 'day': 20},
         ]
 
         # Generate income for past 3 months
@@ -191,8 +191,10 @@ class Command(BaseCommand):
             {'cat': 'Dining Out', 'amount': 180, 'desc': 'Morning Coffee & Maska Bun', 'date': today},
             {'cat': 'Transport', 'amount': 240, 'desc': 'Uber to WeWork', 'date': today},
             {'cat': 'Dining Out', 'amount': 450, 'desc': 'Lunch with Team', 'date': today},
+            {'cat': 'Shopping', 'amount': 1200, 'desc': 'New Notebook & Pens', 'date': today},
             {'cat': 'Groceries', 'amount': 850, 'desc': 'Milk, Eggs & Fruits', 'date': today - timedelta(days=1)},
             {'cat': 'Transport', 'amount': 320, 'desc': 'Auto Rickshaw (Return)', 'date': today - timedelta(days=1)},
+            {'cat': 'Dining Out', 'amount': 650, 'desc': 'Dinner with Friend', 'date': today - timedelta(days=1)},
         ]
         
         for te in today_expenses:
@@ -229,9 +231,9 @@ class Command(BaseCommand):
             # GoalContribution also creates an Expense under "Savings Transfer"
             total_contrib = 0
             if 'Emergency' in goal.name:
-                total_contrib = 140000 # 70%
+                total_contrib = 60000 # ~20k/month
             elif 'MacBook' in goal.name:
-                total_contrib = 45000 # 25%
+                total_contrib = 15000 # ~5k/month
             
             if total_contrib > 0:
                 # Break it into 3 monthly parts

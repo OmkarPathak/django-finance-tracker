@@ -28,9 +28,7 @@ def create_default_categories(sender, instance, created, **kwargs):
         default_categories = [
             ('Food', 'bi-cup-hot'),
             ('Shopping', 'bi-cart3'),
-            ('Transport', 'bi-car-front'),
             ('Bills', 'bi-receipt'),
-            ('Entertainment', 'bi-film'),
         ]
         for name, icon in default_categories:
             Category.objects.get_or_create(user=instance, name=name, defaults={'icon': icon})
