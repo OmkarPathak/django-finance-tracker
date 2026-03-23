@@ -355,9 +355,11 @@
                 <button class="filter-toggle-btn" type="button" data-bs-toggle="collapse" data-bs-target="#expenseFilters" aria-expanded="false" aria-controls="expenseFilters" title="{% trans 'Toggle Filters' %}">
                     <i class="bi bi-funnel"></i>
                 </button>
+                {% if request.user.profile.can_export_csv %}
                 <a href="{% url 'export-expenses' %}?{{ request.GET.urlencode }}" class="header-action-btn btn-outline-success d-flex align-items-center gap-1 no-loader">
                     <i class="bi bi-download"></i> <span>{% trans "Export" %}</span>
                 </a>
+                {% endif %}
             </div>
         </div>
         <p class="text-muted small mb-0 mt-1">{% trans "Tracking every penny is the first step to financial freedom." %}</p>
@@ -383,9 +385,11 @@
                 <a href="{% url 'expense-create' %}" class="header-action-btn btn-primary d-inline-flex align-items-center text-nowrap">
                     <i class="bi bi-plus-lg me-1"></i> {% trans "Add Expense" %}
                 </a>
+                {% if request.user.profile.can_export_csv %}
                 <a href="{% url 'export-expenses' %}?{{ request.GET.urlencode }}" class="header-action-btn btn-outline-success d-inline-flex align-items-center no-loader">
                     <i class="bi bi-download me-1"></i> {% trans "Export" %}
                 </a>
+                {% endif %}
             </div>
         </div>
         <p class="text-muted small mb-0 mt-1">{% trans "Tracking every penny is the first step to financial freedom." %}</p>

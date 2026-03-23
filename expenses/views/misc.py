@@ -294,8 +294,8 @@ def upload_view(request):
 
 @login_required
 def export_expenses(request):
-    if not request.user.profile.is_plus:
-        messages.error(request, _("Exporting is a Plus feature. Please upgrade."))
+    if not request.user.profile.can_export_csv:
+        messages.error(request, _("Exporting is a paid feature. Please upgrade."))
         return redirect('pricing')
         
     import csv
@@ -317,8 +317,8 @@ def predict_category_view(request):
     # Important: use the one from the package to allow mocking in tests
     from . import predict_category_ai
     
-    if not request.user.profile.is_pro:
-        return JsonResponse({'category': None, 'error': _('AI Insights is a Pro feature.')}, status=403)
+    if not request.user.profile.has_ai_access:
+        return JsonResponse({'category': None, 'error': _('AI Insights is a paid feature.')}, status=403)
 
     description = request.GET.get('description', '').strip()
     if not description:

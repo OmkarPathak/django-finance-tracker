@@ -310,17 +310,11 @@
         </div>
     </a>
 
-    {% if user.profile.active_tier == 'PRO' %}
     <a href="{% url 'analytics' %}" class="mobile-nav-item {% if 'analytics' in request.resolver_match.url_name %}active{% endif %}">
+        {% if not request.user.profile.has_ai_access %}<i class="bi bi-lock-fill position-absolute text-primary" style="font-size: 0.65rem; top: 12px; right: 28%;"></i>{% endif %}
         <i class="bi bi-graph-up-arrow"></i>
         <span>{% trans "Analytics" %}</span>
     </a>
-    {% else %}
-    <a href="{% url 'goal-list' %}" class="mobile-nav-item {% if 'goal' in request.resolver_match.url_name %}active{% endif %}">
-        <i class="bi bi-bullseye{% if 'goal' in request.resolver_match.url_name %}-fill{% endif %}"></i>
-        <span>{% trans "Goals" %}</span>
-    </a>
-    {% endif %}
     <button class="mobile-nav-item mobile-nav-item-more position-relative" type="button" data-bs-toggle="offcanvas" data-bs-target="#moreMenuSheet" aria-controls="moreMenuSheet">
         <i class="bi bi-grid"></i>
         <span>{% trans "More" %}</span>

@@ -561,7 +561,18 @@
             </button>
         </h2>
         <div id="collapseInsights" class="accordion-collapse collapse" aria-labelledby="headingInsights" data-bs-parent="#insightsAccordion">
-            <div class="accordion-body p-3 p-md-4">
+            <div class="accordion-body p-3 p-md-4 position-relative">
+                {% if is_ai_locked %}
+                <div class="nw-locked-overlay position-absolute top-0 start-0 w-100 h-100 d-flex flex-column align-items-center justify-content-center px-4 text-center" style="z-index: 10; border-radius: inherit;">
+                    <div class="mb-3 bg-primary bg-opacity-10 rounded-circle text-primary d-flex align-items-center justify-content-center" style="width: 64px; height: 64px;">
+                        <i class="bi bi-lock-fill fs-3"></i>
+                    </div>
+                    <h5 class="fw-bold mb-2">{% trans "Financial Intelligence Hub" %}</h5>
+                    <p class="text-muted small mb-4">{% trans "Unlock advanced spending analysis, personalized savings recommendations, and AI-powered insights with TrackMyRupee Pro." %}</p>
+                    <a href="{% url 'pricing' %}" class="btn btn-primary rounded-pill px-4 fw-bold shadow-sm">{% trans "Upgrade Now" %}</a>
+                </div>
+                {% endif %}
+                
             {% if has_any_budget or total_income > 0 %}
             <div class="card shadow-lg border-0 mb-4 fade-in" id="tour-money-flow-card" style="animation-delay: 0.2s;">
                 <div class="card-header bg-transparent border-bottom py-2 px-4 fw-bold">

@@ -252,22 +252,16 @@
             border-bottom: 1px solid var(--border);
             width: 100%;
             display: flex; align-items: center; justify-content: center;
+            min-height: 65px;
         }
-        .nav-inner {
-            width: 100%;
-            max-width: 1200px;
-            padding: 0 5%;
-            height: 70px;
-            display: flex; align-items: center; justify-content: space-between;
-        }
-        .nav-logo { font-family: var(--serif); font-size: 18px; color: var(--ink); text-decoration: none; display: flex; align-items: center; gap: 8px; }
+        .nav-logo { font-family: var(--sans); font-size: 22px; font-weight: 700; color: var(--ink); text-decoration: none; display: flex; align-items: center; gap: 8px; }
         .nav-logo span { color: var(--accent); }
-        .nav-links { display: flex; align-items: center; gap: 28px; list-style: none; }
-        .nav-links a { font-size: 14px; color: var(--ink2); text-decoration: none; transition: color .2s; }
+        .nav-links { display: flex; align-items: center; gap: 32px; list-style: none; }
+        .nav-links a { font-size: 15px; font-weight: 500; color: var(--ink2); text-decoration: none; transition: color .2s; }
         .nav-links a:hover { color: var(--ink); }
         .nav-cta {
             background: var(--ink); color: var(--paper) !important;
-            padding: 8px 18px; border-radius: 99px;
+            padding: 10px 24px; border-radius: 99px;
             font-size: 14px; font-weight: 500;
             transition: background .2s, transform .15s;
         }
@@ -746,7 +740,7 @@
 <body>
 
 <nav class="landing-nav">
-    <div class="container d-flex align-items-center justify-content-between py-2">
+    <div class="container d-flex align-items-center justify-content-between py-3">
         <a class="nav-logo" href="/">TrackMyRupee</a>
         <ul class="nav-links d-none d-lg-flex list-unstyled mb-0 gap-4">
             <li><a href="#features" class="text-decoration-none">{% trans "Features" %}</a></li>

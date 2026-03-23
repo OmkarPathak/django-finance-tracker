@@ -1463,6 +1463,7 @@ def home_view(request):
         'net_worth_percent': net_worth_percent,
         'net_worth_trend': net_worth_trend,
         'is_net_worth_locked': not request.user.profile.has_net_worth_access,
+        'is_ai_locked': not request.user.profile.has_ai_access,
         'sparkline_points': sparkline_points,
         'accounts': accounts,
         'account_base_balances': account_base_balances,
@@ -1788,8 +1789,8 @@ class AnalyticsView(LoginRequiredMixin, TemplateView):
         context = super().get_context_data(**kwargs)
         user = self.request.user
         
-        # Check for Pro Access
-        if not hasattr(user, 'profile') or not user.profile.is_pro:
+        # Check for access controlled by ai_insights flag
+        if not hasattr(user, 'profile') or not user.profile.has_ai_access:
             context['is_locked'] = True
             return context
         

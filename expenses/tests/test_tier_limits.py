@@ -154,15 +154,18 @@ class TierLimitTest(TestCase):
         self.assertIn(reverse('pricing'), response.url)
         self.assertEqual(Expense.objects.filter(user=self.user, date__year=today.year, date__month=today.month).count(), limit)
 
-    def test_net_worth_locked_for_free_user(self):
-        """Dashboard should indicate net worth is locked for free users."""
-        response = self.client.get(reverse('home'))
-        self.assertTrue(response.context['is_net_worth_locked'])
-
-    def test_net_worth_unlocked_for_plus_user(self):
-        """Dashboard should NOT indicate net worth is locked for plus users."""
-        self.profile.tier = "PLUS"
-        self.profile.subscription_end_date = timezone.now().date() + timedelta(days=30)
-        self.profile.save()
-        response = self.client.get(reverse('home'))
-        self.assertFalse(response.context['is_net_worth_locked'])
+    def test_net_worth_locked_status(self):
+        """Dashboard should reflect net worth locked status from PLAN_DETAILS."""
+        from finance_tracker.plans import PLAN_DETAILS
+        
+        for tier in ['FREE', 'PLUS', 'PRO']:
+            self.profile.tier = tier
+            if tier != 'FREE':
+                self.profile.subscription_end_date = timezone.now() + timedelta(days=30)
+            else:
+                self.profile.subscription_end_date = None
+            self.profile.save()
+            
+            response = self.client.get(reverse('home'))
+            expected_locked = not PLAN_DETAILS[tier]['limits']['net_worth']
+            self.assertEqual(response.context['is_net_worth_locked'], expected_locked, f"Net worth locked status mismatch for tier {tier}")

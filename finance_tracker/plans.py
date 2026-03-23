@@ -17,9 +17,8 @@ PLAN_DETAILS = {
             'budget_categories': 3,
             'savings_goals': 1,
             'email_notifications': False,
-            'history_access': _('3 months'),
             'dashboard': _('Full'),
-            'net_worth': False,
+            'net_worth': True,
             'ai_insights': False,
             'export_csv': False,
             'year_in_review': False,
@@ -29,7 +28,7 @@ PLAN_DETAILS = {
     'PLUS': {
         'name': _('Plus'),
         'tagline': _('For the serious saver'),
-        'price_yearly': 299,
+        'price_yearly': 499,
         'price_monthly': 49,
         'pricing_note': _('per year'),
         'limits': {
@@ -39,7 +38,6 @@ PLAN_DETAILS = {
             'budget_categories': 10,
             'savings_goals': 3,
             'email_notifications': True,
-            'history_access': _('2 years'),
             'dashboard': _('Full'),
             'net_worth': True,
             'ai_insights': False,
@@ -51,7 +49,7 @@ PLAN_DETAILS = {
     'PRO': {
         'name': _('Pro'),
         'tagline': _('Full financial command'),
-        'price_yearly': 499,
+        'price_yearly': 999,
         'price_monthly': 99,
         'pricing_note': _('per year'),
         'limits': {
@@ -61,10 +59,9 @@ PLAN_DETAILS = {
             'budget_categories': -1,
             'savings_goals': -1,
             'email_notifications': True,
-            'history_access': _('Unlimited'),
             'dashboard': _('Full'),
             'net_worth': True,
-            'ai_insights': -1, # Unlimited
+            'ai_insights': True,
             'export_csv': True,
             'year_in_review': True,
             'support': _('Priority email'),

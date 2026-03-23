@@ -5,6 +5,7 @@ from django.contrib.auth.models import User
 from django.db import models, transaction
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
+from finance_tracker.plans import get_limit
 
 from .utils import get_exchange_rate
 
@@ -417,19 +418,17 @@ class UserProfile(models.Model):
 
     @property
     def has_net_worth_access(self):
-        """Net worth is a paid feature (Plus or Pro)."""
-        return self.is_plus or self.is_pro
+        """Net worth is a paid feature."""
+        return get_limit(self.active_tier, 'net_worth')
 
     def can_add_account(self):
         """Checks account limit based on tier."""
-        from finance_tracker.plans import get_limit
         limit = get_limit(self.active_tier, 'accounts')
         if limit == -1: return True
         return self.user.accounts.count() < limit
 
     def can_add_expense(self):
         """Checks monthly expense limit based on tier."""
-        from finance_tracker.plans import get_limit
         limit = get_limit(self.active_tier, 'expenses_per_month')
         if limit == -1: return True
         
@@ -443,28 +442,24 @@ class UserProfile(models.Model):
 
     def can_add_recurring(self):
         """Checks recurring transaction limit based on tier."""
-        from finance_tracker.plans import get_limit
         limit = get_limit(self.active_tier, 'recurring_transactions')
         if limit == -1: return True
         return self.user.recurringtransaction_set.filter(is_active=True).count() < limit
 
     def can_add_category(self):
         """Checks category limit based on tier."""
-        from finance_tracker.plans import get_limit
         limit = get_limit(self.active_tier, 'budget_categories')
         if limit == -1: return True
         return self.user.category_set.count() < limit
 
     def can_add_goal(self):
         """Checks savings goal limit based on tier."""
-        from finance_tracker.plans import get_limit
         limit = get_limit(self.active_tier, 'savings_goals')
         if limit == -1: return True
         return self.user.savings_goals.count() < limit
 
     def is_recurring_locked(self, obj):
         """Check if a specific recurring transaction is locked based on tier limits."""
-        from finance_tracker.plans import get_limit
         limit = get_limit(self.active_tier, 'recurring_transactions')
         if limit == -1: return False
         
@@ -481,6 +476,18 @@ class UserProfile(models.Model):
         if self.is_plus:
             return 'PLUS'
         return 'FREE'
+    
+    @property
+    def can_export_csv(self):
+        """Checks if CSV export is allowed for the user's tier."""
+        from finance_tracker.plans import get_limit
+        return get_limit(self.active_tier, 'export_csv')
+
+    @property
+    def has_ai_access(self):
+        """Checks if AI insights is allowed for the user's tier."""
+        from finance_tracker.plans import get_limit
+        return get_limit(self.active_tier, 'ai_insights')
 
     @property
     def active_tier_display(self):
