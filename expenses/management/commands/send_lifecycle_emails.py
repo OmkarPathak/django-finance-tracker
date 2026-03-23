@@ -67,13 +67,8 @@ class Command(BaseCommand):
 
                 # For Day 14: include monthly price
                 if day_threshold == 14:
-                    try:
-                        plus_monthly = SubscriptionPlan.objects.get(
-                            tier='PLUS', duration='MONTHLY', is_active=True
-                        )
-                        context['monthly_price'] = int(plus_monthly.price)
-                    except SubscriptionPlan.DoesNotExist:
-                        context['monthly_price'] = 29
+                    from finance_tracker.plans import PLAN_DETAILS
+                    context['monthly_price'] = PLAN_DETAILS['PLUS']['price_monthly']
 
                 # For Day 30: include user stats
                 if day_threshold == 30:

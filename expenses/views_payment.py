@@ -42,13 +42,21 @@ def create_order(request):
             if duration not in ('MONTHLY', 'YEARLY'):
                 return JsonResponse({'error': 'Invalid duration'}, status=400)
 
-            try:
-                plan_obj = SubscriptionPlan.objects.get(tier=plan_type, duration=duration, is_active=True)
-            except SubscriptionPlan.DoesNotExist:
-                 return JsonResponse({'error': 'Invalid or inactive plan'}, status=400)
+            from finance_tracker.plans import PLAN_DETAILS
+
+            # Get price from PLAN_DETAILS (Source of Truth)
+            plan_info = PLAN_DETAILS.get(plan_type)
+            if not plan_info:
+                return JsonResponse({'error': 'Invalid plan'}, status=400)
+
+            price_key = 'price_yearly' if duration == 'YEARLY' else 'price_monthly'
+            price = plan_info.get(price_key)
+
+            if price is None:
+                 return JsonResponse({'error': 'Pricing not found for this plan'}, status=400)
 
             # Amount in paise
-            amount_in_paise = int(plan_obj.price * 100)
+            amount_in_paise = int(price * 100)
             
             client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
             
@@ -69,7 +77,7 @@ def create_order(request):
             PaymentHistory.objects.create(
                 user=request.user,
                 order_id=order['id'],
-                amount=plan_obj.price,
+                amount=price,
                 tier=plan_type,
                 duration=duration,
                 status='PENDING'
