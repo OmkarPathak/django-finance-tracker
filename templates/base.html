@@ -110,7 +110,7 @@
 
     <!-- PWA -->
     <link rel="manifest" href="{% url 'manifest' %}">
-    <meta name="theme-color" content="#2d6a4f">
+    <meta name="theme-color" content="#1D9E75">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -288,8 +288,8 @@
         .multiselect.dropdown-toggle:focus,
         .multiselect.dropdown-toggle:active,
         .btn-group.show .multiselect.dropdown-toggle {
-            border-color: #2d6a4f !important;
-            box-shadow: 0 0 0 0.25rem rgba(45, 106, 79, 0.15) !important;
+            border-color: #1D9E75 !important;
+            box-shadow: 0 0 0 0.25rem rgba(29, 158, 117, 0.15) !important;
             outline: 0;
             color: var(--bs-body-color);
             background-color: var(--bs-body-bg);
@@ -348,12 +348,12 @@
         }
 
         .multiselect-container>li>a:hover {
-            background-color: rgba(45, 106, 79, 0.05);
+            background-color: rgba(29, 158, 117, 0.05);
             color: var(--bs-body-color);
         }
 
         .multiselect-container>li.active>a {
-            background-color: rgba(45, 106, 79, 0.1);
+            background-color: rgba(29, 158, 117, 0.1);
             color: var(--bs-body-color);
         }
 
@@ -428,7 +428,7 @@
         }
 
         .multiselect-container input[type="checkbox"]:checked {
-            background-color: #2d6a4f;
+            background-color: #1D9E75;
             border-color: transparent;
         }
 
@@ -482,7 +482,7 @@
 <body class="d-flex flex-column min-vh-100 {% if user.is_authenticated %}is-authenticated{% endif %}">
     {% if request.user.username == 'demo' %}
     <div class="alert alert-primary text-center fw-bold m-0 rounded-0 py-2 small shadow-sm sticky-top d-flex justify-content-center align-items-center gap-2"
-        role="alert" style="z-index: 1050; border: none; background: linear-gradient(90deg, #2d6a4f, #1a4a35); color: white;">
+        role="alert" style="z-index: 1050; border: none; background: linear-gradient(90deg, #1D9E75, #1a4a35); color: white;">
         <span class="d-inline-flex align-items-center">
             <i class="bi bi-stars me-2"></i> 
             {% trans "You're in Demo Mode." %}

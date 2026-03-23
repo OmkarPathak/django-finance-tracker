@@ -427,22 +427,23 @@
     const textColor = isDark ? '#f8f9fa' : '#212529';
 
     const CHART_COLORS = {
-        green: '#2d6a4f',
-        amber: '#ee9b00',
-        red: '#ae2012',
-        teal: '#0a9396',
-        slate: '#006d77',
-        gold: '#ffb703',
-        blue: '#005f73',
-        mint: '#94d2bd',
-        crimson: '#9b2226'
+        teal: '#1D9E75',
+        coral: '#E05C45',
+        amber: '#D4831A',
+        blue: '#378ADD',
+        neutral: '#9E9D9A',
+        tealMid: '#5DCAA5',
+        tealLight: '#9FE1CB',
+        amberLight: '#F4B44E',
+        coralLight: '#F49C8C',
+        blueLight: '#85B7EB'
     };
 
     const CATEGORY_PALETTE = [
-        CHART_COLORS.green, CHART_COLORS.amber, CHART_COLORS.teal, 
-        CHART_COLORS.slate, CHART_COLORS.red, CHART_COLORS.emerald, 
-        CHART_COLORS.gold, CHART_COLORS.blue, CHART_COLORS.mint, 
-        CHART_COLORS.crimson
+        CHART_COLORS.teal, CHART_COLORS.coral, CHART_COLORS.amber, 
+        CHART_COLORS.blue, CHART_COLORS.neutral, CHART_COLORS.tealMid, 
+        CHART_COLORS.amberLight, CHART_COLORS.blueLight, CHART_COLORS.tealLight, 
+        CHART_COLORS.coralLight
     ];
 
     var options = {
@@ -502,26 +503,24 @@
         Chart.defaults.animation = {
             duration: 1500,
             easing: 'easeOutQuart'
-        };
-
-        const CHART_COLORS = {
-            green: '#2d6a4f',
-            amber: '#ee9b00',
-            red: '#ae2012',
-            teal: '#0a9396',
-            slate: '#006d77',
-            emerald: '#52b788',
-            gold: '#ffb703',
-            blue: '#005f73',
-            mint: '#94d2bd',
-            crimson: '#9b2226'
+        };        const CHART_COLORS = {
+            teal: '#1D9E75',
+            coral: '#E05C45',
+            amber: '#D4831A',
+            blue: '#378ADD',
+            neutral: '#9E9D9A',
+            tealMid: '#5DCAA5',
+            tealLight: '#9FE1CB',
+            amberLight: '#F4B44E',
+            coralLight: '#F49C8C',
+            blueLight: '#85B7EB'
         };
 
         const CATEGORY_PALETTE = [
-            CHART_COLORS.green, CHART_COLORS.amber, CHART_COLORS.teal, 
-            CHART_COLORS.slate, CHART_COLORS.red, CHART_COLORS.emerald, 
-            CHART_COLORS.gold, CHART_COLORS.blue, CHART_COLORS.mint, 
-            CHART_COLORS.crimson
+            CHART_COLORS.teal, CHART_COLORS.coral, CHART_COLORS.amber, 
+            CHART_COLORS.blue, CHART_COLORS.neutral, CHART_COLORS.tealMid, 
+            CHART_COLORS.amberLight, CHART_COLORS.blueLight, CHART_COLORS.tealLight, 
+            CHART_COLORS.coralLight
         ];
 
         const compactAmount = (val) => {
@@ -584,8 +583,8 @@
                     {
                         label: '{% trans "Income" %}',
                         data: incomeData,
-                        borderColor: CHART_COLORS.green,
-                        backgroundColor: CHART_COLORS.green + '14', // ~0.08 alpha
+                        borderColor: CHART_COLORS.teal,
+                        backgroundColor: CHART_COLORS.teal + '14', // ~0.08 alpha
                         fill: true,
                         tension: 0.4,
                         pointRadius: 4,
@@ -595,8 +594,8 @@
                     {
                         label: '{% trans "Expense" %}',
                         data: expenseData,
-                        borderColor: CHART_COLORS.red,
-                        backgroundColor: CHART_COLORS.red + '14',
+                        borderColor: CHART_COLORS.coral,
+                        backgroundColor: CHART_COLORS.coral + '14',
                         fill: true,
                         tension: 0.4,
                         pointRadius: 4,
@@ -781,13 +780,13 @@
                 datasets: [{
                     label: '{% trans "Balance Rate (%)" %}',
                     data: rateData,
-                    borderColor: CHART_COLORS.green,
-                    backgroundColor: CHART_COLORS.green + '14',
+                    borderColor: CHART_COLORS.teal,
+                    backgroundColor: CHART_COLORS.teal + '14',
                     fill: true,
                     tension: 0.4,
                     pointRadius: 4,
                     pointBackgroundColor: '#fff',
-                    pointBorderColor: CHART_COLORS.green,
+                    pointBorderColor: CHART_COLORS.teal,
                     pointHoverRadius: 6
                 }]
             },
@@ -831,8 +830,8 @@
                 datasets: [{
                     label: '{% trans "Total Spend" %}',
                     data: dowData,
-                    backgroundColor: CHART_COLORS.green + 'D9', // ~0.85 alpha
-                    borderColor: CHART_COLORS.green,
+                    backgroundColor: CHART_COLORS.teal + 'D9', // ~0.85 alpha
+                    borderColor: CHART_COLORS.teal,
                     borderWidth: 1,
                     borderRadius: 4
                 }]
@@ -869,7 +868,7 @@
                 labels: recLabelsWithValues,
                 datasets: [{
                     data: recData,
-                    backgroundColor: [CHART_COLORS.amber, CHART_COLORS.green],
+                    backgroundColor: [CHART_COLORS.amber, CHART_COLORS.teal],
                     borderWidth: 0
                 }]
             },
@@ -904,8 +903,8 @@
                         {
                             label: '{% trans "Cumulative Spent" %}',
                             data: burnSpent,
-                            borderColor: CHART_COLORS.red,
-                            backgroundColor: CHART_COLORS.red + '14',
+                            borderColor: CHART_COLORS.coral,
+                            backgroundColor: CHART_COLORS.coral + '14',
                             fill: true,
                             tension: 0.2,
                             pointRadius: 3,
@@ -913,14 +912,14 @@
                                 borderColor: ctx => {
                                     const val = burnSpent[ctx.p0DataIndex];
                                     const budget = burnBudget[ctx.p0DataIndex];
-                                    return (val > budget) ? CHART_COLORS.red : CHART_COLORS.brown;
+                                    return (val > budget) ? CHART_COLORS.coral : CHART_COLORS.neutral;
                                 }
                             }
                         },
                         {
                             label: '{% trans "Projected Path" %}',
                             data: burnProjection,
-                            borderColor: CHART_COLORS.brown,
+                            borderColor: CHART_COLORS.neutral,
                             borderDash: [5, 5],
                             pointRadius: 0,
                             fill: false,
@@ -930,7 +929,7 @@
                         {
                             label: '{% trans "Ideal Budget Line" %}',
                             data: burnBudget,
-                            borderColor: CHART_COLORS.green,
+                            borderColor: CHART_COLORS.teal,
                             borderDash: [3, 3],
                             fill: false,
                             pointRadius: 0,

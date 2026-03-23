@@ -643,7 +643,7 @@
                             <div class="d-flex flex-column gap-4">
                                 {% if salary_breakdown.viral_insight %}
                                     <div class="d-flex align-items-start gap-3">
-                                        <div class="d-flex align-items-center justify-content-center rounded-circle border flex-shrink-0" style="width: 42px; height: 42px; background-color: rgba(45, 106, 79, 0.1);">
+                                        <div class="d-flex align-items-center justify-content-center rounded-circle border flex-shrink-0" style="width: 42px; height: 42px; background-color: rgba(29, 158, 117, 0.1);">
                                             <i class="bi bi-magic text-primary" style="font-size: 1.2rem;"></i>
                                         </div>
                                         <div class="flex-grow-1">
@@ -655,7 +655,7 @@
                                 
                                 {% for insight in smart_insights %}
                                 <div class="d-flex align-items-start gap-3">
-                                    <div class="d-flex align-items-center justify-content-center rounded-circle border flex-shrink-0" style="width: 42px; height: 42px; background-color: rgba(45, 106, 79, 0.1);">
+                                    <div class="d-flex align-items-center justify-content-center rounded-circle border flex-shrink-0" style="width: 42px; height: 42px; background-color: rgba(29, 158, 117, 0.1);">
                                         <i class="bi bi-{{ insight.icon }} text-success" style="font-size: 1.2rem;"></i>
                                     </div>
                                     <div class="flex-grow-1">
@@ -667,7 +667,7 @@
                                 
                                 {% if salary_breakdown.relatable_metric %}
                                     <div class="d-flex align-items-start gap-3">
-                                        <div class="d-flex align-items-center justify-content-center rounded-circle border flex-shrink-0" style="width: 42px; height: 42px; background-color: rgba(224, 123, 57, 0.1);">
+                                        <div class="d-flex align-items-center justify-content-center rounded-circle border flex-shrink-0" style="width: 42px; height: 42px; background-color: rgba(212, 131, 26, 0.1);">
                                             <i class="bi bi-{{ salary_breakdown.relatable_metric.icon }} text-warning" style="font-size: 1.2rem;"></i>
                                         </div>
                                         <div class="flex-grow-1">
@@ -800,7 +800,7 @@
             </div>
         </div>
 
-        <div style="background: rgba(255,255,255,0.1); padding: 20px; border-radius: 15px; border-left: 4px solid #2d6a4f; margin-bottom: 25px;">
+        <div style="background: rgba(255,255,255,0.1); padding: 20px; border-radius: 15px; border-left: 4px solid #1D9E75; margin-bottom: 25px;">
              <div style="font-weight: 700; font-size: 14px; margin-bottom: 6px; color: #ffffff;">✨ {% trans "AI Insight" %}</div>
              <div style="font-size: 14px; opacity: 0.9; line-height: 1.5; color: #ffffff;">
                 {% if salary_breakdown.viral_insight %}
@@ -828,7 +828,7 @@
 <!-- Year in Review Banner -->
 {% if show_year_in_review %}
 <div id="yir-banner-container" style="display: none;">
-    <div class="alert alert-primary border-0 shadow-sm d-flex flex-column flex-sm-row align-items-sm-center justify-content-between fade-in mb-4 gap-3 position-relative pe-5" role="alert" style="background-color: rgba(45, 106, 79, 0.06);">
+    <div class="alert alert-primary border-0 shadow-sm d-flex flex-column flex-sm-row align-items-sm-center justify-content-between fade-in mb-4 gap-3 position-relative pe-5" role="alert" style="background-color: rgba(29, 158, 117, 0.06);">
         
         <!-- Dismiss Button -->
         <button type="button" class="btn-close position-absolute top-0 end-0 m-2 mt-2 me-2" id="dismiss-yir-btn" aria-label="Close" style="font-size: 0.75rem;"></button>
@@ -957,13 +957,13 @@ document.addEventListener('DOMContentLoaded', function() {
     /* Net Worth hero block */
     .nw-hero-block {
         position: relative;
-        background: linear-gradient(135deg, rgba(45, 106, 79, 0.06) 0%, rgba(45, 106, 79, 0.02) 100%);
-        border: 1px solid rgba(45, 106, 79, 0.08);
+        background: linear-gradient(135deg, rgba(29, 158, 117, 0.06) 0%, rgba(29, 158, 117, 0.02) 100%);
+        border: 1px solid rgba(29, 158, 117, 0.08);
         overflow: hidden;
     }
     [data-bs-theme="dark"] .nw-hero-block {
-        background: linear-gradient(135deg, rgba(45, 106, 79, 0.15) 0%, rgba(45, 106, 79, 0.05) 100%);
-        border-color: rgba(45, 106, 79, 0.15);
+        background: linear-gradient(135deg, rgba(29, 158, 117, 0.15) 0%, rgba(29, 158, 117, 0.05) 100%);
+        border-color: rgba(29, 158, 117, 0.15);
     }
 
     .nw-trend-badge {
@@ -1288,7 +1288,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         {% if salary_breakdown.spending_pace.status == 'on_track' %}
                             <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-2 py-1 small border border-success border-opacity-10">{% trans "On Track" %}</span>
                         {% elif salary_breakdown.spending_pace.status == 'near_limit' %}
-                            <span class="badge bg-warning bg-opacity-10 rounded-pill px-2 py-1 small border border-warning border-opacity-10" style="color: #e07b39;">{% trans "Near Limit" %}</span>
+                            <span class="badge bg-warning bg-opacity-10 rounded-pill px-2 py-1 small border border-warning border-opacity-10" style="color: #D4831A;">{% trans "Near Limit" %}</span>
                         {% else %}
                             <span class="badge bg-danger bg-opacity-10 text-danger rounded-pill px-2 py-1 small border border-danger border-opacity-10">{% trans "Over Budget" %}</span>
                         {% endif %}
@@ -1344,7 +1344,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     <!-- Budget progress bar -->
                     <div class="d-flex justify-content-between align-items-baseline mb-2">
                         <small class="text-muted fw-bold text-uppercase" style="font-size: 0.65rem; letter-spacing: 0.5px;">{% trans "Budget Used" %}</small>
-                        <small class="fw-bold {% if salary_breakdown.spending_pace.spent_percent > 100 %}text-danger{% elif salary_breakdown.spending_pace.spent_percent > 80 %}{% else %}text-success{% endif %}" style="font-size: 0.8rem;{% if salary_breakdown.spending_pace.spent_percent > 80 and salary_breakdown.spending_pace.spent_percent <= 100 %} color: #e07b39;{% endif %}">{{ salary_breakdown.spending_pace.spent_percent|floatformat:0|translate_digits }}%</small>
+                        <small class="fw-bold {% if salary_breakdown.spending_pace.spent_percent > 100 %}text-danger{% elif salary_breakdown.spending_pace.spent_percent > 80 %}{% else %}text-success{% endif %}" style="font-size: 0.8rem;{% if salary_breakdown.spending_pace.spent_percent > 80 and salary_breakdown.spending_pace.spent_percent <= 100 %} color: #D4831A;{% endif %}">{{ salary_breakdown.spending_pace.spent_percent|floatformat:0|translate_digits }}%</small>
                     </div>
                     <div class="position-relative" style="height: 10px;">
                         <div class="rounded-pill w-100 h-100" style="background: var(--bs-tertiary-bg);"></div>
@@ -1366,7 +1366,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         {% if salary_breakdown.spending_pace.status == 'over_budget' %}
                             <small class="text-danger fw-bold d-inline-flex align-items-center"><i class="bi bi-exclamation-triangle-fill me-1"></i>{{ salary_breakdown.spending_pace.budget_multiplier|translate_digits }}× {% trans "over budget" %}</small>
                         {% elif salary_breakdown.spending_pace.status == 'near_limit' %}
-                            <small class="fw-bold d-inline-flex align-items-center" style="color: #e07b39;"><i class="bi bi-info-circle-fill me-1"></i>{% trans "Nearly at limit" %}</small>
+                            <small class="fw-bold d-inline-flex align-items-center" style="color: #D4831A;"><i class="bi bi-info-circle-fill me-1"></i>{% trans "Nearly at limit" %}</small>
                         {% else %}
                             <small class="text-success fw-bold d-inline-flex align-items-center"><i class="bi bi-check-circle-fill me-1"></i>{% trans "Within budget" %}</small>
                         {% endif %}
@@ -1426,7 +1426,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             stroke-width="12"
                             stroke-dasharray="{{ item.arc_length|floatformat:2 }} 282.74"
                             stroke-dashoffset="-{{ item.offset_length|floatformat:2 }}"
-                            style="transition: stroke-dashoffset 1.2s ease, stroke-dasharray 1.2s ease; stroke: {% if item.type == 'Cash' %}#6b8f71{% elif item.type == 'Bank Account' %}#2d6a4f{% elif item.type == 'Credit Card' %}#c0392b{% elif item.type == 'Investment Account' %}#e07b39{% else %}#b5c4b1{% endif %};"/>
+                            style="transition: stroke-dashoffset 1.2s ease, stroke-dasharray 1.2s ease; stroke: {% if item.type == 'Cash' %}#5DCAA5{% elif item.type == 'Bank Account' %}#1D9E75{% elif item.type == 'Credit Card' %}#E05C45{% elif item.type == 'Investment Account' %}#378ADD{% else %}#9E9D9A{% endif %};"/>
                         {% endfor %}
                     </svg>
                     <div class="position-absolute top-50 start-50 translate-middle text-center">
@@ -1439,7 +1439,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     {% for item in asset_allocation %}
                     <div class="text-center px-1">
                         <div class="d-flex align-items-center justify-content-center gap-1 mb-1">
-                            <span class="rounded-circle d-inline-block flex-shrink-0" style="width: 10px; height: 10px; background-color: {% if item.type == 'Cash' %}#6b8f71{% elif item.type == 'Bank Account' %}#2d6a4f{% elif item.type == 'Credit Card' %}#c0392b{% elif item.type == 'Investment Account' %}#e07b39{% else %}#b5c4b1{% endif %};"></span>
+                            <span class="rounded-circle d-inline-block flex-shrink-0" style="width: 10px; height: 10px; background-color: {% if item.type == 'Cash' %}#5DCAA5{% elif item.type == 'Bank Account' %}#1D9E75{% elif item.type == 'Credit Card' %}#E05C45{% elif item.type == 'Investment Account' %}#378ADD{% else %}#9E9D9A{% endif %};"></span></span>
                             <span class="text-muted" style="font-size: 0.8rem;">{{ item.type }}</span>
                         </div>
                         <div class="fw-bold" style="font-size: 0.9rem;">{{ item.percent|translate_digits }}%</div>
@@ -1820,7 +1820,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                         </small>
                                     </div>
                                     <div class="text-end">
-                                        <span class="fw-bold" style="font-size: 0.901rem; color: {% if item.type == 'INCOME' %}#2d6a4f;{% elif item.type == 'INVESTMENT' %}#8b6f47;{% elif item.type == 'TRANSFER' %}#6c757d;{% else %}#c0392b;{% endif %}">
+                                        <span class="fw-bold" style="font-size: 0.901rem; color: {% if item.type == 'INCOME' %}#1D9E75;{% elif item.type == 'INVESTMENT' %}#378ADD;{% elif item.type == 'TRANSFER' %}#9E9D9A;{% else %}#E05C45;{% endif %}">
                                             {% if item.type == 'INCOME' %}+{% elif item.type == 'TRANSFER' %}{% else %}-{% endif %}{{ currency_symbol }}{{ item.amount|compact_amount:currency_symbol|translate_digits }}
                                         </span>
                                     </div>
@@ -2032,23 +2032,23 @@ document.addEventListener('DOMContentLoaded', function() {
 
         let currentColors = getThemeColor();
         const CHART_COLORS = {
-            green: '#2d6a4f',
-            amber: '#ee9b00',
-            red: '#ae2012',
-            teal: '#0a9396',
-            slate: '#006d77', // Replaced indigo with slate
-            emerald: '#52b788',
-            gold: '#ffb703',
-            blue: '#005f73',
-            mint: '#94d2bd',
-            crimson: '#9b2226'
+            teal: '#1D9E75',     // Growth / savings / positive
+            coral: '#E05C45',    // Expense / spending
+            amber: '#D4831A',    // Warning / alert
+            blue: '#378ADD',     // Investment / assets
+            neutral: '#9E9D9A',  // Structural / other
+            tealMid: '#5DCAA5',  // Mid-range teal
+            tealLight: '#9FE1CB',// Light teal
+            amberLight: '#F4B44E',// Light amber
+            coralLight: '#F49C8C',// Light coral
+            blueLight: '#85B7EB' // Light blue
         };
 
         const CATEGORY_PALETTE = [
-            CHART_COLORS.green, CHART_COLORS.amber, CHART_COLORS.teal, 
-            CHART_COLORS.slate, CHART_COLORS.red, CHART_COLORS.emerald, 
-            CHART_COLORS.gold, CHART_COLORS.blue, CHART_COLORS.mint, 
-            CHART_COLORS.crimson
+            CHART_COLORS.teal, CHART_COLORS.coral, CHART_COLORS.amber, 
+            CHART_COLORS.blue, CHART_COLORS.neutral, CHART_COLORS.tealMid, 
+            CHART_COLORS.amberLight, CHART_COLORS.blueLight, CHART_COLORS.tealLight, 
+            CHART_COLORS.coralLight
         ];
         Chart.defaults.font.family = "'DM Sans', 'Inter', sans-serif";
         Chart.defaults.color = currentColors.text;
@@ -2063,16 +2063,16 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // --- Solid Color Helper ---
         const chartPalette = [
-            '#2d6a4f', // Forest Green
-            '#ee9b00', // Warm Amber
-            '#0a9396', // Pacific Teal
-            '#006d77', // Deep Turquoise
-            '#ae2012', // Crimson Red
-            '#52b788', // Emerald Green
-            '#ffb703', // Golden Sun
-            '#005f73', // Deep Sea Blue
-            '#94d2bd', // Minty Fresh
-            '#9b2226'  // Ruby Wine
+            '#1D9E75', // Teal (growth/savings)
+            '#E05C45', // Coral (expenses)
+            '#D4831A', // Amber (warning)
+            '#378ADD', // Blue (investments)
+            '#9E9D9A', // Neutral
+            '#5DCAA5', // Teal mid
+            '#F4B44E', // Amber light
+            '#85B7EB', // Blue light
+            '#9FE1CB', // Teal light
+            '#F49C8C'  // Coral light
         ];
 
         // --- 0. Income vs Expenses Chart (SVG Animation) ---
@@ -2089,17 +2089,17 @@ document.addEventListener('DOMContentLoaded', function() {
         const gaugeFill = document.getElementById('gauge-fill-path');
         const percentageText = document.getElementById('ie-percentage');
         
-        let chartColor = '#2d6a4f'; // Forest Green
+        let chartColor = '#1D9E75'; // Brand Teal
 
         if (percentageText) {
             if (iePercentage > 100) {
-                chartColor = '#c0392b'; // Warm Red
+                chartColor = '#E05C45'; // Brand Coral
                 percentageText.classList.add('text-danger');
             } else if (iePercentage > 80) {
-                chartColor = '#e07b39'; // Warm Amber
+                chartColor = '#D4831A'; // Brand Amber
                 percentageText.classList.add('text-warning');
             } else {
-                chartColor = '#2d6a4f';
+                chartColor = '#1D9E75';
                 percentageText.classList.add('text-primary');
             }
         }
@@ -2141,21 +2141,21 @@ document.addEventListener('DOMContentLoaded', function() {
 
         if (trendIsDaily && trendLabels.length > 1) {
             // --- Daily view: Area line + 7-day moving average ---
-            const areaGradient = 'rgba(45, 106, 79, 0.12)';
+            const areaGradient = 'rgba(29, 158, 117, 0.12)';
 
             const dailyDatasets = [
                 {
                     label: '{% trans "Daily Spend" %}',
                     data: trendDatasets[0].data,
-                    borderColor: '#2d6a4f',
-                    backgroundColor: areaGradient,
+                    borderColor: '#1D9E75',
+                    backgroundColor: 'rgba(29, 158, 117, 0.08)',
                     fill: true,
                     tension: 0.35,
                     borderWidth: 2,
                     pointRadius: 3,
-                    pointBackgroundColor: '#2d6a4f',
+                    pointBackgroundColor: '#1D9E75',
                     pointHoverRadius: 6,
-                    pointHoverBackgroundColor: '#245a42',
+                    pointHoverBackgroundColor: '#0F6E56',
                     pointHoverBorderColor: '#fff',
                     pointHoverBorderWidth: 2,
                     order: 1
@@ -2163,7 +2163,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 {
                     label: '{% trans "7-Day Average" %}',
                     data: trend7dAvg,
-                    borderColor: '#e07b39',
+                    borderColor: '#D4831A',
                     backgroundColor: 'transparent',
                     fill: false,
                     tension: 0.4,
@@ -2171,7 +2171,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     borderDash: [6, 3],
                     pointRadius: 0,
                     pointHoverRadius: 4,
-                    pointHoverBackgroundColor: '#e07b39',
+                    pointHoverBackgroundColor: '#D4831A',
                     order: 0
                 }
             ];
@@ -2298,9 +2298,9 @@ document.addEventListener('DOMContentLoaded', function() {
             const flowData = [lifestyleTotal, investmentTotal, remainingTotal];
             
             const flowColors = [
-                '#2d6a4f', // Lifestyle (Forest Green)
-                '#e07b39', // Investments (Warm Amber)
-                '#d5d0c8'  // Remaining (Muted Stone)
+                '#E05C45', // Lifestyle (Brand Coral)
+                '#378ADD', // Investments (Brand Blue)
+                '#D4D4D2'  // Remaining (Ink-200 neutral)
             ];
 
             const flowDatasets = flowLabels.map((label, index) => ({
@@ -2401,7 +2401,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                 ctx.textAlign = 'center';
                                 ctx.textBaseline = 'middle';
                                 // Use dark text on light "Remaining" segment
-                                const isLight = dataset.backgroundColor === '#d5d0c8';
+                                const isLight = dataset.backgroundColor === '#D4D4D2';
                                 ctx.fillStyle = isLight ? '#1a1a18' : '#ffffff';
                                 ctx.shadowColor = isLight ? 'rgba(255,255,255,0.3)' : 'rgba(0, 0, 0, 0.5)';
                                 ctx.shadowBlur = isLight ? 2 : 4;
@@ -2430,7 +2430,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                 ctx.shadowBlur = 0;
                             } else if (percentage >= 4) {
                                 // Fallback for smaller segments: just the amount
-                                const isLightSmall = dataset.backgroundColor === '#d5d0c8';
+                                const isLightSmall = dataset.backgroundColor === '#D4D4D2';
                                 ctx.font = '700 11px "DM Sans", sans-serif';
                                 ctx.fillStyle = isLightSmall ? '#1a1a18' : '#ffffff';
                                 ctx.textAlign = 'center';
@@ -2562,9 +2562,9 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Dynamic colors for Budgets - flat solid
             const spentColors = withLimits.map(item => {
-                if (item.total > item.limit) return '#c0392b'; // Red (Over)
-                if (item.total > item.limit * 0.8) return '#e07b39'; // Warm Amber (Warning)
-                return '#2d6a4f'; // Forest Green (Safe)
+                if (item.total > item.limit) return '#E05C45'; // Coral (Over)
+                if (item.total > item.limit * 0.8) return '#D4831A'; // Amber (Warning)
+                return '#1D9E75'; // Brand Teal (Safe)
             });
 
             charts.budget = new Chart(ctxBudget, {
@@ -2795,23 +2795,23 @@ document.addEventListener('DOMContentLoaded', function() {
                                  {
                                      label: '{% trans "Actual Spend" %}',
                                      data: projHistorical,
-                                     borderColor: '#2d6a4f',
-                                     backgroundColor: 'rgba(45, 106, 79, 0.08)',
+                                     borderColor: '#1D9E75',
+                                     backgroundColor: 'rgba(29, 158, 117, 0.08)',
                                      fill: true,
                                      tension: 0.4,
                                      pointRadius: 4,
-                                     pointBackgroundColor: '#2d6a4f',
+                                     pointBackgroundColor: '#1D9E75',
                                      spanGaps: true
                                  },
                                  {
                                      label: '{% trans "Projected Spend" %}',
                                      data: projForecast,
-                                     borderColor: '#e07b39',
+                                     borderColor: '#D4831A',
                                      borderDash: [5, 5],
                                      backgroundColor: 'transparent',
                                      tension: 0.4,
                                      pointRadius: 4,
-                                     pointBackgroundColor: '#e07b39',
+                                     pointBackgroundColor: '#D4831A',
                                      spanGaps: true
                                  }
                              ]

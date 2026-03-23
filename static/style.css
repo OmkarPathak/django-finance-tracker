@@ -22,6 +22,18 @@ body {
   border: 1px solid rgba(0, 0, 0, 0.08);
 }
 
+.glass-card {
+  background: rgba(255, 255, 255, 0.7) !important;
+  backdrop-filter: blur(10px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(10px) saturate(180%) !important;
+  border: 1px solid rgba(209, 213, 219, 0.3) !important;
+}
+
+[data-bs-theme="dark"] .glass-card {
+  background: rgba(30, 30, 30, 0.6) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
 .card > .card-header:first-child {
   border-top-left-radius: inherit;
   border-top-right-radius: inherit;
@@ -42,15 +54,15 @@ body {
 @keyframes fab-pulse {
   0% {
     transform: scale(1);
-    box-shadow: 0 0 0 0 rgba(45, 106, 79, 0.4);
+    box-shadow: 0 0 0 0 rgba(29, 158, 117, 0.4);
   }
   70% {
     transform: scale(1.04);
-    box-shadow: 0 0 0 12px rgba(45, 106, 79, 0);
+    box-shadow: 0 0 0 12px rgba(29, 158, 117, 0);
   }
   100% {
     transform: scale(1);
-    box-shadow: 0 0 0 0 rgba(45, 106, 79, 0);
+    box-shadow: 0 0 0 0 rgba(29, 158, 117, 0);
   }
 }
 
@@ -102,15 +114,15 @@ body {
 
 :root {
   --color-primary: #1a1a18; /* Warm Ink Black */
-  --color-secondary: #2d6a4f; /* Forest Green */
-  --color-success: #2d6a4f; /* Forest Green */
-  --color-danger: #c0392b; /* Warm Danger Red */
-  --color-warning: #e07b39; /* Warm Amber */
+  --color-secondary: #1D9E75; /* Forest Green */
+  --color-success: #1D9E75; /* Forest Green */
+  --color-danger: #E05C45; /* Warm Danger Red */
+  --color-warning: #D4831A; /* Warm Amber */
   --bg-color: #faf9f6; /* Warm Parchment */
   --surface-color: #ffffff;
   --text-main: #1a1a18; /* Warm Ink Black */
-  --color-accent: #2d6a4f;
-  --color-accent2: #e07b39;
+  --color-accent: #1D9E75;
+  --color-accent2: #D4831A;
   --border-color: rgba(26,26,24,0.1);
   --paper: #faf9f6;
   --paper2: #f2f0eb;
@@ -124,73 +136,109 @@ body {
   --bs-info-rgb: 61, 122, 138;
 
   /* Override Bootstrap primary (default blue → Forest Green) */
-  --bs-primary: #2d6a4f;
-  --bs-primary-rgb: 45, 106, 79;
-  --bs-primary-bg-subtle: rgba(45, 106, 79, 0.1);
-  --bs-primary-border-subtle: rgba(45, 106, 79, 0.2);
-  --bs-primary-text-emphasis: #1e4d38;
+  --bs-primary: #1D9E75;
+  --bs-primary-rgb: 29, 158, 117;
+  --bs-primary-bg-subtle: rgba(29, 158, 117, 0.1);
+  --bs-primary-border-subtle: rgba(29, 158, 117, 0.2);
+  --bs-primary-text-emphasis: #085041;
 
   /* Override Bootstrap danger (default red → Warm Red) */
-  --bs-danger: #c0392b;
+  --bs-danger: #E05C45;
   --bs-danger-rgb: 192, 57, 43;
 
   /* Override Bootstrap success */
-  --bs-success: #2d6a4f;
-  --bs-success-rgb: 45, 106, 79;
+  --bs-success: #1D9E75;
+  --bs-success-rgb: 29, 158, 117;
 
   /* Override Bootstrap warning */
-  --bs-warning: #e07b39;
+  --bs-warning: #D4831A;
   --bs-warning-rgb: 224, 123, 57;
 }
 
 /* Override Bootstrap form check/switch colors */
 .form-check-input:checked {
-  background-color: #2d6a4f;
-  border-color: #2d6a4f;
+  background-color: #1D9E75;
+  border-color: #1D9E75;
 }
+
+.text-teal {
+  color: #1D9E75 !important;
+}
+
+.text-coral {
+  color: #E05C45 !important;
+}
+
+.text-amber {
+  color: #D4831A !important;
+}
+
+/* Payment Method Badges */
+.payment-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-size: 0.7rem;
+  font-weight: 500;
+  text-transform: capitalize;
+}
+
+.pay-cash { background-color: rgba(29, 158, 117, 0.1); color: #1D9E75; }
+.pay-credit-card { background-color: rgba(55, 138, 221, 0.1); color: #378ADD; }
+.pay-debit-card { background-color: rgba(133, 183, 235, 0.15); color: #378ADD; }
+.pay-upi { background-color: rgba(212, 131, 26, 0.1); color: #D4831A; }
+.pay-netbanking { background-color: rgba(93, 202, 165, 0.15); color: #1D9E75; }
+
+[data-bs-theme="dark"] .pay-cash { background-color: rgba(29, 158, 117, 0.2); color: #9FE1CB; }
+[data-bs-theme="dark"] .pay-credit-card { background-color: rgba(55, 138, 221, 0.2); color: #85B7EB; }
+[data-bs-theme="dark"] .pay-debit-card { background-color: rgba(133, 183, 235, 0.25); color: #85B7EB; }
+[data-bs-theme="dark"] .pay-upi { background-color: rgba(212, 131, 26, 0.2); color: #F4B44E; }
+[data-bs-theme="dark"] .pay-netbanking { background-color: rgba(93, 202, 165, 0.25); color: #9FE1CB; }
+
 .form-check-input:focus {
-  border-color: #2d6a4f;
-  box-shadow: 0 0 0 0.25rem rgba(45, 106, 79, 0.25);
+  border-color: #1D9E75;
+  box-shadow: 0 0 0 0.25rem rgba(29, 158, 117, 0.25);
 }
 
 /* Override Bootstrap button component colors globally */
 .btn-primary {
-  --bs-btn-bg: #2d6a4f;
-  --bs-btn-border-color: #2d6a4f;
-  --bs-btn-hover-bg: #245a42;
-  --bs-btn-hover-border-color: #245a42;
-  --bs-btn-active-bg: #1e4d38;
-  --bs-btn-active-border-color: #1e4d38;
-  --bs-btn-disabled-bg: #2d6a4f;
-  --bs-btn-disabled-border-color: #2d6a4f;
+  --bs-btn-bg: #1D9E75;
+  --bs-btn-border-color: #1D9E75;
+  --bs-btn-hover-bg: #0F6E56;
+  --bs-btn-hover-border-color: #0F6E56;
+  --bs-btn-active-bg: #085041;
+  --bs-btn-active-border-color: #085041;
+  --bs-btn-disabled-bg: #1D9E75;
+  --bs-btn-disabled-border-color: #1D9E75;
 }
 .btn-outline-primary {
-  --bs-btn-color: #2d6a4f;
-  --bs-btn-border-color: #2d6a4f;
-  --bs-btn-hover-bg: #2d6a4f;
-  --bs-btn-hover-border-color: #2d6a4f;
-  --bs-btn-active-bg: #2d6a4f;
-  --bs-btn-active-border-color: #2d6a4f;
-  --bs-btn-disabled-color: #2d6a4f;
-  --bs-btn-disabled-border-color: #2d6a4f;
+  --bs-btn-color: #1D9E75;
+  --bs-btn-border-color: #1D9E75;
+  --bs-btn-hover-bg: #1D9E75;
+  --bs-btn-hover-border-color: #1D9E75;
+  --bs-btn-active-bg: #1D9E75;
+  --bs-btn-active-border-color: #1D9E75;
+  --bs-btn-disabled-color: #1D9E75;
+  --bs-btn-disabled-border-color: #1D9E75;
 }
 .btn-outline-danger {
-  --bs-btn-color: #c0392b;
-  --bs-btn-border-color: #c0392b;
-  --bs-btn-hover-bg: #c0392b;
-  --bs-btn-hover-border-color: #c0392b;
-  --bs-btn-active-bg: #a5311f;
-  --bs-btn-active-border-color: #a5311f;
-  --bs-btn-disabled-color: #c0392b;
-  --bs-btn-disabled-border-color: #c0392b;
+  --bs-btn-color: #E05C45;
+  --bs-btn-border-color: #E05C45;
+  --bs-btn-hover-bg: #E05C45;
+  --bs-btn-hover-border-color: #E05C45;
+  --bs-btn-active-bg: #A63C28;
+  --bs-btn-active-border-color: #A63C28;
+  --bs-btn-disabled-color: #E05C45;
+  --bs-btn-disabled-border-color: #E05C45;
 }
 .btn-outline-success {
-  --bs-btn-color: #2d6a4f;
-  --bs-btn-border-color: #2d6a4f;
-  --bs-btn-hover-bg: #2d6a4f;
-  --bs-btn-hover-border-color: #2d6a4f;
-  --bs-btn-active-bg: #245a42;
-  --bs-btn-active-border-color: #245a42;
+  --bs-btn-color: #1D9E75;
+  --bs-btn-border-color: #1D9E75;
+  --bs-btn-hover-bg: #1D9E75;
+  --bs-btn-hover-border-color: #1D9E75;
+  --bs-btn-active-bg: #0F6E56;
+  --bs-btn-active-border-color: #0F6E56;
 }
 
 [data-bs-theme="dark"] {
@@ -257,7 +305,7 @@ body {
 
 /* Primary Button */
 .btn-primary {
-  background-color: #2d6a4f;
+  background-color: #1D9E75;
   border: none;
   font-weight: 500;
   display: inline-flex;
@@ -269,13 +317,13 @@ body {
 .btn-primary:hover,
 .btn-primary:active,
 .btn-primary:focus {
-  background-color: #245a42;
-  box-shadow: 0 4px 12px rgba(45, 106, 79, 0.25);
+  background-color: #0F6E56;
+  box-shadow: 0 4px 12px rgba(29, 158, 117, 0.25);
 }
 
 /* Success Button (Forest Green) */
 .btn-success {
-  background-color: #2d6a4f;
+  background-color: #1D9E75;
   border: none;
   font-weight: 500;
   display: inline-flex;
@@ -287,8 +335,8 @@ body {
 .btn-success:hover,
 .btn-success:active,
 .btn-success:focus {
-  background-color: #245a42;
-  box-shadow: 0 4px 12px rgba(45, 106, 79, 0.25);
+  background-color: #0F6E56;
+  box-shadow: 0 4px 12px rgba(29, 158, 117, 0.25);
 }
 
 /* Danger Button (Warm Red) */
@@ -304,7 +352,7 @@ body {
 .btn-danger:hover,
 .btn-danger:active,
 .btn-danger:focus {
-  background-color: #a5311f;
+  background-color: #A63C28;
   border-color: #962c1b;
   color: #fff;
 }
@@ -330,8 +378,8 @@ a:hover {
 }
 .btn-outline-primary:hover,
 .btn-outline-primary:active {
-  background-color: #2d6a4f !important;
-  border: 1px solid #2d6a4f !important;
+  background-color: #1D9E75 !important;
+  border: 1px solid #1D9E75 !important;
   color: #fff !important;
 }
 
@@ -356,7 +404,7 @@ a:hover {
   text-decoration: none;
 }
 .btn-link:hover {
-  color: #1a4a35;
+  color: #04342C;
 }
 
 /* Navbar Links */
@@ -429,8 +477,8 @@ a:hover {
 
 /* Accent Text Utility */
 .text-gradient-primary {
-  color: #2d6a4f !important;
-  -webkit-text-fill-color: #2d6a4f !important;
+  color: #1D9E75 !important;
+  -webkit-text-fill-color: #1D9E75 !important;
   display: inline-block;
 }
 
@@ -723,7 +771,7 @@ a:hover {
 
 /* Progress Bars */
 .progress-bar {
-  --bs-progress-bar-bg: #2d6a4f;
+  --bs-progress-bar-bg: #1D9E75;
 }
 .progress-thin {
   height: 6px;
@@ -736,13 +784,13 @@ a:hover {
 
 /* Category Colors (cycling) - Flat solid colors */
 .cat-color-0 {
-  background-color: #2d6a4f;
+  background-color: #1D9E75;
 } /* Forest Green */
 .cat-color-1 {
-  background-color: #e07b39;
+  background-color: #D4831A;
 } /* Warm Amber */
 .cat-color-2 {
-  background-color: #c0392b;
+  background-color: #E05C45;
 } /* Warm Red */
 .cat-color-3 {
   background-color: #8b6f47;
@@ -771,16 +819,16 @@ a:hover {
 
 /* Semantic Progress Bar Colors - Premium Palette */
 .progress-gradient-success {
-  background-color: #2d6a4f;
+  background-color: #1D9E75;
 }
 .progress-gradient-warning {
-  background-color: #ee9b00;
+  background-color: #D4831A;
 }
 .progress-gradient-danger {
-  background-color: #ae2012;
+  background-color: #E05C45;
 }
 .progress-gradient-teal {
-  background-color: #0a9396;
+  background-color: #1D9E75;
 }
 
 /* Fix for Multiselect Dropdown Visibility */
@@ -938,7 +986,7 @@ a:hover {
 }
 
 .payment-method-item.active .icon-wrapper {
-  background-color: #2d6a4f;
+  background-color: #1D9E75;
   color: white;
   transform: scale(1.1);
 }
@@ -1054,7 +1102,7 @@ a:hover {
 
 .form-card:hover {
   box-shadow: 0 8px 30px rgba(0,0,0,0.08);
-  border-color: rgba(45, 106, 79, 0.2);
+  border-color: rgba(29, 158, 117, 0.2);
 }
 
 .form-card .form-label {
@@ -1075,9 +1123,9 @@ a:hover {
 
 .form-card .form-control:focus,
 .form-card .form-select:focus {
-  border-color: #2d6a4f;
+  border-color: #1D9E75;
   background-color: #fff;
-  box-shadow: 0 0 0 4px rgba(45, 106, 79, 0.1);
+  box-shadow: 0 0 0 4px rgba(29, 158, 117, 0.1);
 }
 
 .remove-item-container {
@@ -1378,7 +1426,7 @@ a:hover {
 .fab-icon {
   width: 58px;
   height: 58px;
-  background-color: #2d6a4f;
+  background-color: #1D9E75;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -1395,7 +1443,7 @@ a:hover {
 
 .mobile-fab:active .fab-icon {
   transform: scale(0.9) translateY(4px);
-  box-shadow: 0 4px 8px rgba(45, 106, 79, 0.2);
+  box-shadow: 0 4px 8px rgba(29, 158, 117, 0.2);
 }
 
 [data-bs-theme="dark"] .mobile-bottom-nav {
@@ -1425,12 +1473,12 @@ a:hover {
 }
 
 .profile-avatar {
-  background-color: rgba(45, 106, 79, 0.08);
+  background-color: rgba(29, 158, 117, 0.08);
   transition: all 0.3s ease;
 }
 
 [data-bs-theme="dark"] .profile-avatar {
-  background-color: rgba(45, 106, 79, 0.15);
+  background-color: rgba(29, 158, 117, 0.15);
   border-color: rgba(255, 255, 255, 0.1) !important;
 }
 

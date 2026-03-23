@@ -182,7 +182,7 @@
         color: var(--bs-body-color);
     }
     .header-action-btn.btn-primary {
-        background-color: #2d6a4f !important;
+        background-color: var(--bs-primary) !important;
         color: white !important;
         border: none !important;
     }
@@ -195,9 +195,9 @@
         color: white;
     }
     .view-toggle-btn.active, .filter-toggle-btn[aria-expanded="true"] {
-        background: rgba(2, 48, 71, 0.08) !important;
-        color: #1a1a18 !important;
-        border-color: rgba(2, 48, 71, 0.3) !important;
+        background: rgba(var(--bs-primary-rgb), 0.1) !important;
+        color: var(--bs-primary) !important;
+        border-color: rgba(var(--bs-primary-rgb), 0.3) !important;
         box-shadow: none !important;
     }
     .filter-toggle-btn:hover, .header-action-btn:hover {
@@ -237,11 +237,11 @@
         color: #fff !important;
         border-color: rgba(255, 255, 255, 0.2) !important;
     }
-    [data-bs-theme="dark"] .bg-soft-pink { background-color: rgba(255, 77, 109, 0.15); }
-    [data-bs-theme="dark"] .bg-soft-blue { background-color: rgba(67, 97, 238, 0.15); }
-    [data-bs-theme="dark"] .bg-soft-green { background-color: rgba(43, 147, 72, 0.15); }
-    [data-bs-theme="dark"] .bg-soft-purple { background-color: rgba(114, 9, 183, 0.15); }
-    [data-bs-theme="dark"] .bg-soft-orange { background-color: rgba(240, 140, 0, 0.15); }
+    [data-bs-theme="dark"] .bg-soft-pink { background-color: rgba(224, 92, 69, 0.15); }
+    [data-bs-theme="dark"] .bg-soft-blue { background-color: rgba(55, 138, 221, 0.15); }
+    [data-bs-theme="dark"] .bg-soft-green { background-color: rgba(29, 158, 117, 0.15); }
+    [data-bs-theme="dark"] .bg-soft-purple { background-color: rgba(133, 183, 235, 0.15); }
+    [data-bs-theme="dark"] .bg-soft-orange { background-color: rgba(212, 131, 26, 0.15); }
 
     /* Light Mode Soft Backgrounds */
     .bg-soft-blue-light { background-color: rgba(5, 117, 230, 0.08); }
@@ -308,30 +308,6 @@
         z-index: 1061 !important;
     }
 
-    /* Tag/Badge Overrides */
-    .payment-badge {
-        display: inline-flex;
-        align-items: center;
-        padding: 2px 8px;
-        border-radius: 6px;
-        font-size: 0.7rem;
-        font-weight: 500;
-        text-transform: capitalize;
-    }
-
-    /* Light Theme Payment Tags */
-    .pay-cash { background-color: #e8f5e9; color: #2e7d32; }
-    .pay-credit-card { background-color: #e3f2fd; color: #1565c0; }
-    .pay-debit-card { background-color: #f3e5f5; color: #6a1b9a; }
-    .pay-upi { background-color: #fff3e0; color: #e65100; }
-    .pay-netbanking { background-color: #e0f7fa; color: #00838f; }
-
-    /* Dark Theme Payment Tags Updates */
-    [data-bs-theme="dark"] .pay-cash { background-color: rgba(46, 125, 50, 0.15); color: #81c784; }
-    [data-bs-theme="dark"] .pay-credit-card { background-color: rgba(21, 101, 192, 0.15); color: #64b5f6; }
-    [data-bs-theme="dark"] .pay-debit-card { background-color: rgba(106, 27, 154, 0.15); color: #ba68c8; }
-    [data-bs-theme="dark"] .pay-upi { background-color: rgba(230, 81, 0, 0.15); color: #ffb74d; }
-    [data-bs-theme="dark"] .pay-netbanking { background-color: rgba(0, 131, 143, 0.15); color: #4dd0e1; }
 
     /* Category Icon Alignment */
     .category-icon-container {
