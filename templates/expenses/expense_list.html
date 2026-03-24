@@ -977,9 +977,9 @@
                     </div>
                     {% empty %}
                     <div class="col-12 text-center py-5">
-                         <div class="py-4">
-                            <i class="bi bi-receipt text-muted display-1 mb-3 d-block"></i>
-                            <h4 class="fw-bold text-muted">{% trans "No Expenses Found" %}</h4>
+                         <div>
+                            {% include 'illustrations/empty_expenses.svg' %}
+                            <h4 class="fw-bold text-muted mt-3">{% trans "No Expenses Found" %}</h4>
                             <p class="text-muted mb-4">
                                 {% if request.GET.search or request.GET.start_date or request.GET.end_date or request.GET.category or request.GET.year or request.GET.month %}
                                     {% trans "We couldn't find any expenses matching your filters." %}

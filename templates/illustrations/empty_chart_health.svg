@@ -1,0 +1,11 @@
+<svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <!-- Pulse Line (Background) -->
+    <path d="M15 40H25L30 20L40 60L45 40H55" stroke="currentColor" stroke-width="2" stroke-opacity="0.1" stroke-linecap="round" stroke-linejoin="round"/>
+    
+    <!-- ACCENT PULSE (Centered) -->
+    <path d="M25 40L30 20L40 60L45 40" stroke="#1D9E75" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+    
+    <!-- Rhythm dots -->
+    <circle cx="15" cy="40" r="2" fill="currentColor" fill-opacity="0.2"/>
+    <circle cx="55" cy="40" r="2" fill="currentColor" fill-opacity="0.2"/>
+</svg>

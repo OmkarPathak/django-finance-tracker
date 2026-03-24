@@ -1,0 +1,12 @@
+<svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <!-- Chart Background Grid -->
+    <path d="M20 60H65M20 50H65M20 40H65M20 30H65" stroke="currentColor" stroke-opacity="0.05" stroke-width="1.5" stroke-linecap="round"/>
+    
+    <!-- Ghost Trend Lines (Gray) -->
+    <path d="M20 55L35 45L50 50L65 40" stroke="currentColor" stroke-width="2" stroke-opacity="0.1" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M20 45L35 55L50 40L65 30" stroke="currentColor" stroke-width="2" stroke-opacity="0.1" stroke-linecap="round" stroke-linejoin="round"/>
+    
+    <!-- ACCENT TREND LINE (Green) -->
+    <path d="M20 50L35 40L50 35L65 25" stroke="#1D9E75" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="65" cy="25" r="4" fill="#1D9E75" fill-opacity="0.4" stroke="#1D9E75" stroke-width="1.5"/>
+</svg>

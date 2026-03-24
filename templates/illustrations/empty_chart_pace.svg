@@ -1,0 +1,14 @@
+<svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <!-- Speedometer Arc -->
+    <path d="M20 55C20 35 35 20 40 20C45 20 60 35 60 55" stroke="currentColor" stroke-width="2" stroke-opacity="0.2" stroke-linecap="round"/>
+    
+    <!-- ACCENT ARCH (Safe zone) -->
+    <path d="M20 55C20 40 30 30 40 30" stroke="#1D9E75" stroke-width="3" stroke-linecap="round" stroke-opacity="0.4"/>
+    
+    <!-- Speedometer Needle -->
+    <circle cx="40" cy="55" r="4" fill="currentColor" fill-opacity="0.3"/>
+    <path d="M40 55L30 35" stroke="#1D9E75" stroke-width="3" stroke-linecap="round"/>
+    
+    <!-- Marker -->
+    <circle cx="40" cy="55" r="2" fill="white"/>
+</svg>

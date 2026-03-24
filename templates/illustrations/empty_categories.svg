@@ -1,0 +1,10 @@
+<svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <!-- Grid Boxes -->
+    <rect x="25" y="25" width="12" height="12" rx="3" stroke="currentColor" stroke-width="2" stroke-opacity="0.3"/>
+    <rect x="43" y="25" width="12" height="12" rx="3" stroke="currentColor" stroke-width="2" stroke-opacity="0.3"/>
+    <rect x="25" y="43" width="12" height="12" rx="3" stroke="currentColor" stroke-width="2" stroke-opacity="0.3"/>
+    
+    <!-- ACCENT CATEGORY -->
+    <rect x="43" y="43" width="12" height="12" rx="3" fill="#1D9E75" fill-opacity="0.2" stroke="#1D9E75" stroke-width="2.5"/>
+    <circle cx="49" cy="49" r="2" fill="#1D9E75"/>
+</svg>

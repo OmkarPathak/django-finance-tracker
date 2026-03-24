@@ -1,0 +1,10 @@
+<svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <!-- Bell Shape -->
+    <path d="M40 20C33.3726 20 28 25.3726 28 32V48H22V54H58V48H52V32C52 25.3726 46.6274 20 40 20Z" stroke="currentColor" stroke-width="2" stroke-opacity="0.3" stroke-linejoin="round"/>
+    <!-- Clapper -->
+    <path d="M36 54V56C36 58.2091 37.7909 60 40 60C42.2091 60 44 58.2091 44 56V54" stroke="currentColor" stroke-width="2" stroke-opacity="0.3" stroke-linecap="round"/>
+    
+    <!-- ACCENT NOTIFICATION DOT -->
+    <circle cx="50" cy="22" r="5" fill="#1D9E75"/>
+    <circle cx="50" cy="22" r="7" stroke="#1D9E75" stroke-opacity="0.2"/>
+</svg>

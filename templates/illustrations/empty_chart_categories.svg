@@ -1,0 +1,9 @@
+<svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <!-- Horizontal Bars (Outline) -->
+    <rect x="25" y="25" width="25" height="6" rx="3" stroke="currentColor" stroke-width="2" stroke-opacity="0.2"/>
+    <rect x="25" y="38" width="35" height="6" rx="3" stroke="currentColor" stroke-width="2" stroke-opacity="0.2"/>
+    <rect x="25" y="51" width="15" height="6" rx="3" stroke="currentColor" stroke-width="2" stroke-opacity="0.2"/>
+    
+    <!-- ACCENT BAR (Top) -->
+    <rect x="25" y="25" width="25" height="6" rx="3" fill="#1D9E75" fill-opacity="0.2" stroke="#1D9E75" stroke-width="2.5"/>
+</svg>

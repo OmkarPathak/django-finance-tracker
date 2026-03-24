@@ -236,10 +236,8 @@
                 {% else %}
                     <!-- Improved Empty State -->
                     <div class="text-center py-5">
-                        <div class="mb-4">
-                            <div class="bg-primary-subtle text-primary rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
-                                <i class="bi bi-bell-slash fs-1"></i>
-                            </div>
+                        <div>
+                            {% include 'illustrations/empty_recurring.svg' %}
                         </div>
                         <h4 class="fw-bold">{% trans "No active subscriptions" %}</h4>
                         <p class="text-muted mb-4 col-md-6 mx-auto">{% trans "Most people forget at least one renewal every year. Add yours now so we can remind you before you pay." %}</p>

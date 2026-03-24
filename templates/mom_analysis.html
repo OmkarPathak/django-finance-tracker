@@ -112,9 +112,18 @@
                     </p>
                 </div>
                 <div class="card-body px-4 pb-4">
+                    {% if labels %}
                     <div style="height: 300px;">
                         <canvas id="nwChart"></canvas>
                     </div>
+                    {% else %}
+                    <div class="d-flex flex-column align-items-center justify-content-center" style="height: 300px;">
+                        <div class="mb-3">
+                            {% include 'illustrations/empty_chart_mom.svg' %}
+                        </div>
+                        <p class="text-muted small mb-0">{% trans "No data to show trends yet." %}</p>
+                    </div>
+                    {% endif %}
                 </div>
             </div>
         </div>
@@ -140,9 +149,18 @@
                     </p>
                 </div>
                 <div class="card-body px-4 pb-4">
+                    {% if labels %}
                     <div style="height: 300px;">
                         <canvas id="savChart"></canvas>
                     </div>
+                    {% else %}
+                    <div class="d-flex flex-column align-items-center justify-content-center" style="height: 300px;">
+                        <div class="mb-3">
+                            {% include 'illustrations/empty_chart_mom.svg' %}
+                        </div>
+                        <p class="text-muted small mb-0">{% trans "Start saving to see your progress!" %}</p>
+                    </div>
+                    {% endif %}
                 </div>
             </div>
         </div>
@@ -167,9 +185,18 @@
                     </p>
                 </div>
                 <div class="card-body px-4 pb-4">
+                    {% if labels %}
                     <div style="height: 300px;">
                         <canvas id="ieChart"></canvas>
                     </div>
+                    {% else %}
+                    <div class="d-flex flex-column align-items-center justify-content-center" style="height: 300px;">
+                        <div class="mb-3">
+                            {% include 'illustrations/empty_chart_mom.svg' %}
+                        </div>
+                        <p class="text-muted small mb-0">{% trans "Track income and expenses for better comparison." %}</p>
+                    </div>
+                    {% endif %}
                 </div>
             </div>
         </div>
@@ -196,9 +223,18 @@
                     </p>
                 </div>
                 <div class="card-body px-4 pb-4">
+                    {% if labels %}
                     <div style="height: 300px;">
                         <canvas id="burnChart"></canvas>
                     </div>
+                    {% else %}
+                    <div class="d-flex flex-column align-items-center justify-content-center" style="height: 300px;">
+                        <div class="mb-3">
+                            {% include 'illustrations/empty_chart_mom.svg' %}
+                        </div>
+                        <p class="text-muted small mb-0">{% trans "Analyze your spending pace here." %}</p>
+                    </div>
+                    {% endif %}
                 </div>
             </div>
         </div>

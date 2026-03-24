@@ -1,0 +1,13 @@
+<svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <!-- List Base -->
+    <rect x="25" y="25" width="25" height="35" rx="3" stroke="currentColor" stroke-width="2" stroke-opacity="0.2"/>
+    
+    <!-- Checklist items (Horizontal lines) -->
+    <path d="M32 35H43" stroke="currentColor" stroke-width="1.5" stroke-opacity="0.1" stroke-linecap="round"/>
+    <path d="M32 45H43" stroke="currentColor" stroke-width="1.5" stroke-opacity="0.1" stroke-linecap="round"/>
+    
+    <!-- ACCENT SUN (Top Right) -->
+    <circle cx="55" cy="25" r="8" fill="#1D9E75" fill-opacity="0.2"/>
+    <path d="M55 12V14M55 36V38M68 25H66M44 25H42" stroke="#1D9E75" stroke-width="2" stroke-linecap="round"/>
+    <path d="M64 16L62 18M48 32L46 34M64 34L62 32M48 16L46 18" stroke="#1D9E75" stroke-width="2" stroke-linecap="round"/>
+</svg>

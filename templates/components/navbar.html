@@ -84,7 +84,7 @@
                     </li>
                     <li class="nav-item">
                         <a href="{% url 'goal-list' %}" class="nav-link {% if 'goal' in request.resolver_match.url_name %}active{% endif %}">
-                            {% trans "Savings Goals" %}
+                            {% trans "Goals" %}
                         </a>
                     </li>
                     <li class="nav-item">
@@ -412,7 +412,7 @@
             {% if user.profile.active_tier == 'PRO' %}
             <a href="{% url 'goal-list' %}" class="list-group-item list-group-item-action">
                 <i class="bi bi-bullseye text-success"></i>
-                <span>{% trans "Savings Goals" %}</span>
+                <span>{% trans "Goals" %}</span>
             </a>
             {% endif %}
             <a href="{% url 'calendar' %}" class="list-group-item list-group-item-action">

@@ -618,12 +618,8 @@
                     </div>
                     {% else %}
                     <div class="empty-state-container text-center py-5">
-                        <div class="mb-3 text-muted opacity-50">
-                            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M20 12V8H6a2 2 0 0 1-2-2c0-1.1.9-2 2-2h12v4" class="anim-wallet"/>
-                                <path d="M4 6v12c0 1.1.9 2 2 2h14v-4" class="anim-wallet"/>
-                                <path d="M18 12a2 2 0 0 0-2 2c0 1.1.9 2 2 2h4v-4h-4z" class="anim-wallet"/>
-                            </svg>
+                        <div class="mb-3">
+                            {% include 'illustrations/empty_home.svg' %}
                         </div>
                         <p class="text-muted mb-0">{% trans "No data available yet." %}</p>
                     </div>
@@ -690,10 +686,8 @@
                             </div>
                             {% else %}
                             <div class="h-100 d-flex flex-column align-items-center justify-content-center text-center py-4">
-                                <div class="mb-3 text-muted opacity-50">
-                                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" class="anim-twinkle" fill="currentColor" fill-opacity="0.2"/>
-                                    </svg>
+                                <div class="mb-3">
+                                    {% include 'illustrations/empty_home.svg' %}
                                 </div>
                                 <p class="text-muted mb-0">{% trans "Keep tracking to unlock personalized AI insights." %}</p>
                             </div>
@@ -734,11 +728,8 @@
                             </div>
                             {% else %}
                             <div class="h-100 d-flex flex-column align-items-center justify-content-center text-center py-4">
-                                <div class="mb-3 text-success opacity-50">
-                                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" class="anim-shield" fill="currentColor" fill-opacity="0.2"/>
-                                        <path d="M9 12l2 2 4-4" class="anim-shield"/>
-                                    </svg>
+                                <div class="mb-3">
+                                    {% include 'illustrations/empty_notifications.svg' %}
                                 </div>
                                 <p class="text-muted mb-0">{% trans "You're all set! No urgent alerts right now." %}</p>
                             </div>
@@ -1267,10 +1258,8 @@ document.addEventListener('DOMContentLoaded', function() {
             {% else %}
             <div class="card-body p-4 d-flex flex-column justify-content-center align-items-center text-center">
                 <div class="empty-state-container py-4">
-                    <div class="mb-3 text-muted opacity-50">
-                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M22 12h-4l-3 9L9 3l-3 9H2" class="anim-heartbeat"/>
-                        </svg>
+                    <div class="mb-3">
+                        {% include 'illustrations/empty_chart_health.svg' %}
                     </div>
                     <p class="text-muted small mb-0">{% trans "No financial data for this period." %}</p>
                 </div>
@@ -1281,7 +1270,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     <!-- Spending Pace Card -->
     <div class="col-12 col-lg-4">
-        <div class="card shadow-lg border-0 h-100 glass-card rounded-4">
+        <div class="card shadow-lg border-0 h-100 rounded-4">
             <div class="card-header bg-transparent border-bottom d-flex justify-content-between align-items-center fw-bold">
                 <div class="d-inline-flex align-items-center">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="me-1 text-muted flex-shrink-0">
@@ -1396,12 +1385,8 @@ document.addEventListener('DOMContentLoaded', function() {
             {% else %}
             <div class="card-body p-4 d-flex flex-column justify-content-center align-items-center text-center">
                 <div class="empty-state-container py-4">
-                    <div class="mb-3 text-muted opacity-50">
-                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M12 2a10 10 0 0 1 10 10"/>
-                            <circle cx="12" cy="12" r="10" opacity="0.2"/>
-                            <path d="M12 12l3-3" class="anim-speedometer"/>
-                        </svg>
+                    <div class="mb-3">
+                        {% include 'illustrations/empty_chart_pace.svg' %}
                     </div>
                     <p class="text-muted small mb-0">{% trans "No spending data available." %}</p>
                 </div>
@@ -1412,7 +1397,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     <!-- Income vs Expenses Breakdown Card -->
     <div class="col-12 col-lg-4">
-        <div class="card shadow-lg border-0 h-100 glass-card rounded-4">
+        <div class="card shadow-lg border-0 h-100  rounded-4">
             <div class="card-header bg-transparent border-bottom d-flex justify-content-between align-items-center fw-bold">
                 <div class="d-inline-flex align-items-center">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="me-1 text-muted flex-shrink-0">
@@ -1461,11 +1446,8 @@ document.addEventListener('DOMContentLoaded', function() {
             {% else %}
             <div class="card-body p-4 d-flex flex-column justify-content-center align-items-center text-center">
                 <div class="empty-state-container py-4">
-                    <div class="mb-3 text-muted opacity-50">
-                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                            <circle cx="12" cy="12" r="10" opacity="0.2" class="anim-donut-empty"/>
-                            <path d="M12 2a10 10 0 0 1 10 10"/>
-                        </svg>
+                    <div class="mb-3">
+                        {% include 'illustrations/empty_chart_allocation.svg' %}
                     </div>
                     <p class="text-muted small mb-0">{% trans "Add accounts to see your allocation." %}</p>
                 </div>
@@ -1476,7 +1458,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     <!-- NEW: Smart Insights Card -->
     <div class="col-lg-4">
-        <div class="card shadow-lg border-0 h-100 glass-card rounded-4">
+        <div class="card shadow-lg border-0 h-100  rounded-4">
             <div class="card-header bg-transparent border-bottom d-flex justify-content-between align-items-center fw-bold">
                  <div class="d-inline-flex align-items-center">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="me-1 text-muted flex-shrink-0">
@@ -1547,11 +1529,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 </div>
                 {% else %}
                 <div class="empty-state-container" style="min-height: 350px;">
-                    <div class="mb-3 text-muted opacity-50">
-                        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M3 3v18h18" opacity="0.2"/>
-                            <path d="M7 14l4-4 4 4 3-8" class="anim-trend-empty"/>
-                        </svg>
+                    <div class="mb-3">
+                        {% include 'illustrations/empty_chart_daily.svg' %}
                     </div>
                     <p class="text-muted mb-0">{% trans "Start tracking to see your spending trends!" %}</p>
                 </div>
@@ -1620,12 +1599,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     </div>
                     {% empty %}
                     <div class="empty-state-container" style="min-height: 320px;">
-                        <div class="mb-3 text-muted opacity-50">
-                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                                <polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/>
-                                <path d="M5.45 5.11L2 12v6a2 2 0 002 2h16a2 2 0 002-2v-6l-3.45-6.89A2 2 0 0016.76 4H7.24a2 2 0 00-1.79 1.11z"/>
-                                <path class="anim-inbox-arrow" d="M12 3v6M9 6l3 3 3-3" stroke-width="2"/>
-                            </svg>
+                        <div class="mb-3">
+                            {% include 'illustrations/empty_chart_categories.svg' %}
                         </div>
                         <p class="text-muted mb-0">{% trans "No expense data available" %}</p>
                     </div>
@@ -1657,11 +1632,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 </div>
                 {% else %}
                 <div class="empty-state-container" style="min-height: 320px;">
-                    <div class="mb-3 text-muted opacity-50">
-                        <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                            <circle cx="12" cy="12" r="10" class="anim-donut-empty" stroke-dasharray="15 8 8 8"/>
-                            <circle cx="12" cy="12" r="4" opacity="0.2"/>
-                        </svg>
+                    <div class="mb-3">
+                        {% include 'illustrations/empty_chart_distribution.svg' %}
                     </div>
                     <p class="text-muted mb-0">{% trans "No categories to display" %}</p>
                 </div>
@@ -1734,10 +1706,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     </div>
                     {% empty %}
                     <div class="empty-state-container" style="min-height: 350px;">
-                        <div class="mb-3 text-muted opacity-50">
-                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                                <path class="anim-receipt" d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1z"/>
-                            </svg>
+                        <div class="mb-3">
+                            {% include 'illustrations/empty_recent_activity.svg' %}
                         </div>
                         <p class="text-muted mb-0">{% trans "No recent activity" %}</p>
                     </div>
@@ -1754,8 +1724,8 @@ document.addEventListener('DOMContentLoaded', function() {
 </h6>
 <div class="row g-4 mb-4 fade-in" style="animation-delay: 0.9s;">
     <!-- Upcoming Recurring Transactions Card -->
-    <div class="col-lg-6" id="tour-recurring-card">
-        <div class="card shadow-lg border-0 h-100 glass-card rounded-4">
+    <div class="col-lg-6">
+        <div class="card shadow-lg border-0 h-100 rounded-4">
             <div class="card-header bg-transparent border-bottom d-flex justify-content-between align-items-center fw-bold">
                 <div class="d-inline-flex align-items-center">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="me-1 text-muted flex-shrink-0">
@@ -1852,8 +1822,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     {% endif %}
                 {% else %}
                     <div class="empty-state-container p-4">
-                        <div class="mb-3 text-muted opacity-50">
-                            <i class="bi bi-calendar-check fs-1"></i>
+                        <div class="mb-3">
+                            {% include 'illustrations/empty_recurring.svg' %}
                         </div>
                         <h6 class="fw-bold mb-1">{% trans "No Recurring Bills" %}</h6>
                         <p class="small text-muted mb-0">{% trans "Auto-generate transactions by adding recurring bills." %}</p>
@@ -1866,7 +1836,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     <!-- Payment Method Distribution -->
     <div class="col-lg-6">
-        <div class="card shadow-lg border-0 h-100 glass-card rounded-4">
+        <div class="card shadow-lg border-0 h-100  rounded-4">
             <div class="card-header bg-transparent border-bottom fw-bold d-flex align-items-center">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1 text-muted flex-shrink-0"><rect x="2" y="5" width="20" height="14" rx="2" class="anim-card"/><line x1="2" y1="10" x2="22" y2="10" class="anim-card"/></svg>
                 <span class="cursor-pointer" data-bs-toggle="tooltip" data-bs-placement="top" 
@@ -1881,12 +1851,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 </div>
                 {% else %}
                 <div class="empty-state-container flex-grow-1 d-flex flex-column justify-content-center" style="min-height: 250px;">
-                    <div class="mb-3 text-muted opacity-50">
-                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                            <rect x="2" y="5" width="20" height="14" rx="2" class="anim-card-empty"/>
-                            <line x1="2" y1="10" x2="22" y2="10" class="anim-card-empty"/>
-                            <path d="M7 15h2" class="anim-card-empty"/>
-                        </svg>
+                    <div class="mb-3">
+                        {% include 'illustrations/empty_chart_payment.svg' %}
                     </div>
                     <p class="text-muted small mb-0">{% trans "No payment data available" %}</p>
                 </div>
@@ -1903,7 +1869,7 @@ document.addEventListener('DOMContentLoaded', function() {
 <div class="row g-4 mb-4 fade-in" style="animation-delay: 1.1s;">
     <!-- Expense Projection Chart Card -->
     <div class="col-12">
-        <div class="card shadow-lg border-0 h-100 glass-card rounded-4">
+        <div class="card shadow-lg border-0 h-100  rounded-4">
             <div class="card-header bg-transparent border-bottom fw-bold d-flex justify-content-between align-items-center">
                 <div class="d-inline-flex align-items-center">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="me-1 text-muted flex-shrink-0">
@@ -1927,12 +1893,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 </div>
                 {% else %}
                 <div class="empty-state-container" style="min-height: 250px;">
-                    <div class="mb-3 text-muted opacity-50">
-                        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M3 3v18h18" opacity="0.2"/>
-                            <path d="M19 12v7" stroke-dasharray="2 2" stroke-linecap="round" opacity="0.5"/>
-                            <path d="M18.5 9.5l-3 3-2.5-4.5-3 6.5-4-4" stroke-dasharray="4 4" class="anim-rotate" opacity="0.5"/>
-                        </svg>
+                    <div class="mb-3">
+                        {% include 'illustrations/empty_chart_projection.svg' %}
                     </div>
                     <p class="text-muted mb-0">{% trans "Not enough data yet to generate a projection. Keep tracking for a few months!" %}</p>
                 </div>

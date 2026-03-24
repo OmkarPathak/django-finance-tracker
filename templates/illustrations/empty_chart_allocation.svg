@@ -1,0 +1,14 @@
+<svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <!-- Donut Base (Gray Outline) -->
+    <circle cx="40" cy="40" r="28" stroke="currentColor" stroke-width="4" stroke-opacity="0.1"/>
+    
+    <!-- ACCENT SEGMENT (Top-Right Allocation) -->
+    <path d="M40 12C55.464 12 68 24.536 68 40" stroke="#1D9E75" stroke-width="6" stroke-linecap="round"/>
+    
+    <!-- Secondary Ghost Segments -->
+    <path d="M68 40C68 55.464 55.464 68 40 68" stroke="currentColor" stroke-width="4" stroke-opacity="0.1" stroke-linecap="round"/>
+    <path d="M40 68C24.536 68 12 55.464 12 40" stroke="currentColor" stroke-width="4" stroke-opacity="0.1" stroke-linecap="round"/>
+    
+    <!-- Centered Stack icon -->
+    <rect x="34" y="34" width="12" height="12" rx="2" stroke="currentColor" stroke-width="2" stroke-opacity="0.2"/>
+</svg>

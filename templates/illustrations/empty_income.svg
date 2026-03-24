@@ -1,0 +1,11 @@
+<svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <!-- Wallet Core -->
+    <rect x="25" y="30" width="30" height="25" rx="4" stroke="currentColor" stroke-width="2" stroke-opacity="0.3"/>
+    <!-- Wallet Flap -->
+    <path d="M55 35H60V50H55V35Z" stroke="currentColor" stroke-width="2" stroke-opacity="0.3" stroke-linejoin="round"/>
+    
+    <!-- Accent Up Arrow -->
+    <path d="M40 25V42M35 30L40 25L45 30" stroke="#1D9E75" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+    <!-- Bottom line -->
+    <path d="M30 50H50" stroke="currentColor" stroke-width="2" stroke-opacity="0.3" stroke-linecap="round"/>
+</svg>

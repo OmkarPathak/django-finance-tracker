@@ -1,0 +1,15 @@
+<svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <!-- Calendar Body -->
+    <rect x="25" y="25" width="30" height="25" rx="4" stroke="currentColor" stroke-width="2" stroke-opacity="0.3"/>
+    <!-- Top Header Bar (Indicated by top line) -->
+    <path d="M25 32H55" stroke="currentColor" stroke-width="2" stroke-opacity="0.3" stroke-linecap="round"/>
+    <!-- Grid of dots/boxes -->
+    <rect x="30" y="36" width="4" height="4" rx="1" fill="currentColor" fill-opacity="0.2"/>
+    <rect x="38" y="36" width="4" height="4" rx="1" fill="currentColor" fill-opacity="0.2"/>
+    <rect x="46" y="36" width="4" height="4" rx="1" fill="currentColor" fill-opacity="0.2"/>
+    
+    <rect x="30" y="43" width="4" height="4" rx="1" fill="currentColor" fill-opacity="0.2"/>
+    <!-- ACCENT DOT -->
+    <rect x="38" y="43" width="4" height="4" rx="1" fill="#1D9E75"/>
+    <rect x="46" y="43" width="4" height="4" rx="1" fill="currentColor" fill-opacity="0.2"/>
+</svg>

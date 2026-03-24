@@ -1,0 +1,12 @@
+<svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <!-- Chart Axes -->
+    <path d="M20 20V60H60" stroke="currentColor" stroke-width="2" stroke-opacity="0.3" stroke-linecap="round" stroke-linejoin="round"/>
+    
+    <!-- Dotted Trend Line (Background) -->
+    <path d="M25 50L35 40L45 45L55 25" stroke="currentColor" stroke-width="2" stroke-opacity="0.1" stroke-dasharray="2 4"/>
+    
+    <!-- Accent Sparkline -->
+    <path d="M25 55L35 45L45 50L55 30" stroke="#1D9E75" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="25" cy="55" r="2.5" fill="#1D9E75"/>
+    <circle cx="55" cy="30" r="2.5" fill="#1D9E75"/>
+</svg>

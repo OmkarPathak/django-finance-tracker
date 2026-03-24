@@ -1,0 +1,13 @@
+<svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <!-- List Outline (Simplified) -->
+    <rect x="25" y="20" width="30" height="40" rx="4" stroke="currentColor" stroke-width="2" stroke-opacity="0.3"/>
+    
+    <!-- Checklist items (Horizontal Lines) -->
+    <path d="M32 30H48" stroke="currentColor" stroke-width="2" stroke-opacity="0.2" stroke-linecap="round"/>
+    <path d="M32 40H48" stroke="currentColor" stroke-width="2" stroke-opacity="0.2" stroke-linecap="round"/>
+    <path d="M32 50H40" stroke="currentColor" stroke-width="2" stroke-opacity="0.2" stroke-linecap="round"/>
+    
+    <!-- ACCENT CHECK (Bottom Right) -->
+    <circle cx="55" cy="55" r="8" fill="#1D9E75"/>
+    <path d="M52 55L54 57L58 53" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

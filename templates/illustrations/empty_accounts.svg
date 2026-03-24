@@ -1,0 +1,11 @@
+<svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <!-- Bank Pediment -->
+    <path d="M20 30L40 18L60 30H20Z" stroke="currentColor" stroke-width="2" stroke-opacity="0.3" stroke-linejoin="round"/>
+    <!-- Bank Columns Area -->
+    <rect x="22" y="32" width="36" height="24" rx="2" stroke="currentColor" stroke-width="2" stroke-opacity="0.3"/>
+    <!-- Columns -->
+    <path d="M30 35V53M50 35V53" stroke="currentColor" stroke-width="2" stroke-opacity="0.3" stroke-linecap="round"/>
+    
+    <!-- Accent Door -->
+    <path d="M37 45V56H43V45C43 41.6863 40.3137 39 37 39" fill="#1D9E75" fill-opacity="0.1" stroke="#1D9E75" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" transform="translate(3,0)"/>
+</svg>

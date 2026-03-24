@@ -133,9 +133,7 @@
             <!-- No Budget Set -->
             <div class="card-body p-4 bg-body-primary text-center">
                 <div class="mb-3">
-                    <div class="rounded-circle d-inline-flex align-items-center justify-content-center bg-primary bg-opacity-10" style="width: 48px; height: 48px;">
-                        <i class="bi bi-clipboard-data text-primary" style="font-size: 1.4rem;"></i>
-                    </div>
+                    {% include 'illustrations/empty_budget.svg' %}
                 </div>
                 <h5 class="fw-bold mb-2">{% trans "No budget set" %}</h5>
                 <p class="text-muted small mb-3">{% trans "Set a monthly budget to see daily allowances and spending pace." %}</p>
@@ -228,10 +226,8 @@
                 </div>
             {% else %}
                 <div class="p-4 text-center">
-                    <div class="mb-2">
-                        <div class="rounded-circle d-inline-flex align-items-center justify-content-center bg-primary bg-opacity-10" style="width: 48px; height: 48px;">
-                            <i class="bi bi-stars text-primary opacity-75" style="font-size: 1.4rem;"></i>
-                        </div>
+                    <div class="mb-3">
+                        {% include 'illustrations/empty_daily_txn.svg' %}
                     </div>
                     <p class="text-muted small mb-2">{% trans "Fresh start." %} {{ currency_symbol }}{{ daily_mode.daily_left|humanize_currency:currency_symbol|translate_digits }} {% trans "to spend wisely today." %}</p>
                     <a href="{% url 'expense-create' %}?next={% url 'home' %}" class="btn btn-primary btn-sm rounded-pill px-3">

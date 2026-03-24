@@ -1,0 +1,11 @@
+<svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <!-- Card Base -->
+    <rect x="20" y="25" width="40" height="30" rx="4" stroke="currentColor" stroke-width="2" stroke-opacity="0.3"/>
+    
+    <!-- Card Stripe -->
+    <rect x="20" y="32" width="40" height="6" fill="currentColor" fill-opacity="0.1"/>
+    
+    <!-- Card Accent (Chip/Logo) -->
+    <rect x="26" y="42" width="8" height="6" rx="1.5" fill="#1D9E75" fill-opacity="0.4" stroke="#1D9E75" stroke-width="1.5"/>
+    <circle cx="52" cy="45" r="4" fill="currentColor" fill-opacity="0.1"/>
+</svg>

@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load static digit_filters %}
+{% load static i18n digit_filters %}
 
 {% block title %}Notifications - TrackMyRupee{% endblock %}
 
@@ -48,13 +48,10 @@
                 </div>
                 {% empty %}
                 <div class="text-center py-5 fade-in">
-                    <div class="mb-4 d-inline-flex align-items-center justify-content-center bg-body-secondary rounded-circle" style="width: 120px; height: 120px;">
-                        <div class="position-relative">
-                            <i class="bi bi-bell text-body-secondary opacity-25" style="font-size: 4rem;"></i>
-                            <i class="bi bi-check2 position-absolute top-50 start-50 translate-middle text-primary" style="font-size: 2.5rem; margin-top: 2px;"></i>
-                        </div>
+                    <div class="d-inline-flex align-items-center justify-content-center">
+                        {% include 'illustrations/empty_notifications.svg' %}
                     </div>
-                    <p class="lead text-muted">You're all caught up! No notifications.</p>
+                    <p class="lead text-muted">{% trans "You're all caught up! No notifications." %}</p>
                 </div>
                 {% endfor %}
             </div>
