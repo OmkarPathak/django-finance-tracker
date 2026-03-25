@@ -131,21 +131,21 @@
             </div>
         </div>
 
-        <ul class="nav nav-pills mb-4 gap-2 flex-nowrap overflow-auto" id="subscriptionTabs" role="tablist" style="scrollbar-width: none; -ms-overflow-style: none;">
+        <ul class="nav nav-pills mb-4 gap-2 flex-nowrap overflow-auto py-1" id="subscriptionTabs" role="tablist" style="scrollbar-width: none; -ms-overflow-style: none;">
             <li class="nav-item" role="presentation">
-                <button class="nav-link active px-4 rounded-pill text-nowrap" id="all-tab" data-bs-toggle="tab" data-bs-target="#all" type="button" role="tab" aria-selected="true">
+                <button class="nav-link active px-4 rounded-pill text-nowrap d-flex align-items-center" id="all-tab" data-bs-toggle="tab" data-bs-target="#all" type="button" role="tab" aria-selected="true">
                     {% trans "All" %}
                     <span class="badge bg-white text-primary ms-2 rounded-pill opacity-75">{{ active_subs|length|translate_digits }}</span>
                 </button>
             </li>
             <li class="nav-item" role="presentation">
-                <button class="nav-link px-4 rounded-pill text-nowrap" id="renewing-tab" data-bs-toggle="tab" data-bs-target="#renewing" type="button" role="tab" aria-selected="false">
+                <button class="nav-link px-4 rounded-pill text-nowrap d-flex align-items-center" id="renewing-tab" data-bs-toggle="tab" data-bs-target="#renewing" type="button" role="tab" aria-selected="false">
                     {% trans "Renewing Soon" %} 
-                    {% if renewals_count > 0 %}<span class="badge bg-danger ms-2 rounded-circle">{{ renewals_count|translate_digits }}</span>{% endif %}
+                    {% if renewals_count > 0 %}<span class="badge bg-danger ms-2 rounded-circle d-flex align-items-center justify-content-center" style="width: 20px; height: 20px;">{{ renewals_count|translate_digits }}</span>{% endif %}
                 </button>
             </li>
             <li class="nav-item" role="presentation">
-                <button class="nav-link px-4 rounded-pill text-nowrap" id="cancelled-tab" data-bs-toggle="tab" data-bs-target="#cancelled" type="button" role="tab" aria-selected="false">{% trans "Cancelled" %}</button>
+                <button class="nav-link px-4 rounded-pill text-nowrap d-flex align-items-center" id="cancelled-tab" data-bs-toggle="tab" data-bs-target="#cancelled" type="button" role="tab" aria-selected="false">{% trans "Cancelled" %}</button>
             </li>
         </ul>
 
@@ -155,79 +155,65 @@
                 {% if active_subs %}
                     <div class="list-group shadow-sm rounded-4 border-0">
                         {% for sub in active_subs %}
-                            <div class="list-group-item list-group-item-action px-4 py-3 border-0 border-bottom d-flex justify-content-between align-items-center">
-                                <div class="d-flex align-items-center">
-                                    <!-- Icon with Urgency Logic -->
-                                    <div class="me-3 d-flex align-items-center justify-content-center rounded-3 flex-shrink-0
-                                        {% if sub.annotated_days_until <= 3 and sub.transaction_type != 'INCOME' %}bg-danger-subtle text-danger
-                                        {% elif sub.annotated_days_until <= 7 and sub.transaction_type != 'INCOME' %}bg-warning-subtle text-warning
-                                        {% else %}bg-body-secondary text-secondary{% endif %}" style="width: 42px; height: 42px;">
-                                        {% if sub.transaction_type == 'TRANSFER' %}
-                                            <i class="bi bi-arrow-left-right fs-5"></i>
-                                        {% else %}
-                                            <i class="bi bi-arrow-repeat fs-5"></i>
-                                        {% endif %}
+                            <div class="list-group-item list-group-item-action px-3 py-3 border-0 border-bottom d-flex align-items-center gap-2">
+                                <!-- Icon Column -->
+                                <div class="d-flex align-items-center justify-content-center flex-shrink-0
+                                    {% if sub.annotated_days_until <= 3 and sub.transaction_type != 'INCOME' %}text-danger
+                                    {% elif sub.annotated_days_until <= 7 and sub.transaction_type != 'INCOME' %}text-warning
+                                    {% else %}text-secondary{% endif %}" style="width: 44px; height: 44px;">
+                                    {% if sub.transaction_type == 'TRANSFER' %}
+                                        <i class="bi bi-arrow-left-right fs-5"></i>
+                                    {% else %}
+                                        <i class="bi bi-arrow-repeat fs-5"></i>
+                                    {% endif %}
+                                </div>
+
+                                <!-- Content Column -->
+                                <div class="flex-grow-1 min-width-0">
+                                    <!-- Top Row: Description & Amount -->
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <h6 class="mb-0 fw-bold text-truncate pe-2" style="font-size: 1rem;">{{ sub.description }}</h6>
+                                        <div class="flex-shrink-0 text-end">
+                                            <h6 class="fw-bold mb-0 text-nowrap" style="font-size: 1rem;">
+                                                {{ currency_symbol }}{{ sub.base_amount|compact_amount:currency_symbol|translate_digits }}
+                                            </h6>
+                                        </div>
                                     </div>
-                                    <div>
-                                        <h6 class="mb-1 fw-bold" style="font-size: 1rem;">{{ sub.description }}</h6>
-                                        <div class="text-muted small d-flex align-items-center flex-wrap gap-2">
-                                            <span class="d-inline-flex align-items-center">{{ sub.get_frequency_display }}</span>
+                                    
+                                    <!-- Bottom Row: Meta Info & Actions -->
+                                    <div class="d-flex justify-content-between align-items-center mt-1">
+                                        <div class="text-muted small d-flex flex-wrap align-items-center gap-2 min-width-0">
+                                            <span class="text-nowrap">{{ sub.get_frequency_display }}</span>
                                             
                                             {% if sub.transaction_type == 'TRANSFER' %}
-                                                <span class="badge bg-info-subtle text-info rounded-pill d-inline-flex align-items-center">
-                                                    <i class="bi bi-arrow-left-right me-1 flex-shrink-0"></i> {{ sub.from_account.name }} → {{ sub.to_account.name }}
+                                                <span class="badge bg-info-subtle text-info rounded-pill text-truncate" style="font-size: 0.65rem; max-width: 120px; padding: 0.2rem 0.5rem;">
+                                                    <i class="bi bi-arrow-left-right me-1"></i> {{ sub.to_account.name }}
                                                 </span>
                                             {% endif %}
 
-                                            {% if sub.is_locked %}
-                                                <span class="badge bg-warning text-dark rounded-pill shadow-sm d-inline-flex align-items-center">
-                                                    <i class="bi bi-lock-fill me-1"></i> {% trans "Locked (Plan Limit)" %}
+                                            {% if sub.annotated_days_until <= 3 and sub.transaction_type != 'INCOME' %}
+                                                <span class="badge bg-danger text-white rounded-pill px-2" style="font-size: 0.65rem;">
+                                                    {% blocktrans with days=sub.annotated_days_until|translate_digits %}In {{ days }}d{% endblocktrans %}
                                                 </span>
-                                            {% else %}
-                                                <!-- Urgency Text/Pill -->
-                                                {% if sub.annotated_days_until <= 3 and sub.transaction_type != 'INCOME' %}
-                                                    <span class="badge bg-danger text-white rounded-pill shadow-sm">
-                                                        {% blocktrans with days=sub.annotated_days_until|translate_digits %}In {{ days }} day{% endblocktrans %}
-                                                    </span>
-                                                {% elif sub.annotated_days_until <= 7 and sub.transaction_type != 'INCOME' %}
-                                                    <span class="text-warning fw-bold">
-                                                        {% blocktrans with days=sub.annotated_days_until|translate_digits %}In {{ days }} day{% endblocktrans %}
-                                                    </span>
-                                                {% else %}
-                                                    <span class="text-muted">
-                                                        {% blocktrans with days=sub.annotated_days_until|translate_digits %}In {{ days }} days{% endblocktrans %}
-                                                    </span>
-                                                {% endif %}
                                             {% endif %}
                                         </div>
-                                    </div>
-                                </div>
-                                <div class="d-flex align-items-center gap-3">
-                                    <div class="text-end">
-                                        <h6 class="fw-bold mb-0 text-nowrap" style="font-size: 1.05rem;">
-                                            {{ currency_symbol }}{{ sub.base_amount|compact_amount:currency_symbol|translate_digits }}
-                                        </h6>
-                                        {% if sub.currency != user.profile.currency %}
-                                        <div class="text-muted fw-normal" style="font-size: 0.72rem;">
-                                            ({{ sub.currency }}{{ sub.amount|compact_amount:sub.currency|translate_digits }})
+
+                                        <div class="flex-shrink-0 dropdown ms-2">
+                                            <button class="btn btn-link text-muted p-0" type="button" data-bs-toggle="dropdown">
+                                                <i class="bi bi-three-dots-vertical fs-6"></i>
+                                            </button>
+                                            <ul class="dropdown-menu dropdown-menu-end border-0 shadow">
+                                                <li><a class="dropdown-item" href="{% url 'recurring-edit' sub.pk %}?next={{ request.path }}"><i class="bi bi-pencil me-2"></i>{% trans "Edit" %}</a></li>
+                                                <li>
+                                                    <button class="dropdown-item text-danger delete-btn" type="button" 
+                                                        data-bs-toggle="modal" data-bs-target="#deleteModal"
+                                                        data-url="{% url 'recurring-delete' sub.pk %}"
+                                                        data-message="{% trans 'Are you sure?' %}">
+                                                        <i class="bi bi-trash me-2"></i>{% trans "Delete" %}
+                                                    </button>
+                                                </li>
+                                            </ul>
                                         </div>
-                                        {% endif %}
-                                    </div>
-                                    <div class="dropdown">
-                                        <button class="btn btn-link text-muted p-0" type="button" data-bs-toggle="dropdown">
-                                            <i class="bi bi-three-dots-vertical fs-6"></i>
-                                        </button>
-                                        <ul class="dropdown-menu dropdown-menu-end border-0 shadow">
-                                            <li><a class="dropdown-item" href="{% url 'recurring-edit' sub.pk %}?next={{ request.path }}"><i class="bi bi-pencil me-2"></i>{% trans "Edit" %}</a></li>
-                                            <li>
-                                                <button class="dropdown-item text-danger delete-btn" type="button" 
-                                                    data-bs-toggle="modal" data-bs-target="#deleteModal"
-                                                    data-url="{% url 'recurring-delete' sub.pk %}"
-                                                    data-message="{% trans 'Are you sure you want to delete subscription' %} '{{ sub.description }}'? {% trans 'This will stop all future tracking for this item.' %}">
-                                                    <i class="bi bi-trash me-2"></i>{% trans "Delete" %}
-                                                </button>
-                                            </li>
-                                        </ul>
                                     </div>
                                 </div>
                             </div>
@@ -260,19 +246,19 @@
                     <div class="list-group shadow-sm rounded-4 border-0">
                         {% for sub in renewing_soon %}
                             <div class="list-group-item list-group-item-action px-4 py-3 border-0 border-bottom d-flex justify-content-between align-items-center">
-                                <div class="d-flex align-items-center">
-                                    <div class="me-3 d-flex align-items-center justify-content-center rounded-3 bg-danger-subtle text-danger flex-shrink-0" style="width: 42px; height: 42px;">
+                                <div class="d-flex align-items-center" style="min-width: 0;">
+                                    <div class="me-3 d-flex align-items-center justify-content-center rounded-3 bg-danger-subtle text-danger flex-shrink-0" style="width: 42px; height: 42px; flex-shrink: 0;">
                                         <i class="bi bi-exclamation-circle-fill fs-5"></i>
                                     </div>
-                                    <div>
-                                        <h6 class="mb-1 fw-bold" style="font-size: 1rem;">{{ sub.description }}</h6>
-                                        <div class="text-muted small">
-                                            <span class="badge bg-danger text-white me-2">{% trans "Renewing This Month" %}</span>
+                                    <div style="min-width: 0;">
+                                        <h6 class="mb-1 fw-bold text-truncate" style="font-size: 1rem;">{{ sub.description }}</h6>
+                                        <div class="text-muted small d-flex flex-column align-items-start flex-sm-row align-items-sm-center gap-1 gap-sm-2">
+                                            <span class="badge bg-danger text-white">{% trans "Renewing This Month" %}</span>
                                             <span>{{ sub.get_frequency_display }}</span>
                                         </div>
                                     </div>
                                 </div>
-                                <div class="text-end">
+                                <div class="text-end" style="flex-shrink: 0;">
                                     <h6 class="fw-bold mb-0" style="font-size: 1.05rem;">
                                         {{ currency_symbol }}{{ sub.base_amount|floatformat:0|translate_digits }}
                                     </h6>
@@ -300,19 +286,19 @@
                     <div class="list-group shadow-sm rounded-4 border-0 opacity-75">
                         {% for sub in cancelled_subs %}
                             <div class="list-group-item list-group-item-action px-4 py-3 border-0 border-bottom d-flex justify-content-between align-items-center opacity-75">
-                                <div class="d-flex align-items-center">
-                                    <div class="me-3 d-flex align-items-center justify-content-center rounded-3 bg-body-secondary text-secondary flex-shrink-0" style="width: 42px; height: 42px;">
+                                <div class="d-flex align-items-center" style="min-width: 0;">
+                                    <div class="me-3 d-flex align-items-center justify-content-center rounded-3 bg-body-secondary text-secondary flex-shrink-0" style="width: 42px; height: 42px; flex-shrink: 0;">
                                         <i class="bi bi-x-circle fs-5"></i>
                                     </div>
-                                    <div>
-                                        <h6 class="mb-1 fw-bold text-decoration-line-through text-muted" style="font-size: 1rem;">{{ sub.description }}</h6>
-                                        <div class="text-muted small">
-                                            <span class="badge bg-secondary me-2">{% trans "Cancelled" %}</span>
+                                    <div style="min-width: 0;">
+                                        <h6 class="mb-1 fw-bold text-decoration-line-through text-muted text-truncate" style="font-size: 1rem;">{{ sub.description }}</h6>
+                                        <div class="text-muted small d-flex flex-column align-items-start flex-sm-row align-items-sm-center gap-1 gap-sm-2">
+                                            <span class="badge bg-secondary">{% trans "Cancelled" %}</span>
                                             <span>{{ sub.get_frequency_display }}</span>
                                         </div>
                                     </div>
                                 </div>
-                                <div class="text-end">
+                                <div class="text-end" style="flex-shrink: 0;">
                                     <h6 class="fw-bold mb-0 text-muted" style="font-size: 1.05rem;">
                                         {{ currency_symbol }}{{ sub.base_amount|floatformat:0|translate_digits }}
                                     </h6>
