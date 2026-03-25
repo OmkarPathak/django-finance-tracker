@@ -1,168 +1,102 @@
 # TrackMyRupee
-## Privacy-First Personal Finance Tracker & Expense Tracking App (No SMS, No Bank Access)
+## The Privacy-First Personal Finance Dashboard for Professionals
 
-**TrackMyRupee** is a privacy-first personal finance tracker and expense tracking app built for people who want complete control over their money — without giving away their data.
+**TrackMyRupee** is a premium, privacy-focused personal finance dashboard designed for individuals who want to take full control of their financial story — without compromising their data.
 
-Unlike most money management apps, TrackMyRupee does not read SMS, connect to bank accounts, or sell user data.
-You manually track expenses, analyze spending, manage budgets, and stay in control — on your terms.
+Unlike traditional finance apps, TrackMyRupee **does not** read your SMS, **does not** require bank logins, and **never** sells your data. It is built on the principle of *manual precision*: you stay in the driver's seat of your wealth.
 
-**Try Live App:** https://trackmyrupee.com  
-**Star on GitHub:** https://github.com/OmkarPathak/django-finance-tracker
+**[Try the Live App](https://trackmyrupee.com)** | **[View Demo](https://trackmyrupee.com/demo/)** | **[Star on GitHub](https://github.com/OmkarPathak/trackmyrupee)**
 
 <div align="center">
 
-![Stars](https://img.shields.io/github/stars/omkarpathak/django-finance-tracker?labelColor=F0F0E8&style=for-the-badge&color=1d4ed8)
-![Forks](https://img.shields.io/github/forks/omkarpathak/django-finance-tracker?labelColor=F0F0E8&style=for-the-badge&color=1d4ed8)
-
-![Django](https://img.shields.io/badge/Django-4.x-green?labelColor=F0F0E8&style=for-the-badge&color=1d4ed8)
-![License](https://img.shields.io/badge/license-MIT-blue?labelColor=F0F0E8&style=for-the-badge&color=1d4ed8)
-![Privacy First](https://img.shields.io/badge/Privacy-First-brightgreen?labelColor=F0F0E8&style=for-the-badge&color=1d4ed8)
-![Coverage](https://img.shields.io/badge/Coverage-77%25-green?labelColor=F0F0E8&style=for-the-badge&color=1d4ed8)
+![Stars](https://img.shields.io/github/stars/omkarpathak/trackmyrupee?labelColor=F0F0E8&style=for-the-badge&color=1D9E75)
+![Forks](https://img.shields.io/github/forks/omkarpathak/trackmyrupee?labelColor=F0F0E8&style=for-the-badge&color=1D9E75)
+![Django](https://img.shields.io/badge/Django-4.x-green?labelColor=F0F0E8&style=for-the-badge&color=1D9E75)
+![License](https://img.shields.io/badge/license-MIT-blue?labelColor=F0F0E8&style=for-the-badge&color=1D9E75)
+![Privacy First](https://img.shields.io/badge/Privacy-First-brightgreen?labelColor=F0F0E8&style=for-the-badge&color=1D9E75)
 
 </div>
 
 ---
 
-## Why TrackMyRupee?
+## 💎 Why TrackMyRupee?
 
-TrackMyRupee follows strict privacy principles:
+Stop being the product. Most "free" finance apps profit by selling your spending habits. TrackMyRupee is built differently:
 
--  ❌ No SMS reading
--  ❌ No bank account access
--  ❌ No selling or sharing financial data
--  ✅ Full data export and account deletion
--  Your money. Your data. Your control.
+- **🔒 Zero Surveillance**: No SMS reading. No bank scraping. Period.
+- **📈 Comprehensive Net Worth**: Track Cash, Bank Accounts, and Assets in one unified view.
+- **🎯 Goal-Slaying Engine**: Visual savings goals with progress tracking and celebratory milestones.
+- **🌍 Global Ready**: Multi-currency support with real-time conversion and multi-language interfaces (English, Hindi, Marathi).
+- **🛡️ Data Sovereignty**: Export your entire history anytime. Delete your account and all data with one click.
 
----
-
-## Personal Finance Tracking Without Surveillance
-
-Most expense tracking apps rely on:
-- Reading SMS messages
-- Connecting to bank accounts
-- Sharing financial insights with third parties
-
-**TrackMyRupee is different.**
-
-It is a **privacy-first expense tracker** that gives you:
-- Complete ownership of your financial data
-- Manual and bulk expense tracking
-- Transparent analytics with zero hidden tracking
-
-![Budget Dashboard – TrackMyRupee](misc/dashboard2.png)
+![Budget Dashboard – TrackMyRupee](static/img/desktop.png)
 
 ---
 
-## Features – Expense Tracking & Money Management
+## Features
 
-TrackMyRupee includes all the essential features expected from a modern **expense tracker and budget management app**:
+### 💰 Wealth Management
+*   **Account Ledger**: Detailed transaction history for every bank account and cash wallet.
+*   **Internal Transfers**: Easily move money between accounts with balanced reconciliations.
+*   **Net Worth Tracking**: Watch your total wealth grow with automated account balance aggregation.
 
-✔ Daily expense tracking (manual entry)  
-✔ Excel-based bulk expense import  
-✔ Budget vs actual spending analysis  
-✔ Visual dashboards and charts  
-✔ Subscription and recurring payment tracking  
-✔ Category-based expense filtering  
-✔ Multi-currency support with real-time base currency conversion  
-✔ Full multi-language support (English, Hindi, Marathi) including all settings pages  
-✔ Automatic subscription tracking with currency normalization  
-✔ Export your financial data anytime  
+### 📉 Smart Tracking
+*   **Manual & Bulk Entry**: Add single expenses or import months of data via Excel.
+*   **Recurring Transactions**: Never miss a rent payment or SIP with smart reminders and automated scheduling.
+*   **AI Category Prediction**: Intelligent suggestions for your expenses to speed up manual logging.
 
-This makes TrackMyRupee ideal for:
-- Individuals managing personal expenses
-- Freelancers tracking income and costs
-- Privacy-conscious users avoiding SMS-based apps
+### 🎯 Savings Goals
+*   **Visual Progress**: Beautiful progress bars and milestone badges (Started, 25%, 50%, 75%).
+*   **Gamified Success**: Confetti celebrations when you reach your targets!
+*   **Auto-Refunding**: Delete a goal? All contributions are automatically "refunded" back to their source accounts.
 
-See [FEATURES.md] for detailed breakdown.
-
----
-
-## Who Should Use TrackMyRupee?
-
-TrackMyRupee is designed for:
-
-- Users looking for a **simple expense tracker**
-- People who want a **budget tracker without bank access**
-- Anyone avoiding SMS-reading finance apps
-- Developers looking for an **open source finance tracker**
-- Users who want a **self-hosted personal finance app**
+### 📊 Insights & Analytics
+*   **Visual Dashboards**: Deep dives into your spending by category and account.
+*   **Month-over-Month Analysis**: Compare your financial habits over time.
+*   **Year in Review**: A wrap-up of your annual spending story.
+*   **Automated Reports**: Get monthly financial summaries delivered straight to your inbox.
 
 ---
 
-### Quick Start – Self-Hosted Expense Tracker (Docker)
+## 🚀 Quick Start
 
-Run your own self-hosted personal finance tracker in minutes:
-
+### Self-Hosted (Docker)
+Run your own private instance in seconds:
 ```bash
-git clone https://github.com/OmkarPathak/django-finance-tracker
-cd django-finance-tracker
+git clone https://github.com/OmkarPathak/trackmyrupee
+cd trackmyrupee
 docker-compose up
 ```
-
-Open: http://localhost:8000
+Visit: `http://localhost:8000`
 
 ### Manual Setup (Django)
-
 ```bash
+# Install dependencies
 pip install -r requirements.txt
+
+# Run migrations & setup
 python manage.py migrate
 python manage.py createsuperuser
+
+# Start the dashboard
 python manage.py runserver
 ```
 
 ---
 
-Detailed steps can be found in `SETUP.md`
-
-## Contributing to TrackMyRupee
-
-TrackMyRupee is an open-source personal finance tracker.
-Contributions are welcome — features, bug fixes, documentation, and UI improvements.
-
-See `CONTRIBUTING.md`
+## 🛠️ Built With
+*   **Backend**: Python 3.x, Django 4.2+
+*   **Database**: PostgreSQL / SQLite
+*   **Frontend**: Vanilla JS, Bootstrap 5, Chart.js
+*   **DevOps**: Docker, GitHub Actions, Sentry
 
 ---
 
-## What users say
-
-> “Finally a finance app that doesn’t read my SMS.”  
-> — Early user
-
-> “Simple, clean, and private.”  
-> — Indie Hacker
+## 📬 Contact & Support
+TrackMyRupee is an open-source project by **[Omkar Pathak](https://omkarpathak.in)**.
+Found a bug? Have a feature request? Feel free to **[Open an Issue](https://github.com/OmkarPathak/trackmyrupee/issues)**.
 
 ---
 
-## Roadmap
-
-- [ ] **WhatsApp Integration** – Chat directly to add expenses 💬
-- [ ] **Mobile Apps** – Native Android & iOS support 📱
-- [ ] **Budget Alerts** – Smart insights and overspending notifications 🚨
-
----
-
-## Recent Updates
-
-- **Enhanced Multi-Currency Subscriptions**: Subscriptions now dynamically convert to your base currency, providing accurate monthly and yearly projections even when tracking foreign services (Netflix, AWS, etc.).
-- **Full Settings Localization**: The entire settings interface, including Currency and Language preferences, is now fully translated into **Hindi** and **Marathi**.
-- **Performance & Stability**: Refactored theme engine to eliminate flickering during page loads and standardized URL routing across all modules.
-- **Improved Bulk Entry**: Smarter currency persistence when adding multiple records simultaneously.
-
----
-
-## FAQ
-
-**What makes this different from other finance apps?**  
-TrackMyRupee doesn’t require bank linking or SMS reading — prioritizing user privacy.
-
-**Can I self-host?**  
-Yes — full Docker support and manual setup available.
-
-**Is there a mobile app?**  
-Android & iOS builds are coming soon.
-
----
-
-## License
-
-TrackMyRupee is licensed under the MIT License.
+## 📜 License
+Licensed under the **MIT License**. Your money, your data, your code.
