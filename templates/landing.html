@@ -1175,55 +1175,55 @@
                     <div class="pricing-features flex-grow-1 mb-4">
                         <div class="feature-category-label py-2 border-bottom">{% trans "EXPENSES & TRACKING" %}</div>
                         <div class="d-flex justify-content-between py-2 border-bottom">
-                            <span class="text-muted small">{% trans "Expenses / month" %}</span>
+                            <span class="text-muted">{% trans "Expenses / month" %}</span>
                             <span class="fw-bold">{% if PLAN_DETAILS.FREE.limits.expenses_per_month == -1 %}{% trans "Unlimited" %}{% else %}{{ PLAN_DETAILS.FREE.limits.expenses_per_month }}{% endif %}</span>
                         </div>
                         <div class="d-flex justify-content-between py-2 border-bottom">
-                            <span class="text-muted small">{% trans "Accounts" %}</span>
+                            <span class="text-muted">{% trans "Accounts" %}</span>
                             <span class="fw-bold">{% if PLAN_DETAILS.FREE.limits.accounts == -1 %}{% trans "Unlimited" %}{% else %}{{ PLAN_DETAILS.FREE.limits.accounts }}{% endif %}</span>
                         </div>
                         <div class="d-flex justify-content-between py-2 border-bottom">
-                            <span class="text-muted small">{% trans "Recurring transactions" %}</span>
+                            <span class="text-muted">{% trans "Recurring transactions" %}</span>
                             <span class="fw-bold">{% if PLAN_DETAILS.FREE.limits.recurring_transactions == -1 %}{% trans "Unlimited" %}{% elif PLAN_DETAILS.FREE.limits.recurring_transactions == 0 %}—{% else %}{{ PLAN_DETAILS.FREE.limits.recurring_transactions }}{% endif %}</span>
                         </div>
                         <div class="d-flex justify-content-between py-2 border-bottom">
-                            <span class="text-muted small">{% trans "Budget categories" %}</span>
+                            <span class="text-muted">{% trans "Budget categories" %}</span>
                             <span class="fw-bold">{% if PLAN_DETAILS.FREE.limits.budget_categories == -1 %}{% trans "Unlimited" %}{% else %}{{ PLAN_DETAILS.FREE.limits.budget_categories }}{% endif %}</span>
                         </div>
                         <div class="d-flex justify-content-between py-2 border-bottom">
-                            <span class="text-muted small">{% trans "Savings goals" %}</span>
+                            <span class="text-muted">{% trans "Savings goals" %}</span>
                             <span class="fw-bold">{% if PLAN_DETAILS.FREE.limits.savings_goals == -1 %}{% trans "Unlimited" %}{% else %}{{ PLAN_DETAILS.FREE.limits.savings_goals }}{% endif %}</span>
                         </div>
                         <div class="d-flex justify-content-between py-2 border-bottom mb-4">
-                            <span class="text-muted small">{% trans "Email notifications" %}</span>
+                            <span class="text-muted">{% trans "Email notifications" %}</span>
                             <span class="fw-bold">{{ PLAN_DETAILS.FREE.limits.email_notifications|yesno:"Yes,No" }}</span>
                         </div>
 
                         <div class="feature-category-label py-2 border-bottom">{% trans "ANALYTICS & INSIGHTS" %}</div>
                         <div class="d-flex justify-content-between py-2 border-bottom {% if PLAN_DETAILS.FREE.limits.dashboard %}text-success{% else %}text-muted{% endif %}">
-                            <span class="text-muted small">{% trans "Dashboard" %}</span>
+                            <span class="text-muted">{% trans "Dashboard" %}</span>
                             <span class="fw-bold">{{ PLAN_DETAILS.FREE.limits.dashboard }}</span>
                         </div>
                         <div class="d-flex justify-content-between py-2 border-bottom {% if PLAN_DETAILS.FREE.limits.net_worth %}text-success{% else %}text-muted{% endif %}">
-                            <span class="text-muted small">{% trans "Net worth tracking" %}</span>
+                            <span class="text-muted">{% trans "Net worth tracking" %}</span>
                             <span class="fw-bold">{{ PLAN_DETAILS.FREE.limits.net_worth|yesno:"Yes,No" }}</span>
                         </div>
                         <div class="d-flex justify-content-between py-2 border-bottom {% if PLAN_DETAILS.FREE.limits.ai_insights %}text-success{% else %}text-muted{% endif %}">
-                            <span class="text-muted small">{% trans "AI insights" %}</span>
+                            <span class="text-muted">{% trans "AI insights" %}</span>
                             <span class="fw-bold">{% if PLAN_DETAILS.FREE.limits.ai_insights == -1 %}{% trans "Unlimited" %}{% elif PLAN_DETAILS.FREE.limits.ai_insights %}Yes{% else %}—{% endif %}</span>
                         </div>
                         <div class="d-flex justify-content-between py-2 border-bottom {% if PLAN_DETAILS.FREE.limits.export_csv %}text-success{% else %}text-muted{% endif %}">
-                            <span class="text-muted small">{% trans "Export CSV" %}</span>
+                            <span class="text-muted">{% trans "Export CSV" %}</span>
                             <span class="fw-bold">{% if PLAN_DETAILS.FREE.limits.export_csv %}Yes{% else %}—{% endif %}</span>
                         </div>
                         <div class="d-flex justify-content-between py-2 border-bottom {% if PLAN_DETAILS.FREE.limits.year_in_review %}text-success{% else %}text-muted{% endif %}">
-                            <span class="text-muted small">{% trans "Year in Review" %}</span>
+                            <span class="text-muted">{% trans "Year in Review" %}</span>
                             <span class="fw-bold">{% if PLAN_DETAILS.FREE.limits.year_in_review %}Yes{% else %}—{% endif %}</span>
                         </div>
 
                         <div class="feature-category-label py-2 border-bottom">{% trans "SUPPORT" %}</div>
                         <div class="d-flex justify-content-between py-2">
-                            <span class="text-muted small">{% trans "Support" %}</span>
+                            <span class="text-muted">{% trans "Support" %}</span>
                             <span class="fw-bold">{{ PLAN_DETAILS.FREE.limits.support }}</span>
                         </div>
                     </div>
@@ -1252,55 +1252,55 @@
                     <div class="pricing-features flex-grow-1 mb-4">
                         <div class="feature-category-label py-2 border-bottom">{% trans "EXPENSES & TRACKING" %}</div>
                         <div class="d-flex justify-content-between py-2 border-bottom {% if PLAN_DETAILS.PLUS.limits.expenses_per_month == -1 %}text-success{% endif %}">
-                            <span class="text-muted small">{% trans "Expenses / month" %}</span>
+                            <span class="text-muted">{% trans "Expenses / month" %}</span>
                             <span class="fw-bold">{% if PLAN_DETAILS.PLUS.limits.expenses_per_month == -1 %}{% trans "Unlimited" %}{% else %}{{ PLAN_DETAILS.PLUS.limits.expenses_per_month }}{% endif %}</span>
                         </div>
                         <div class="d-flex justify-content-between py-2 border-bottom {% if PLAN_DETAILS.PLUS.limits.accounts == -1 %}text-success{% endif %}">
-                            <span class="text-muted small">{% trans "Accounts" %}</span>
+                            <span class="text-muted">{% trans "Accounts" %}</span>
                             <span class="fw-bold">{% if PLAN_DETAILS.PLUS.limits.accounts == -1 %}{% trans "Unlimited" %}{% else %}{{ PLAN_DETAILS.PLUS.limits.accounts }}{% endif %}</span>
                         </div>
                         <div class="d-flex justify-content-between py-2 border-bottom">
-                            <span class="text-muted small">{% trans "Recurring transactions" %}</span>
+                            <span class="text-muted">{% trans "Recurring transactions" %}</span>
                             <span class="fw-bold">{% if PLAN_DETAILS.PLUS.limits.recurring_transactions == -1 %}{% trans "Unlimited" %}{% elif PLAN_DETAILS.PLUS.limits.recurring_transactions == 0 %}—{% else %}{{ PLAN_DETAILS.PLUS.limits.recurring_transactions }}{% endif %}</span>
                         </div>
                         <div class="d-flex justify-content-between py-2 border-bottom">
-                            <span class="text-muted small">{% trans "Budget categories" %}</span>
+                            <span class="text-muted">{% trans "Budget categories" %}</span>
                             <span class="fw-bold">{% if PLAN_DETAILS.PLUS.limits.budget_categories == -1 %}{% trans "Unlimited" %}{% else %}{{ PLAN_DETAILS.PLUS.limits.budget_categories }}{% endif %}</span>
                         </div>
                         <div class="d-flex justify-content-between py-2 border-bottom">
-                            <span class="text-muted small">{% trans "Savings goals" %}</span>
+                            <span class="text-muted">{% trans "Savings goals" %}</span>
                             <span class="fw-bold">{% if PLAN_DETAILS.PLUS.limits.savings_goals == -1 %}{% trans "Unlimited" %}{% else %}{{ PLAN_DETAILS.PLUS.limits.savings_goals }}{% endif %}</span>
                         </div>
                         <div class="d-flex justify-content-between py-2 border-bottom mb-4">
-                            <span class="text-muted small">{% trans "Email notifications" %}</span>
+                            <span class="text-muted">{% trans "Email notifications" %}</span>
                             <span class="fw-bold">{{ PLAN_DETAILS.PLUS.limits.email_notifications|yesno:"Yes,No" }}</span>
                         </div>
 
                         <div class="feature-category-label py-2 border-bottom">{% trans "ANALYTICS & INSIGHTS" %}</div>
                         <div class="d-flex justify-content-between py-2 border-bottom {% if PLAN_DETAILS.PLUS.limits.dashboard %}text-success{% else %}text-muted{% endif %}">
-                            <span class="text-muted small">{% trans "Dashboard" %}</span>
+                            <span class="text-muted">{% trans "Dashboard" %}</span>
                             <span class="fw-bold">{{ PLAN_DETAILS.PLUS.limits.dashboard }}</span>
                         </div>
                         <div class="d-flex justify-content-between py-2 border-bottom {% if PLAN_DETAILS.PLUS.limits.net_worth %}text-success{% else %}text-muted{% endif %}">
-                            <span class="text-muted small">{% trans "Net worth tracking" %}</span>
+                            <span class="text-muted">{% trans "Net worth tracking" %}</span>
                             <span class="fw-bold">{{ PLAN_DETAILS.PLUS.limits.net_worth|yesno:"Yes,No" }}</span>
                         </div>
                         <div class="d-flex justify-content-between py-2 border-bottom {% if PLAN_DETAILS.PLUS.limits.ai_insights %}text-success{% else %}text-muted{% endif %}">
-                            <span class="text-muted small">{% trans "AI insights" %}</span>
+                            <span class="text-muted">{% trans "AI insights" %}</span>
                             <span class="fw-bold">{% if PLAN_DETAILS.PLUS.limits.ai_insights == -1 %}{% trans "Unlimited" %}{% elif PLAN_DETAILS.PLUS.limits.ai_insights %}Yes{% else %}—{% endif %}</span>
                         </div>
                         <div class="d-flex justify-content-between py-2 border-bottom {% if PLAN_DETAILS.PLUS.limits.export_csv %}text-success{% else %}text-muted{% endif %}">
-                            <span class="text-muted small">{% trans "Export CSV" %}</span>
+                            <span class="text-muted">{% trans "Export CSV" %}</span>
                             <span class="fw-bold">{% if PLAN_DETAILS.PLUS.limits.export_csv %}Yes{% else %}—{% endif %}</span>
                         </div>
                         <div class="d-flex justify-content-between py-2 border-bottom {% if PLAN_DETAILS.PLUS.limits.year_in_review %}text-success{% else %}text-muted{% endif %}">
-                            <span class="text-muted small">{% trans "Year in Review" %}</span>
+                            <span class="text-muted">{% trans "Year in Review" %}</span>
                             <span class="fw-bold">{% if PLAN_DETAILS.PLUS.limits.year_in_review %}Yes{% else %}—{% endif %}</span>
                         </div>
 
                         <div class="feature-category-label py-2 border-bottom">{% trans "SUPPORT" %}</div>
                         <div class="d-flex justify-content-between py-2">
-                            <span class="text-muted small">{% trans "Support" %}</span>
+                            <span class="text-muted">{% trans "Support" %}</span>
                             <span class="fw-bold">{{ PLAN_DETAILS.PLUS.limits.support }}</span>
                         </div>
                     </div>
@@ -1333,55 +1333,55 @@
                     <div class="pricing-features flex-grow-1 mb-4">
                         <div class="feature-category-label py-2 border-bottom">{% trans "EXPENSES & TRACKING" %}</div>
                         <div class="d-flex justify-content-between py-2 border-bottom {% if PLAN_DETAILS.PRO.limits.expenses_per_month == -1 %}text-success{% endif %}">
-                            <span class="text-muted small">{% trans "Expenses / month" %}</span>
+                            <span class="text-muted">{% trans "Expenses / month" %}</span>
                             <span class="fw-bold">{% if PLAN_DETAILS.PRO.limits.expenses_per_month == -1 %}{% trans "Unlimited" %}{% else %}{{ PLAN_DETAILS.PRO.limits.expenses_per_month }}{% endif %}</span>
                         </div>
                         <div class="d-flex justify-content-between py-2 border-bottom {% if PLAN_DETAILS.PRO.limits.accounts == -1 %}text-success{% endif %}">
-                            <span class="text-muted small">{% trans "Accounts" %}</span>
+                            <span class="text-muted">{% trans "Accounts" %}</span>
                             <span class="fw-bold">{% if PLAN_DETAILS.PRO.limits.accounts == -1 %}{% trans "Unlimited" %}{% else %}{{ PLAN_DETAILS.PRO.limits.accounts }}{% endif %}</span>
                         </div>
                         <div class="d-flex justify-content-between py-2 border-bottom {% if PLAN_DETAILS.PRO.limits.recurring_transactions == -1 %}text-success{% endif %}">
-                            <span class="text-muted small">{% trans "Recurring transactions" %}</span>
+                            <span class="text-muted">{% trans "Recurring transactions" %}</span>
                             <span class="fw-bold">{% if PLAN_DETAILS.PRO.limits.recurring_transactions == -1 %}{% trans "Unlimited" %}{% elif PLAN_DETAILS.PRO.limits.recurring_transactions == 0 %}—{% else %}{{ PLAN_DETAILS.PRO.limits.recurring_transactions }}{% endif %}</span>
                         </div>
                         <div class="d-flex justify-content-between py-2 border-bottom {% if PLAN_DETAILS.PRO.limits.budget_categories == -1 %}text-success{% endif %}">
-                            <span class="text-muted small">{% trans "Budget categories" %}</span>
+                            <span class="text-muted">{% trans "Budget categories" %}</span>
                             <span class="fw-bold">{% if PLAN_DETAILS.PRO.limits.budget_categories == -1 %}{% trans "Unlimited" %}{% else %}{{ PLAN_DETAILS.PRO.limits.budget_categories }}{% endif %}</span>
                         </div>
                         <div class="d-flex justify-content-between py-2 border-bottom {% if PLAN_DETAILS.PRO.limits.savings_goals == -1 %}text-success{% endif %}">
-                            <span class="text-muted small">{% trans "Savings goals" %}</span>
+                            <span class="text-muted">{% trans "Savings goals" %}</span>
                             <span class="fw-bold">{% if PLAN_DETAILS.PRO.limits.savings_goals == -1 %}{% trans "Unlimited" %}{% else %}{{ PLAN_DETAILS.PRO.limits.savings_goals }}{% endif %}</span>
                         </div>
                         <div class="d-flex justify-content-between py-2 border-bottom mb-4">
-                            <span class="text-muted small">{% trans "Email notifications" %}</span>
+                            <span class="text-muted">{% trans "Email notifications" %}</span>
                             <span class="fw-bold">{{ PLAN_DETAILS.PRO.limits.email_notifications|yesno:"Yes,No" }}</span>
                         </div>
 
                         <div class="feature-category-label py-2 border-bottom">{% trans "ANALYTICS & INSIGHTS" %}</div>
                         <div class="d-flex justify-content-between py-2 border-bottom {% if PLAN_DETAILS.PRO.limits.dashboard %}text-success{% else %}text-muted{% endif %}">
-                            <span class="text-muted small">{% trans "Dashboard" %}</span>
+                            <span class="text-muted">{% trans "Dashboard" %}</span>
                             <span class="fw-bold">{{ PLAN_DETAILS.PRO.limits.dashboard }}</span>
                         </div>
                         <div class="d-flex justify-content-between py-2 border-bottom {% if PLAN_DETAILS.PRO.limits.net_worth %}text-success{% else %}text-muted{% endif %}">
-                            <span class="text-muted small">{% trans "Net worth tracking" %}</span>
+                            <span class="text-muted">{% trans "Net worth tracking" %}</span>
                             <span class="fw-bold">{{ PLAN_DETAILS.PRO.limits.net_worth|yesno:"Yes,No" }}</span>
                         </div>
                         <div class="d-flex justify-content-between py-2 border-bottom {% if PLAN_DETAILS.PRO.limits.ai_insights %}text-success{% else %}text-muted{% endif %}">
-                            <span class="text-muted small">{% trans "AI insights" %}</span>
+                            <span class="text-muted">{% trans "AI insights" %}</span>
                             <span class="fw-bold">{% if PLAN_DETAILS.PRO.limits.ai_insights == -1 %}{% trans "Unlimited" %}{% elif PLAN_DETAILS.PRO.limits.ai_insights %}Yes{% else %}—{% endif %}</span>
                         </div>
                         <div class="d-flex justify-content-between py-2 border-bottom {% if PLAN_DETAILS.PRO.limits.export_csv %}text-success{% else %}text-muted{% endif %}">
-                            <span class="text-muted small">{% trans "Export CSV / PDF" %}</span>
+                            <span class="text-muted">{% trans "Export CSV / PDF" %}</span>
                             <span class="fw-bold">{% if PLAN_DETAILS.PRO.limits.export_csv %}Yes{% else %}—{% endif %}</span>
                         </div>
                         <div class="d-flex justify-content-between py-2 border-bottom {% if PLAN_DETAILS.PRO.limits.year_in_review %}text-success{% else %}text-muted{% endif %}">
-                            <span class="text-muted small">{% trans "Year in Review" %}</span>
+                            <span class="text-muted">{% trans "Year in Review" %}</span>
                             <span class="fw-bold">{% if PLAN_DETAILS.PRO.limits.year_in_review %}Yes{% else %}—{% endif %}</span>
                         </div>
 
                         <div class="feature-category-label py-2 border-bottom">{% trans "SUPPORT" %}</div>
                         <div class="d-flex justify-content-between py-2">
-                            <span class="text-muted small">{% trans "Support" %}</span>
+                            <span class="text-muted">{% trans "Support" %}</span>
                             <span class="fw-bold">{{ PLAN_DETAILS.PRO.limits.support }}</span>
                         </div>
                     </div>

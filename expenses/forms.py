@@ -313,15 +313,19 @@ class SavingsGoalForm(forms.ModelForm):
 class GoalContributionForm(forms.ModelForm):
     class Meta:
         model = GoalContribution
-        fields = ['amount', 'date']
+        fields = ['account', 'amount', 'date']
         widgets = {
+            'account': forms.Select(attrs={'class': 'form-select searchable-select'}),
             'amount': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01', 'placeholder': _('Amount')}),
             'date': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
         }
     
     def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
         self.fields['date'].initial = date.today
+        if user:
+            self.fields['account'].queryset = Account.objects.filter(user=user)
         
     def clean_amount(self):
         amount = self.cleaned_data.get('amount')

@@ -16,9 +16,11 @@
             <p class="text-muted mb-0">{{ account.get_account_type_display }} • {{ account.currency }}</p>
         </div>
         <div class="d-flex gap-2">
+            {% if user.username != 'demo' %}
             <a href="{% url 'transfer-create' %}?from_account={{ account.id }}" class="btn btn-outline-primary fw-bold">
                 <i class="bi bi-arrow-left-right me-1"></i> {% trans "Transfer" %}
             </a>
+            {% endif %}
             <a href="{% url 'account-edit' account.id %}" class="btn btn-primary fw-bold">
                 <i class="bi bi-pencil me-1"></i> {% trans "Edit Account" %}
             </a>
@@ -78,10 +80,12 @@
                                 <span class="badge bg-info bg-opacity-10 text-info rounded-pill px-3">
                                     {% trans "Transfer from" %} {{ item.from_account.name }}
                                 </span>
+                            {% elif item.transaction_type == 'SAVINGS' %}
+                                <span class="badge bg-warning bg-opacity-10 text-warning rounded-pill px-3">{% trans "Savings" %}</span>
                             {% endif %}
                         </td>
                         <td class="text-end pe-4">
-                            <span class="fw-bold {% if item.transaction_type == 'INCOME' or item.transaction_type == 'TRANSFER_IN' %}text-success{% elif item.transaction_type == 'EXPENSE' or item.transaction_type == 'TRANSFER_OUT' %}text-danger{% endif %}">
+                            <span class="fw-bold {% if item.transaction_type == 'INCOME' or item.transaction_type == 'TRANSFER_IN' %}text-success{% elif item.transaction_type == 'EXPENSE' or item.transaction_type == 'TRANSFER_OUT' or item.transaction_type == 'SAVINGS' %}text-danger{% endif %}">
                                 {% if item.transaction_type == 'INCOME' or item.transaction_type == 'TRANSFER_IN' %}+{% else %}-{% endif %}
                                 {{ item.display_currency }}{{ item.amount|humanize_currency:item.display_currency|translate_digits }}
                             </span>

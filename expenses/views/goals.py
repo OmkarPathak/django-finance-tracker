@@ -98,7 +98,7 @@ class SavingsGoalDetailView(LoginRequiredMixin, View):
         if limit != -1:
              goals = list(SavingsGoal.objects.filter(user=request.user).order_by('created_at', 'id'))
              is_locked = (goal in goals and goals.index(goal) >= limit)
-        return render(request, self.template_name, {'goal': goal, 'is_locked': is_locked, 'contributions': goal.contributions.all().order_by('-date'), 'form': GoalContributionForm()})
+        return render(request, self.template_name, {'goal': goal, 'is_locked': is_locked, 'contributions': goal.contributions.all().order_by('-date'), 'form': GoalContributionForm(user=request.user)})
     def post(self, request, pk):
         goal = get_object_or_404(SavingsGoal, pk=pk, user=request.user)
         if request.content_type == 'application/json':
@@ -117,7 +117,7 @@ class SavingsGoalDetailView(LoginRequiredMixin, View):
              if goal in goals and goals.index(goal) >= limit:
                  messages.error(request, _("This goal is locked."))
                  return redirect('goal-list')
-        form = GoalContributionForm(request.POST)
+        form = GoalContributionForm(request.POST, user=request.user)
         if form.is_valid():
             c = form.save(commit=False); c.goal = goal; c.save()
             request.session['trigger_confetti'] = True

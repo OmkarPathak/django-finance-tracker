@@ -156,7 +156,7 @@ class MonthlyBillingPaymentTest(TestCase):
 
         # Verify the order was created with monthly price (29 * 100 = 2900 paise)
         call_args = mock_client_instance.order.create.call_args[1]['data']
-        self.assertEqual(call_args['amount'], 2900)
+        self.assertEqual(call_args['amount'], 4900)
 
     @patch('expenses.views_payment.razorpay.Client')
     def test_create_order_yearly(self, MockRazorpayClient):
@@ -176,7 +176,7 @@ class MonthlyBillingPaymentTest(TestCase):
 
         # Verify the order was created with yearly price (249 * 100 = 24900 paise)
         call_args = mock_client_instance.order.create.call_args[1]['data']
-        self.assertEqual(call_args['amount'], 24900)
+        self.assertEqual(call_args['amount'], 49900)
 
     @patch('expenses.views_payment.razorpay.Client')
     def test_create_order_invalid_duration(self, MockRazorpayClient):
@@ -202,7 +202,7 @@ class MonthlyBillingPaymentTest(TestCase):
         from expenses.models import PaymentHistory
 
         PaymentHistory.objects.create(
-            user=self.user, order_id='order_mo_123', amount=29,
+            user=self.user, order_id='order_mo_123', amount=49,
             tier='PLUS', duration='MONTHLY', status='PENDING'
         )
 

@@ -1662,6 +1662,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         <!-- Icon / Avatar -->
                         <div class="icon-shape icon-shape-md fw-bold fs-5 me-2 me-md-3 d-flex align-items-center justify-content-center flex-shrink-0 rounded-circle
                             {% if item.transaction_type == 'INCOME' %}bg-success bg-opacity-10 text-success
+                            {% elif item.transaction_type == 'SAVINGS' %}bg-warning bg-opacity-10 text-warning
                             {% elif item.transaction_type == 'TRANSFER' %}bg-info bg-opacity-10 text-info
                             {% else %}bg-danger bg-opacity-10 text-danger{% endif %}"
                             style="width: 45px; height: 45px;">
@@ -1669,6 +1670,8 @@ document.addEventListener('DOMContentLoaded', function() {
                                 <i class="bi bi-arrow-left-right"></i>
                             {% elif item.transaction_type == 'INCOME' %}
                                 <i class="bi bi-plus-lg"></i>
+                            {% elif item.transaction_type == 'SAVINGS' %}
+                                <i class="bi bi-piggy-bank"></i>
                             {% else %}
                                 <i class="bi {% category_icon item.category user %}"></i>
                             {% endif %}
@@ -1683,6 +1686,8 @@ document.addEventListener('DOMContentLoaded', function() {
                                     {{ item.from_account.name }} → {{ item.to_account.name }}
                                 {% elif item.transaction_type == 'INCOME' %}
                                     {{ item.source }}
+                                {% elif item.transaction_type == 'SAVINGS' %}
+                                    {{ item.category }}
                                 {% else %}
                                     {{ item.category }}
                                 {% endif %}
@@ -1690,8 +1695,8 @@ document.addEventListener('DOMContentLoaded', function() {
                         </div>
                         
                         <div class="text-end flex-shrink-0 me-2">
-                            <span class="d-block fw-bold fs-6 {% if item.transaction_type == 'INCOME' %}text-success{% elif item.transaction_type == 'TRANSFER' %}text-info{% else %}text-danger{% endif %}">
-                                {% if item.transaction_type == 'INCOME' %}+{% elif item.transaction_type == 'TRANSFER' %}{% else %}-{% endif %}{{ currency_symbol }}{% if item.transaction_type == 'TRANSFER' %}{{ item.amount|compact_amount:currency_symbol|translate_digits }}{% else %}{{ item.base_amount|compact_amount:currency_symbol|translate_digits }}{% endif %}
+                            <span class="d-block fw-bold fs-6 {% if item.transaction_type == 'INCOME' %}text-success{% elif item.transaction_type == 'SAVINGS' %}text-warning{% elif item.transaction_type == 'TRANSFER' %}text-info{% else %}text-danger{% endif %}">
+                                {% if item.transaction_type == 'INCOME' %}+{% elif item.transaction_type == 'SAVINGS' %}-{% elif item.transaction_type == 'TRANSFER' %}{% else %}-{% endif %}{{ currency_symbol }}{% if item.transaction_type == 'TRANSFER' or item.transaction_type == 'SAVINGS' %}{{ item.amount|compact_amount:currency_symbol|translate_digits }}{% else %}{{ item.base_amount|compact_amount:currency_symbol|translate_digits }}{% endif %}
                             </span>
                         </div>
                         

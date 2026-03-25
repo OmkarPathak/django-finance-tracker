@@ -606,47 +606,44 @@ class SavingsGoal(models.Model):
 
 class GoalContribution(models.Model):
     goal = models.ForeignKey(SavingsGoal, on_delete=models.CASCADE, related_name='contributions')
+    account = models.ForeignKey(Account, on_delete=models.SET_NULL, null=True, blank=True, related_name='goal_contributions', verbose_name=_('From Account'))
     amount = models.DecimalField(max_digits=12, decimal_places=2, verbose_name=_('Contribution Amount'))
     date = models.DateField(default=timezone.now, verbose_name=_('Date'))
-    
-    # Link to the generated Expense to keep them in sync
-    expense = models.OneToOneField('Expense', on_delete=models.SET_NULL, null=True, blank=True, related_name='goal_contribution')
     
     created_at = models.DateTimeField(auto_now_add=True)
 
     def save(self, *args, **kwargs):
-        is_new = self._state.adding
-        super().save(*args, **kwargs)
-        
-        # Update goal's current amount
-        if is_new:
+        with transaction.atomic():
+            if self.pk:
+                old_instance = GoalContribution.objects.get(pk=self.pk)
+                # Revert old balance and goal amount
+                if old_instance.account:
+                    old_instance.account.balance += old_instance.amount
+                    old_instance.account.save()
+                self.goal.current_amount -= old_instance.amount
+            
+            super().save(*args, **kwargs)
+            
+            # Apply new balance and goal amount
+            if self.account:
+                self.account.refresh_from_db()
+                self.account.balance -= self.amount
+                self.account.save()
+            
             self.goal.current_amount += self.amount
             self.goal.save()
             
-            # Create the matching Expense record
-            expense = Expense.objects.create(
-                user=self.goal.user,
-                date=self.date,
-                amount=self.amount,
-                currency=self.goal.currency,
-                description=f"Contribution to Savings Goal: {self.goal.name}",
-                category="Savings Transfer",
-                payment_method='Cash' # default for internal
-            )
-            # Link them without triggering infinite save loop
-            GoalContribution.objects.filter(pk=self.pk).update(expense=expense)
-            self.expense = expense
-            
     def delete(self, *args, **kwargs):
-        # Update goal's current amount when deleting a contribution
-        self.goal.current_amount -= self.amount
-        self.goal.save()
-        
-        # Delete the linked expense if it exists
-        if self.expense:
-            self.expense.delete()
+        with transaction.atomic():
+            # Update account balance and goal's current amount when deleting a contribution
+            if self.account:
+                self.account.balance += self.amount
+                self.account.save()
+                
+            self.goal.current_amount -= self.amount
+            self.goal.save()
             
-        super().delete(*args, **kwargs)
+            super().delete(*args, **kwargs)
 
     def __str__(self):
         return f"+{self.amount} to {self.goal.name} on {self.date}"

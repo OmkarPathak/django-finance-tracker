@@ -87,7 +87,6 @@ class Command(BaseCommand):
             # General / Investment-related (Standard categories now)
             {'name': 'Mutual Funds', 'limit': 30000, 'icon': 'bi-graph-up-arrow'},
             {'name': 'Stocks', 'limit': 20000, 'icon': 'bi-bank'},
-            {'name': 'Savings Transfer', 'limit': None, 'icon': 'bi-piggy-bank-fill'},
         ]
         
         cat_objs = {}
@@ -228,7 +227,6 @@ class Command(BaseCommand):
             )
 
             # Add periodic contributions to show progress
-            # GoalContribution also creates an Expense under "Savings Transfer"
             total_contrib = 0
             if 'Emergency' in goal.name:
                 total_contrib = 60000 # ~20k/month
@@ -240,7 +238,7 @@ class Command(BaseCommand):
                 part = Decimal(total_contrib) / 3
                 for i in range(3):
                     contrib_date = today - timedelta(days=30 * i + 5)
-                    # We create a Transfer to represent the movement of money
+                    # We create a Transfer to represent the movement of money to the savings account
                     Transfer.objects.create(
                         user=user,
                         from_account=acc_main,
@@ -249,13 +247,13 @@ class Command(BaseCommand):
                         date=contrib_date,
                         description=f"Savings for {goal.name}"
                     )
-                    # Contribution auto-creates an Expense. 
-                    # We DON'T link it to an account here because the Transfer above 
-                    # already handled the balance movement.
+                    # Contribution now specifies an account and deducts balance directly
+                    # We deduct from the savings account where the money was moved
                     GoalContribution.objects.create(
                         goal=goal,
                         amount=part,
-                        date=contrib_date
+                        date=contrib_date,
+                        account=acc_savings
                     )
 
         # Monthly ATM Withdrawals

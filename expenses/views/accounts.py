@@ -10,7 +10,7 @@ from django.utils.translation import gettext as _
 from django.views.generic import CreateView, DeleteView, ListView, UpdateView, View
 
 from ..forms import AccountForm, TransferForm
-from ..models import Account, Expense, Income, Transfer
+from ..models import Account, Expense, GoalContribution, Income, Transfer
 from ..utils import get_exchange_rate
 from .mixins import RecurringTransactionMixin
 
@@ -99,6 +99,12 @@ class TransferCreateView(LoginRequiredMixin, CreateView):
     template_name = 'expenses/transfer_form.html'
     success_url = reverse_lazy('transfer-list')
 
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.username == 'demo':
+            messages.warning(request, _("Inter-account transfers are disabled in the demo to keep things simple. Please use Goal Contributions instead!"))
+            return redirect('home')
+        return super().dispatch(request, *args, **kwargs)
+
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
         kwargs['user'] = self.request.user
@@ -160,6 +166,7 @@ class AccountDetailView(LoginRequiredMixin, View):
         # Transfers where this account is either FROM or TO
         transfers_from = Transfer.objects.filter(user=request.user, from_account=account)
         transfers_to = Transfer.objects.filter(user=request.user, to_account=account)
+        contributions = GoalContribution.objects.filter(goal__user=request.user, account=account)
         
         base_currency = request.user.profile.currency if hasattr(request.user, 'profile') else '₹'
 
@@ -192,8 +199,18 @@ class AccountDetailView(LoginRequiredMixin, View):
             else:
                 t.base_amount_display = None
 
+        for c in contributions:
+            c.transaction_type = 'SAVINGS'
+            c.display_currency = account.currency
+            if account.currency != base_currency:
+                rate = get_exchange_rate(account.currency, base_currency)
+                c.base_amount_display = (c.amount * rate).quantize(Decimal('0.01'))
+            else:
+                c.base_amount_display = None
+            c.description = _("Savings: %(goal)s") % {'goal': c.goal.name}
+
         ledger = sorted(
-            chain(expenses, incomes, transfers_from, transfers_to),
+            chain(expenses, incomes, transfers_from, transfers_to, contributions),
             key=lambda x: x.date,
             reverse=True
         )

@@ -187,7 +187,7 @@ class SubscriptionTierTest(TestCase):
         self.setup_tier('FREE')
         response = self.client.get(reverse('predict-category'), {'description': 'Milk'})
         self.assertEqual(response.status_code, 403)
-        self.assertEqual(response.json()['error'], 'AI Insights is a Pro feature.')
+        self.assertEqual(response.json()['error'], 'AI Insights is a paid feature.')
 
         # Plus Tier - Should fail with 403
         self.setup_tier('PLUS')

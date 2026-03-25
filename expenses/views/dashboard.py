@@ -20,6 +20,7 @@ from ..models import (
     Account,
     Category,
     Expense,
+    GoalContribution,
     Income,
     Notification,
     RecurringTransaction,
@@ -1447,9 +1448,14 @@ def home_view(request):
     recent_transfers = list(transfers_qs.order_by('-date')[:10])
     for t in recent_transfers: t.transaction_type = 'TRANSFER'
 
+    recent_contributions = list(GoalContribution.objects.filter(goal__user=request.user).order_by('-date')[:10])
+    for c in recent_contributions:
+        c.transaction_type = 'SAVINGS'
+        c.description = _("Contribution: %(goal)s") % {'goal': c.goal.name}
+
     from itertools import chain
     recent_activity = sorted(
-        chain(recent_expenses, recent_incomes, recent_transfers),
+        chain(recent_expenses, recent_incomes, recent_transfers, recent_contributions),
         key=lambda x: x.date,
         reverse=True
     )[:10]
@@ -1536,7 +1542,13 @@ def home_view(request):
     # --- DAILY MODE DATA ---
     today = date.today()
     today_expenses = Expense.objects.filter(user=request.user, date=today).order_by('-created_at')
-    today_spent = today_expenses.aggregate(Sum('base_amount'))['base_amount__sum'] or Decimal('0.00')
+    today_contributions = GoalContribution.objects.filter(goal__user=request.user, date=today).order_by('-created_at')
+    
+    today_spent = (today_expenses.aggregate(Sum('base_amount'))['base_amount__sum'] or Decimal('0.00'))
+    # Optional: Include contributions in today_spent if we want them to count against daily budget
+    # The user said "Savings should not be an expense", but they are a cash outflow.
+    # If they are NOT an expense, they shouldn't count towards the expense budget.
+    # So I will NOT add them to today_spent.
 
     # Daily budget allowance: total_monthly_budget / days_in_month
     days_in_current_month = calendar.monthrange(today.year, today.month)[1]
@@ -1631,7 +1643,26 @@ def home_view(request):
             'date': exp.date,
             'is_recurring': is_recurring,
             'is_unusual': is_unusual,
+            'transaction_type': 'EXPENSE',
         })
+
+    for con in today_contributions:
+        today_expenses_list.append({
+            'id': con.id,
+            'description': _("Contribution: %(goal)s") % {'goal': con.goal.name},
+            'category': _("Savings"),
+            'amount': con.amount,
+            'icon': 'bi-piggy-bank',
+            'payment_method': con.account.name if con.account else '',
+            'date': con.date,
+            'is_recurring': False,
+            'is_unusual': False,
+            'transaction_type': 'SAVINGS',
+        })
+    
+    # Re-sort list by date/created_at if needed, but for today view usually just appended is fine
+    # Actually, let's sort to be safe
+    today_expenses_list.sort(key=lambda x: x['id'], reverse=True) 
 
     # --- SMART CONTEXTUAL NUDGES ---
     # Instead of showing on the dashboard, we add them to the notification system.
