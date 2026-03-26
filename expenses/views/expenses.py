@@ -1,17 +1,21 @@
 import calendar
+import json
 from datetime import datetime
 
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Count, Sum
 from django.forms import modelformset_factory
+from django.http import JsonResponse
 from django.shortcuts import redirect, render
 from django.urls import reverse, reverse_lazy
 from django.utils.translation import gettext as _
+from django.views.decorators.http import require_POST
 from django.views.generic import DeleteView, ListView, UpdateView, View
 
 from ..forms import ExpenseForm
-from ..models import Category, Expense
+from ..models import Account, Category, Expense
+from ..parser import parse_expense_nl
 from .mixins import RecurringTransactionMixin, process_user_recurring_transactions
 
 
@@ -326,3 +330,42 @@ class ExpenseBulkUpdateView(LoginRequiredMixin, View):
             messages.warning(request, _('No valid expenses found to update.'))
             
         return redirect('expense-list')
+
+@require_POST
+def parse_expense_view(request):
+    """
+    API endpoint for natural language expense parsing.
+    """
+    try:
+        data = json.loads(request.body)
+        text = data.get('text', '')
+        
+        # Get user's categories for better matching
+        user_categories = list(Category.objects.filter(user=request.user).values_list('name', flat=True))
+        
+        # Also get most frequent category names from expenses
+        frequent_categories = list(Expense.objects.filter(user=request.user).values_list('category', flat=True).distinct()[:10])
+        combined_categories = list(set(user_categories + frequent_categories))
+        
+        # Get last used account and payment method as defaults
+        last_expense = Expense.objects.filter(user=request.user).order_by('-created_at').first()
+        default_account = last_expense.account.name if last_expense and last_expense.account else None
+        default_payment_method = last_expense.payment_method if last_expense else 'Cash' # sensible default
+        
+        # Get user's accounts for matching
+        user_accounts = list(Account.objects.filter(user=request.user).values_list('name', flat=True))
+        
+        result = parse_expense_nl(text, user_categories=combined_categories, user_accounts=user_accounts, user=request.user)
+        if result:
+            # Apply defaults if not parsed
+            if not result.get('account'):
+                result['account'] = default_account
+            
+            result['payment_method'] = default_payment_method
+            # Note: We aren't currently parsing payment method from text, 
+            # but we can add it later if needed. For now just returning default
+            
+            return JsonResponse({'success': True, 'data': result})
+        return JsonResponse({'success': False, 'error': 'No input text provided.'})
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=400)

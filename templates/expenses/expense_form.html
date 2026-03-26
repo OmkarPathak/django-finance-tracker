@@ -1,7 +1,83 @@
 {% extends 'base.html' %}
-{% load i18n expense_extras %}
+{% load i18n expense_extras static %}
 
 {% block content %}
+<style>
+    .border-teal { border-color: #1D9E75 !important; }
+    .text-teal { color: #1D9E75 !important; }
+    .btn-outline-teal { color: #1D9E75; border-color: #1D9E75; }
+    .btn-outline-teal:hover { background-color: #1D9E75; color: white; }
+    
+    .nav-pills-custom .nav-link {
+        color: #6c757d;
+        font-weight: 600;
+        border-radius: 50rem;
+        cursor: pointer;
+        font-size: 0.9rem;
+    }
+    
+    .nav-pills-custom .nav-link:hover:not(.active) {
+        color: #1D9E75;
+    }
+    
+    .nav-pills-custom .nav-link.active {
+        background-color: #1D9E75 !important;
+        color: #ffffff !important;
+        box-shadow: 0 2px 8px rgba(29, 158, 117, 0.3);
+    }
+
+    .btn-teal { background-color: #1D9E75; color: white; border: none; }
+    .btn-teal:hover { background-color: #168a65; color: white; }
+    
+    .parse-highlight {
+        animation: highlight-pulse 1.5s ease;
+    }
+    
+    @keyframes highlight-pulse {
+        0% { background-color: rgba(29, 158, 117, 0.2); }
+        100% { background-color: transparent; }
+    }
+    
+    .suggestion-chip {
+        padding: 5px 12px;
+        border-radius: 20px;
+        background-color: rgba(0,0,0,0.03);
+        border: 1px solid rgba(0,0,0,0.08);
+        font-size: 0.75rem;
+        color: #666;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    
+    [data-bs-theme="dark"] .suggestion-chip {
+        background-color: rgba(255,255,255,0.05);
+        color: #aaa;
+    }
+    
+    .suggestion-chip:hover {
+        background-color: rgba(29, 158, 117, 0.1);
+        border-color: #1D9E75;
+        color: #1D9E75;
+    }
+    
+    #nl-input {
+        font-size: 0.95rem;
+    }
+
+    #nl-input:focus {
+        box-shadow: 0 0 0 0.25rem rgba(29, 158, 117, 0.1);
+    }
+    
+    .preview-label {
+        font-size: 0.6rem;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+    }
+    
+    .quick-add-btn {
+        font-size: 0.9rem;
+    }
+</style>
 <div class="row justify-content-center ">
     <div class="col-md-6">
         <div>
@@ -16,7 +92,39 @@
                     </button>
                 </div>
             </div>
-            <div>
+            
+            {% if not object and formset %}
+            <!-- Quick Add Section -->
+            <div id="quick-add-section" class="mb-4">
+                <label class="form-label fw-bold mb-2">{% trans "Quick Add" %}</label>
+                <div class="position-relative">
+                    <textarea id="nl-input" class="form-control border-1 rounded-4 py-3 px-4 shadow-sm" 
+                        rows="2" placeholder="{% trans 'e.g. 500 lunch with team cash' %}" style="resize: none; border-color: rgba(29, 158, 117, 0.2) !important;"></textarea>
+                    <div class="position-absolute bottom-0 end-0 p-3">
+                        <button type="button" id="btn-parse" class="btn btn-teal btn-sm rounded-pill px-3 fw-bold">
+                            {% trans "Parse" %}
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Suggestions -->
+                <div class="d-flex flex-wrap gap-2 mt-3 justify-content-start">
+                    <span class="text-muted small">Example: </span>
+                    <span class="badge border suggestion-chip" onclick="fillNl('swiggy 320')">swiggy 320</span>
+                    <span class="badge border suggestion-chip" onclick="fillNl('₹850 uber')">₹850 uber</span>
+                    <span class="badge border suggestion-chip" onclick="fillNl('2k groceries')">2k groceries</span>
+                </div>
+
+                <div class="d-flex align-items-center my-2">
+                    <hr class="flex-grow-1 border-top" style="opacity: 0.9;">
+                    <span class="mx-3 text-muted small fw-bold" style="letter-spacing: 1px;">OR</span>
+                    <hr class="flex-grow-1 border-top" style="opacity: 0.9;">
+                </div>
+            </div>
+            {% endif %}
+                    
+
+            <div id="manual-form-container">
                 <form method="post">
                     {% csrf_token %}
 
@@ -36,7 +144,7 @@
                                 {% for hidden in form.hidden_fields %}{{ hidden }}{% endfor %}
                                 
                                 <!-- Primary: Amount & Category (hero row) -->
-                                <div class="row g-2 mb-3">
+                                <div class="row mb-3">
                                     <div class="col-5">
                                         <label class="form-label fw-semibold">{% trans "Amount" %}</label>
                                         <input type="number" name="{{ form.amount.html_name }}" class="form-control form-control-lg expense-amount-input" 
@@ -50,19 +158,7 @@
                                     </div>
                                 </div>
 
-                                <!-- Frequent Categories (all screen sizes) -->
-                                {% if frequent_categories %}
-                                <div class="mb-3">
-                                    <div class="payment-method-selector frequent-categories-selector" data-target-id="{{ form.category.id_for_label }}">
-                                        {% for cat in frequent_categories %}
-                                        <div class="payment-method-item category-item" data-value="{{ cat }}">
-                                            <div class="icon-wrapper"><i class="bi {% category_icon cat request.user %}"></i></div>
-                                            <div class="label">{{ cat }}</div>
-                                        </div>
-                                        {% endfor %}
-                                    </div>
-                                </div>
-                                {% endif %}
+
 
                                 <!-- Description -->
                                 <div class="mb-3">
@@ -186,19 +282,7 @@
                                     </div>
                                 </div>
 
-                                <!-- Frequent Categories (all screen sizes) -->
-                                {% if frequent_categories %}
-                                <div class="mb-3">
-                                    <div class="payment-method-selector frequent-categories-selector" data-target-id="{{ form.category.id_for_label }}">
-                                        {% for cat in frequent_categories %}
-                                        <div class="payment-method-item category-item" data-value="{{ cat }}">
-                                            <div class="icon-wrapper"><i class="bi {% category_icon cat request.user %}"></i></div>
-                                            <div class="label">{{ cat }}</div>
-                                        </div>
-                                        {% endfor %}
-                                    </div>
-                                </div>
-                                {% endif %}
+
 
                                 <!-- Description -->
                                 <div class="mb-3">
@@ -282,7 +366,7 @@
                         </div>
                     {% endif %}
                 </form>
-            </div>
+            </div> <!-- End manual-form-container -->
         </div>
     </div>
 </div>
@@ -322,8 +406,9 @@
         // Add Row
         if (addBtn) {
             addBtn.addEventListener('click', function() {
+                const clickContainer = document.getElementById('formset-container') || addBtn.closest('form');
                 const currentFormCount = parseInt(totalForms.value);
-                const forms = container.getElementsByClassName('form-row');
+                const forms = clickContainer.getElementsByClassName('form-row');
                 
                 // Clone the first row as a template if no rows exist (edge case), 
                 // but typically we clone the last one. If we deleted all, implementation gets tricky, 
@@ -375,7 +460,7 @@
                     }
                 }
 
-                const userCurrency = container.dataset.userCurrency;
+                const userCurrency = clickContainer.dataset ? clickContainer.dataset.userCurrency : '';
                 const inputs = newForm.querySelectorAll('input, select');
                 
                 // Get values from template row for sticky fields
@@ -412,7 +497,7 @@
                     </a>
                 `;
 
-                container.appendChild(newForm);
+                clickContainer.appendChild(newForm);
                 totalForms.value = currentFormCount + 1;
 
                 updateRemoveButtonsVisibility();
@@ -866,4 +951,129 @@
     });
 </script>
 
+<script>
+    function fillNl(text) {
+        const nlInput = document.getElementById('nl-input');
+        nlInput.value = text;
+        nlInput.dispatchEvent(new Event('input', { bubbles: true }));
+        // Trigger parse manually for chips
+        parseNl(text);
+    }
+
+    let nlDebounceTimer;
+    
+    function parseNl(text) {
+        if (!text || text.trim().length < 5) return;
+
+        const btnParse = document.getElementById('btn-parse');
+        const originalHtml = btnParse.innerHTML;
+        btnParse.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>';
+        btnParse.disabled = true;
+
+        fetch('{% url "parse-expense" %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({ text: text })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success && data.data) {
+                const result = data.data;
+                const firstRow = document.querySelector('.form-row');
+                
+                if (firstRow && result.amount) {
+                    const amountInput = firstRow.querySelector('.expense-amount-input');
+                    const descInput = firstRow.querySelector('input[name$="description"]');
+                    const categorySelect = firstRow.querySelector('select[name$="category"]');
+                    const dateInput = firstRow.querySelector('input[name$="date"]');
+                    const accountSelect = firstRow.querySelector('select[name$="account"]');
+                    const pmSelect = firstRow.querySelector('select[name$="payment_method"]');
+
+                    // Fill fields
+                    if (amountInput && result.amount) {
+                        amountInput.value = result.amount;
+                        amountInput.classList.add('parse-highlight');
+                        setTimeout(() => amountInput.classList.remove('parse-highlight'), 1500);
+                    }
+                    if (descInput && result.description) descInput.value = result.description;
+                    if (dateInput && result.date) {
+                        dateInput.value = result.date;
+                        dateInput.dispatchEvent(new Event('change', { bubbles: true }));
+                    }
+
+                    if (categorySelect && result.category) {
+                        for (let i = 0; i < categorySelect.options.length; i++) {
+                            const optText = categorySelect.options[i].text.toLowerCase();
+                            const parsedCat = result.category.toLowerCase();
+                            if (optText === parsedCat || optText.includes(parsedCat)) {
+                                categorySelect.selectedIndex = i;
+                                categorySelect.dispatchEvent(new Event('change', { bubbles: true }));
+                                
+                                // Sync multiselect if present
+                                if (typeof $ !== 'undefined' && $(categorySelect).hasClass('django-multi-select')) {
+                                    $(categorySelect).multiselect('select', categorySelect.options[i].value);
+                                }
+                                break;
+                            }
+                        }
+                    }
+
+                    if (accountSelect && result.account) {
+                        for (let i = 0; i < accountSelect.options.length; i++) {
+                            if (accountSelect.options[i].text.toLowerCase().includes(result.account.toLowerCase())) {
+                                accountSelect.selectedIndex = i;
+                                accountSelect.dispatchEvent(new Event('change', { bubbles: true }));
+                                break;
+                            }
+                        }
+                    }
+
+                    if (pmSelect && result.payment_method) {
+                        for (let i = 0; i < pmSelect.options.length; i++) {
+                            if (pmSelect.options[i].text.toLowerCase().includes(result.payment_method.toLowerCase())) {
+                                pmSelect.selectedIndex = i;
+                                pmSelect.dispatchEvent(new Event('change', { bubbles: true }));
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        })
+        .finally(() => {
+            btnParse.innerHTML = originalHtml;
+            btnParse.disabled = false;
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const nlInput = document.getElementById('nl-input');
+        if (nlInput) {
+            nlInput.addEventListener('input', function() {
+                clearTimeout(nlDebounceTimer);
+                nlDebounceTimer = setTimeout(() => {
+                    parseNl(nlInput.value);
+                }, 1200);
+            });
+
+            nlInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    clearTimeout(nlDebounceTimer);
+                    parseNl(nlInput.value);
+                }
+            });
+
+            document.getElementById('btn-parse').addEventListener('click', () => {
+                clearTimeout(nlDebounceTimer);
+                parseNl(nlInput.value);
+            });
+        }
+    });
+</script>
+
 {% endblock %}
+```
