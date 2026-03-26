@@ -94,12 +94,16 @@
             </div>
             
             {% if not object and formset %}
-            <!-- Quick Add Section -->
             <div id="quick-add-section" class="mb-4">
-                <label class="form-label fw-bold mb-2">{% trans "Quick Add" %}</label>
+                <label class="form-label mb-2 text-muted d-flex align-items-center justify-content-between">
+                    {% trans "Quick Add" %}
+                    <span class="badge rounded-pill bg-light text-teal border fw-normal" style="font-size: 0.65rem;">
+                        <i class="bi bi-magic me-1"></i> {% trans "Auto-fills form below" %}
+                    </span>
+                </label>
                 <div class="position-relative">
-                    <textarea id="nl-input" class="form-control border-1 rounded-4 py-3 px-4 shadow-sm" 
-                        rows="2" placeholder="{% trans 'e.g. 500 lunch with team cash' %}" style="resize: none; border-color: rgba(29, 158, 117, 0.2) !important;"></textarea>
+                    <textarea id="nl-input" class="form-control border-1 rounded-4 py-3 px-4" 
+                        rows="2" placeholder="{% trans 'e.g. 500 lunch with team cash' %}" style="resize: none; border-color: rgba(29, 158, 117, 0.2) !important;" autofocus></textarea>
                     <div class="position-absolute bottom-0 end-0 p-3">
                         <button type="button" id="btn-parse" class="btn btn-teal btn-sm rounded-pill px-3 fw-bold">
                             {% trans "Parse" %}
@@ -148,7 +152,7 @@
                                     <div class="col-5">
                                         <label class="form-label fw-semibold">{% trans "Amount" %}</label>
                                         <input type="number" name="{{ form.amount.html_name }}" class="form-control form-control-lg expense-amount-input" 
-                                            value="{{ form.amount.value|default:'' }}" required id="{{ form.amount.id_for_label }}" step="0.01" placeholder="0.00" inputmode="decimal" autofocus>
+                                            value="{{ form.amount.value|default:'' }}" required id="{{ form.amount.id_for_label }}" step="0.01" placeholder="0.00" inputmode="decimal">
                                         {% if form.amount.errors %}<div class="text-danger small mt-1">{{ form.amount.errors.0 }}</div>{% endif %}
                                     </div>
                                     <div class="col-7">
@@ -272,7 +276,7 @@
                                     <div class="col-5">
                                         <label class="form-label fw-semibold">{% trans "Amount" %}</label>
                                         <input type="number" name="{{ form.amount.name }}" class="form-control form-control-lg expense-amount-input" 
-                                            value="{{ form.amount.value|default:'' }}" required id="{{ form.amount.id_for_label }}" step="0.01" placeholder="0.00" inputmode="decimal" autofocus>
+                                            value="{{ form.amount.value|default:'' }}" required id="{{ form.amount.id_for_label }}" step="0.01" placeholder="0.00" inputmode="decimal">
                                         {% if form.amount.errors %}<div class="text-danger small mt-1">{{ form.amount.errors.0 }}</div>{% endif %}
                                     </div>
                                     <div class="col-7">
@@ -1071,6 +1075,11 @@
                 clearTimeout(nlDebounceTimer);
                 parseNl(nlInput.value);
             });
+
+            // Auto-focus for immediate entry (delay slightly for mobile browsers)
+            setTimeout(() => {
+                nlInput.focus();
+            }, 100);
         }
     });
 </script>
