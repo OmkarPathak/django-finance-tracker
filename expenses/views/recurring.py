@@ -297,8 +297,8 @@ class RecurringTransactionDeleteView(LoginRequiredMixin, DeleteView):
             yearly_saving = amount
             
         currency = '₹'
-        if hasattr(self.request.user, 'userprofile'):
-            currency = self.request.user.userprofile.currency
+        if hasattr(self.request.user, 'profile'):
+            currency = self.request.user.profile.currency
             
         messages.success(self.request, _("You just saved %(currency)s%(amount)s/year 🎉") % {'currency': currency, 'amount': f"{yearly_saving:,.0f}"})
         return super().form_valid(form)

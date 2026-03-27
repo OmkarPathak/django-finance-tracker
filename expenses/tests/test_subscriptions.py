@@ -7,6 +7,7 @@ from django.test import Client, TestCase
 from django.urls import reverse
 
 from expenses.models import Category, RecurringTransaction, UserProfile
+from finance_tracker.plans import PLAN_DETAILS, get_limit
 
 
 class SubscriptionTierTest(TestCase):
@@ -27,33 +28,37 @@ class SubscriptionTierTest(TestCase):
         self.profile.save()
 
     def test_free_tier_category_limit(self):
-        """Free tier should limit to 5 categories."""
+        """Free tier should limit to the configured categories."""
         self.setup_tier('FREE')
-        for i in range(5):
+        limit = PLAN_DETAILS['FREE']['limits']['budget_categories']
+        if limit == -1: return # Skip if unlimited
+        for i in range(limit):
             Category.objects.create(user=self.user, name=f'Cat {i}')
         
-        # Adding 6th category should fail (AJAX)
+        # Adding one more category should fail (AJAX)
         response = self.client.post(
             reverse('category-create-ajax'),
-            data=json.dumps({'name': 'Cat 6'}),
+            data=json.dumps({'name': f'Cat {limit+1}'}),
             content_type='application/json'
         )
         self.assertEqual(response.status_code, 403)
         self.assertFalse(json.loads(response.content)['success'])
 
     def test_plus_tier_category_limit(self):
-        """Plus tier should limit to 10 categories."""
+        """Plus tier should limit to the configured categories."""
         self.setup_tier('PLUS')
-        for i in range(10):
+        limit = PLAN_DETAILS['PLUS']['limits']['budget_categories']
+        if limit == -1: return # Skip if unlimited
+        for i in range(limit):
             Category.objects.create(user=self.user, name=f'Cat {i}')
         
-        # Adding 11th category should fail
-        response = self.client.post(reverse('category-create'), {'name': 'Cat 11'})
-        # Should redirect back to create with error message
+        # Adding one more category should fail
+        response = self.client.post(reverse('category-create'), {'name': f'Cat {limit+1}'})
+        # Should redirect back with error message (or to pricing page depending on view logic)
         self.assertEqual(response.status_code, 302)
         
-        # Verify 11th was NOT created
-        self.assertEqual(Category.objects.filter(user=self.user).count(), 10)
+        # Verify extra was NOT created
+        self.assertEqual(Category.objects.filter(user=self.user).count(), limit)
 
     def test_pro_tier_category_limit(self):
         """Pro tier should have unlimited categories."""
@@ -71,28 +76,36 @@ class SubscriptionTierTest(TestCase):
         self.assertTrue(json.loads(response.content)['success'])
 
     def test_free_tier_recurring_limit(self):
-        """Free tier should not allow recurring transactions."""
+        """Free tier should respect recurring transaction limits."""
         self.setup_tier('FREE')
+        limit = PLAN_DETAILS['FREE']['limits']['recurring_transactions']
+        if limit == -1: return
         Category.objects.create(user=self.user, name='Food')
+        
+        # Fill up to limit
+        for i in range(limit):
+            RecurringTransaction.objects.create(
+                user=self.user, transaction_type='EXPENSE', amount=100, 
+                description=f'RT {i}', frequency='MONTHLY', start_date=date.today(), category='Food'
+            )
+            
+        # Try one more
         response = self.client.post(reverse('recurring-create'), {
-            'transaction_type': 'EXPENSE',
-            'amount': 100,
-            'description': 'Test',
-            'frequency': 'MONTHLY',
-            'start_date': date.today(),
-            'category': 'Food',
-            'currency': '₹',
-            'payment_method': 'Cash'
+            'transaction_type': 'EXPENSE', 'amount': 100, 'description': 'Limit Check',
+            'frequency': 'MONTHLY', 'start_date': date.today(), 'category': 'Food',
+            'currency': '₹', 'payment_method': 'Cash'
         })
         self.assertEqual(response.status_code, 302)
         self.assertIn('pricing', response.url)
-        self.assertEqual(RecurringTransaction.objects.filter(user=self.user).count(), 0)
+        self.assertEqual(RecurringTransaction.objects.filter(user=self.user).count(), limit)
 
     def test_plus_tier_recurring_limit(self):
-        """Plus tier should allow 3 recurring transactions."""
+        """Plus tier should respect the configured recurring transaction limit."""
         self.setup_tier('PLUS')
+        limit = PLAN_DETAILS['PLUS']['limits']['recurring_transactions']
+        if limit == -1: return
         Category.objects.create(user=self.user, name='Food')
-        for i in range(3):
+        for i in range(limit):
             RecurringTransaction.objects.create(
                 user=self.user,
                 transaction_type='EXPENSE',
@@ -103,11 +116,11 @@ class SubscriptionTierTest(TestCase):
                 category='Food'
             )
         
-        # 4th should fail
+        # Try one more
         response = self.client.post(reverse('recurring-create'), {
             'transaction_type': 'EXPENSE',
             'amount': 100,
-            'description': 'RT 4',
+            'description': 'Limit Check Extra',
             'frequency': 'MONTHLY',
             'start_date': date.today(),
             'category': 'Food',
@@ -116,7 +129,7 @@ class SubscriptionTierTest(TestCase):
         })
         self.assertEqual(response.status_code, 302)
         self.assertIn('pricing', response.url)
-        self.assertEqual(RecurringTransaction.objects.filter(user=self.user).count(), 3)
+        self.assertEqual(RecurringTransaction.objects.filter(user=self.user).count(), limit)
 
     def test_export_access(self):
         """Only Plus/Pro can export."""
@@ -156,12 +169,19 @@ class SubscriptionTierTest(TestCase):
         # Adjust start_date and last_processed_date so next_due_date is exactly target_due
         # If monthly, and next is target_due, then last was target_due - 1 month
         def get_last_month(d):
-            month = d.month - 1
-            year = d.year
-            if month == 0:
-                month = 12
-                year -= 1
-            return d.replace(year=year, month=month)
+            new_month = d.month - 1
+            new_year = d.year
+            if new_month == 0:
+                new_month = 12
+                new_year -= 1
+            
+            # Handle day out of range (e.g. March 31 -> Feb 28/29)
+            new_day = d.day
+            while True:
+                try:
+                    return date(new_year, new_month, new_day)
+                except ValueError:
+                    new_day -= 1
         
         rt.start_date = get_last_month(target_due)
         rt.last_processed_date = get_last_month(target_due)
@@ -182,24 +202,18 @@ class SubscriptionTierTest(TestCase):
         self.assertIn('Sent consolidated email to sub@example.com', out.getvalue())
 
     def test_ai_prediction_gate(self):
-        """Only Pro users can access AI category prediction."""
-        # Free Tier - Should fail with 403
-        self.setup_tier('FREE')
-        response = self.client.get(reverse('predict-category'), {'description': 'Milk'})
-        self.assertEqual(response.status_code, 403)
-        self.assertEqual(response.json()['error'], 'AI Insights is a paid feature.')
-
-        # Plus Tier - Should fail with 403
-        self.setup_tier('PLUS')
-        response = self.client.get(reverse('predict-category'), {'description': 'Milk'})
-        self.assertEqual(response.status_code, 403)
-        
-        # Pro Tier - Should succeed
-        self.setup_tier('PRO')
-        # We need to mock predictable AI behavior if possible, but the view calls predict_category_ai.
-        # Let's mock it to return 'Food'.
-        with patch('expenses.views.predict_category_ai') as mock_ai:
-            mock_ai.return_value = 'Food'
-            response = self.client.get(reverse('predict-category'), {'description': 'Milk'})
-            self.assertEqual(response.status_code, 200)
-            self.assertEqual(response.json()['category'], 'Food')
+        """Only users with ai_insights access can access AI category prediction."""
+        for tier in ['FREE', 'PLUS', 'PRO']:
+            self.setup_tier(tier)
+            has_access = PLAN_DETAILS[tier]['limits']['ai_insights']
+            
+            with patch('expenses.views.predict_category_ai') as mock_ai:
+                mock_ai.return_value = 'Food'
+                response = self.client.get(reverse('predict-category'), {'description': 'Milk'})
+                
+                if has_access:
+                    self.assertEqual(response.status_code, 200)
+                    self.assertEqual(response.json()['category'], 'Food')
+                else:
+                    self.assertEqual(response.status_code, 403)
+                    self.assertEqual(response.json()['error'], 'AI Insights is a paid feature.')

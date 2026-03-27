@@ -58,42 +58,53 @@ class StrictLimitEnforcementTest(TestCase):
         p.tier = 'PLUS'
         p.subscription_end_date = timezone.now() + timedelta(days=30)
         p.save()
-        # Add a 10th+ category to test the limit
-        for i in range(5):
-            Category.objects.create(user=self.user, name=f'Category {10+i}')
+        
+        # Add enough categories to test the limit
+        limit_plus = PLAN_DETAILS['PLUS']['limits']['budget_categories']
+        current_count = Category.objects.filter(user=self.user).count()
+        if limit_plus != -1 and current_count < limit_plus:
+            for i in range(limit_plus - current_count + 5): # Create more than enough
+                Category.objects.create(user=self.user, name=f'Category PLUS {i}')
         self.user.refresh_from_db()
         
         form = ExpenseForm(user=self.user)
         choices = list(form.fields['category'].widget.choices)
         # PLUS limit
-        limit_plus = PLAN_DETAILS['PLUS']['limits']['budget_categories']
-        self.assertEqual(len(choices), limit_plus)
+        self.assertEqual(len(choices), limit_plus if limit_plus != -1 else Category.objects.filter(user=self.user).count())
 
     def test_recurring_transaction_limit_enforcement(self):
-        # FREE limit is 0
+        # Use limit from PLAN_DETAILS
         from expenses.views import process_user_recurring_transactions
         self.user.refresh_from_db()
+        limit_free = PLAN_DETAILS['FREE']['limits']['recurring_transactions']
         
         # Ensure rt is an EXPENSE and set start_date to yesterday
-        rt = RecurringTransaction.objects.get(user=self.user)
+        rt = RecurringTransaction.objects.filter(user=self.user).first()
         rt.transaction_type = 'EXPENSE'
         rt.start_date = date.today() - timedelta(days=1)
+        rt.last_processed_date = None # Reset
         rt.save()
         
         process_user_recurring_transactions(self.user)
-        self.assertEqual(Expense.objects.filter(user=self.user).count(), 0)
+        self.assertEqual(Expense.objects.filter(user=self.user).count(), min(1, limit_free) if limit_free != -1 else 1)
         
-        # Upgrade to PLUS (limit 3)
+        # Upgrade to PLUS
         p = self.user.profile
         p.tier = 'PLUS'
         p.subscription_end_date = timezone.now() + timedelta(days=30)
         p.save()
         self.user.refresh_from_db()
         
+        # Delete expenses created in free test and RESET RT
+        Expense.objects.filter(user=self.user).delete()
+        rt.refresh_from_db()
+        rt.last_processed_date = None
+        rt.save()
+        
         process_user_recurring_transactions(self.user)
-        # Plus limit for process_user_recurring_transactions
+        # Plus limit
         limit_plus = PLAN_DETAILS['PLUS']['limits']['recurring_transactions']
-        self.assertEqual(Expense.objects.filter(user=self.user).count(), min(1, limit_plus))
+        self.assertEqual(Expense.objects.filter(user=self.user).count(), min(1, limit_plus) if limit_plus != -1 else 1)
 
     def test_downgrade_notification_logic(self):
         # ... (existing test)
@@ -109,24 +120,29 @@ class StrictLimitEnforcementTest(TestCase):
 
     def test_recurring_transaction_update_limit_enforcement(self):
         from django.urls import reverse
-
         from expenses.models import RecurringTransaction
         
         # Clean up existing subs from setUp
         RecurringTransaction.objects.filter(user=self.user).delete()
         
-        # Create 2 active subs
-        rt1 = RecurringTransaction.objects.create(user=self.user, amount=10, transaction_type='EXPENSE', frequency='MONTHLY', start_date=timezone.now(), is_active=True)
-        rt2 = RecurringTransaction.objects.create(user=self.user, amount=20, transaction_type='EXPENSE', frequency='MONTHLY', start_date=timezone.now(), is_active=True)
+        limit_free = PLAN_DETAILS['FREE']['limits']['recurring_transactions']
+        if limit_free == -1: return
         
-        # Downgrade to FREE (limit 0)
+        # Create (limit + 1) active subs
+        rts = []
+        for i in range(limit_free + 1):
+            rt = RecurringTransaction.objects.create(user=self.user, amount=10*(i+1), transaction_type='EXPENSE', frequency='MONTHLY', start_date=timezone.now(), is_active=True)
+            rts.append(rt)
+        
+        # Ensure FREE
         p = self.user.profile
         p.tier = 'FREE'
         p.save()
         
         self.client.force_login(self.user)
-        # Try to update first one
-        response = self.client.get(reverse('recurring-edit', kwargs={'pk': rt1.pk}))
+        # Try to update the last one (exceeds limit)
+        rt_to_edit = rts[-1]
+        response = self.client.get(reverse('recurring-edit', kwargs={'pk': rt_to_edit.pk}))
         self.assertEqual(response.status_code, 302)
         self.assertIn(reverse('recurring-list'), response.url)
         

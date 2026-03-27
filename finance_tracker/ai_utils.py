@@ -4,7 +4,8 @@ import re
 
 # Simple Rule-Based Keyword Mapping
 KEYWORD_MAPPING = {
-    'Food': ['food', 'dinner', 'lunch', 'breakfast', 'snack', 'coffee', 'tea', 'cafe', 'restaurant', 'burger', 'pizza', 'zomato', 'swiggy', 'groceries', 'vegetables', 'fruits'],
+    'Groceries': ['groceries', 'vegetables', 'fruits'],
+    'Food & Dining': ['food', 'dinner', 'lunch', 'breakfast', 'snack', 'coffee', 'tea', 'cafe', 'restaurant', 'burger', 'pizza', 'zomato', 'swiggy'],
     'Transport': ['taxi', 'uber', 'ola', 'auto', 'bus', 'train', 'metro', 'flight', 'ticket', 'fuel', 'petrol', 'diesel', 'parking', 'toll'],
     'Shopping': ['amazon', 'flipkart', 'myntra', 'clothes', 'shoes', 'mall', 'store', 'shop', 'electronics', 'gadget'],
     'Bills': ['electricity', 'water', 'gas', 'bill', 'recharge', 'wifi', 'internet', 'broadband', 'phone', 'mobile', 'subscription', 'netflix', 'spotify', 'prime'],
@@ -111,7 +112,7 @@ def predict_category_ai(description, user=None):
             
             prompt = f"""
             Classify the following expense description into one of these categories: 
-            Food, Transport, Shopping, Bills, Health, Education, Entertainment, Rent, Investment, Other.
+            Food & Dining, Groceries, Transport, Shopping, Bills, Health, Education, Entertainment, Rent, Investment, Other.
             
             Description: "{description}"
             

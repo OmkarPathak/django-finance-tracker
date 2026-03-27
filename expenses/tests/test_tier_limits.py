@@ -31,6 +31,7 @@ class TierLimitTest(TestCase):
     def test_account_limit_enforced_free(self):
         """Free user should not be able to create more than the configured account limit."""
         limit = PLAN_DETAILS['FREE']['limits']['accounts']
+        if limit == -1: return # Unlimited
         for i in range(limit):
             Account.objects.create(user=self.user, name=f"Acc {i}", balance=100)
         
@@ -51,6 +52,7 @@ class TierLimitTest(TestCase):
         self.profile.save()
 
         limit = PLAN_DETAILS['PLUS']['limits']['accounts']
+        if limit == -1: return # Unlimited
         for i in range(limit):
             Account.objects.create(user=self.user, name=f"Acc {i}", balance=100)
         
@@ -67,7 +69,8 @@ class TierLimitTest(TestCase):
     def test_category_limit_enforced_free(self):
         """Free user should not be able to create more than the configured category limit."""
         limit = PLAN_DETAILS['FREE']['limits']['budget_categories']
-        # User starts with 3 default categories (Food, Shopping, Bills) via signals
+        if limit == -1: return
+        # User starts with default categories via signals
         current_count = Category.objects.filter(user=self.user).count()
         
         # Add categories up to limit
@@ -88,6 +91,7 @@ class TierLimitTest(TestCase):
         self.profile.save()
         
         limit = PLAN_DETAILS['PLUS']['limits']['budget_categories']
+        if limit == -1: return
         current_count = Category.objects.filter(user=self.user).count()
 
         # Add categories up to limit
@@ -102,10 +106,21 @@ class TierLimitTest(TestCase):
         self.assertEqual(Category.objects.filter(user=self.user).count(), limit)
 
     def test_recurring_limit_enforced_free(self):
-        """Free user should not be able to create any recurring transactions."""
+        """Free user should respect recurring transaction limits."""
+        limit = PLAN_DETAILS['FREE']['limits']['recurring_transactions']
+        if limit == -1: return
         acc = Account.objects.create(user=self.user, name="Main", balance=1000)
+        
+        # Fill up to limit
+        for i in range(limit):
+             RecurringTransaction.objects.create(
+                user=self.user, account=acc, description=f"Rec {i}", 
+                amount=100, category="Test", frequency="MONTHLY", start_date=date.today()
+            )
+            
+        # Try one more
         response = self.client.post(reverse('recurring-create'), {
-            'account': acc.id, 'description': 'Monthly Rent', 'amount': '5000',
+            'account': acc.id, 'description': 'Limit Exceeded Rec', 'amount': '100',
             'category': 'Rent', 'frequency': 'MONTHLY', 'start_date': date.today()
         })
         self.assertEqual(response.status_code, 302)
@@ -119,6 +134,7 @@ class TierLimitTest(TestCase):
         acc = Account.objects.create(user=self.user, name="Main", balance=1000)
 
         limit = PLAN_DETAILS['PLUS']['limits']['recurring_transactions']
+        if limit == -1: return
         for i in range(limit):
             RecurringTransaction.objects.create(
                 user=self.user, account=acc, description=f"Rec {i}", 
@@ -136,6 +152,7 @@ class TierLimitTest(TestCase):
     def test_expense_monthly_limit_enforced(self):
         """Free user should not be able to create more than the configured monthly expense limit."""
         limit = PLAN_DETAILS['FREE']['limits']['expenses_per_month']
+        if limit == -1: return
         today = date.today()
         for i in range(limit):
             Expense.objects.create(

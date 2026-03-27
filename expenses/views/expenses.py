@@ -107,9 +107,10 @@ class ExpenseListView(LoginRequiredMixin, RecurringTransactionMixin, ListView):
         years_dates = user_expenses.dates('date', 'year', order='DESC')
         years = sorted(list(set([d.year for d in years_dates] + [datetime.now().year])), reverse=True)
         # Python-side deduplication to handle whitespace variants (e.g. "Goa" vs "Goa ")
-        raw_used_categories = user_expenses.values_list('category', flat=True)
+        raw_used_categories = user_expenses.values_list('category', flat=True).distinct()
         raw_defined_categories = Category.objects.filter(user=self.request.user).values_list('name', flat=True)
-        all_cats = set([c.strip() for c in raw_used_categories if c and c.strip()]) | set([c.strip() for c in raw_defined_categories if c and c.strip()])
+        # Use a set for final deduplication and strip only the distinct results
+        all_cats = {c.strip() for c in raw_used_categories if c} | {c.strip() for c in raw_defined_categories if c}
         categories = sorted(list(all_cats), key=str.lower)
         
         context['years'] = years

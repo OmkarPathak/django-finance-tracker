@@ -28,7 +28,7 @@ def parse_expense_nl(text, user_categories=None, user_accounts=None, user=None):
                 val *= 1000
             amount = Decimal(str(val)).quantize(Decimal('0.01'))
             is_clue_found = True
-            text_for_others = text[:amount_match.start()] + text[amount_match.end():]
+            text_for_others = text[:amount_match.start()] + " " + text[amount_match.end():]
         except (ValueError, ArithmeticError):
             pass
 
@@ -57,11 +57,23 @@ def parse_expense_nl(text, user_categories=None, user_accounts=None, user=None):
 
     description = re.sub(r'\s+', ' ', text_for_others).strip()
     
-    # Use AI Prediction for Category
-    predicted_category = predict_category_ai(description, user=user)
-    if predicted_category:
-        category = predicted_category
-        is_clue_found = True
+    category_found = False
+    # 0. Check User Categories First (Explicit Match)
+    if user_categories:
+        desc_lower = description.lower()
+        for cat in user_categories:
+            if cat.lower() in desc_lower:
+                category = cat
+                category_found = True
+                is_clue_found = True
+                break
+
+    # 1. Use AI Prediction for Category (if not found in user_categories)
+    if not category_found:
+        predicted_category = predict_category_ai(description, user=user)
+        if predicted_category:
+            category = predicted_category
+            is_clue_found = True
 
     if not description:
         description = "Expense"

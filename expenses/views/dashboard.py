@@ -29,6 +29,7 @@ from ..models import (
 )
 from ..templatetags.digit_filters import compact_amount
 from ..utils import generate_year_in_review_data, get_exchange_rate
+from ..services import FinancialService
 from .mixins import process_user_recurring_transactions
 
 
@@ -50,6 +51,14 @@ def home_view(request):
 
     # Process recurring transactions
     process_user_recurring_transactions(request.user)
+    
+    # --- NET WORTH TREND (Last 6 Months) ---
+    net_worth_history = FinancialService.get_monthly_history(request.user, 6)
+    
+    net_worth_labels = [date_format(m['month'], 'M Y') for m in net_worth_history]
+    net_worth_data = [m['savings'] for m in net_worth_history] # Using savings as a proxy for monthly cash flow trend
+    # If the user wants actual cumulative net worth, we'd need a starting balance. 
+    # But based on original code (lines 1384-1400), it was calculating monthly savings.
     
     # Global currency symbol for insights/metrics
     currency_symbol = request.user.profile.currency if hasattr(request.user, 'profile') else '₹'
@@ -232,22 +241,22 @@ def home_view(request):
         # Simple heuristic: Always show daily for custom range for now, or let logic decide.
         # Let's stick to: if explicit month selected -> daily. If range -> daily (usually granular).
         trend_qs = expenses.annotate(period=TruncDay('date'))
-        date_format = '%d %b'
+        date_fmt = '%d %b'
     elif len(selected_months) == 1 and len(selected_years) == 1:
         # Daily view
         trend_qs = expenses.annotate(period=TruncDay('date'))
-        date_format = '%d %b'
+        date_fmt = '%d %b'
     else:
         # Monthly view
         trend_qs = expenses.annotate(period=TruncMonth('date'))
-        date_format = '%b %Y'
+        date_fmt = '%b %Y'
 
     # Aggregate by Period for Total Spend
     total_data = trend_qs.values('period').annotate(total=Sum('base_amount')).order_by('period')
     
     # Process into Chart.js Datasets
     periods = [item['period'] for item in total_data]
-    trend_labels = [p.strftime(date_format) for p in periods]
+    trend_labels = [p.strftime(date_fmt) for p in periods]
     trend_iso_dates = [p.strftime('%Y-%m-%d') for p in periods]
     
     trend_data = [float(item['total']) for item in total_data]
@@ -296,7 +305,7 @@ def home_view(request):
     exp_periods = set(e['period'] for e in exp_trend)
     all_periods_sorted = sorted(list(inc_periods.union(exp_periods)))
     
-    ie_labels = [p.strftime(date_format) for p in all_periods_sorted]
+    ie_labels = [p.strftime(date_fmt) for p in all_periods_sorted]
     
     # Optimization: Use dict lookup instead of filter inside loop
     inc_map = {i['period']: float(i['total']) for i in inc_trend}
@@ -1375,31 +1384,13 @@ def home_view(request):
         period_start = (first_day_current_month - timedelta(days=1)).replace(day=1)
         # This is not quite right for a loop. Let's use a cleaner date logic.
         
-    # Redoing trend logic for clarity:
-    net_worth_trend = [float(net_worth)]
-    running_nw = net_worth
+    # --- NET WORTH TREND (Sparkline and Chart) ---
+    net_worth_trend = FinancialService.get_cumulative_net_worth_history(request.user, net_worth, 6)
     
-    # 1. Current month so far
-    curr_month_start = timezone.now().date().replace(day=1)
-    c_inc = Income.objects.filter(user=request.user, date__gte=curr_month_start).aggregate(Sum('base_amount'))['base_amount__sum'] or Decimal('0')
-    c_exp = Expense.objects.filter(user=request.user, date__gte=curr_month_start).aggregate(Sum('base_amount'))['base_amount__sum'] or Decimal('0')
-    running_nw -= (c_inc - c_exp)
-    net_worth_trend.append(float(running_nw))
-    
-    # 2. Previous 4 months
-    for i in range(1, 5):
-        m_start = (curr_month_start - timedelta(days=1)).replace(day=1)
-        m_end = curr_month_start - timedelta(days=1)
-        
-        m_inc = Income.objects.filter(user=request.user, date__range=[m_start, m_end]).aggregate(Sum('base_amount'))['base_amount__sum'] or Decimal('0')
-        m_exp = Expense.objects.filter(user=request.user, date__range=[m_start, m_end]).aggregate(Sum('base_amount'))['base_amount__sum'] or Decimal('0')
-        
-        running_nw -= (m_inc - m_exp)
-        net_worth_trend.append(float(running_nw))
-        curr_month_start = m_start
-    
-    # Reverse so it's oldest to newest for the sparkline
-    net_worth_trend.reverse()
+    # For the main chart context
+    net_worth_history_formatted = FinancialService.get_monthly_history(request.user, 6)
+    net_worth_labels = [date_format(m['month'], 'M Y') for m in net_worth_history_formatted]
+    net_worth_data = net_worth_trend # Use the cumulative values for the trend
 
     # Calculate Sparkline points (normalize to 100x40 SVG)
     sparkline_points = ""
@@ -1722,18 +1713,7 @@ def home_view(request):
         recovery_tip = _("Reduce %(category)s spending to recover") % {'category': daily_top_category.lower()}
 
     # Check overspending streak (Last 3 days > daily_budget_allowed)
-    streak_count = 0
-    if daily_budget_allowed > 0:
-        last_3_days = today - timedelta(days=2)
-        recent_spend_raw = Expense.objects.filter(user=request.user, date__gte=last_3_days, date__lte=today).values('date').annotate(total=Sum('base_amount'))
-        recent_spend = {item['date']: item['total'] for item in recent_spend_raw}
-        
-        for i in range(3):
-            d = today - timedelta(days=i)
-            if float(recent_spend.get(d, 0)) > float(daily_budget_allowed):
-                streak_count += 1
-            else:
-                break
+    streak_count = FinancialService.get_spending_streak(request.user, daily_budget_allowed, 3)
 
     if streak_count >= 3:
         daily_insight = {
@@ -1987,40 +1967,9 @@ class AnalyticsView(LoginRequiredMixin, TemplateView):
         # ---------------------------------------------------------
         
         # A. Calculate Historical Average (Last 3 completed months)
-        # We need completed months to avoid partial data skewing
-        avg_income = 0
-        avg_expense = 0
-        months_counted = 0
-        
-        # Iterate back 3 months
-        for i in range(1, 4):
-            # Calculate past month/year
-            # e.g. If now is May, we want April, March, Feb
-            past_date = today.replace(day=1) - timedelta(days=20*i) # rough jump back
-            # normalize to 1st of that month
-            past_date = past_date.replace(day=1)
-            
-            # Re-calculate cleanly
-            # If today is 2023-05-15
-            # i=1 -> 2023-04-01
-            # i=2 -> 2023-03-01
-            # i=3 -> 2023-02-01
-            year = today.year
-            month = today.month - i
-            while month < 1:
-                month += 12
-                year -= 1
-            
-            p_income = Income.objects.filter(user=user, date__year=year, date__month=month).aggregate(Sum('base_amount'))['base_amount__sum'] or 0
-            p_expense = Expense.objects.filter(user=user, date__year=year, date__month=month).aggregate(Sum('base_amount'))['base_amount__sum'] or 0
-            
-            avg_income += p_income
-            avg_expense += p_expense
-            months_counted += 1
-            
-        if months_counted > 0:
-            avg_income /= months_counted
-            avg_expense /= months_counted
+        hist_avg = FinancialService.get_historical_average(user, 3)
+        avg_income = hist_avg['avg_income']
+        avg_expense = hist_avg['avg_expense']
 
         # ---------------------------------------------------------
         # 5. Financial Health Score & Insights
@@ -2189,18 +2138,9 @@ class AnalyticsView(LoginRequiredMixin, TemplateView):
         })
         
         # 3. Consistency (months with positive savings out of last 10)
-        consistency_count = 0
-        consistency_total = 10
-        for i in range(1, consistency_total + 1):
-            c_year = today.year
-            c_month = today.month - i
-            while c_month < 1:
-                c_month += 12
-                c_year -= 1
-            c_inc = Income.objects.filter(user=user, date__year=c_year, date__month=c_month).aggregate(Sum('base_amount'))['base_amount__sum'] or 0
-            c_exp = Expense.objects.filter(user=user, date__year=c_year, date__month=c_month).aggregate(Sum('base_amount'))['base_amount__sum'] or 0
-            if c_inc > c_exp and c_inc > 0:
-                consistency_count += 1
+        consistency_metrics = FinancialService.get_consistency_metrics(user, 10)
+        consistency_count = consistency_metrics['positive_savings_count']
+        consistency_total = consistency_metrics['total_months']
         
         if consistency_count >= 7:
             cs_status, cs_icon = 'success', 'check-circle-fill'
@@ -2351,27 +2291,7 @@ class AnalyticsView(LoginRequiredMixin, TemplateView):
         # ---------------------------------------------------------
         
         # A. Calculate Historical Average (Last 3 completed months)
-        avg_income = 0
-        avg_expense = 0
-        months_counted = 0
-        
-        for i in range(1, 4):
-            year = today.year
-            month = today.month - i
-            while month < 1:
-                month += 12
-                year -= 1
-            
-            p_income = Income.objects.filter(user=user, date__year=year, date__month=month).aggregate(Sum('base_amount'))['base_amount__sum'] or 0
-            p_expense = Expense.objects.filter(user=user, date__year=year, date__month=month).aggregate(Sum('base_amount'))['base_amount__sum'] or 0
-            
-            avg_income += p_income
-            avg_expense += p_expense
-            months_counted += 1
-            
-        if months_counted > 0:
-            avg_income /= months_counted
-            avg_expense /= months_counted
+        # (Using already calculated values from above to avoid redundancy)
 
         # B. Future Monthly Projection (incorporating recurring rules)
         forecast_income = []
@@ -2461,15 +2381,14 @@ class BudgetDashboardView(LoginRequiredMixin, TemplateView):
             date__month=month
         ).aggregate(Total=Sum('base_amount'))['Total'] or 0
 
+        # Optimized: Fetch all categorical spending in one query
+        cat_spend_qs = FinancialService.get_categorical_spending(user, year, month)
+        cat_spend_map = {item['category']: item['total'] for item in cat_spend_qs}
+
         for category in categories:
-            spent = Expense.objects.filter(
-                user=user,
-                category=category.name,
-                date__year=year,
-                date__month=month
-            ).aggregate(Total=Sum('base_amount'))['Total'] or 0
+            spent = cat_spend_map.get(category.name, 0)
             
-            percentage = (spent / category.limit * 100) if category.limit and category.limit > 0 else 0
+            percentage = (float(spent) / float(category.limit) * 100) if category.limit and category.limit > 0 else 0
             
             budget_data.append({
                 'category': category,

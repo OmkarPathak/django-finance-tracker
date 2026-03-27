@@ -22,6 +22,35 @@ CURRENCY_CHOICES = [
     ('₩', _('South Korean Won (₩)')),
 ]
 
+class FinanceBaseManager(models.Manager):
+    def get_monthly_summary(self, user, year, month):
+        return self.filter(
+            user=user, 
+            date__year=year, 
+            date__month=month
+        ).aggregate(
+            total=models.Sum('base_amount'),
+            count=models.Count('id')
+        )
+
+class ExpenseManager(FinanceBaseManager):
+    def get_queryset(self):
+        return super().get_queryset().select_related('account')
+
+    def get_category_breakdown(self, user, year, month):
+        return self.filter(
+            user=user, 
+            date__year=year, 
+            date__month=month
+        ).values('category').annotate(
+            total=models.Sum('base_amount')
+        ).order_by('-total')
+
+class IncomeManager(FinanceBaseManager):
+    def get_queryset(self):
+        return super().get_queryset().select_related('account')
+
+
 class Account(models.Model):
     ACCOUNT_TYPES = [
         ('CASH', _('Cash')),
@@ -72,6 +101,8 @@ class Expense(models.Model):
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    objects = ExpenseManager()
 
     def save(self, *args, **kwargs):
         with transaction.atomic():
@@ -163,6 +194,8 @@ class Income(models.Model):
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    objects = IncomeManager()
 
     def save(self, *args, **kwargs):
         with transaction.atomic():

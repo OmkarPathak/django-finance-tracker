@@ -14,7 +14,7 @@ PLAN_DETAILS = {
             'expenses_per_month': 90,
             'accounts': 2,
             'recurring_transactions': 2,
-            'budget_categories': 3,
+            'budget_categories': 5,
             'savings_goals': 1,
             'email_notifications': False,
             'dashboard': _('Full'),
@@ -34,9 +34,9 @@ PLAN_DETAILS = {
         'pricing_note': _('per year'),
         'limits': {
             'expenses_per_month': -1,  # -1 for Unlimited
-            'accounts': 5,
-            'recurring_transactions': 10,
-            'budget_categories': -1,
+            'accounts': 10,
+            'recurring_transactions': 5,
+            'budget_categories': 15,
             'savings_goals': 5,
             'email_notifications': True,
             'dashboard': _('Full'),

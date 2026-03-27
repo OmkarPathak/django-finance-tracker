@@ -23,6 +23,7 @@ from expenses.models import (
     RecurringTransaction,
     Transfer,
 )
+from finance_tracker.plans import PLAN_DETAILS
 from expenses.views.mixins import process_user_recurring_transactions
 
 # ---------------------------------------------------------------------------
@@ -657,21 +658,25 @@ class RecurringTransactionProcessingTest(_BaseTestCase):
 
         self.assertEqual(count_after_first, count_after_second)
 
-    def test_free_tier_skips_recurring(self):
-        """FREE tier should process 0 recurring transactions."""
+    def test_free_tier_respects_recurring_limit(self):
+        """FREE tier should process up to its recurring transaction limit."""
         self.profile.tier = "FREE"
         self.profile.save()
-
-        RecurringTransaction.objects.create(
-            user=self.user, transaction_type="EXPENSE", amount=Decimal("100.00"),
-            description="Free tier test", frequency="MONTHLY",
-            start_date=date.today() - timedelta(days=35),
-            category="Bills",
-        )
+        limit = PLAN_DETAILS['FREE']['limits']['recurring_transactions']
+        
+        # Create (limit + 1) recurring transactions
+        for i in range(limit + 1):
+            RecurringTransaction.objects.create(
+                user=self.user, transaction_type="EXPENSE", amount=Decimal("100.00"),
+                description=f"FREERT_{i}", frequency="MONTHLY",
+                start_date=date.today() - timedelta(days=1),
+                category="Bills",
+            )
+            
         process_user_recurring_transactions(self.user)
-        self.assertEqual(
-            Expense.objects.filter(user=self.user, description__contains="Free tier test").count(), 0
-        )
+        # It should only have processed the first 'limit' transactions
+        expenses_count = Expense.objects.filter(user=self.user, description__contains="FREERT_").count()
+        self.assertEqual(expenses_count, limit)
 
 
 # ===========================================================================

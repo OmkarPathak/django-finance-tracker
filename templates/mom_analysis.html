@@ -349,7 +349,7 @@
                 datasets: [
                     {
                         label: '{% trans "Income" %}',
-                        data: {{ inc_data|safe }},
+                        data: JSON.parse('{{ inc_data|safe }}'),
                         borderColor: '#1D9E75',
                         backgroundColor: 'rgba(29, 158, 117, 0.1)',
                         fill: true,
@@ -360,11 +360,11 @@
                         pointHoverRadius: (ctx) => (ctx.dataIndex === ctx.dataset.data.length - 1 ? 10 : 6),
                         pointBackgroundColor: (ctx) => (ctx.dataIndex === ctx.dataset.data.length - 1 ? '#1D9E75' : '#fff'),
                         pointBorderColor: '#1D9E75',
-                        pointBorderWidth: 2
+                        pointBorderWidth: 2,
                     },
                     {
                         label: '{% trans "Expenses" %}',
-                        data: {{ exp_data|safe }},
+                        data: JSON.parse('{{ exp_data|safe }}'),
                         borderColor: '#E05C45',
                         backgroundColor: 'rgba(224, 92, 69, 0.1)',
                         fill: true,
@@ -375,11 +375,11 @@
                         pointHoverRadius: (ctx) => (ctx.dataIndex === ctx.dataset.data.length - 1 ? 10 : 6),
                         pointBackgroundColor: (ctx) => (ctx.dataIndex === ctx.dataset.data.length - 1 ? '#E05C45' : '#fff'),
                         pointBorderColor: '#E05C45',
-                        pointBorderWidth: 2
+                        pointBorderWidth: 2,
                     },
                     {
                         label: '{% trans "Investments" %}',
-                        data: {{ inv_data|safe }},
+                        data: JSON.parse('{{ inv_data|safe }}'),
                         borderColor: '#378ADD',
                         backgroundColor: 'rgba(55, 138, 221, 0.1)',
                         fill: true,
@@ -390,7 +390,7 @@
                         pointHoverRadius: (ctx) => (ctx.dataIndex === ctx.dataset.data.length - 1 ? 10 : 6),
                         pointBackgroundColor: (ctx) => (ctx.dataIndex === ctx.dataset.data.length - 1 ? '#378ADD' : '#fff'),
                         pointBorderColor: '#378ADD',
-                        pointBorderWidth: 2
+                        pointBorderWidth: 2,
                     }
                 ]
             },
@@ -404,7 +404,7 @@
                 labels: labels,
                 datasets: [{
                     label: '{% trans "Savings" %}',
-                    data: {{ sav_data|safe }},
+                    data: JSON.parse('{{ sav_data|safe }}'),
                     borderColor: '#5DCAA5',
                     backgroundColor: 'rgba(93, 202, 165, 0.1)',
                     fill: true,
@@ -415,7 +415,7 @@
                     pointHoverRadius: (ctx) => (ctx.dataIndex === ctx.dataset.data.length - 1 ? 10 : 6),
                     pointBackgroundColor: (ctx) => (ctx.dataIndex === ctx.dataset.data.length - 1 ? '#5DCAA5' : '#fff'),
                     pointBorderColor: '#5DCAA5',
-                    pointBorderWidth: 2
+                    pointBorderWidth: 2,
                 }]
             },
             options: chartOptions
@@ -428,7 +428,7 @@
                 labels: labels,
                 datasets: [{
                     label: '{% trans "Daily Burn" %}',
-                    data: {{ burn_data|safe }},
+                    data: JSON.parse('{{ burn_data|safe }}'),
                     borderColor: '#E05C45',
                     backgroundColor: 'rgba(224, 92, 69, 0.1)',
                     fill: true,
@@ -439,7 +439,7 @@
                     pointHoverRadius: (ctx) => (ctx.dataIndex === ctx.dataset.data.length - 1 ? 10 : 6),
                     pointBackgroundColor: (ctx) => (ctx.dataIndex === ctx.dataset.data.length - 1 ? '#E05C45' : '#fff'),
                     pointBorderColor: '#E05C45',
-                    pointBorderWidth: 2
+                    pointBorderWidth: 2,
                 }]
             },
             options: chartOptions
