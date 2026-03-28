@@ -100,6 +100,7 @@ urlpatterns = [
     path('notifications/', views.NotificationListView.as_view(), name='notification-list'),
     path('notifications/mark-all-read/', views.mark_notifications_read, name='mark-all-read'),
     path('notifications/<int:pk>/read/', views.mark_single_notification_read, name='mark-single-notification-read'),
+    path('notifications/<int:pk>/redirect/', views.notification_redirect, name='notification-redirect'),
     path('api/cron/send-notifications/', views.trigger_notifications, name='cron-send-notifications'),
     path('api/cron/send-lifecycle-emails/', views.trigger_lifecycle_emails, name='cron-send-lifecycle-emails'),
     path('api/cron/send-monthly-reports/', views.trigger_monthly_reports_view, name='cron-send-monthly-reports'),

@@ -1659,19 +1659,40 @@ def home_view(request):
     # Instead of showing on the dashboard, we add them to the notification system.
     
     # helper for creating nudges
-    def add_nudge_alt(title, message):
-        Notification.objects.get_or_create(
-            user=request.user,
-            title=title,
-            is_read=False,
-            defaults={'message': message}
-        )
+    def add_nudge_alt(title, message, n_type='SYSTEM', link=None, slug=None):
+        try:
+            obj, created = Notification.objects.get_or_create(
+                user=request.user,
+                slug=slug,
+                defaults={
+                    'title': title,
+                    'message': message,
+                    'notification_type': n_type,
+                    'link': link,
+                    'is_read': False
+                }
+            )
+        except Notification.MultipleObjectsReturned:
+            # If multiple exist for some reason (e.g. legacy data), keep the newest, delete others
+            notifications = Notification.objects.filter(user=request.user, slug=slug).order_by('-created_at')
+            obj = notifications.first()
+            notifications.exclude(id=obj.id).delete()
+            created = False
+        
+        # If it already existed but was created before we had link logic, update it
+        if not created and not obj.link and link:
+            obj.link = link
+            obj.notification_type = n_type
+            obj.save()
 
     # 1. Accounts Nudge: If only 1 account exists
     if Account.objects.filter(user=request.user).count() == 1:
         add_nudge_alt(
             _('Smart Tip: Multiple Accounts'),
-            _('Add separate accounts (like cash, bank, or UPI) to track your money more accurately across all sources.')
+            _('Add separate accounts (like cash, bank, or UPI) to track your money more accurately across all sources.'),
+            n_type='SYSTEM',
+            link=reverse('settings-home'), # Settings/Accounts page
+            slug='nudge-multiple-accounts'
         )
     
     # 2. Expense Category Nudge: Check for "Miscellaneous" or "Other" usage
@@ -1682,7 +1703,10 @@ def home_view(request):
     if misc_usage >= 3:
         add_nudge_alt(
             _('Organize Your Spend'),
-            _('Categorizing helps you see exactly where your money goes. Try creating specific categories for better insights!')
+            _('Categorizing helps you see exactly where your money goes. Try creating specific categories for better insights!'),
+            n_type='ANALYTICS',
+            link=reverse('category-list'),
+            slug='nudge-organize-spend'
         )
     
     # 3. Potential Recurring Nudge: Looking for patterns
@@ -1696,12 +1720,17 @@ def home_view(request):
     
     if repeating_expenses.exists():
         top_repeat = repeating_expenses.first()
+        # link to recurring form with pre-filled description and amount
+        recurring_link = f"{reverse('recurring-create')}?description={top_repeat['description']}&amount={top_repeat['amount']}"
         add_nudge_alt(
             _('Automate Repeat Bills?'),
             format_html(
                 _('Looks like {desc} repeats monthly. Want to transition it to a recurring transaction?'),
                 desc=top_repeat['description']
-            )
+            ),
+            n_type='ANALYTICS',
+            link=recurring_link,
+            slug=f"nudge-recurring-{top_repeat['description']}-{now.year}-{now.month}"
         )
 
     # Existing insights (Layer 5/6)

@@ -203,6 +203,16 @@ class RecurringTransactionCreateView(LoginRequiredMixin, CreateView):
     template_name = 'expenses/recurring_transaction_form.html'
     success_url = reverse_lazy('recurring-list')
     
+    def get_initial(self):
+        initial = super().get_initial()
+        description = self.request.GET.get('description')
+        amount = self.request.GET.get('amount')
+        if description:
+            initial['description'] = description
+        if amount:
+            initial['amount'] = amount
+        return initial
+
     def dispatch(self, request, *args, **kwargs):
         if not request.user.profile.can_add_recurring():
             messages.error(request, _("Subscription limit reached. Please upgrade."))

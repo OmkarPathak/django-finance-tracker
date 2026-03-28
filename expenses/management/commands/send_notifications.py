@@ -1,198 +1,189 @@
 
 from datetime import timedelta
+from decimal import Decimal
 
 from django.conf import settings
 from django.core.mail import send_mail
 from django.core.management.base import BaseCommand
 from django.template.loader import render_to_string
 from django.utils import timezone
+from django.db.models import Sum
 from webpush import send_user_notification
 
-from expenses.models import Notification, RecurringTransaction, UserProfile
+from expenses.models import Notification, RecurringTransaction, UserProfile, SavingsGoal, Expense, Category
+from finance_tracker.plans import PLAN_DETAILS
 
 
 class Command(BaseCommand):
-    help = 'Sends notifications for recurring transactions due in 3 days'
+    help = 'Sends optimized notifications (Recurring, Milestones, High Spending) with deduplication'
 
     def handle(self, *args, **kwargs):
-        today = timezone.now().date()
-        # Check for transactions due in the next 1-3 days to be robust against missed crons
-        reminder_windows = [1, 2, 3]
+        self.today = timezone.now().date()
+        self.stdout.write(f"Starting notification run for {self.today}...")
         
-        self.stdout.write(f"Checking for upcoming transactions (1-3 days out)... Today is {today}")
+        users = UserProfile.objects.all().select_related('user')
         
-        # Get active recurring transactions
-        recurring = RecurringTransaction.objects.filter(is_active=True)
-        
-        # Dictionary to group transactions by user for email consolidation
-        user_transactions = {}
-        
-        count = 0
-        
-        for transaction in recurring:
-            next_due = transaction.next_due_date
-            if not next_due:
-                continue
-                
-            days_until = (next_due - today).days
-            
-            if days_until in reminder_windows:
-                user = transaction.user
-                formatted_date = next_due.strftime("%b %d, %Y")
-                
-                # Per-occurrence notification title to prevent duplicates FOR THE SAME DUE DATE
-                # Example: "Upcoming Expense (Due Mar 03, 2026): Rent"
-                occurrence_title = f"Upcoming {transaction.transaction_type.title()} (Due {formatted_date}): {transaction.description}"
-                
-                # Check if we already notified for THIS SPECIFIC OCCURRENCE
-                notification_exists = Notification.objects.filter(
-                    user=user,
-                    related_transaction=transaction,
-                    title=occurrence_title
-                ).exists()
-
-                if not notification_exists:
-                    user_currency = user.profile.currency if hasattr(user, 'profile') else '₹'
-                    message = f"Your {transaction.frequency.lower()} {transaction.transaction_type.lower()} of {user_currency}{transaction.amount} is due on {formatted_date}."
-
-                    # 1. Create UI Notification
-                    Notification.objects.create(
-                        user=user,
-                        title=occurrence_title,
-                        message=message,
-                        related_transaction=transaction
-                    )
-                    
-                    # 2. Send Push Notification
-                    payload = {
-                        "head": occurrence_title,
-                        "body": message,
-                        "icon": "/static/img/pwa-icon-512.png", 
-                        "url": "/expenses/" 
-                    }
-                    try:
-                        send_user_notification(user=user, payload=payload, ttl=1000)
-                    except Exception as e:
-                        self.stdout.write(self.style.WARNING(f"Failed to send Push to {user}: {e}"))
-                    
-                    self.stdout.write(self.style.SUCCESS(f"Created notification for {transaction} (Due {formatted_date})"))
-                    count += 1
-                else:
-                    self.stdout.write(f"Notification already exists for {transaction} on {formatted_date}")
-
-                # 3. Add to User Group for Email (Consolidated per run)
-                if user.id not in user_transactions:
-                    user_transactions[user.id] = {
-                        'user': user,
-                        'transactions': []
-                    }
-                
-                # Avoid adding the same transaction multiple times to the same email if it's already there
-                if transaction not in user_transactions[user.id]['transactions']:
-                    user_transactions[user.id]['transactions'].append(transaction)
-
-        # 4. Send Consolidated Emails
-        for user_id, data in user_transactions.items():
-            user = data['user']
-            transactions = data['transactions']
-            
-            # Robustness: Check for email
-            if not user.email:
-                self.stdout.write(self.style.WARNING(f"Skipping email for {user.username}: No email address"))
-                continue
-
-            # Feature Gate: Only for Plus and Pro users (using our fixed properties)
-            if not hasattr(user, 'profile') or not user.profile.is_plus:
-                self.stdout.write(f"Skipping email for {user.username} (Free Tier)")
-                continue
-
-            self.stdout.write(f"Preparing consolidated email for {user.email} with {len(transactions)} items...")
-
-            try:
-                # Calculate total amount
-                total_amount = sum(t.amount for t in transactions)
-                user_currency = user.profile.currency if hasattr(user, 'profile') else '₹'
-                
-                context = {
-                    'user': user,
-                    'transactions': transactions,
-                    'total_amount': total_amount,
-                    'due_date': transactions[0].next_due_date, # Approximation for the template
-                    'currency_symbol': user_currency
-                }
-                
-                if len(transactions) == 1:
-                    subject = f"Upcoming Payment: {transactions[0].description}"
-                else:
-                    subject = f"Upcoming Payments Reminder ({len(transactions)} Items)"
-
-                html_message = render_to_string('email/recurring_reminder.html', context)
-                
-                send_mail(
-                    subject=subject,
-                    message=f"You have {len(transactions)} upcoming payments due soon. Total: {total_amount}", # Plain text fallback
-                    from_email=settings.DEFAULT_FROM_EMAIL,
-                    recipient_list=[user.email],
-                    html_message=html_message
-                )
-                self.stdout.write(self.style.SUCCESS(f"Sent consolidated email to {user.email}"))
-            except Exception as e:
-                self.stdout.write(self.style.ERROR(f"Failed to send Email to {user.email}: {e}"))
-
-        self.stdout.write(self.style.SUCCESS(f"Successfully processed {count} new notifications"))
-
-        # 5. Check for Subscription Expiries (2 days prior)
-        self.stdout.write("Checking for upcoming subscription expiries (2 days out)...")
-        expiry_date_target = today + timedelta(days=2)
-        
-        profiles_to_notify = UserProfile.objects.filter(
-            tier__in=['PLUS', 'PRO'],
-            is_lifetime=False,
-            subscription_end_date__date=expiry_date_target,
-            expiry_reminder_sent=False
-        ).select_related('user')
-
-        expiry_count = 0
-        for profile in profiles_to_notify:
+        for profile in users:
             user = profile.user
-            if not user.email:
-                continue
+            self.stdout.write(f"Processing notifications for {user.username}...")
+            
+            # 1. Check for Upcoming Recurring Transactions (Income, Expense, Transfer)
+            self._process_recurring_reminders(user)
+            
+            # 2. Check for AI Insights: High Spending
+            self._process_budget_alerts(user)
+            
+            # 3. Check for AI Insights: Milestones
+            self._process_milestone_alerts(user)
+            
+            # 4. Check for Subscription Expiries
+            self._process_subscription_reminders(profile)
+            
+        # 5. Cleanup Old Notifications
+        self._cleanup_old_notifications()
+        
+        self.stdout.write(self.style.SUCCESS("Notification run complete!"))
 
-            try:
-                subject = "Your Subscription is Expiring Soon"
-                context = {
-                    'user': user,
-                    'tier': profile.get_tier_display(),
-                    'expiry_date': profile.subscription_end_date.strftime("%b %d, %Y"),
-                }
-                html_message = render_to_string('email/subscription_expiry_reminder.html', context)
+    def _is_recently_sent(self, user, slug):
+        """Deduplication logic: check if this slug was sent in the current calendar month."""
+        return Notification.objects.filter(
+            user=user,
+            slug=slug,
+            created_at__year=self.today.year,
+            created_at__month=self.today.month
+        ).exists()
+
+    def _create_notification(self, user, title, message, n_type, slug=None, link=None, metadata=None, related_transaction=None):
+        """Helper to create UI and Push notification if not recently sent."""
+        if slug and self._is_recently_sent(user, slug):
+            return False
+
+        # 1. Create UI Notification
+        Notification.objects.create(
+            user=user,
+            title=title,
+            message=message,
+            notification_type=n_type,
+            slug=slug,
+            link=link,
+            metadata=metadata,
+            related_transaction=related_transaction
+        )
+        
+        # 2. Send Push Notification (WebPush)
+        payload = {
+            "head": title,
+            "body": message,
+            "icon": "/static/img/pwa-icon-512.png", 
+            "url": link or "/notifications/"
+        }
+        try:
+            send_user_notification(user=user, payload=payload, ttl=1000)
+        except Exception as e:
+            self.stdout.write(self.style.WARNING(f"Failed to send Push to {user}: {e}"))
+            
+        # 3. Handle Email if applicable
+        self._send_email_if_allowed(user, title, message)
+        return True
+
+    def _send_email_if_allowed(self, user, subject, message):
+        """Sends email only if the user tier allows it."""
+        if not user.email:
+            return
+
+        profile = user.profile
+        tier = profile.active_tier
+        if not PLAN_DETAILS.get(tier, {}).get('limits', {}).get('email_notifications', False):
+            return
+
+        try:
+            send_mail(
+                subject=subject,
+                message=message,
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[user.email]
+            )
+        except Exception as e:
+            self.stdout.write(self.style.ERROR(f"Failed to send Email to {user.email}: {e}"))
+
+    def _process_recurring_reminders(self, user):
+        """Notifies about upcoming recurring transactions (Income, Expense, Transfer) in 3 days."""
+        reminder_days = 3
+        due_date = self.today + timedelta(days=reminder_days)
+        
+        recurring = RecurringTransaction.objects.filter(user=user, is_active=True)
+        for rt in recurring:
+            next_due = rt.next_due_date
+            if next_due == due_date:
+                slug = f"recurring-{rt.id}-{next_due.year}-{next_due.month}"
+                title = f"Upcoming {rt.get_transaction_type_display()}: {rt.description}"
+                message = f"Your {rt.get_frequency_display().lower()} {rt.get_transaction_type_display().lower()} of {rt.currency}{rt.amount} is due on {next_due.strftime('%b %d')}."
                 
-                send_mail(
-                    subject=subject,
-                    message=f"Your {profile.get_tier_display()} subscription is ending on {context['expiry_date']}. Upgrade to keep your premium features!",
-                    from_email=settings.DEFAULT_FROM_EMAIL,
-                    recipient_list=[user.email],
-                    html_message=html_message
+                # Dynamic Link based on type
+                link = "/expenses/" if rt.transaction_type == 'EXPENSE' else "/income/list/"
+                if rt.transaction_type == 'TRANSFER': link = "/transfers/"
+                
+                self._create_notification(
+                    user, title, message, 'RECURRING', 
+                    slug=slug, link=link, related_transaction=rt
                 )
-                
-                profile.expiry_reminder_sent = True
-                profile.save(update_fields=['expiry_reminder_sent'])
-                
-                # Also create a UI notification
-                Notification.objects.create(
-                    user=user,
-                    title="Subscription Expiring Soon",
-                    message=f"Your {profile.get_tier_display()} plan ends in 2 days ({context['expiry_date']})."
-                )
-                
-                self.stdout.write(self.style.SUCCESS(f"Sent expiry reminder to {user.email}"))
-                expiry_count += 1
-            except Exception as e:
-                self.stdout.write(self.style.ERROR(f"Failed to send expiry reminder to {user.email}: {e}"))
 
-        self.stdout.write(self.style.SUCCESS(f"Successfully sent {expiry_count} expiry reminders"))
+    def _process_budget_alerts(self, user):
+        """Notifies if user exceeds 80% or 100% of a category's budget limit."""
+        categories_with_limits = Category.objects.filter(user=user, limit__gt=0)
+        for cat in categories_with_limits:
+            spent = Expense.objects.filter(
+                user=user, category=cat.name, 
+                date__year=self.today.year, date__month=self.today.month
+            ).aggregate(Sum('base_amount'))['base_amount__sum'] or 0
+            
+            if spent >= cat.limit:
+                slug = f"budget-exceeded-{cat.id}-{self.today.year}-{self.today.month}"
+                title = f"Budget Exceeded: {cat.name}"
+                message = f"You have exceeded your budget for {cat.name}. Total spent: {user.profile.currency}{spent} (Limit: {user.profile.currency}{cat.limit})"
+                link = f"/expenses/?category={cat.name}"
+                self._create_notification(user, title, message, 'ANALYTICS', slug=slug, link=link)
+            elif spent >= cat.limit * Decimal('0.8'):
+                slug = f"budget-warning-{cat.id}-{self.today.year}-{self.today.month}"
+                title = f"Budget Alert: {cat.name}"
+                message = f"You have reached 80% of your budget for {cat.name}. Total spent: {user.profile.currency}{spent} (Limit: {user.profile.currency}{cat.limit})"
+                link = f"/expenses/?category={cat.name}"
+                self._create_notification(user, title, message, 'ANALYTICS', slug=slug, link=link)
 
-        # 6. Cleanup Old Notifications (Older than 90 days/3 months)
+    def _process_milestone_alerts(self, user):
+        """Notifies about savings goal milestones (50, 90, 100)."""
+        goals = SavingsGoal.objects.filter(user=user, is_completed=False)
+        for goal in goals:
+            pct = goal.progress_percentage
+            
+            milestones = [(100, "Goal Completed!"), (90, "Almost There!"), (50, "Halfway Mark!")]
+            for threshold, label in milestones:
+                if pct >= threshold:
+                    slug = f"milestone-{goal.id}-{threshold}"
+                    title = f"Milestone: {goal.name}"
+                    message = f"{label} You've reached {pct}% of your goal for {goal.name}!"
+                    link = f"/goals/{goal.id}/"
+                    
+                    # We found the highest threshold reached. 
+                    # Attempt to create. If it's a duplicate, we still stop (break) for THIS goal.
+                    self._create_notification(user, title, message, 'MILESTONE', slug=slug, link=link)
+                    break 
+
+    def _process_subscription_reminders(self, profile):
+        """Notifies about upcoming subscription expiries (2 days prior)."""
+        if profile.tier in ['PLUS', 'PRO'] and not profile.is_lifetime and profile.subscription_end_date:
+            expiry_target = self.today + timedelta(days=2)
+            if profile.subscription_end_date.date() == expiry_target and not profile.expiry_reminder_sent:
+                title = "Subscription Expiring Soon"
+                message = f"Your {profile.get_tier_display()} plan ends in 2 days ({profile.subscription_end_date.strftime('%b %d')})."
+                link = "/pricing/"
+                if self._create_notification(profile.user, title, message, 'SYSTEM', link=link):
+                    profile.expiry_reminder_sent = True
+                    profile.save(update_fields=['expiry_reminder_sent'])
+
+    def _cleanup_old_notifications(self):
+        """Cleanup notifications older than 90 days."""
         cutoff_date = timezone.now() - timedelta(days=90)
         deleted_count, _ = Notification.objects.filter(created_at__lt=cutoff_date).delete()
-        self.stdout.write(self.style.SUCCESS(f"Cleaned up {deleted_count} notifications older than 90 days"))
+        if deleted_count > 0:
+            self.stdout.write(self.style.SUCCESS(f"Cleaned up {deleted_count} old notifications"))

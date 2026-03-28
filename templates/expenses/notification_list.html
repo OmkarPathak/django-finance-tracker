@@ -21,23 +21,35 @@
         <div class="card border-0 shadow-sm">
             <div class="list-group list-group-flush rounded-3">
                 {% for notification in notifications %}
-                <div class="list-group-item p-4 d-flex gap-3 {% if not notification.is_read %}bg-body-tertiary{% endif %}" id="notification-{{ notification.id }}">
+                <div class="list-group-item p-4 d-flex gap-3 {% if not notification.is_read %}bg-body-tertiary{% endif %} position-relative hover-lift" id="notification-{{ notification.id }}">
                     <div class="flex-shrink-0">
                         <div class="rounded-circle d-flex align-items-center justify-content-center
-                            {% if 'expense' in notification.message|lower %}bg-danger-subtle text-danger
-                            {% elif 'income' in notification.message|lower %}bg-success-subtle text-success
+                            {% if notification.notification_type == 'RECURRING' %}bg-info-subtle text-info
+                            {% elif notification.notification_type == 'ANALYTICS' %}bg-warning-subtle text-warning
+                            {% elif notification.notification_type == 'MILESTONE' %}bg-success-subtle text-success
                             {% else %}bg-primary-subtle text-primary{% endif %}" style="width: 48px; height: 48px;">
-                            <i class="bi {% if 'expense' in notification.message|lower %}bi-arrow-down-right{% elif 'income' in notification.message|lower %}bi-arrow-up-right{% else %}bi-bell{% endif %} fs-5"></i>
+                            <i class="bi 
+                                {% if notification.notification_type == 'RECURRING' %}bi-arrow-repeat
+                                {% elif notification.notification_type == 'ANALYTICS' %}bi-lightning-charge
+                                {% elif notification.notification_type == 'MILESTONE' %}bi-trophy
+                                {% else %}bi-bell{% endif %} fs-5">
+                            </i>
                         </div>
                     </div>
                     <div class="flex-grow-1">
                         <div class="d-flex w-100 justify-content-between align-items-center mb-1">
-                            <h6 class="mb-0 fw-bold {% if not notification.is_read %}text-primary{% endif %}">{{ notification.title }}</h6>
+                            <h6 class="mb-0 fw-bold {% if not notification.is_read %}text-primary{% endif %}">
+                                {% if notification.link %}
+                                    <a href="{% url 'notification-redirect' notification.pk %}" class="stretched-link text-decoration-none color-inherit">{{ notification.title }}</a>
+                                {% else %}
+                                    {{ notification.title }}
+                                {% endif %}
+                            </h6>
                             <small class="text-muted">{{ notification.created_at|timesince|translate_digits }} ago</small>
                         </div>
                         <p class="mb-1 text-muted">{{ notification.message }}</p>
-                        {% if notification.recurring_transaction %}
-                            <a href="{% url 'recurring-list' %}" class="btn btn-link p-0 text-decoration-none small mt-1">View Subscription <i class="bi bi-arrow-right"></i></a>
+                        {% if notification.link %}
+                            <span class="text-primary small mt-1 d-inline-block">View Details <i class="bi bi-arrow-right"></i></span>
                         {% endif %}
                     </div>
                     {% if not notification.is_read %}

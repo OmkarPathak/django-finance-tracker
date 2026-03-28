@@ -43,6 +43,22 @@ def mark_single_notification_read(request, pk):
     except Notification.DoesNotExist:
         return JsonResponse({'success': False, 'error': 'Notification not found'}, status=404)
 
+@login_required
+def notification_redirect(request, pk):
+    """
+    Mark notification as read and redirect to its link.
+    """
+    try:
+        notification = Notification.objects.get(pk=pk, user=request.user)
+        notification.is_read = True
+        notification.save()
+        
+        target_link = notification.link or 'notification-list'
+        return redirect(target_link)
+    except Notification.DoesNotExist:
+        messages.error(request, "Notification not found.")
+        return redirect('notification-list')
+
 @csrf_exempt
 def trigger_notifications(request):
     """

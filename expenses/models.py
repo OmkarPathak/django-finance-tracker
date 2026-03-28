@@ -598,16 +598,28 @@ class SubscriptionPlan(models.Model):
         return f"{self.name} ({self.get_duration_display()}) - ₹{self.price}"
 
 class Notification(models.Model):
+    NOTIFICATION_TYPES = [
+        ('RECURRING', _('Recurring Transaction')),
+        ('ANALYTICS', _('AI Analytics/Insights')),
+        ('MILESTONE', _('Financial Milestone')),
+        ('SYSTEM', _('System/Subscription Alert')),
+    ]
+    
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications')
     title = models.CharField(max_length=255)
     message = models.TextField()
+    notification_type = models.CharField(max_length=20, choices=NOTIFICATION_TYPES, default='SYSTEM')
+    slug = models.CharField(max_length=255, null=True, blank=True, help_text=_("Used for deduplication (same slug shouldn't repeat in a month)"))
+    link = models.CharField(max_length=500, null=True, blank=True, help_text=_("URL for redirection when clicked"))
+    metadata = models.JSONField(null=True, blank=True)
+    
     is_read = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     # Optional link to the transaction that triggered it
     related_transaction = models.ForeignKey('RecurringTransaction', on_delete=models.SET_NULL, null=True, blank=True)
 
     def __str__(self):
-        return f"Notification for {self.user.username}: {self.title}"
+        return f"Notification for {self.user.username}: {self.title} ({self.notification_type})"
 
 class SavingsGoal(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='savings_goals')
