@@ -330,22 +330,6 @@ def upload_view(request):
     
     return render(request, 'upload.html', {'years': years, 'current_year': current_year})
 
-@login_required
-def export_expenses(request):
-    if not request.user.profile.can_export_csv:
-        messages.error(request, _("Exporting is a paid feature. Please upgrade."))
-        return redirect('pricing')
-        
-    import csv
-
-    from django.http import HttpResponse
-    response = HttpResponse(content_type='text/csv')
-    response['Content-Disposition'] = 'attachment; filename="expenses.csv"'
-    writer = csv.writer(response)
-    writer.writerow(['Date', 'Description', 'Amount', 'Category'])
-    for e in Expense.objects.filter(user=request.user):
-        writer.writerow([e.date, e.description, e.amount, e.category])
-    return response
 
 def ping(request):
     return JsonResponse({'status': 'ok'})

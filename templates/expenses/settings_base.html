@@ -40,6 +40,9 @@
             <a href="{% url 'upload' %}" class="list-group-item list-group-item-action border rounded-pill mb-1 py-2 {% if request.resolver_match.url_name == 'upload' %}active{% endif %}">
                 <i class="bi bi-cloud-arrow-up me-2"></i> {% trans "Upload Data" %}
             </a>
+            <a href="{% url 'export-data' %}" class="list-group-item list-group-item-action border rounded-pill mb-1 py-2 {% if request.resolver_match.url_name == 'export-data' %}active{% endif %}">
+                <i class="bi bi-download me-2"></i> {% trans "Export Data" %}
+            </a>
 
             <div class="my-3"></div>
             <small class="text-muted text-uppercase fw-bold px-3 mb-2" style="font-size: 0.75rem;">{% trans "Account" %}</small>

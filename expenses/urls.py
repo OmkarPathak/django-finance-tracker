@@ -63,6 +63,7 @@ urlpatterns = [
     path('settings/currency/', views.CurrencyUpdateView.as_view(), name='currency-settings'),
     path('settings/language/', views.LanguageUpdateView.as_view(), name='language-settings'),
     path('settings/profile/', views.ProfileUpdateView.as_view(), name='profile-settings'),
+    path('settings/export/', views.DataExportView.as_view(), name='export-data'),
     path('settings/', views.SettingsHomeView.as_view(), name='settings-home'), # Settings Home
     path('account/delete/', views.UserDeleteView.as_view(), name='user-delete'),
     path('tutorial/complete/', views.complete_tutorial, name='complete-tutorial'),
