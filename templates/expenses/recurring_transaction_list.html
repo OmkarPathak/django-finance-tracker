@@ -172,7 +172,7 @@
                                 <div class="flex-grow-1 min-width-0">
                                     <!-- Top Row: Description & Amount -->
                                     <div class="d-flex justify-content-between align-items-center">
-                                        <h6 class="mb-0 fw-bold text-truncate pe-2" style="font-size: 1rem;">{{ sub.description }}</h6>
+                                        <h6 class="mb-0 fw-bold text-truncate pe-2" style="font-size: 1rem;" title="{{ sub.description }}">{{ sub.description|truncatechars:25 }}</h6>
                                         <div class="flex-shrink-0 text-end">
                                             <h6 class="fw-bold mb-0 text-nowrap" style="font-size: 1rem;">
                                                 {{ currency_symbol }}{{ sub.base_amount|compact_amount:currency_symbol|translate_digits }}
@@ -251,7 +251,7 @@
                                         <i class="bi bi-exclamation-circle-fill fs-5"></i>
                                     </div>
                                     <div style="min-width: 0;">
-                                        <h6 class="mb-1 fw-bold text-truncate" style="font-size: 1rem;">{{ sub.description }}</h6>
+                                        <h6 class="mb-1 fw-bold text-truncate" style="font-size: 1rem;" title="{{ sub.description }}">{{ sub.description|truncatechars:25 }}</h6>
                                         <div class="text-muted small d-flex flex-column align-items-start flex-sm-row align-items-sm-center gap-1 gap-sm-2">
                                             <span class="badge bg-danger text-white">{% trans "Renewing This Month" %}</span>
                                             <span>{{ sub.get_frequency_display }}</span>
@@ -291,7 +291,7 @@
                                         <i class="bi bi-x-circle fs-5"></i>
                                     </div>
                                     <div style="min-width: 0;">
-                                        <h6 class="mb-1 fw-bold text-decoration-line-through text-muted text-truncate" style="font-size: 1rem;">{{ sub.description }}</h6>
+                                        <h6 class="mb-1 fw-bold text-decoration-line-through text-muted text-truncate" style="font-size: 1rem;" title="{{ sub.description }}">{{ sub.description|truncatechars:30 }}</h6>
                                         <div class="text-muted small d-flex flex-column align-items-start flex-sm-row align-items-sm-center gap-1 gap-sm-2">
                                             <span class="badge bg-secondary">{% trans "Cancelled" %}</span>
                                             <span>{{ sub.get_frequency_display }}</span>
