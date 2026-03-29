@@ -12,7 +12,10 @@
             <h1 class="h3 fw-bold mb-1">{% trans "Analytics & Trends" %}</h1>
             <p class="text-muted mb-0">{% trans "Visualizing your financial journey over the year." %}</p>
         </div>
-        <div>
+        <div class="d-flex align-items-center gap-2">
+            <a href="{% url 'year_in_review' year=selected_year %}" class="btn btn-sm btn-primary rounded-pill px-3 fw-bold shadow-sm d-flex align-items-center gap-2 transition-all">
+                <i class="bi bi-stars"></i> {% trans "View" %} {{ selected_year }} {% trans "Wrapped" %}
+            </a>
             <form method="get" class="d-inline-block">
                 <div class="input-group input-group-sm shadow-sm" style="width: 130px;">
                     <span class="input-group-text bg-body border-end-0 text-primary"><i class="bi bi-calendar3"></i></span>

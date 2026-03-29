@@ -154,10 +154,19 @@ def generate_year_in_review_data(user, year):
         data['biggest_expense'] = {
             'amount': biggest_expense.base_amount,
             'description': biggest_expense.description,
-            'date': biggest_expense.date
+            'date': biggest_expense.date,
+            'category': biggest_expense.category
         }
     else:
         data['biggest_expense'] = None
+
+    # 7. Total Invested (Transfers to INVESTMENT or FIXED_DEPOSIT)
+    from .models import Transfer, Account
+    investments = Transfer.objects.filter(user=user, date__year=year, to_account__account_type__in=['INVESTMENT', 'FIXED_DEPOSIT'])
+    data['total_invested'] = investments.aggregate(total=Sum('converted_amount'))['total'] or Decimal('0.00')
+
+    # 8. Accounts Used
+    data['account_count'] = Account.objects.filter(user=user).count()
 
     return data
 
