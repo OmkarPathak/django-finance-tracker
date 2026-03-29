@@ -3,7 +3,7 @@ from datetime import timedelta
 from decimal import Decimal
 
 from django.conf import settings
-from django.core.mail import send_mail
+from django.core.mail import EmailMultiAlternatives
 from django.core.management.base import BaseCommand
 from django.template.loader import render_to_string
 from django.utils import timezone
@@ -27,6 +27,8 @@ class Command(BaseCommand):
             user = profile.user
             self.stdout.write(f"Processing notifications for {user.username}...")
             
+            self.current_user_notifications = []
+            
             # 1. Check for Upcoming Recurring Transactions (Income, Expense, Transfer)
             self._process_recurring_reminders(user)
             
@@ -38,8 +40,12 @@ class Command(BaseCommand):
             
             # 4. Check for Subscription Expiries
             self._process_subscription_reminders(profile)
+
+            # 5. Send Consolidated Email
+            if self.current_user_notifications:
+                self._send_consolidated_email(user, self.current_user_notifications)
             
-        # 5. Cleanup Old Notifications
+        # 6. Cleanup Old Notifications
         self._cleanup_old_notifications()
         
         self.stdout.write(self.style.SUCCESS("Notification run complete!"))
@@ -82,12 +88,17 @@ class Command(BaseCommand):
         except Exception as e:
             self.stdout.write(self.style.WARNING(f"Failed to send Push to {user}: {e}"))
             
-        # 3. Handle Email if applicable
-        self._send_email_if_allowed(user, title, message)
+        # 3. Queue for Email Consolidation
+        self.current_user_notifications.append({
+            'title': title,
+            'message': message,
+            'type': n_type,
+            'link': link or "/notifications/"
+        })
         return True
 
-    def _send_email_if_allowed(self, user, subject, message):
-        """Sends email only if the user tier allows it."""
+    def _send_consolidated_email(self, user, notifications):
+        """Sends a single consolidated HTML email only if the user tier allows it."""
         if not user.email:
             return
 
@@ -96,13 +107,30 @@ class Command(BaseCommand):
         if not PLAN_DETAILS.get(tier, {}).get('limits', {}).get('email_notifications', False):
             return
 
+        subject = notifications[0]['title'] if len(notifications) == 1 else "Your Daily Financial Digest"
+        
+        # Prepare context for the template
+        context = {
+            'user': user,
+            'notifications': notifications,
+            'today': self.today,
+            'currency_symbol': profile.currency,
+            'base_url': settings.SITE_URL if hasattr(settings, 'SITE_URL') else "https://trackmyrupee.com"
+        }
+
+        html_content = render_to_string('email/recurring_reminder.html', context)
+        text_content = "\n\n".join([f"{n['title']}: {n['message']}" for n in notifications])
+
         try:
-            send_mail(
+            msg = EmailMultiAlternatives(
                 subject=subject,
-                message=message,
+                body=text_content,
                 from_email=settings.DEFAULT_FROM_EMAIL,
-                recipient_list=[user.email]
+                to=[user.email]
             )
+            msg.attach_alternative(html_content, "text/html")
+            msg.send()
+            self.stdout.write(self.style.SUCCESS(f"Sent consolidated email to {user.email} ({len(notifications)} alerts)"))
         except Exception as e:
             self.stdout.write(self.style.ERROR(f"Failed to send Email to {user.email}: {e}"))
 
