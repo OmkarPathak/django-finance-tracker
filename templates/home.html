@@ -1521,6 +1521,23 @@ document.addEventListener('DOMContentLoaded', function() {
                         {{ trend_title }}
                     </span>
                 </div>
+                {% if trend_is_daily and prev_month_data %}
+                <div class="text-end">
+                    <!-- <div class="fw-black text-body-emphasis" style="font-size: 1.1rem; line-height: 1;">
+                        {{ currency_symbol }}{{ total_expenses|floatformat:0|humanize_currency:currency_symbol|translate_digits }}
+                    </div> -->
+                    <div class="d-flex align-items-center justify-content-end gap-1 mt-1" style="font-size: 0.75rem;">
+                        {% if prev_month_data.expense_diff_amount > 0 %}
+                            <span class="text-danger fw-bold">↑ {{ currency_symbol }}{{ prev_month_data.expense_diff_amount|abs_val|compact_amount:currency_symbol|translate_digits }}</span>
+                        {% elif prev_month_data.expense_diff_amount < 0 %}
+                            <span class="text-success fw-bold">↓ {{ currency_symbol }}{{ prev_month_data.expense_diff_amount|abs_val|compact_amount:currency_symbol|translate_digits }}</span>
+                        {% else %}
+                            <span class="text-muted fw-bold">0</span>
+                        {% endif %}
+                        <span class="text-muted opacity-50">{% trans "vs last mo" %}</span>
+                    </div>
+                </div>
+                {% endif %}
             </div>
             <div class="card-body">
                 {% if trend_labels %}
@@ -2122,6 +2139,20 @@ document.addEventListener('DOMContentLoaded', function() {
             const areaGradient = 'rgba(29, 158, 117, 0.12)';
 
             const dailyDatasets = [
+                {
+                    label: '{% trans "Previous Month" %}',
+                    data: {{ prev_trend_data|safe|default:"[]" }},
+                    borderColor: 'rgba(158, 157, 154, 0.4)',
+                    backgroundColor: 'transparent',
+                    fill: false,
+                    tension: 0.35,
+                    borderWidth: 2,
+                    // borderDash: [5, 5],
+                    pointRadius: 0,
+                    pointHoverRadius: 4,
+                    pointHoverBackgroundColor: 'rgba(158, 157, 154, 0.8)',
+                    order: 2
+                },
                 {
                     label: '{% trans "Daily Spend" %}',
                     data: trendDatasets[0].data,

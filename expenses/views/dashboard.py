@@ -261,6 +261,7 @@ def home_view(request):
     
     trend_data = [float(item['total']) for item in total_data]
 
+
     # Determine if this is a daily (single-month) view
     trend_is_daily = bool(
         (start_date or end_date) or
@@ -331,9 +332,79 @@ def home_view(request):
     # 4. Summary Stats
     total_expenses = expenses.aggregate(Sum('base_amount'))['base_amount__sum'] or 0
     transaction_count = expenses.count()
+    savings = total_income - total_expenses
+    
+    # Calculate MoM Changes ONLY if exactly one year and one month are selected
+    prev_month_data = None
+    if len(selected_years) == 1 and len(selected_months) == 1:
+        try:
+            sel_year = int(selected_years[0])
+            sel_month = int(selected_months[0])
+            
+            # Calculate previous month and year
+            if sel_month == 1:
+                prev_month = 12
+                prev_year = sel_year - 1
+            else:
+                prev_month = sel_month - 1
+                prev_year = sel_year
+
+            # Current year-month stats
+            prev_expenses_all = Expense.objects.filter(user=request.user, date__year=prev_year, date__month=prev_month)
+            prev_expenses_op = prev_expenses_all.aggregate(Sum('base_amount'))['base_amount__sum'] or 0
+            prev_investments = sum_transfers_base(Transfer.objects.filter(
+                user=request.user, to_account__account_type__in=['INVESTMENT', 'FIXED_DEPOSIT'],
+                date__year=prev_year, date__month=prev_month
+            ))
+
+            prev_income = Income.objects.filter(user=request.user, date__year=prev_year, date__month=prev_month).aggregate(Sum('base_amount'))['base_amount__sum'] or 0
+            prev_savings = prev_income - prev_expenses_op
+
+            def calc_pct(current, previous):
+                if previous == 0:
+                    return None
+                return ((current - previous) / previous) * 100
+
+            # TREND DATA FOR PREVIOUS MONTH
+            prev_trend_qs = prev_expenses_all.annotate(period=TruncDay('date'))
+            prev_day_data = prev_trend_qs.values('period').annotate(total=Sum('base_amount')).order_by('period')
+            prev_day_map = {item['period'].day: float(item['total']) for item in prev_day_data}
+            
+            prev_num_days = calendar.monthrange(prev_year, prev_month)[1]
+            prev_daily_burn = float(prev_expenses_op) / prev_num_days if prev_num_days > 0 else 0
+
+            prev_month_data = {
+                'income': prev_income,
+                'expense': prev_expenses_op,
+                'investments': prev_investments,
+                'savings': prev_savings,
+                'income_pct': calc_pct(total_income, prev_income),
+                'expense_pct': calc_pct(total_expenses, prev_expenses_op),
+                'investments_pct': calc_pct(total_investments, prev_investments),
+                'savings_pct': calc_pct(savings, prev_savings),
+                'savings_rate': (prev_savings / prev_income * 100) if prev_income > 0 else 0,
+                'income_diff_amount': total_income - prev_income,
+                'expense_diff_amount': total_expenses - prev_expenses_op,
+                'investments_diff_amount': total_investments - prev_investments,
+                'daily_burn': prev_daily_burn,
+                'daily_map': prev_day_map,
+            }
+            # Add absolute versions for percentages for template display
+            for key in list(prev_month_data.keys()):
+                val = prev_month_data[key]
+                if val is not None and key.endswith('_pct'):
+                    prev_month_data[f'{key}_abs'] = abs(val)
+        except (ValueError, IndexError):
+            pass
+
+    # Process Previous Month Trend Data for Chart Comparison
+    prev_trend_data = []
+    if trend_is_daily and prev_month_data and 'daily_map' in prev_month_data:
+        daily_map = prev_month_data['daily_map']
+        for p in periods:
+            prev_trend_data.append(daily_map.get(p.day, 0.0))
     top_category = category_data[0]['category'] if category_data else None
     
-    savings = total_income - total_expenses
 
     # 4a. Internal Transfers (excluded from income/expense, just movement)
     transfers_qs = Transfer.objects.filter(user=request.user)
@@ -378,62 +449,6 @@ def home_view(request):
         # We might handle this in template
         projected_savings = 0
 
-    # Calculate MoM Changes ONLY if exactly one year and one month are selected
-    prev_month_data = None
-    if len(selected_years) == 1 and len(selected_months) == 1:
-        try:
-            sel_year = int(selected_years[0])
-            sel_month = int(selected_months[0])
-            
-            # Calculate previous month and year
-            if sel_month == 1:
-                prev_month = 12
-                prev_year = sel_year - 1
-            else:
-                prev_month = sel_month - 1
-                prev_year = sel_year
-
-            # Current year-month stats
-            prev_expenses_all = Expense.objects.filter(user=request.user, date__year=prev_year, date__month=prev_month)
-            prev_expenses_op = prev_expenses_all.aggregate(Sum('base_amount'))['base_amount__sum'] or 0
-            prev_investments = sum_transfers_base(Transfer.objects.filter(
-                user=request.user, to_account__account_type__in=['INVESTMENT', 'FIXED_DEPOSIT'],
-                date__year=prev_year, date__month=prev_month
-            ))
-
-            prev_income = Income.objects.filter(user=request.user, date__year=prev_year, date__month=prev_month).aggregate(Sum('base_amount'))['base_amount__sum'] or 0
-            prev_savings = prev_income - prev_expenses_op
-
-            def calc_pct(current, previous):
-                if previous == 0:
-                    return None
-                return ((current - previous) / previous) * 100
-
-            prev_num_days = calendar.monthrange(prev_year, prev_month)[1]
-            prev_daily_burn = float(prev_expenses_op) / prev_num_days if prev_num_days > 0 else 0
-
-            prev_month_data = {
-                'income': prev_income,
-                'expense': prev_expenses_op,
-                'investments': prev_investments,
-                'savings': prev_savings,
-                'income_pct': calc_pct(total_income, prev_income),
-                'expense_pct': calc_pct(total_expenses, prev_expenses_op),
-                'investments_pct': calc_pct(total_investments, prev_investments),
-                'savings_pct': calc_pct(savings, prev_savings),
-                'savings_rate': (prev_savings / prev_income * 100) if prev_income > 0 else 0,
-                'income_diff_amount': total_income - prev_income,
-                'expense_diff_amount': total_expenses - prev_expenses_op,
-                'investments_diff_amount': total_investments - prev_investments,
-                'daily_burn': prev_daily_burn,
-            }
-            # Add absolute versions for percentages for template display
-            for key in list(prev_month_data.keys()):
-                val = prev_month_data[key]
-                if val is not None and key.endswith('_pct'):
-                    prev_month_data[f'{key}_abs'] = abs(val)
-        except (ValueError, IndexError):
-            pass
 
     # Calculate Hero Metrics for the Ideal Layout
     savings_rate_value = (savings / total_income * 100) if total_income > 0 else 0
@@ -1485,6 +1500,7 @@ def home_view(request):
         'trend_title': trend_title,
         'trend_is_daily': trend_is_daily,
         'trend_7d_avg': trend_7d_avg,
+        'prev_trend_data': prev_trend_data,
         'top_labels': top_labels,
         'top_amounts': top_amounts,
         # New Context
