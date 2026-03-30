@@ -152,7 +152,7 @@
 
 <!-- Key Metrics Row -->
 <div class="row g-4 mb-4 animate__animated animate__fadeInUp">
-    <div class="col-md-4">
+    <div class="col-md-3">
         <div class="card border-0 shadow-sm h-100">
             <div class="card-body">
                 <div class="d-flex align-items-center mb-3">
@@ -170,8 +170,8 @@
         </div>
     </div>
     
-    <div class="col-md-4">
-         <div class="card border-0 shadow-sm h-100">
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm h-100">
             <div class="card-body">
                 <div class="d-flex align-items-center mb-3">
                     <div class="me-3">
@@ -187,22 +187,41 @@
             </div>
         </div>
     </div>
+
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center mb-3">
+                    <div class="me-3">
+                        <i class="bi bi-graph-up-arrow fs-4"></i>
+                    </div>
+                    <div>
+                        <h6 class="text-muted mb-0">{% trans "Total Invested" %} {% if is_current_year %}(YTD){% endif %}</h6>
+                    </div>
+                </div>
+                <h3 class="fw-bold mb-0 text-success">
+                    {{ user.profile.currency }}{{ total_invested_ytd|compact_amount:user.profile.currency|translate_digits }}
+                </h3>
+                <small class="text-muted">{% trans "Proactive wealth building" %}</small>
+            </div>
+        </div>
+    </div>
     
-    <div class="col-md-4">
+    <div class="col-md-3">
          <div class="card border-0 shadow-sm h-100">
             <div class="card-body">
                 <div class="d-flex align-items-center mb-3">
                     <div class="me-3">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-muted"><style>@keyframes piggy-bob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-2px); } } .anim-piggy { animation: piggy-bob 3s ease-in-out infinite; }</style><path class="anim-piggy" d="M20 16.5c0 1.4-1.1 2.5-2.5 2.5H6.5C5.1 19 4 17.9 4 16.5v-5C4 10.1 5.1 9 6.5 9H17l3-3v10.5"/><circle class="anim-piggy" cx="16" cy="14" r="1.5"/></svg>
+                        <i class="bi bi-piggy-bank fs-4"></i>
                     </div>
                     <div>
-                        <h6 class="text-muted mb-0">{% trans "Avg. Balance Rate" %} {% if is_current_year %}(YTD){% endif %}</h6>
+                        <h6 class="text-muted mb-0">{% trans "Savings Rate" %} {% if is_current_year %}(YTD){% endif %}</h6>
                     </div>
                 </div>
                 <h3 class="fw-bold mb-0">
                     {{ avg_balance_rate|translate_digits }}%
                 </h3>
-                 <small class="text-muted">{% trans "Percentage of income kept as balance/savings" %}</small>
+                 <small class="text-muted">{% trans "Percentage of income unspent/invested" %}</small>
             </div>
         </div>
     </div>
@@ -316,7 +335,7 @@
                     <h5 class="fw-bold mb-0">{% trans "Income Flow" %}</h5>
                 </div>
                 <div class="card-body" style="overflow-x: auto;">
-                    <div id="sankey_basic" style="width: 100%; min-width: 500px; height: 350px;"></div>
+                    <div id="sankey_basic" style="width: 100%; min-width: 500px; height: 500px;"></div>
                 </div>
                 <div class="card-footer bg-transparent border-0 pt-0 pb-3">
                     <small class="text-muted">
@@ -451,10 +470,12 @@
 
     var options = {
       sankey: {
+        iterations: 32,
         node: {
           label: { color: textColor, fontName: 'DM Sans', fontSize: 12, bold: true },
-          nodePadding: 40,
+          nodePadding: 30,
           labelPadding: 10,
+          width: 15,
           colors: CATEGORY_PALETTE
         },
         link: {
@@ -694,17 +715,39 @@
         });
 ;
 
-        // 2. Spending Donut
+        // 2. Spending Donut Cleanup (Top 5 + Other)
         const ctxDonut = document.getElementById('categoryDonutChart').getContext('2d');
-        // Generate nice colors (matching other charts)
-        const bgColors = CATEGORY_PALETTE;
         
-        // Enhance labels with values and percentages for the Legend
-        const totalSpending = catData.reduce((acc, curr) => acc + curr, 0);
-        const donutLabelsWithValues = catLabels.map((label, i) => {
-            const val = catData[i];
+        // Combine, sort and consolidate data
+        let combinedData = catLabels.map((label, i) => ({ label, value: catData[i] }));
+        combinedData.sort((a, b) => b.value - a.value);
+
+        let finalLabels = [];
+        let finalData = [];
+        const topN = 5;
+
+        const topItems = combinedData.slice(0, topN);
+        const otherItems = combinedData.slice(topN);
+
+        topItems.forEach(item => {
+            finalLabels.push(item.label);
+            finalData.push(item.value);
+        });
+
+        if (otherItems.length > 0) {
+            const otherSum = otherItems.reduce((acc, curr) => acc + curr.value, 0);
+            if (otherSum > 0) {
+                finalLabels.push('{% trans "Other Expenses" %}');
+                finalData.push(otherSum);
+            }
+        }
+
+        // Refined labels for the Legend (Name: Percent)
+        const totalSpending = finalData.reduce((acc, curr) => acc + curr, 0);
+        const donutLabelsRefined = finalLabels.map((label, i) => {
+            const val = finalData[i];
             const percent = totalSpending > 0 ? ((val / totalSpending) * 100).toFixed(1) + '%' : '0%';
-            return `${label} (${translateDigits(val.toLocaleString())} | ${translateDigits(percent)})`;
+            return `${label}: ${translateDigits(percent)}`;
         });
         
         // --- Custom Plugin for Donut Percentages ---
@@ -754,10 +797,10 @@
         new Chart(ctxDonut, {
             type: 'doughnut',
             data: {
-                labels: donutLabelsWithValues,
+                labels: donutLabelsRefined,
                 datasets: [{
-                    data: catData,
-                    backgroundColor: CATEGORY_PALETTE.slice(0, catLabels.length),
+                    data: finalData,
+                    backgroundColor: CATEGORY_PALETTE.slice(0, finalLabels.length),
                     borderWidth: 0,
                     hoverOffset: 4
                 }]
@@ -767,7 +810,7 @@
                 maintainAspectRatio: false,
                 cutout: '70%',
                 plugins: {
-                    legend: { position: 'bottom', labels: { boxWidth: 10 } }
+                    legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 11 } } }
                 }
             },
             plugins: [drawDonutValuesPlugin]

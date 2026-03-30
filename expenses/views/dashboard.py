@@ -1980,17 +1980,36 @@ class AnalyticsView(LoginRequiredMixin, TemplateView):
         context['cat_data'] = cat_data
         
         # 3. Key Metrics (YTD / Full Year depending on selection)
+        def get_transfers_total(year_val, limit_to_today=False):
+            # Sum transfers TO investment accounts for the selected period
+            qs = Transfer.objects.filter(user=user, date__year=year_val, to_account__account_type__in=['INVESTMENT', 'FIXED_DEPOSIT'])
+            if limit_to_today:
+                qs = qs.filter(date__lte=today)
+            
+            total = Decimal('0.00')
+            user_currency = user.profile.currency if hasattr(user, 'profile') else '₹'
+            for t in qs.select_related('from_account'):
+                if t.from_account and t.from_account.currency != user_currency:
+                    rate = get_exchange_rate(t.from_account.currency, user_currency)
+                    total += (t.amount * rate).quantize(Decimal('0.01'))
+                else:
+                    total += t.amount
+            return total
+
         if selected_year == today.year:
             # For current year, limit to today so future recurring entries don't skew YTD
             ytd_income_agg = Income.objects.filter(user=user, date__year=selected_year, date__lte=today).aggregate(Sum('base_amount'))['base_amount__sum'] or 0
             ytd_expense_agg = Expense.objects.filter(user=user, date__year=selected_year, date__lte=today).aggregate(Sum('base_amount'))['base_amount__sum'] or 0
+            ytd_invest_agg = get_transfers_total(selected_year, limit_to_today=True)
         else:
             # For past years, show the full year's total
             ytd_income_agg = Income.objects.filter(user=user, date__year=selected_year).aggregate(Sum('base_amount'))['base_amount__sum'] or 0
             ytd_expense_agg = Expense.objects.filter(user=user, date__year=selected_year).aggregate(Sum('base_amount'))['base_amount__sum'] or 0
+            ytd_invest_agg = get_transfers_total(selected_year, limit_to_today=False)
         
         context['total_income_ytd'] = ytd_income_agg
         context['total_expense_ytd'] = ytd_expense_agg
+        context['total_invested_ytd'] = ytd_invest_agg
         context['total_balance_ytd'] = ytd_income_agg - ytd_expense_agg
         
         if ytd_income_agg > 0:
@@ -1999,28 +2018,53 @@ class AnalyticsView(LoginRequiredMixin, TemplateView):
             context['avg_balance_rate'] = 0
             
         # ---------------------------------------------------------
-        # 4. Sankey Data (Income -> Expenses/Savings) YTD
+        # 4. Sankey Data (Income -> Expenses/Investments/Savings) YTD
+        # Hierarchical structure for cleaner visualization:
+        # Income -> (Living Expenses, Investments, Savings)
+        # Living Expenses -> (Individual Categories)
         # ---------------------------------------------------------
         sankey_data = []
         if ytd_income_agg > 0 or ytd_expense_agg > 0:
-            top_cats = list(category_stats[:8])
-            other_cats = list(category_stats[8:])
+            total_surplus = ytd_income_agg - ytd_expense_agg
             
-            for cat in top_cats:
-                sankey_data.append([_('Income'), _(cat['category']), float(cat['total'])])
+            # 1. Source Logic (Managing Deficits)
+            income_source = _('Income')
+            if total_surplus < 0:
+                # If deficit, flow deficit into Income so Google Chart balances it
+                sankey_data.append([_('Deficit (Overspending)'), income_source, abs(float(total_surplus))])
+
+            # 2. Level 1: Primary Outflows (Ordered Top to Bottom)
+            # A. Savings (Top)
+            if total_surplus > 0:
+                invest_flow = min(float(ytd_invest_agg), float(total_surplus))
+                savings_flow = float(total_surplus) - invest_flow
+            else:
+                invest_flow = 0
+                savings_flow = 0
+
+            if savings_flow > 0:
+                sankey_data.append([income_source, _('Savings'), savings_flow])
+
+            # B. Investments (Middle)
+            if invest_flow > 0:
+                sankey_data.append([income_source, _('Investments'), invest_flow])
+
+            # C. Living Expenses (Bottom)
+            if ytd_expense_agg > 0:
+                sankey_data.append([income_source, _('Living Expenses'), float(ytd_expense_agg)])
                 
-            if other_cats:
-                other_total = sum(float(cat['total']) for cat in other_cats)
-                if other_total > 0:
-                    sankey_data.append([_('Income'), _('Other Expenses'), other_total])
+                # Level 2 (Detailed breakdown of top 5 categories)
+                top_cats = list(category_stats[:5])
+                other_cats = list(category_stats[5:])
+                
+                for cat in top_cats:
+                    sankey_data.append([_('Living Expenses'), _(cat['category']), float(cat['total'])])
                     
-            savings = ytd_income_agg - ytd_expense_agg
-            if savings > 0:
-                sankey_data.append([_('Income'), _('Savings'), float(savings)])
-            elif savings < 0:
-                # If deficit, flow deficit into Income so Google Chart balances it as money source
-                sankey_data.append([_('Deficit (Overspending)'), _('Income'), abs(float(savings))])
-                
+                if other_cats:
+                    other_total = sum(float(cat['total']) for cat in other_cats)
+                    if other_total > 0:
+                        sankey_data.append([_('Living Expenses'), _('Other Expenses'), other_total])
+
         context['sankey_data'] = sankey_data
             
         # ---------------------------------------------------------
