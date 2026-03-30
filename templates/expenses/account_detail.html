@@ -42,10 +42,36 @@
 
     <!-- Transaction Ledger -->
     <div class="card shadow-sm border-0 rounded-4 overflow-hidden">
-        <div class="card-header bg-transparent border-bottom py-3 px-4 d-flex justify-content-between align-items-center">
-            <h5 class="mb-0 fw-bold">{% trans "Transaction History" %}</h5>
-            <span class="badge bg-secondary bg-opacity-10 text-secondary rounded-pill">{{ ledger|length }} {% trans "Items" %}</span>
+        <div class="card-header bg-transparent border-bottom py-3 px-4 d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+            <div class="d-flex align-items-center gap-2">
+                <h5 class="mb-0 fw-bold">{% trans "Transaction History" %}</h5>
+                <span class="badge bg-secondary bg-opacity-10 text-secondary rounded-pill">{{ ledger|length }} {% trans "Items" %}</span>
+            </div>
+            
+            <form method="GET" class="d-flex align-items-center gap-2 w-100" style="max-width: 300px;">
+                <div class="input-group input-group-sm rounded-3 overflow-hidden shadow-none border">
+                    <span class="input-group-text bg-light border-0"><i class="bi bi-search text-muted"></i></span>
+                    <input type="text" name="q" class="form-control border-0 bg-light ps-0" placeholder="{% trans 'Search transactions...' %}" value="{{ search_query }}">
+                    {% if search_query %}
+                        <a href="{% url 'account-detail' account.id %}" class="btn btn-light border-0 d-flex align-items-center px-3" data-bs-toggle="tooltip" title="{% trans 'Clear search' %}">
+                            <i class="bi bi-x-lg small"></i>
+                        </a>
+                    {% endif %}
+                </div>
+            </form>
         </div>
+        {% if search_query %}
+        <div class="alert bg-primary-subtle border-0 rounded-0 mb-0 py-2 px-4 shadow-none">
+            <div class="d-flex justify-content-between align-items-center">
+                <span class="small fw-bold text-primary-emphasis text-uppercase" style="letter-spacing: 0.5px; font-size: 0.7rem;">
+                    <i class="bi bi-filter-left me-1"></i> {% trans "Filtered Results" %}: "{{ search_query }}"
+                </span>
+                <span class="small fw-bold {% if filtered_net_total >= 0 %}text-success{% else %}text-danger{% endif %}" style="font-size: 0.85rem;">
+                    {% trans "Search Total" %}: {{ currency_symbol }}{{ filtered_net_total|ind_comma:currency_symbol }}
+                </span>
+            </div>
+        </div>
+        {% endif %}
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
                 <thead class="bg-light">
@@ -131,8 +157,20 @@
                                 <div class="mb-4 text-muted">
                                     {% include 'illustrations/empty_accounts.svg' %}
                                 </div>
-                                <h5 class="fw-bold text-muted">{% trans "No Transactions Found" %}</h5>
-                                <p class="text-muted mb-0">{% trans "There are no activities recorded for this account yet." %}</p>
+                                <h5 class="fw-bold text-muted">
+                                    {% if search_query %}
+                                        {% trans "No results found for" %} "{{ search_query }}"
+                                    {% else %}
+                                        {% trans "No Transactions Found" %}
+                                    {% endif %}
+                                </h5>
+                                <p class="text-muted mb-0">
+                                    {% if search_query %}
+                                        {% trans "Try adjusting your search terms or clearing the filter." %}
+                                    {% else %}
+                                        {% trans "There are no activities recorded for this account yet." %}
+                                    {% endif %}
+                                </p>
                             </div>
                         </td>
                     </tr>

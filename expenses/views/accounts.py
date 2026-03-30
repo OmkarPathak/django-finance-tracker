@@ -4,6 +4,7 @@ from itertools import chain
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import JsonResponse
+from django.db.models import Q, Sum
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
 from django.utils.translation import gettext as _
@@ -155,20 +156,60 @@ class TransferDeleteView(LoginRequiredMixin, DeleteView):
 
 class AccountDetailView(LoginRequiredMixin, View):
     template_name = 'expenses/account_detail.html'
-
     def get(self, request, pk):
         account = get_object_or_404(Account, pk=pk, user=request.user)
+        query = request.GET.get('q', '')
         
         # Get all expenses, incomes, and transfers for this account
-        expenses = Expense.objects.filter(user=request.user, account=account).order_by('-date')
-        incomes = Income.objects.filter(user=request.user, account=account).order_by('-date')
-        
-        # Transfers where this account is either FROM or TO
+        expenses = Expense.objects.filter(user=request.user, account=account)
+        incomes = Income.objects.filter(user=request.user, account=account)
         transfers_from = Transfer.objects.filter(user=request.user, from_account=account)
         transfers_to = Transfer.objects.filter(user=request.user, to_account=account)
         contributions = GoalContribution.objects.filter(goal__user=request.user, account=account)
+
+        if query:
+            expenses = expenses.filter(Q(description__icontains=query) | Q(category__icontains=query))
+            incomes = incomes.filter(Q(description__icontains=query) | Q(source__icontains=query))
+            transfers_from = transfers_from.filter(Q(description__icontains=query))
+            transfers_to = transfers_to.filter(Q(description__icontains=query))
+            contributions = contributions.filter(Q(goal__name__icontains=query))
+
+        expenses = expenses.order_by('-date')
+        incomes = incomes.order_by('-date')
         
         base_currency = request.user.profile.currency if hasattr(request.user, 'profile') else '₹'
+        
+        # Calculate Net Total for Filtered Items (In Base Currency)
+        # Note: expenses and incomes already have `base_amount`. 
+        # For transfers, we'll calculate based on the current rates or what's stored.
+        exp_total = sum(e.base_amount for e in expenses)
+        inc_total = sum(i.base_amount for i in incomes)
+        
+        out_total = Decimal('0.00')
+        for t in transfers_from:
+            if t.from_account.currency != base_currency:
+                rate = get_exchange_rate(t.from_account.currency, base_currency)
+                out_total += (t.amount * rate).quantize(Decimal('0.01'))
+            else:
+                out_total += t.amount
+                
+        in_total = Decimal('0.00')
+        for t in transfers_to:
+            if t.to_account.currency != base_currency:
+                rate = get_exchange_rate(t.to_account.currency, base_currency)
+                in_total += (t.amount * rate).quantize(Decimal('0.01'))
+            else:
+                in_total += t.amount
+        
+        sav_total = Decimal('0.00')
+        for c in contributions:
+            if account.currency != base_currency:
+                rate = get_exchange_rate(account.currency, base_currency)
+                sav_total += (c.amount * rate).quantize(Decimal('0.01'))
+            else:
+                sav_total += c.amount
+        
+        filtered_net_total = inc_total + in_total - exp_total - out_total - sav_total
 
         # Combine everything and sort by date descending
         # We'll add 'transaction_type', 'display_currency', and 'base_amount_display' to each for the template
@@ -219,5 +260,7 @@ class AccountDetailView(LoginRequiredMixin, View):
             'account': account,
             'ledger': ledger,
             'currency_symbol': base_currency,
+            'search_query': query,
+            'filtered_net_total': filtered_net_total,
         }
         return render(request, self.template_name, context)
