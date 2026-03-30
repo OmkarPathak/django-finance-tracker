@@ -1,4 +1,6 @@
 from django import template
+from ..utils import format_indian_number
+from django.contrib.humanize.templatetags.humanize import intcomma
 from django.utils.translation import get_language
 
 register = template.Library()
@@ -19,6 +21,25 @@ def translate_digits(value):
     }
     
     return ''.join(arabic_to_devanagari.get(char, char) for char in value_str)
+
+@register.filter
+def ind_comma(value, currency_symbol='₹'):
+    """
+    Formats a number with localized commas based on currency.
+    ₹/INR: Indian Numbering System (3,2,2)
+    Others: International Numbering System (3,3,3)
+    """
+    
+    try:
+        num = float(value)
+    except (ValueError, TypeError):
+        return value
+        
+    if str(currency_symbol).upper() in ['INR', '₹']:
+        return format_indian_number(num)
+    
+    # Default to international 3-digit comma grouping
+    return intcomma(f"{int(round(num)):,d}") if num == int(round(num)) else intcomma(f"{num:,.0f}")
 
 @register.filter
 def compact_amount(value, currency=''):

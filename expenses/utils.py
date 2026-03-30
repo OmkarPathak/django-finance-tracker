@@ -204,3 +204,40 @@ BOOTSTRAP_ICONS = [
     ('bi-upc-scan', 'Groceries'),
     ('bi-handbag', 'Clothing'),
 ]
+
+
+def format_indian_number(amount):
+    """
+    Formats a number according to the Indian Numbering System (Lakhs/Crores).
+    Ex: 1234567 -> 12,34,567
+    """
+    try:
+        # Handle sign
+        is_negative = float(amount) < 0
+        abs_amount = abs(float(amount))
+        
+        # Split integer part (ignoring decimals for simple comma grouping here)
+        integer_part = str(int(round(abs_amount)))
+        
+        if len(integer_part) <= 3:
+            result = integer_part
+        else:
+            last_three = integer_part[-3:]
+            remaining = integer_part[:-3]
+            
+            # Group the remaining digits in pairs (twos)
+            groups = []
+            while len(remaining) > 0:
+                if len(remaining) > 2:
+                    groups.append(remaining[-2:])
+                    remaining = remaining[:-2]
+                else:
+                    groups.append(remaining)
+                    remaining = ""
+            groups.reverse()
+            
+            result = ",".join(groups) + "," + last_three
+            
+        return f"-{result}" if is_negative else result
+    except (ValueError, TypeError):
+        return amount
