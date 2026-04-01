@@ -33,7 +33,7 @@
             <div class="card shadow-sm border-0 rounded-4 p-4 text-center bg-primary bg-opacity-10">
                 <p class="text-muted small text-uppercase fw-bold mb-1" style="letter-spacing: 1px;">{% trans "Current Balance" %}</p>
                 <h2 class="fw-black text-primary mb-0">
-                    {{ account.currency }}{{ account.balance|humanize_currency:account.currency|translate_digits }}
+                    {{ account.currency }}{{ account.balance|ind_comma:account.currency|translate_digits }}
                 </h2>
             </div>
         </div>
@@ -114,11 +114,11 @@
                         <td class="text-end">
                             <span class="fw-bold {% if item.transaction_type == 'INCOME' or item.transaction_type == 'TRANSFER_IN' %}text-success{% elif item.transaction_type == 'EXPENSE' or item.transaction_type == 'TRANSFER_OUT' or item.transaction_type == 'SAVINGS' %}text-danger{% endif %}">
                                 {% if item.transaction_type == 'INCOME' or item.transaction_type == 'TRANSFER_IN' %}+{% else %}-{% endif %}
-                                {{ item.display_currency }}{{ item.amount|humanize_currency:item.display_currency|translate_digits }}
+                                {{ item.display_currency }}{{ item.amount|ind_comma:item.display_currency|translate_digits }}
                             </span>
                             {% if item.base_amount_display %}
                                 <div class="small text-muted">
-                                    ≈ {{ currency_symbol }}{{ item.base_amount_display|humanize_currency:currency_symbol|translate_digits }}
+                                    ≈ {{ currency_symbol }}{{ item.base_amount_display|ind_comma:currency_symbol|translate_digits }}
                                 </div>
                             {% endif %}
                         </td>

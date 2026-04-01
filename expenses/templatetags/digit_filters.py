@@ -38,8 +38,8 @@ def ind_comma(value, currency_symbol='₹'):
     if str(currency_symbol).upper() in ['INR', '₹']:
         return format_indian_number(num)
     
-    # Default to international 3-digit comma grouping
-    return intcomma(f"{int(round(num)):,d}") if num == int(round(num)) else intcomma(f"{num:,.0f}")
+    # Default to international 3-digit comma grouping (integers only)
+    return intcomma(f"{int(round(num)):,d}")
 
 @register.filter
 def compact_amount(value, currency=''):
