@@ -9,6 +9,7 @@ class BlogPost(models.Model):
     content = models.TextField()
     published_date = models.DateTimeField(auto_now_add=True)
     updated_date = models.DateTimeField(auto_now=True)
+    keywords = models.CharField(max_length=255, blank=True, help_text="Comma-separated keywords for SEO")
 
     class Meta:
         ordering = ['-published_date']

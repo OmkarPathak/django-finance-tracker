@@ -6,7 +6,7 @@
 
 {% block meta_tags %}
 <meta name="description" content="{{ post.summary }}">
-<meta name="keywords" content="finance, budget, expense tracker, {{ post.title }}, TrackMyRupee">
+<meta name="keywords" content="{% if post.keywords %}{{ post.keywords }}, {% endif %}finance, budget, expense tracker, {{ post.title }}, TrackMyRupee">
 <meta name="author" content="Omkar Pathak">
 
 <!-- Open Graph / Facebook -->
@@ -63,7 +63,7 @@
 <div class="container py-5">
     <div class="row justify-content-center">
         <div class="col-lg-8">
-            <nav aria-label="breadcrumb" class="mb-4">
+            <nav aria-label="breadcrumb" class="mb-2">
                 <ol class="breadcrumb">
                     <li class="breadcrumb-item">
                         <a href="{% url 'blog_list' %}" class="text-decoration-none">{% trans "Blog" %}</a>
@@ -73,12 +73,12 @@
             </nav>
 
             <article>
-                <h1 class="display-5 fw-bold mb-3">{{ post.title }}</h1>
-                <div class="text-muted mb-5 d-flex align-items-center">
+                <h1 class="display-6 fw-bold mb-3">{{ post.title }}</h1>
+                <div class="text-muted mb-3 d-flex align-items-center small">
                     <i class="bi bi-calendar3 me-2"></i> {{ post.published_date|date:"F j, Y" }}
                 </div>
 
-                <div class="blog-content fs-5 lh-lg text-break">
+                <div class="blog-content fs-6 lh-lg text-break">
                     {{ post.content|markdown }}
                 </div>
                 </article>
@@ -118,7 +118,7 @@
                     </div>
                 </div>
 
-            <div class="mt-5 pt-4 border-top text-center">
+            <div class="mt-4 pt-4 border-top text-center">
                 <a href="{% url 'blog_list' %}" class="btn btn-outline-primary rounded-pill px-4">
                     <i class="bi bi-arrow-left me-1"></i> {% trans "Back to Blog" %}
                 </a>

@@ -741,8 +741,8 @@ a:hover {
   transition:
     transform 0.2s ease,
     box-shadow 0.2s ease;
-  width: 48px;
-  height: 48px;
+  width: 40px;
+  height: 40px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -778,7 +778,7 @@ a:hover {
 .blog-content h4,
 .blog-content h5,
 .blog-content h6 {
-  margin-top: 2.5rem;
+  margin-top: 1.5rem;
   margin-bottom: 1rem;
   font-weight: 700;
   line-height: 1.3;
