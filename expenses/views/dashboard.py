@@ -1750,8 +1750,19 @@ def home_view(request):
         count=Count('id')
     ).filter(count__gte=3).exclude(description__in=['', 'Miscellaneous', 'Other']).order_by('-count')
     
+    top_repeat = None
     if repeating_expenses.exists():
-        top_repeat = repeating_expenses.first()
+        # Optimization: Fetch active recurring expenses for the user to compare
+        active_recurring = set(RecurringTransaction.objects.filter(
+            user=request.user, is_active=True, transaction_type='EXPENSE'
+        ).values_list('description', 'amount'))
+        
+        for repeat in repeating_expenses[:10]: # Check top 10 candidates
+            if (repeat['description'], repeat['amount']) not in active_recurring:
+                top_repeat = repeat
+                break
+
+    if top_repeat:
         # link to recurring form with pre-filled description and amount
         recurring_link = f"{reverse('recurring-create')}?description={top_repeat['description']}&amount={top_repeat['amount']}"
         add_nudge_alt(
