@@ -30,14 +30,25 @@
     <!-- Account Summary Stats -->
     <div class="row g-4 mb-4">
         <div class="col-12 col-md-4">
-            <div class="card shadow-sm border-0 rounded-4 p-4 text-center bg-primary bg-opacity-10">
+            <div class="card shadow-sm border-0 rounded-4 p-4 text-center bg-primary bg-opacity-10 h-100 d-flex flex-column justify-content-center">
                 <p class="text-muted small text-uppercase fw-bold mb-1" style="letter-spacing: 1px;">{% trans "Current Balance" %}</p>
                 <h2 class="fw-black text-primary mb-0">
                     {{ account.currency }}{{ account.balance|ind_comma:account.currency|translate_digits }}
                 </h2>
             </div>
         </div>
-        <!-- You could add more stats here, like total income/expense for this account -->
+        <div class="col-12 col-md-8 d-none d-md-block">
+            <div class="card shadow-sm border-0 rounded-4 p-3 h-100">
+                <div class="d-flex justify-content-between align-items-center mb-2 px-2">
+                    <h6 class="text-muted small text-uppercase fw-bold mb-0" style="letter-spacing: 1px;">
+                        {% if trend_data.type == 'monthly' %}{% trans "Balance Trend (Last 12 Months)" %}{% else %}{% trans "Balance Trend (Last 30 Days)" %}{% endif %}
+                    </h6>
+                </div>
+                <div style="height: 120px;">
+                    <canvas id="accountTrendChart"></canvas>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Transaction Ledger -->
@@ -180,4 +191,80 @@
         </div>
     </div>
 </div>
+
+{{ trend_data.labels|json_script:"trend-labels" }}
+{{ trend_data.values|json_script:"trend-values" }}
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const ctx = document.getElementById('accountTrendChart');
+    if (!ctx) return;
+
+    const labels = JSON.parse(document.getElementById('trend-labels').textContent);
+    const dataValues = JSON.parse(document.getElementById('trend-values').textContent);
+    const isDark = document.documentElement.getAttribute('data-bs-theme') === 'dark';
+
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: '{% trans "Balance" %}',
+                data: dataValues,
+                fill: true,
+                borderColor: '#1D9E75',
+                backgroundColor: 'rgba(29, 158, 117, 0.1)',
+                tension: 0.4,
+                pointRadius: 0,
+                pointHoverRadius: 5,
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    mode: 'index',
+                    intersect: false,
+                    callbacks: {
+                        label: function(context) {
+                            let label = context.dataset.label || '';
+                            if (label) label += ': ';
+                            if (context.parsed.y !== null) {
+                                label += '{{ account.currency }}' + context.parsed.y.toLocaleString();
+                            }
+                            return label;
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    display: true,
+                    grid: { display: false },
+                    ticks: {
+                        maxRotation: 0,
+                        autoSkip: true,
+                        maxTicksLimit: 6,
+                        color: isDark ? '#adb5bd' : '#6c757d',
+                        font: { size: 10 }
+                    }
+                },
+                y: {
+                    display: false,
+                    grid: { display: false }
+                }
+            },
+            interaction: {
+                intersect: false,
+                mode: 'index',
+            }
+        }
+    });
+});
+</script>
 {% endblock %}
