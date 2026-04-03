@@ -1,8 +1,10 @@
 from collections import defaultdict
 from decimal import Decimal
 from itertools import chain
+from datetime import date, timedelta
 
 from django.contrib import messages
+from django.core.paginator import Paginator
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import JsonResponse
 from django.db.models import Q, Sum
@@ -157,6 +159,12 @@ class TransferDeleteView(LoginRequiredMixin, DeleteView):
         messages.success(self.request, _("Transfer deleted successfully!"))
         return super().delete(request, *args, **kwargs)
 
+    def get_success_url(self):
+        next_url = self.request.GET.get('next') or self.request.POST.get('next')
+        if next_url:
+            return next_url
+        return reverse_lazy('transfer-list')
+
 class AccountDetailView(LoginRequiredMixin, View):
     template_name = 'expenses/account_detail.html'
     def get(self, request, pk):
@@ -272,9 +280,17 @@ class AccountDetailView(LoginRequiredMixin, View):
             reverse=True
         )
 
+        # Pagination
+        
+        paginator = Paginator(ledger, 20)
+        page_number = request.GET.get('page')
+        page_obj = paginator.get_page(page_number)
+
         context = {
             'account': account,
-            'ledger': ledger,
+            'ledger': page_obj,
+            'page_obj': page_obj,
+            'is_paginated': paginator.num_pages > 1,
             'currency_symbol': account.currency,
             'base_currency_symbol': base_currency,
             'search_query': query,
@@ -284,9 +300,6 @@ class AccountDetailView(LoginRequiredMixin, View):
         return render(request, self.template_name, context)
 
     def get_trend_data(self, account, user):
-        from datetime import date, timedelta
-        from django.db.models import Sum
-        from decimal import Decimal
         
         today = date.today()
         

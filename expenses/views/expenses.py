@@ -4,6 +4,7 @@ from datetime import datetime
 
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.db import IntegrityError
 from django.db.models import Count, Sum
 from django.forms import modelformset_factory
 from django.http import JsonResponse
@@ -268,6 +269,9 @@ class ExpenseDeleteView(LoginRequiredMixin, DeleteView):
         return Expense.objects.filter(user=self.request.user)
 
     def get_success_url(self):
+        next_url = self.request.GET.get('next') or self.request.POST.get('next')
+        if next_url:
+            return next_url
         url = reverse('expense-list')
         query_params = self.request.GET.urlencode()
         if query_params:

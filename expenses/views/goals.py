@@ -151,6 +151,9 @@ class GoalContributionDeleteView(LoginRequiredMixin, DeleteView):
         return GoalContribution.objects.filter(goal__user=self.request.user)
 
     def get_success_url(self):
+        next_url = self.request.GET.get('next') or self.request.POST.get('next')
+        if next_url:
+            return next_url
         return reverse_lazy('goal-detail', kwargs={'pk': self.object.goal.pk})
 
     def delete(self, request, *args, **kwargs):

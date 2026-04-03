@@ -201,5 +201,9 @@ class IncomeUpdateView(LoginRequiredMixin, UpdateView):
 
 class IncomeDeleteView(LoginRequiredMixin, DeleteView):
     model = Income
-    success_url = reverse_lazy('income-list')
     def get_queryset(self): return Income.objects.filter(user=self.request.user)
+    def get_success_url(self):
+        next_url = self.request.GET.get('next') or self.request.POST.get('next')
+        if next_url:
+            return next_url
+        return reverse_lazy('income-list')
