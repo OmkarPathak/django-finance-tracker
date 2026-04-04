@@ -1490,6 +1490,7 @@ def home_view(request):
         'net_worth_change': net_worth_change,
         'net_worth_percent': net_worth_percent,
         'net_worth_trend': net_worth_trend,
+        'net_worth_labels': net_worth_labels,
         'is_net_worth_locked': not request.user.profile.has_net_worth_access,
         'is_ai_locked': not request.user.profile.has_ai_access,
         'sparkline_points': sparkline_points,

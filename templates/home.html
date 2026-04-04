@@ -172,8 +172,8 @@
         to { opacity: 1; transform: translateY(0); }
     }
     .nw-sparkline-container {
-        height: 40px;
-        width: 100px;
+        height: 50px;
+        width: 120px;
         position: relative;
     }
     .nw-sparkline-svg {
@@ -1043,11 +1043,10 @@ document.addEventListener('DOMContentLoaded', function() {
                                 {{ currency_symbol }}{{ net_worth|humanize_currency:currency_symbol|translate_digits }}
                             </h1>
                             
-                            {% if sparkline_points %}
-                            <div class="nw-sparkline-container ms-3 flex-shrink-0">
-                                <svg viewBox="0 0 100 40" class="nw-sparkline-svg w-100 h-100">
-                                    <path d="M {{ sparkline_points }}" class="nw-sparkline-path" />
-                                </svg>
+                            {% if net_worth_trend %}
+                            <div class="nw-sparkline-container ms-3 flex-shrink-0" id="nw-sparkline-wrapper">
+                                <canvas id="nwSparklineChart"></canvas>
+                                <div id="nw-tooltip" class="chartjs-tooltip shadow-sm" style="opacity: 0; position: absolute; pointer-events: none; background: rgba(0,0,0,0.85); color: white; border-radius: 4px; padding: 4px 8px; font-size: 11px; white-space: nowrap; z-index: 1000; transition: opacity 0.2s ease;"></div>
                             </div>
                             {% endif %}
                         </div>
@@ -1960,6 +1959,8 @@ document.addEventListener('DOMContentLoaded', function() {
 {{ proj_labels|json_script:"proj-labels" }}
 {{ proj_historical|json_script:"proj-historical" }}
 {{ proj_forecast|json_script:"proj-forecast" }}
+{{ net_worth_trend|json_script:"net-worth-trend" }}
+{{ net_worth_labels|json_script:"net-worth-labels" }}
 
 <script>
 
@@ -2015,6 +2016,8 @@ document.addEventListener('DOMContentLoaded', function() {
         const sYears = safeParse('selected-years-data');
         const paymentLabels = safeParse('payment-labels');
         const paymentData = safeParse('payment-data');
+        const nwTrend = safeParse('net-worth-trend');
+        const nwLabels = safeParse('net-worth-labels');
 
         // --- Theme handling ---
         const getThemeColor = () => {
@@ -2130,6 +2133,88 @@ document.addEventListener('DOMContentLoaded', function() {
                     percentageText.innerText = translateDigits(Math.floor(start)) + '%';
                 }
             }, stepTime);
+        }
+
+        // --- 0.5 Net Worth Sparkline Chart ---
+        const ctxNW = document.getElementById('nwSparklineChart');
+        if (ctxNW && nwTrend.length > 0) {
+            charts.netWorthSparkline = new Chart(ctxNW.getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels: nwLabels.length > 0 ? nwLabels : nwTrend.map((_, i) => i),
+                    datasets: [{
+                        data: nwTrend,
+                        borderColor: CHART_COLORS.teal,
+                        borderWidth: 2.5,
+                        pointRadius: 0,
+                        pointHitRadius: 20,
+                        pointHoverRadius: 5,
+                        pointHoverBackgroundColor: CHART_COLORS.teal,
+                        pointHoverBorderColor: '#fff',
+                        pointHoverBorderWidth: 2,
+                        fill: false,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    onHover: (event, chartElement) => {
+                        event.native.target.style.cursor = chartElement[0] ? 'pointer' : 'default';
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            enabled: false,
+                            external: function(context) {
+                                const tooltipEl = document.getElementById('nw-tooltip');
+                                if (!tooltipEl) return;
+                                const tooltipModel = context.tooltip;
+                                if (tooltipModel.opacity === 0) {
+                                    tooltipEl.style.opacity = 0;
+                                    return;
+                                }
+                                if (tooltipModel.body) {
+                                    const date = tooltipModel.title[0] || '';
+                                    const bodyLines = tooltipModel.body.map(b => b.lines);
+                                    let innerHtml = '<div>';
+                                    if (date) innerHtml += '<div style="font-size: 9px; opacity: 0.8; margin-bottom: 2px;">' + date + '</div>';
+                                    bodyLines.forEach(function(body, i) {
+                                        innerHtml += '<div style="font-weight: bold;">' + body + '</div>';
+                                    });
+                                    innerHtml += '</div>';
+                                    tooltipEl.innerHTML = innerHtml;
+                                }
+                                tooltipEl.style.opacity = 1;
+                                tooltipEl.style.left = tooltipModel.caretX + 'px';
+                                tooltipEl.style.top = (tooltipModel.caretY - 10) + 'px';
+                                tooltipEl.style.transform = 'translate(-50%, -100%)';
+                            },
+                            callbacks: {
+                                label: function(context) {
+                                    return '{{ currency_symbol }}' + translateDigits(context.parsed.y.toLocaleString());
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: { display: false },
+                        y: { 
+                            display: false,
+                            ticks: {
+                                callback: (val) => val
+                            }
+                        }
+                    },
+                    interaction: {
+                        mode: 'index',
+                        intersect: false,
+                    },
+                    layout: {
+                        padding: { top: 15, bottom: 5, left: 5, right: 5 }
+                    }
+                }
+            });
         }
 
         // --- 1. Trend Chart ---
@@ -2665,12 +2750,20 @@ document.addEventListener('DOMContentLoaded', function() {
                         charts.budget.update();
                     }
                     
-                    // Update Grid Lines for other charts
-                    [charts.incomeExpenses, charts.trend, charts.topExpenses].forEach(chart => {
-                        if (chart) {
-                            if (chart.options.scales.x) chart.options.scales.x.grid.color = newColors.grid;
-                            if (chart.options.scales.y) chart.options.scales.y.grid.color = newColors.grid;
-                            chart.update();
+                    // Update Grid Lines for all charts - with defensive checks
+                    Object.values(charts).forEach(chart => {
+                        if (chart && chart.options && chart.options.scales) {
+                            try {
+                                if (chart.options.scales.x && chart.options.scales.x.grid && typeof chart.options.scales.x.grid === 'object') {
+                                    chart.options.scales.x.grid.color = newColors.grid;
+                                }
+                                if (chart.options.scales.y && chart.options.scales.y.grid && typeof chart.options.scales.y.grid === 'object') {
+                                    chart.options.scales.y.grid.color = newColors.grid;
+                                }
+                                chart.update('none'); // Update without animation for theme switch
+                            } catch (e) {
+                                console.warn('Chart update failed:', e);
+                            }
                         }
                     });
                 }
