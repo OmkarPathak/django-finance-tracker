@@ -106,7 +106,7 @@ class Command(BaseCommand):
         
         # 4. Income History
         income_sources = [
-            {'source': '💼 Salary', 'amount': 95000, 'day': 5},
+            {'source': '💼 Salary', 'amount': 95000, 'day': 1},
             {'source': '🚀 Freelance Gig', 'amount': 40000, 'day': 20},
         ]
 
@@ -121,7 +121,7 @@ class Command(BaseCommand):
                         source=inc['source'],
                         amount=inc['amount'],
                         date=inc_date,
-                        description=f"{inc['source']} for {inc_date.strftime('%B %Y')}",
+                        description=f"Indie Developer Income for {inc_date.strftime('%B %Y')}",
                         account=acc_main
                     )
             # Next Month
@@ -208,6 +208,19 @@ class Command(BaseCommand):
             )
         
         self.stdout.write(self.style.SUCCESS('Injected Current Day Data for ROI Visibility'))
+
+        # 5.2 Ensure April/Current Month has healthy balance for "Aspirational" trend
+        if today.day < 5:
+            # If it's early in the month, add a 'Q1 Bonus' or similar to ENSURE positive NW trend
+            Income.objects.create(
+                user=user,
+                source='🏆 Quarterly Bonus',
+                amount=Decimal('45000.00'),
+                date=today.replace(day=1),
+                description="Bonus for consistent SaaS delivery",
+                account=acc_main
+            )
+            self.stdout.write(self.style.SUCCESS('Seeded Early Month Bonus for Positive Trend'))
 
         # 6. Savings Goals & Contributions
         goals = [
