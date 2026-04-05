@@ -1486,11 +1486,49 @@ def home_view(request):
     # Add Savings Amount to hero_metrics for the hero card
     hero_metrics['savings_amount'] = net_worth_change
 
+    # --- NET WORTH FORECAST (Next 3 Months) ---
+    historical_avg = FinancialService.get_historical_average(request.user, months=3)
+    avg_monthly_savings = Decimal(str(historical_avg['avg_income'] - historical_avg['avg_expense']))
+    
+    net_worth_forecasts = []
+    
+    # 0.5 Integrated Sparkline Logic
+    # History is 6 months. We append 3 forecast months.
+    forecast_index_start = len(net_worth_trend) # Usually 6
+    
+    for i in range(1, 4):
+        f_month = now.month + i
+        f_year = now.year
+        while f_month > 12:
+            f_month -= 12
+            f_year += 1
+        
+        month_date = date(f_year, f_month, 1)
+        projected_val = net_worth + (avg_monthly_savings * i)
+        
+        # Add to the integrated sparkline arrays
+        net_worth_labels.append(date_format(month_date, 'M Y'))
+        net_worth_trend.append(float(projected_val))
+        
+        net_worth_forecasts.append({
+            'label': date_format(month_date, 'M'),
+            'month_name': date_format(month_date, 'F Y'),
+            'value': float(projected_val),
+            'change': float(avg_monthly_savings),
+            'is_positive': avg_monthly_savings >= 0
+        })
+
+    # Summary 3M Growth for the badge
+    projected_3m_growth = float(avg_monthly_savings * 3)
+
     context = {
         'net_worth': net_worth,
         'net_worth_change': net_worth_change,
         'net_worth_percent': net_worth_percent,
         'net_worth_trend': net_worth_trend,
+        'net_worth_forecasts': net_worth_forecasts,
+        'forecast_index_start': forecast_index_start,
+        'projected_3m_growth': projected_3m_growth,
         'net_worth_labels': net_worth_labels,
         'is_net_worth_locked': not request.user.profile.has_net_worth_access,
         'is_ai_locked': not request.user.profile.has_ai_access,

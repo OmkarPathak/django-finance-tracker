@@ -367,7 +367,7 @@
 <!-- Full Report View (Existing Dashboard) -->
 <div id="full-report-view" style="display: none;">
 
-<div class="d-flex flex-column flex-md-row justify-content-between align-items-center mb-4 gap-3 fade-in" style="position: relative; z-index: 100;">
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-center mb-1 gap-3 fade-in" style="position: relative; z-index: 100;">
     <!-- Mobile Header (One Line) -->
     <div class="d-flex d-md-none justify-content-between align-items-center w-100">
         <div class="d-flex align-items-center gap-2">
@@ -392,6 +392,15 @@
             {% endif %}
         </div>
         <div class="d-flex align-items-center gap-2">
+            <button class="btn btn-sm btn-link text-primary p-0 me-1" 
+                    type="button" 
+                    data-bs-toggle="collapse" 
+                    data-bs-target="#collapseInsights" 
+                    aria-expanded="false" 
+                    aria-controls="collapseInsights"
+                    title="{% trans 'Financial Intelligence' %}">
+                <i class="bi bi-stars fs-5"></i>
+            </button>
             <button class="btn btn-sm btn-link text-muted p-0" data-bs-toggle="modal" data-bs-target="#savingsMethodModal" title="{% trans 'How it works' %}">
                 <i class="bi bi-info-circle fs-5"></i>
             </button>
@@ -545,7 +554,7 @@
 <!-- FINANCIAL INTELLIGENCE HUB -->
 <div class="accordion mb-4" id="insightsAccordion">
     <div class="accordion-item border-0 rounded-4 overflow-hidden">
-        <h2 class="accordion-header" id="headingInsights">
+        <h2 class="accordion-header d-none d-md-block" id="headingInsights">
             <button class="accordion-button collapsed px-4 py-2 fw-bold bg-transparent text-primary" type="button" data-bs-toggle="collapse" data-bs-target="#collapseInsights" aria-expanded="false" aria-controls="collapseInsights" style="font-size: 1rem; box-shadow: none;">
                 <div class="d-flex align-items-center gap-3 w-100">
                     <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center flex-shrink-0" style="width: 40px; height: 40px;">
@@ -878,7 +887,7 @@ document.addEventListener('DOMContentLoaded', function() {
 {% endif %}
 
 <!-- Quick Links (Mobile Only) -->
-<div class="d-md-none mb-4 fade-in p-0">
+<div class="d-md-none mb-3 fade-in p-0">
     <div class="d-flex justify-content-between align-items-center px-1">
         <a href="{% url 'goal-list' %}" class="d-flex flex-column align-items-center text-decoration-none" style="flex: 1 0 0; min-width: 0;">
             <div class="bg-body border rounded-circle d-flex align-items-center justify-content-center mb-1" style="width: 44px; height: 44px;">
@@ -1061,13 +1070,25 @@ document.addEventListener('DOMContentLoaded', function() {
                             <span class="badge {% if net_worth_change >= 0 %}bg-success{% else %}bg-danger{% endif %} bg-opacity-10 {% if net_worth_change >= 0 %}text-success{% else %}text-danger{% endif %} rounded-pill px-2 py-1 fw-bold" style="font-size: 0.75rem;">
                                 {% if net_worth_change >= 0 %}+{% endif %}{{ net_worth_percent|translate_digits }}%
                             </span>
+                            
+                            <!-- Compact 3M Projection Badge -->
+                            {% if projected_3m_growth != 0 %}
+                            <span class="ms-auto badge bg-primary bg-opacity-10 text-primary border-0 rounded-pill px-2 py-1 d-none d-sm-inline-flex align-items-center" 
+                                  style="font-size: 0.7rem; font-weight: 700;"
+                                  data-bs-toggle="tooltip" title="{% trans 'Projected 3-month growth based on recent savings' %}">
+                                <i class="bi bi-magic me-1"></i>
+                                {% trans "3M GOAL" %}: 
+                                {% if projected_3m_growth > 0 %}+{% endif %}{{ currency_symbol }}{{ projected_3m_growth|compact_amount|translate_digits }}
+                            </span>
+                            {% endif %}
                         </div>
                     </div>
-                    <hr>
                 </div>
+                <hr>
 
                 <!-- Premium Account List (Image Match) -->
-                <div class="nw-accounts-list-premium px-2">
+                <!-- Desktop-only Account List (Indices 1-3 visible, 4+ hidden by default) -->
+                <div class="nw-accounts-list-premium px-2 d-none d-lg-block">
                     {% for account in accounts %}
                         {% if forloop.counter == 4 %}
                             <div class="collapse" id="moreAccountsCollapse">
@@ -1117,6 +1138,52 @@ document.addEventListener('DOMContentLoaded', function() {
                             <a href="{% url 'account-create' %}" class="btn btn-sm btn-outline-primary rounded-pill">{% trans "Add Account" %}</a>
                         </div>
                     {% endfor %}
+                </div>
+
+                <!-- Mobile-only Account List (Completely hidden by default) -->
+                <div class="nw-accounts-list-premium px-2 d-lg-none">
+                    {% if accounts %}
+                        <div class="text-center">
+                            <button class="btn btn-sm w-100 rounded-pill fw-bold py-2" 
+                                    type="button" 
+                                    data-bs-toggle="collapse" 
+                                    data-bs-target="#mobileAccountsCollapse" 
+                                    aria-expanded="false" 
+                                    aria-controls="mobileAccountsCollapse">
+                                <i class="bi bi-wallet2 me-2"></i> {% trans "View Accounts" %} ({{ accounts.count|translate_digits }})
+                                <i class="bi bi-chevron-down ms-2"></i>
+                            </button>
+                        </div>
+                        
+                        <div class="collapse mt-2" id="mobileAccountsCollapse">
+                            {% for account in accounts %}
+                                <a href="{% url 'account-detail' account.pk %}" class="account-item-premium text-decoration-none border-0 mb-1 rounded-3 bg-light bg-opacity-50">
+                                    <div class="account-status-bar 
+                                        {% if account.account_type == 'CREDIT_CARD' %}bg-danger
+                                        {% elif account.account_type == 'INVESTMENT' or account.account_type == 'FIXED_DEPOSIT' %}bg-primary
+                                        {% elif account.account_type == 'CASH' %}bg-warning
+                                        {% else %}bg-info{% endif %}" style="width: 3px;">
+                                    </div>
+                                    <div class="account-info">
+                                        <span class="account-name-bold text-truncate" style="font-size: 0.85rem;">{{ account.name }}</span>
+                                        <span class="account-type-subtext" style="font-size: 0.7rem;">{{ account.get_account_type_display }}</span>
+                                    </div>
+                                    <div class="account-amount-bold text-body-emphasis" style="font-size: 0.85rem;">
+                                        {% with balance=account_base_balances|get_dict_item:account.pk %}
+                                            {% if balance < 0 %}
+                                                <span class="text-negative">{{ currency_symbol }}{{ balance|abs_val|humanize_currency:currency_symbol|translate_digits }}</span>
+                                            {% else %}
+                                                {{ currency_symbol }}{{ balance|humanize_currency:currency_symbol|translate_digits }}
+                                            {% endif %}
+                                        {% endwith %}
+                                    </div>
+                                </a>
+                            {% endfor %}
+                            <div class="text-center mt-2">
+                                <a href="{% url 'account-list' %}" class="text-muted small text-decoration-none fw-bold">{% trans "Manage" %} →</a>
+                            </div>
+                        </div>
+                    {% endif %}
                 </div>
             </div>
         </div>
@@ -2163,6 +2230,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // --- 0.5 Net Worth Sparkline Chart ---
         const ctxNW = document.getElementById('nwSparklineChart');
+        const forecastIndexStart = {{ forecast_index_start|default:6 }};
+        
         if (ctxNW && nwTrend.length > 0) {
             charts.netWorthSparkline = new Chart(ctxNW.getContext('2d'), {
                 type: 'line',
@@ -2179,7 +2248,11 @@ document.addEventListener('DOMContentLoaded', function() {
                         pointHoverBorderColor: '#fff',
                         pointHoverBorderWidth: 2,
                         fill: false,
-                        tension: 0.4
+                        tension: 0.4,
+                        segment: {
+                            borderDash: ctx => ctx.p0DataIndex >= forecastIndexStart - 1 ? [5, 5] : undefined,
+                            borderColor: ctx => ctx.p0DataIndex >= forecastIndexStart - 1 ? 'rgba(29, 158, 117, 0.5)' : undefined,
+                        }
                     }]
                 },
                 options: {
@@ -2201,10 +2274,20 @@ document.addEventListener('DOMContentLoaded', function() {
                                     return;
                                 }
                                 if (tooltipModel.body) {
+                                    const index = tooltipModel.dataPoints[0].dataIndex;
+                                    const isProjected = index >= forecastIndexStart;
+                                    
                                     const date = tooltipModel.title[0] || '';
                                     const bodyLines = tooltipModel.body.map(b => b.lines);
                                     let innerHtml = '<div>';
-                                    if (date) innerHtml += '<div style="font-size: 9px; opacity: 0.8; margin-bottom: 2px;">' + date + '</div>';
+                                    if (date) {
+                                        innerHtml += '<div style="font-size: 9px; opacity: 0.8; margin-bottom: 2px; display: flex; justify-content: space-between;">';
+                                        innerHtml += '<span>' + date + '</span>';
+                                        if (isProjected) {
+                                            innerHtml += '<span style="color: #4CC9F0; font-weight: bold; margin-left: 8px;">(Projected)</span>';
+                                        }
+                                        innerHtml += '</div>';
+                                    }
                                     bodyLines.forEach(function(body, i) {
                                         innerHtml += '<div style="font-weight: bold;">' + body + '</div>';
                                     });
