@@ -1405,8 +1405,8 @@ document.addEventListener('DOMContentLoaded', function() {
             </div>
             {% if asset_allocation %}
             <div class="card-body p-4 d-flex flex-column justify-content-center align-items-center text-center">
-                <!-- SVG Donut Chart for Allocation -->
-                <div class="position-relative mb-3" style="width: 170px; height: 170px;">
+                <!-- SVG Donut Chart for Allocation (Desktop) -->
+                <div class="position-relative mb-3 d-none d-lg-block" style="width: 170px; height: 170px;">
                     <svg viewBox="0 0 120 120" class="w-100 h-100" style="transform: rotate(-90deg);">
                         <circle cx="60" cy="60" r="45" fill="none" stroke="var(--bs-tertiary-bg)" stroke-width="12"/>
                         {% for item in asset_allocation %}
@@ -1422,8 +1422,41 @@ document.addEventListener('DOMContentLoaded', function() {
                         <span class="d-block text-muted" style="font-size: 0.75rem; margin-top: -2px;">{{ asset_allocation.0.type }}</span>
                     </div>
                 </div>
-                <!-- Legend -->
-                <div class="d-flex flex-wrap justify-content-center gap-3 mb-3">
+
+                <!-- Horizontal Stacked Bar (Mobile) -->
+                <div class="d-lg-none w-100 mb-4 px-1">
+                    <div class="progress rounded-pill overflow-hidden bg-body-tertiary" style="height: 24px;">
+                        {% for item in asset_allocation %}
+                            <div class="progress-bar {% if not forloop.last %}border-end border-white border-opacity-25{% endif %}" 
+                                 role="progressbar" 
+                                 style="width: {{ item.percent }}%; background-color: {% if item.type_key == 'CASH' %}#5DCAA5{% elif item.type_key == 'BANK' %}#1D9E75{% elif item.type_key == 'CREDIT_CARD' %}#E05C45{% elif item.type_key == 'INVESTMENT' or item.type_key == 'FIXED_DEPOSIT' %}#378ADD{% else %}#9E9D9A{% endif %};" 
+                                 aria-valuenow="{{ item.percent }}" 
+                                 aria-valuemin="0" 
+                                 aria-valuemax="100">
+                                 {% if item.percent > 12 %}
+                                    <span class="fw-bold text-white" style="font-size: 0.75rem;">{{ item.percent|floatformat:0|translate_digits }}%</span>
+                                 {% endif %}
+                            </div>
+                        {% endfor %}
+                    </div>
+                    <!-- Label Row for small segments -->
+                    <div class="mt-3 row g-3 text-start">
+                        {% for item in asset_allocation %}
+                        <div class="col-6">
+                            <div class="d-flex align-items-start gap-2">
+                                <span class="rounded-circle d-inline-block mt-1" style="width: 10px; height: 10px; background-color: {% if item.type_key == 'CASH' %}#5DCAA5{% elif item.type_key == 'BANK' %}#1D9E75{% elif item.type_key == 'CREDIT_CARD' %}#E05C45{% elif item.type_key == 'INVESTMENT' or item.type_key == 'FIXED_DEPOSIT' %}#378ADD{% else %}#9E9D9A{% endif %}; flex-shrink: 0;"></span>
+                                <div>
+                                    <div class="fw-bold small text-body-emphasis lh-sm">{{ item.type }}</div>
+                                    <div class="text-muted small mt-1" style="font-size: 0.8rem;">{{ item.percent|translate_digits }}%</div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Legend (Desktop) -->
+                <div class="d-none d-lg-flex flex-wrap justify-content-center gap-3 mb-3">
                     {% for item in asset_allocation %}
                     <div class="text-center px-1">
                         <div class="d-flex align-items-center justify-content-center gap-1 mb-1">
