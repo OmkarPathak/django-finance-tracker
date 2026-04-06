@@ -784,3 +784,19 @@ class GoalContribution(models.Model):
 
     def __str__(self):
         return f"+{self.amount} to {self.goal.name} on {self.date}"
+
+class EmailLog(models.Model):
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='email_logs')
+    to_email = models.EmailField()
+    subject = models.CharField(max_length=255)
+    body = models.TextField()
+    html_body = models.TextField(blank=True, null=True)
+    sent_at = models.DateTimeField(auto_now_add=True)
+    status = models.CharField(max_length=20, default='SENT') # SENT, FAILED
+    error_message = models.TextField(blank=True, null=True)
+
+    class Meta:
+        ordering = ['-sent_at']
+
+    def __str__(self):
+        return f"{self.to_email}: {self.subject}"

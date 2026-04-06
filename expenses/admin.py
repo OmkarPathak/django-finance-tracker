@@ -8,6 +8,7 @@ from .models import (
     Notification,
     RecurringTransaction,
     Transfer,
+    EmailLog,
 )
 
 
@@ -18,6 +19,15 @@ class NotificationAdmin(admin.ModelAdmin):
     list_filter = ('is_read', 'created_at', 'user')
     search_fields = ('title', 'message', 'user__username')
     ordering = ('-created_at',)
+
+@admin.register(EmailLog)
+class EmailLogAdmin(admin.ModelAdmin):
+    list_display = ('to_email', 'subject', 'user', 'sent_at', 'status')
+    list_select_related = ('user',)
+    list_filter = ('sent_at', 'status')
+    search_fields = ('to_email', 'subject', 'body', 'user__username')
+    readonly_fields = ('to_email', 'subject', 'body', 'html_body', 'sent_at', 'status', 'error_message', 'user')
+    ordering = ('-sent_at',)
 
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
