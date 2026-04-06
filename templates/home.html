@@ -1087,7 +1087,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                   data-bs-toggle="tooltip" title="{% trans 'Projected 3-month growth based on recent savings' %}">
                                 <i class="bi bi-magic me-1"></i>
                                 {% trans "3M GOAL" %}: 
-                                {% if projected_3m_growth > 0 %}+{% endif %}{{ currency_symbol }}{{ projected_3m_growth|compact_amount|translate_digits }}
+                                {% if projected_3m_growth > 0 %}+{% endif %}{{ currency_symbol }}{{ projected_3m_growth|compact_amount:currency_symbol|translate_digits }}
                             </span>
                             {% endif %}
                         </div>
