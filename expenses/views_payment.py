@@ -11,6 +11,7 @@ from django.views.decorators.csrf import csrf_exempt
 
 from django.contrib.auth.models import User
 from .models import PaymentHistory, SubscriptionPlan, UserProfile
+from finance_tracker.plans import PLAN_DETAILS
 
 logger = logging.getLogger(__name__)
 
@@ -39,6 +40,7 @@ def create_order(request):
             data = json.loads(request.body)
             plan_type = data.get('plan_type')
             duration = data.get('duration', 'YEARLY')
+            is_recurring = data.get('is_recurring', True)
 
             if duration not in ('MONTHLY', 'YEARLY', 'LIFETIME'):
                 return JsonResponse({'error': 'Invalid duration'}, status=400)
@@ -48,7 +50,7 @@ def create_order(request):
             
             client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
 
-            if db_plan and db_plan.razorpay_plan_id and duration in ('MONTHLY', 'YEARLY'):
+            if is_recurring and db_plan and db_plan.razorpay_plan_id and duration in ('MONTHLY', 'YEARLY'):
                 # Handle RECURRING SUBSCRIPTION
                 subscription_data = {
                     'plan_id': db_plan.razorpay_plan_id,
@@ -74,11 +76,12 @@ def create_order(request):
                 
                 return JsonResponse({
                     'id': subscription['id'],
-                    'type': 'SUBSCRIPTION'
+                    'type': 'SUBSCRIPTION',
+                    'customer_id': request.user.profile.razorpay_customer_id
                 })
 
             # Handle ONE-TIME ORDER (Existing logic or fallbacks)
-            from finance_tracker.plans import PLAN_DETAILS
+            
             plan_info = PLAN_DETAILS.get(plan_type)
             if not plan_info:
                 return JsonResponse({'error': 'Invalid plan'}, status=400)
@@ -112,7 +115,11 @@ def create_order(request):
                 status='PENDING'
             )
 
-            return JsonResponse({**order, 'type': 'ORDER'})
+            return JsonResponse({
+                **order, 
+                'type': 'ORDER',
+                'customer_id': request.user.profile.razorpay_customer_id
+            })
         except Exception as e:
             logger.error(f"Error creating order: {e}")
             return JsonResponse({'error': str(e)}, status=500)

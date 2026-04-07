@@ -54,7 +54,7 @@
 </div>
 
 <!-- Monthly / Yearly Toggle -->
-<div class="row justify-content-center mb-4 fade-in">
+<div class="row justify-content-center mb-1 fade-in">
     <div class="col-auto">
         <div class="d-flex align-items-center gap-3 bg-body-tertiary rounded-pill px-4 py-2">
             <span id="label-monthly" class="fw-semibold small text-muted">{% trans "Monthly" %}</span>
@@ -65,6 +65,18 @@
             <span id="label-yearly" class="fw-semibold small">{% trans "Yearly" %}
                 <span class="badge bg-success bg-opacity-75 ms-1 rounded-pill" style="font-size: 0.7em;">{% trans "Save ~40%" %}</span>
             </span>
+        </div>
+    </div>
+</div>
+
+<!-- Auto-renew Toggle -->
+<div class="row justify-content-center mb-4 fade-in">
+    <div class="col-auto">
+        <div class="form-check form-switch d-flex align-items-center gap-2 bg-body-tertiary rounded-pill px-4 py-1" style="border: 1px solid var(--bs-border-color-translucent);">
+            <input class="form-check-input ms-0" type="checkbox" role="switch" id="autoRenewToggle" checked style="width: 2.4em; height: 1.2em; cursor: pointer;">
+            <label class="form-check-label fw-medium text-muted" for="autoRenewToggle" style="font-size: 0.75rem;">
+                {% trans "Auto-renew (Recommended)" %}
+            </label>
         </div>
     </div>
 </div>
@@ -227,7 +239,7 @@
                 {% elif user.profile.is_pro %}
                      <button type="button" class="w-100 btn btn-outline-primary rounded-pill fw-bold" disabled>{% trans "Included" %}</button>
                 {% else %}
-                    <button onclick="startPayment('PLUS')" class="w-100 btn btn-primary rounded-pill fw-bold shadow">{% trans "Upgrade to Plus" %}</button>
+                    <button onclick="startPayment('PLUS')" class="w-100 btn btn-primary rounded-pill fw-bold shadow btn-upgrade" data-plan="Plus">{% trans "Subscribe to Plus" %}</button>
                 {% endif %}
             </div>
         </div>
@@ -313,9 +325,9 @@
                         <button onclick="startTrial()" class="w-100 btn btn-success rounded-pill fw-bold mb-2 shadow-sm d-inline-flex align-items-center justify-content-center">
                             {% trans "Start 7-Day Free Trial" %}
                         </button>
-                        <button onclick="startPayment('PRO')" class="w-100 btn btn-outline-primary rounded-pill fw-bold">{% trans "Buy Pro Now" %}</button>
+                        <button onclick="startPayment('PRO')" class="w-100 btn btn-primary rounded-pill fw-bold shadow-sm btn-upgrade" data-plan="Pro">{% trans "Subscribe to Pro" %}</button>
                      {% else %}
-                        <button onclick="startPayment('PRO')" class="w-100 btn btn-outline-primary rounded-pill fw-bold">{% trans "Go Pro" %}</button>
+                        <button onclick="startPayment('PRO')" class="w-100 btn btn-primary rounded-pill fw-bold shadow-sm btn-upgrade" data-plan="Pro">{% trans "Subscribe to Pro" %}</button>
                      {% endif %}
                 {% endif %}
             </div>
@@ -370,13 +382,14 @@
 // Track current billing duration
 let currentDuration = 'YEARLY';
 
-// Toggle handler
 const billingToggle = document.getElementById('billingToggle');
 const labelMonthly = document.getElementById('label-monthly');
 const labelYearly = document.getElementById('label-yearly');
+const autoRenewToggle = document.getElementById('autoRenewToggle');
 
 function updatePricing() {
     const isYearly = billingToggle.checked;
+    const isRecurring = autoRenewToggle.checked;
     currentDuration = isYearly ? 'YEARLY' : 'MONTHLY';
 
     // Update label styles
@@ -396,20 +409,46 @@ function updatePricing() {
     document.querySelectorAll('.plan-suffix').forEach(el => {
         el.textContent = suffixText;
     });
+
+    // Update button text
+    const upgradeBtns = document.querySelectorAll('.btn-upgrade');
+    upgradeBtns.forEach(btn => {
+        const planName = btn.dataset.plan;
+        if (isRecurring) {
+            btn.textContent = `{% trans "Subscribe to" %} ${planName}`;
+            btn.classList.remove('btn-outline-primary');
+            btn.classList.add('btn-primary');
+        } else {
+            const period = isYearly ? '{% trans "Year" %}' : '{% trans "Month" %}';
+            btn.textContent = `{% trans "Buy 1" %} ${period}`;
+            btn.classList.remove('btn-primary');
+            btn.classList.add('btn-outline-primary');
+        }
+    });
 }
 
 billingToggle.addEventListener('change', updatePricing);
+autoRenewToggle.addEventListener('change', updatePricing);
+
+// Initialize
+updatePricing();
 
 
 async function startPayment(planType) {
     try {
+        const autoRenewToggle = document.getElementById('autoRenewToggle');
+        
         const response = await fetch("{% url 'create-order' %}", {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'X-CSRFToken': '{{ csrf_token }}'
             },
-            body: JSON.stringify({plan_type: planType, duration: currentDuration})
+            body: JSON.stringify({
+                plan_type: planType, 
+                duration: currentDuration,
+                is_recurring: autoRenewToggle.checked
+            })
         });
         
         const orderData = await response.json();
@@ -468,6 +507,10 @@ async function startPayment(planType) {
             options.subscription_id = orderData.id;
         } else {
             options.order_id = orderData.id;
+        }
+        
+        if (orderData.customer_id) {
+            options.customer_id = orderData.customer_id;
         }
         var rzp1 = new Razorpay(options);
         rzp1.open();
