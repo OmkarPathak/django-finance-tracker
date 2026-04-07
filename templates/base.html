@@ -1447,6 +1447,69 @@
         {% endif %}
     </script>
     {% block extra_body %}{% endblock %}
+
+    {% if user.is_authenticated %}
+    <!-- Cancel Subscription Modal -->
+    <div class="modal fade" id="cancelSubscriptionModal" tabindex="-1" aria-labelledby="cancelSubscriptionModalLabel" aria-hidden="true" style="z-index: 1060;">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow rounded-4">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title fw-bold" id="cancelSubscriptionModalLabel">{% trans "Cancel Subscription?" %}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body py-4 text-center">
+                    <div class="mb-4">
+                        <div class="bg-danger bg-opacity-10 text-danger rounded-circle d-flex align-items-center justify-content-center mx-auto" style="width: 64px; height: 64px;">
+                            <i class="bi bi-patch-minus-fill fs-2"></i>
+                        </div>
+                    </div>
+                    <p class="mb-0 px-3">
+                        {% blocktrans with date=user.profile.subscription_end_date|date:"M d, Y" %}
+                        Are you sure you want to cancel? You will keep your <strong>Pro features</strong> until your current cycle ends on <strong>{{ date }}</strong>.
+                        {% endblocktrans %}
+                    </p>
+                </div>
+                <div class="modal-footer border-0 pt-0 pb-4 justify-content-center">
+                    <button type="button" class="btn btn-light rounded-pill px-4 fw-bold" data-bs-dismiss="modal">{% trans "Keep it" %}</button>
+                    <button type="button" id="confirmCancelBtn" class="btn btn-danger rounded-pill px-4 fw-bold">{% trans "Yes, Cancel" %}</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    document.getElementById('confirmCancelBtn')?.addEventListener('click', async function() {
+        const btn = this;
+        const originalText = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>';
+
+        try {
+            const response = await fetch("{% url 'cancel-subscription' %}", {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            const data = await response.json();
+            if (data.success) {
+                location.reload();
+            } else {
+                alert(data.error || 'Something went wrong');
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+            }
+        } catch (e) {
+            console.error(e);
+            alert('Request failed');
+            btn.disabled = false;
+            btn.innerHTML = originalText;
+        }
+    });
+    </script>
+    {% endif %}
 </body>
 
 

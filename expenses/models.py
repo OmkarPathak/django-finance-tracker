@@ -476,6 +476,8 @@ class UserProfile(models.Model):
     subscription_end_date = models.DateTimeField(null=True, blank=True)
     is_lifetime = models.BooleanField(default=False)
     razorpay_order_id = models.CharField(max_length=100, blank=True, null=True)
+    razorpay_subscription_id = models.CharField(max_length=100, blank=True, null=True)
+    razorpay_customer_id = models.CharField(max_length=100, blank=True, null=True)
     has_used_trial = models.BooleanField(default=False)
 
     # Lifecycle email drip tracking
@@ -638,6 +640,7 @@ class SubscriptionPlan(models.Model):
     duration = models.CharField(max_length=10, choices=DURATION_CHOICES, default='YEARLY')
     name = models.CharField(max_length=100)
     price = models.DecimalField(max_digits=10, decimal_places=2, help_text="Price in INR")
+    razorpay_plan_id = models.CharField(max_length=100, blank=True, null=True)
     features = models.TextField(help_text="Comma separated features", blank=True)
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)

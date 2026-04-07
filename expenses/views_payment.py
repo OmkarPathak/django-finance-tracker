@@ -9,7 +9,8 @@ from django.http import JsonResponse
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 
-from .models import PaymentHistory, SubscriptionPlan
+from django.contrib.auth.models import User
+from .models import PaymentHistory, SubscriptionPlan, UserProfile
 
 logger = logging.getLogger(__name__)
 
@@ -39,26 +40,55 @@ def create_order(request):
             plan_type = data.get('plan_type')
             duration = data.get('duration', 'YEARLY')
 
-            if duration not in ('MONTHLY', 'YEARLY'):
+            if duration not in ('MONTHLY', 'YEARLY', 'LIFETIME'):
                 return JsonResponse({'error': 'Invalid duration'}, status=400)
 
-            from finance_tracker.plans import PLAN_DETAILS
+            # Check if this is a recurring plan with a linked Razorpay Plan ID
+            db_plan = SubscriptionPlan.objects.filter(tier=plan_type, duration=duration, is_active=True).first()
+            
+            client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
 
-            # Get price from PLAN_DETAILS (Source of Truth)
+            if db_plan and db_plan.razorpay_plan_id and duration in ('MONTHLY', 'YEARLY'):
+                # Handle RECURRING SUBSCRIPTION
+                subscription_data = {
+                    'plan_id': db_plan.razorpay_plan_id,
+                    'customer_notify': 1,
+                    'total_count': 100, # Razorpay max limit is 100 for some plan types
+                    'notes': {
+                        'plan': plan_type,
+                        'duration': duration,
+                        'user_id': request.user.id
+                    }
+                }
+                subscription = client.subscription.create(data=subscription_data)
+                
+                # Save as pending order for tracking
+                PaymentHistory.objects.create(
+                    user=request.user,
+                    order_id=subscription['id'], # Using subscription ID here
+                    amount=db_plan.price,
+                    tier=plan_type,
+                    duration=duration,
+                    status='PENDING'
+                )
+                
+                return JsonResponse({
+                    'id': subscription['id'],
+                    'type': 'SUBSCRIPTION'
+                })
+
+            # Handle ONE-TIME ORDER (Existing logic or fallbacks)
+            from finance_tracker.plans import PLAN_DETAILS
             plan_info = PLAN_DETAILS.get(plan_type)
             if not plan_info:
                 return JsonResponse({'error': 'Invalid plan'}, status=400)
 
             price_key = 'price_yearly' if duration == 'YEARLY' else 'price_monthly'
             price = plan_info.get(price_key)
-
             if price is None:
                  return JsonResponse({'error': 'Pricing not found for this plan'}, status=400)
 
-            # Amount in paise
             amount_in_paise = int(price * 100)
-            
-            client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
             
             order_data = {
                 'amount': amount_in_paise,
@@ -73,7 +103,6 @@ def create_order(request):
             
             order = client.order.create(data=order_data)
             
-            # Save order details
             PaymentHistory.objects.create(
                 user=request.user,
                 order_id=order['id'],
@@ -83,7 +112,7 @@ def create_order(request):
                 status='PENDING'
             )
 
-            return JsonResponse(order)
+            return JsonResponse({**order, 'type': 'ORDER'})
         except Exception as e:
             logger.error(f"Error creating order: {e}")
             return JsonResponse({'error': str(e)}, status=500)
@@ -95,28 +124,35 @@ def verify_payment(request):
     if request.method == "POST":
         try:
             data = json.loads(request.body)
-            razorpay_order_id = data.get('razorpay_order_id')
             razorpay_payment_id = data.get('razorpay_payment_id')
             razorpay_signature = data.get('razorpay_signature')
+            
+            # Can be either order_id or subscription_id
+            razorpay_order_id = data.get('razorpay_order_id')
+            razorpay_subscription_id = data.get('razorpay_subscription_id')
+            
+            target_id = razorpay_order_id or razorpay_subscription_id
 
             client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
             
             # Verify Signature
             params_dict = {
-                'razorpay_order_id': razorpay_order_id,
                 'razorpay_payment_id': razorpay_payment_id,
                 'razorpay_signature': razorpay_signature
             }
+            if razorpay_order_id:
+                params_dict['razorpay_order_id'] = razorpay_order_id
+            else:
+                params_dict['razorpay_subscription_id'] = razorpay_subscription_id
             
             try:
                 client.utility.verify_payment_signature(params_dict)
             except razorpay.errors.SignatureVerificationError:
-                PaymentHistory.objects.filter(order_id=razorpay_order_id).update(status='FAILED')
+                PaymentHistory.objects.filter(order_id=target_id).update(status='FAILED')
                 return JsonResponse({'error': 'Signature Verification Failed'}, status=400)
 
             # Payment Successful
-            # Update PaymentHistory
-            payment_record = PaymentHistory.objects.get(order_id=razorpay_order_id)
+            payment_record = PaymentHistory.objects.get(order_id=target_id)
             payment_record.payment_id = razorpay_payment_id
             payment_record.status = 'SUCCESS'
             payment_record.save()
@@ -124,13 +160,19 @@ def verify_payment(request):
             # Update User Subscription
             profile = request.user.profile
             profile.tier = payment_record.tier
-            profile.razorpay_order_id = razorpay_order_id
             
-            # Set end date based on duration
-            if payment_record.duration == 'MONTHLY':
-                profile.subscription_end_date = timezone.now() + timedelta(days=30)
+            if razorpay_subscription_id:
+                profile.razorpay_subscription_id = razorpay_subscription_id
             else:
-                profile.subscription_end_date = timezone.now() + timedelta(days=365)
+                profile.razorpay_order_id = razorpay_order_id
+            
+            # Set end date (Initially 30/365 days, then managed by webhooks)
+            days = 30 if payment_record.duration == 'MONTHLY' else 365
+            if payment_record.duration == 'LIFETIME':
+                profile.is_lifetime = True
+            else:
+                profile.subscription_end_date = timezone.now() + timedelta(days=days)
+            
             profile.expiry_reminder_sent = False
             profile.save()
 
@@ -139,5 +181,91 @@ def verify_payment(request):
              return JsonResponse({'error': 'Order not found'}, status=404)
         except Exception as e:
             logger.error(f"Error verifying payment: {e}")
+            return JsonResponse({'error': str(e)}, status=500)
+    return JsonResponse({'error': 'Invalid method'}, status=405)
+
+@csrf_exempt
+def razorpay_webhook(request):
+    if request.method == "POST":
+        try:
+            webhook_secret = getattr(settings, 'RAZORPAY_WEBHOOK_SECRET', None)
+            if not webhook_secret:
+                logger.error("RAZORPAY_WEBHOOK_SECRET not set")
+                return JsonResponse({'status': 'error'}, status=400)
+
+            client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
+            
+            # Verify Webhook Signature
+            payload = request.body
+            signature = request.headers.get('X-Razorpay-Signature')
+            
+            try:
+                client.utility.verify_webhook_signature(payload.decode('utf-8'), signature, webhook_secret)
+            except razorpay.errors.SignatureVerificationError:
+                return JsonResponse({'status': 'invalid signature'}, status=400)
+
+            event_data = json.loads(payload)
+            event = event_data.get('event')
+            
+            # Handle Subscription Events
+            if event == 'subscription.charged':
+                sub_id = event_data['payload']['subscription']['entity']['id']
+                profile = UserProfile.objects.filter(razorpay_subscription_id=sub_id).first()
+                if profile:
+                    # Extend subscription
+                    # The payload contains current subscription details
+                    current_end = event_data['payload']['subscription']['entity']['current_end']
+                    profile.subscription_end_date = timezone.datetime.fromtimestamp(current_end)
+                    profile.save()
+                    
+                    # Log to PaymentHistory for records
+                    PaymentHistory.objects.create(
+                        user=profile.user,
+                        order_id=sub_id,
+                        payment_id=event_data['payload']['payment']['entity']['id'],
+                        amount=event_data['payload']['payment']['entity']['amount'] / 100,
+                        tier=profile.tier,
+                        duration='RECURRING',
+                        status='SUCCESS'
+                    )
+            
+            elif event in ['subscription.cancelled', 'subscription.halted']:
+                 sub_id = event_data['payload']['subscription']['entity']['id']
+                 profile = UserProfile.objects.filter(razorpay_subscription_id=sub_id).first()
+                 if profile:
+                     # On cancellation, we don't necessarily revoke immediately, 
+                     # but we can log it or set a flag. 
+                     # subscription_end_date will handle the access expiry naturally.
+                     pass
+
+            return JsonResponse({'status': 'ok'})
+        except Exception as e:
+            logger.error(f"Webhook Error: {e}")
+            return JsonResponse({'status': 'error'}, status=500)
+    return JsonResponse({'error': 'Invalid method'}, status=405)
+
+@csrf_exempt
+@login_required
+def cancel_subscription(request):
+    if request.method == "POST":
+        try:
+            profile = request.user.profile
+            sub_id = profile.razorpay_subscription_id
+            
+            if not sub_id:
+                return JsonResponse({'error': 'No active subscription found'}, status=400)
+            
+            client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
+            
+            # Cancel at the end of the billing cycle
+            # This ensures the user gets what they paid for until the expiry date
+            client.subscription.cancel(sub_id, {'cancel_at_cycle_end': 1})
+            
+            return JsonResponse({
+                'success': True, 
+                'message': 'Subscription cancelled successfully. You will have access until the end of your current cycle.'
+            })
+        except Exception as e:
+            logger.error(f"Error cancelling subscription: {e}")
             return JsonResponse({'error': str(e)}, status=500)
     return JsonResponse({'error': 'Invalid method'}, status=405)

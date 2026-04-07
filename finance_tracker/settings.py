@@ -260,6 +260,7 @@ SOCIALACCOUNT_PROVIDERS = {
 # Razorpay Settings
 RAZORPAY_KEY_ID = os.environ.get('RAZORPAY_KEY_ID')
 RAZORPAY_KEY_SECRET = os.environ.get('RAZORPAY_KEY_SECRET')
+RAZORPAY_WEBHOOK_SECRET = os.environ.get('RAZORPAY_WEBHOOK_SECRET')
 
 # Email Backend Configuration (SMTP)
 # EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'

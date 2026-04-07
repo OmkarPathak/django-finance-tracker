@@ -80,7 +80,7 @@ from .models import PaymentHistory, UserProfile
 
 @admin.register(UserProfile)
 class UserProfileAdmin(admin.ModelAdmin):
-    list_display = ('user', 'tier', 'subscription_end_date', 'is_lifetime', 'is_pro', 'email_verified')
+    list_display = ('user', 'tier', 'subscription_end_date', 'subscription_expired', 'is_lifetime', 'is_pro', 'razorpay_subscription_id', 'email_verified')
     list_select_related = ('user',)
     list_filter = ('tier', 'is_lifetime')
     search_fields = ('user__username', 'user__email')
@@ -93,6 +93,10 @@ class UserProfileAdmin(admin.ModelAdmin):
         except EmailAddress.DoesNotExist:
             return False
     email_verified.boolean = True
+
+    def subscription_expired(self, obj):
+        return obj.subscription_expired
+    subscription_expired.boolean = True
     
 @admin.register(PaymentHistory)
 class PaymentHistoryAdmin(admin.ModelAdmin):
@@ -105,7 +109,7 @@ from .models import SubscriptionPlan
 
 @admin.register(SubscriptionPlan)
 class SubscriptionPlanAdmin(admin.ModelAdmin):
-    list_display = ('name', 'tier', 'duration', 'price', 'is_active')
+    list_display = ('name', 'tier', 'duration', 'price', 'razorpay_plan_id', 'is_active')
     list_editable = ('price', 'is_active')
     list_filter = ('tier', 'duration')
     ordering = ('tier', 'price')

@@ -425,20 +425,26 @@ async function startPayment(planType) {
             "key": "{{ RAZORPAY_KEY_ID }}",
             "name": "TrackMyRupee",
             "description": "Upgrade to " + planType + " (" + durationLabel + ")",
-            "order_id": orderData.id, 
             "handler": async function (response){
                 // Verify Payment on Server
+                const verifyDataPayload = {
+                    razorpay_payment_id: response.razorpay_payment_id,
+                    razorpay_signature: response.razorpay_signature
+                };
+                
+                if (orderData.type === 'SUBSCRIPTION') {
+                    verifyDataPayload.razorpay_subscription_id = response.razorpay_subscription_id;
+                } else {
+                    verifyDataPayload.razorpay_order_id = response.razorpay_order_id;
+                }
+
                 const verifyRes = await fetch("{% url 'verify-payment' %}", {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                          'X-CSRFToken': '{{ csrf_token }}'
                     },
-                    body: JSON.stringify({
-                        razorpay_order_id: response.razorpay_order_id,
-                        razorpay_payment_id: response.razorpay_payment_id,
-                        razorpay_signature: response.razorpay_signature
-                    })
+                    body: JSON.stringify(verifyDataPayload)
                 });
                 
                 const verifyData = await verifyRes.json();
@@ -457,6 +463,12 @@ async function startPayment(planType) {
                 "color": "#1D9E75"
             }
         };
+
+        if (orderData.type === 'SUBSCRIPTION') {
+            options.subscription_id = orderData.id;
+        } else {
+            options.order_id = orderData.id;
+        }
         var rzp1 = new Razorpay(options);
         rzp1.open();
         

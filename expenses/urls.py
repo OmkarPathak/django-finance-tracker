@@ -92,6 +92,8 @@ urlpatterns = [
     # Payments
     path('api/create-order/', views_payment.create_order, name='create-order'),
     path('api/verify-payment/', views_payment.verify_payment, name='verify-payment'),
+    path('api/razorpay-webhook/', views_payment.razorpay_webhook, name='razorpay-webhook'),
+    path('api/cancel-subscription/', views_payment.cancel_subscription, name='cancel-subscription'),
     path('api/resend-verification/', views.resend_verification_email, name='resend-verification'),
     path('api/predict-category/', views.predict_category_view, name='predict-category'),
     path('api/parse-expense/', views.parse_expense_view, name='parse-expense'),
