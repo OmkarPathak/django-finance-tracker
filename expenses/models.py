@@ -478,6 +478,7 @@ class UserProfile(models.Model):
     razorpay_order_id = models.CharField(max_length=100, blank=True, null=True)
     razorpay_subscription_id = models.CharField(max_length=100, blank=True, null=True)
     razorpay_customer_id = models.CharField(max_length=100, blank=True, null=True)
+    cancel_at_cycle_end = models.BooleanField(default=False)
     has_used_trial = models.BooleanField(default=False)
 
     # Lifecycle email drip tracking

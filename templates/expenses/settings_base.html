@@ -25,11 +25,21 @@
                     {% if user.profile.razorpay_subscription_id and not user.profile.subscription_expired %}
                     <div class="mt-2 pt-2 border-top border-primary border-opacity-10 d-flex justify-content-between align-items-center">
                         <small class="text-muted" style="font-size: 0.7rem;">
-                            {% blocktrans with date=user.profile.subscription_end_date|date:"M d, Y" %}
-                            Renews: {{ date }}
-                            {% endblocktrans %}
+                            {% if user.profile.cancel_at_cycle_end %}
+                                {% blocktrans with date=user.profile.subscription_end_date|date:"M d, Y" %}
+                                Ends: {{ date }}
+                                {% endblocktrans %}
+                            {% else %}
+                                {% blocktrans with date=user.profile.subscription_end_date|date:"M d, Y" %}
+                                Renews: {{ date }}
+                                {% endblocktrans %}
+                            {% endif %}
                         </small>
+                        {% if not user.profile.cancel_at_cycle_end %}
                         <a href="javascript:void(0)" class="text-danger small fw-bold text-decoration-none" data-bs-toggle="modal" data-bs-target="#cancelSubscriptionModal" style="font-size: 0.7rem;">{% trans "Cancel" %}</a>
+                        {% else %}
+                        <span class="badge bg-danger bg-opacity-10 text-danger border-0 flex-shrink-0" style="font-size: 0.55rem; padding: 2px 6px;">{% trans "Auto-renew Off" %}</span>
+                        {% endif %}
                     </div>
                     {% endif %}
                 </div>

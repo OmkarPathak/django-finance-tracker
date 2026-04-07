@@ -80,9 +80,9 @@ from .models import PaymentHistory, UserProfile
 
 @admin.register(UserProfile)
 class UserProfileAdmin(admin.ModelAdmin):
-    list_display = ('user', 'tier', 'subscription_end_date', 'subscription_expired', 'is_lifetime', 'is_pro', 'razorpay_subscription_id', 'email_verified')
+    list_display = ('user', 'tier', 'subscription_end_date', 'cancel_at_cycle_end', 'subscription_expired', 'is_lifetime', 'is_pro', 'razorpay_subscription_id', 'email_verified')
     list_select_related = ('user',)
-    list_filter = ('tier', 'is_lifetime')
+    list_filter = ('tier', 'cancel_at_cycle_end', 'is_lifetime')
     search_fields = ('user__username', 'user__email')
 
     def email_verified(self, obj):

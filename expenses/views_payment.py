@@ -136,17 +136,21 @@ def verify_payment(request):
             client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
             
             # Verify Signature
-            params_dict = {
-                'razorpay_payment_id': razorpay_payment_id,
-                'razorpay_signature': razorpay_signature
-            }
-            if razorpay_order_id:
-                params_dict['razorpay_order_id'] = razorpay_order_id
-            else:
-                params_dict['razorpay_subscription_id'] = razorpay_subscription_id
-            
             try:
-                client.utility.verify_payment_signature(params_dict)
+                if razorpay_subscription_id:
+                    params_dict = {
+                        'razorpay_subscription_id': razorpay_subscription_id,
+                        'razorpay_payment_id': razorpay_payment_id,
+                        'razorpay_signature': razorpay_signature
+                    }
+                    client.utility.verify_subscription_payment_signature(params_dict)
+                else:
+                    params_dict = {
+                        'razorpay_order_id': razorpay_order_id,
+                        'razorpay_payment_id': razorpay_payment_id,
+                        'razorpay_signature': razorpay_signature
+                    }
+                    client.utility.verify_payment_signature(params_dict)
             except razorpay.errors.SignatureVerificationError:
                 PaymentHistory.objects.filter(order_id=target_id).update(status='FAILED')
                 return JsonResponse({'error': 'Signature Verification Failed'}, status=400)
@@ -233,10 +237,10 @@ def razorpay_webhook(request):
                  sub_id = event_data['payload']['subscription']['entity']['id']
                  profile = UserProfile.objects.filter(razorpay_subscription_id=sub_id).first()
                  if profile:
-                     # On cancellation, we don't necessarily revoke immediately, 
-                     # but we can log it or set a flag. 
-                     # subscription_end_date will handle the access expiry naturally.
-                     pass
+                     # Reset flag as it's now fully cancelled
+                     profile.cancel_at_cycle_end = False
+                     profile.save()
+                     logger.info(f"Subscription confirmed cancelled for {sub_id}")
 
             return JsonResponse({'status': 'ok'})
         except Exception as e:
@@ -260,6 +264,10 @@ def cancel_subscription(request):
             # Cancel at the end of the billing cycle
             # This ensures the user gets what they paid for until the expiry date
             client.subscription.cancel(sub_id, {'cancel_at_cycle_end': 1})
+            
+            # Update local state immediately for UI feedback
+            profile.cancel_at_cycle_end = True
+            profile.save()
             
             return JsonResponse({
                 'success': True, 
