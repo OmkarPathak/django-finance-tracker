@@ -14,7 +14,7 @@
         }
         .card {
             background-color: var(--paper);
-            border: 1px solid var(--border) !important;
+            border: 0.1px solid var(--bs-border-color-translucent) !important;
         }
         .form-control:focus {
             border-bottom-color: var(--primary) !important;
@@ -50,7 +50,7 @@
     </style>
 
     <div class="col-md-8 col-lg-6">
-        <div class="card border-0 shadow-lg rounded-4 overflow-hidden fade-in">
+        <div class="card shadow-lg rounded-4 overflow-hidden fade-in">
             <!-- Progress Header -->
             <div class="px-5 pt-4 d-flex justify-content-between align-items-center">
                 <span id="step-text" class="badge bg-primary-soft text-primary rounded-pill px-3 py-2 fw-bold">Step 1 of 6</span>
@@ -116,7 +116,7 @@
                         </div>
                     </div>
 
-                    <div class="alert alert-light border-0 py-2 small text-muted mb-4 d-flex align-items-center">
+                    <div class="alert alert-light py-2 small text-muted mb-4 d-flex align-items-center">
                         <i class="bi bi-info-circle-fill text-primary me-2"></i>
                         <span>{% trans "Add all accounts you use regularly. Don’t worry, you can add more later!" %}</span>
                         <span class="ms-1" data-bs-toggle="tooltip" title="{% trans 'Balances update automatically as you track transactions.' %}">
@@ -225,7 +225,7 @@
                         <input type="text" id="onboarding-expense-description" class="form-control" value="Big Bazaar" placeholder="{% trans 'e.g. Big Bazaar' %}">
                     </div>
 
-                    <div class="alert alert-light border-0 py-2 small text-muted mb-4">
+                    <div class="alert alert-light py-2 small text-muted mb-4">
                         <i class="bi bi-info-circle-fill text-primary me-2"></i>
                         {% trans "Categorizing your expenses helps you see trends and save money." %}
                     </div>
