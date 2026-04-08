@@ -77,6 +77,78 @@
     .quick-add-btn {
         font-size: 0.9rem;
     }
+
+    /* Speech to Text Styles */
+    .mic-btn, .btn-quick-add {
+        height: 36px !important;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .mic-btn {
+        background: transparent;
+        border: none;
+        color: #1D9E75;
+        padding: 0 5px;
+        transition: all 0.3s ease;
+        margin-right: 8px;
+        width: 36px;
+        border-radius: 50%;
+        position: relative;
+        z-index: 10;
+    }
+
+    .mic-btn:hover {
+        background-color: rgba(29, 158, 117, 0.1);
+        transform: scale(1.1);
+    }
+
+    .mic-btn.listening {
+        color: #dc3545;
+        background-color: rgba(220, 53, 69, 0.1);
+        animation: pulse-red 1.5s infinite;
+    }
+
+    @keyframes pulse-red {
+        0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.4); }
+        70% { transform: scale(1.1); box-shadow: 0 0 0 10px rgba(220, 53, 69, 0); }
+        100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(220, 53, 69, 0); }
+    }
+
+    .listening-toast {
+        position: fixed;
+        bottom: 2rem;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 1060;
+        background: rgba(0, 0, 0, 0.8);
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border-radius: 50px;
+        backdrop-filter: blur(10px);
+        display: none;
+        align-items: center;
+        gap: 10px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    }
+
+    .listening-dots span {
+        width: 6px;
+        height: 6px;
+        background: white;
+        border-radius: 50%;
+        display: inline-block;
+        animation: jump 1.4s infinite ease-in-out both;
+    }
+
+    .listening-dots span:nth-child(1) { animation-delay: -0.32s; }
+    .listening-dots span:nth-child(2) { animation-delay: -0.16s; }
+
+    @keyframes jump {
+        0%, 80%, 100% { transform: scale(0); }
+        40% { transform: scale(1.0); }
+    }
 </style>
 <div class="row justify-content-center ">
     <div class="col-md-6">
@@ -104,11 +176,22 @@
                 <div class="position-relative">
                     <textarea id="nl-input" class="form-control border-1 rounded-4 py-3 px-4" 
                         rows="2" placeholder="{% trans 'What did you spend on?' %}" style="resize: none; border-color: rgba(29, 158, 117, 0.2) !important;" autofocus></textarea>
-                    <div class="position-absolute bottom-0 end-0 p-3">
-                        <button type="button" id="btn-parse" class="btn btn-teal btn-sm rounded-pill px-3 fw-bold">
+                    <div class="position-absolute bottom-0 end-0 p-2 p-md-3 d-flex align-items-center" style="z-index: 15;">
+                        <button type="button" id="btn-mic" class="mic-btn" title="{% trans 'Speak Expense' %}" style="display: flex !important;">
+                            <i class="bi bi-mic-fill" style="font-size: 1.25rem;"></i>
+                        </button>
+                        <button type="button" id="btn-parse" class="btn btn-teal btn-sm rounded-pill px-3 fw-bold btn-quick-add">
                             {% trans "Go" %}
                         </button>
                     </div>
+                </div>
+
+                <!-- Listening Toast -->
+                <div id="listening-status" class="listening-toast">
+                    <div class="listening-dots">
+                        <span></span><span></span><span></span>
+                    </div>
+                    <span class="fw-medium">{% trans "Listening... Speak now" %}</span>
                 </div>
 
                 <!-- Suggestions -->
@@ -395,6 +478,31 @@
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{% trans "Cancel" %}</button>
                 <button type="button" class="btn btn-primary" id="saveQuickCategory">{% trans "Save Category" %}</button>
             </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Speech Permission Modal -->
+    <div class="modal fade" id="speechPermissionModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg rounded-4">
+                <div class="modal-body text-center p-5">
+                    <div class="mb-4">
+                        {% include 'illustrations/permission_mic.svg' %}
+                    </div>
+                    <h4 class="fw-bold mb-3">{% trans "Microphone Access Required" %}</h4>
+                    <p class="text-secondary mb-4">
+                        {% trans "To add expenses using your voice, we need permission to access your microphone. Please enable it in your browser settings." %}
+                    </p>
+                    <div class="d-grid gap-2">
+                        <button type="button" class="btn btn-teal py-2 rounded-pill fw-bold" onclick="requestMicAccess()">
+                            {% trans "Try Again" %}
+                        </button>
+                        <button type="button" class="btn btn-link text-muted text-decoration-none" data-bs-dismiss="modal">
+                            {% trans "Maybe Later" %}
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -1084,5 +1192,117 @@
     });
 </script>
 
+<script>
+    // --- Speech Recognition Logic ---
+    const micBtn = document.getElementById('btn-mic');
+    const nlInput = document.getElementById('nl-input');
+    const listeningStatus = document.getElementById('listening-status');
+    const permissionModalElement = document.getElementById('speechPermissionModal');
+    const permissionModal = permissionModalElement ? new bootstrap.Modal(permissionModalElement) : null;
+
+    let recognition;
+    let isListening = false;
+
+    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        recognition = new SpeechRecognition();
+        
+        // Configure for Indian English
+        recognition.lang = 'en-IN';
+        recognition.continuous = false;
+        recognition.interimResults = false;
+
+        recognition.onstart = function() {
+            isListening = true;
+            if (micBtn) micBtn.classList.add('listening');
+            if (listeningStatus) listeningStatus.style.display = 'flex';
+        };
+
+        recognition.onresult = function(event) {
+            const transcript = event.results[0][0].transcript;
+            
+            // Append to existing text if any
+            if (nlInput) {
+                const currentVal = nlInput.value.trim();
+                nlInput.value = currentVal ? currentVal + ' ' + transcript : transcript;
+                nlInput.focus();
+                
+                // Trigger the existing input listener if any
+                const inputEvent = new Event('input', { bubbles: true });
+                nlInput.dispatchEvent(inputEvent);
+            }
+        };
+
+        recognition.onerror = function(event) {
+            console.error('Speech recognition error', event.error);
+            stopListening();
+            
+            if (event.error === 'not-allowed' && permissionModal) {
+                permissionModal.show();
+            }
+        };
+
+        recognition.onend = function() {
+            stopListening();
+        };
+    } else {
+        console.warn('Web Speech API is not supported or disabled in this context.');
+    }
+
+    function stopListening() {
+        isListening = false;
+        if (micBtn) micBtn.classList.remove('listening');
+        if (listeningStatus) listeningStatus.style.display = 'none';
+        if (recognition) recognition.stop();
+    }
+
+    function startListening() {
+        if (!recognition) {
+            if (!window.isSecureContext) {
+                alert('{% trans "Speech recognition requires a secure connection (HTTPS) to work on mobile devices. Please use localhost on your computer or host the app with SSL." %}');
+            } else {
+                alert('{% trans "Speech recognition is not supported in this browser. Please try Chrome, Edge, or Safari." %}');
+            }
+            return;
+        }
+        
+        // Check permissions first if supported by browser
+        if (navigator.permissions && navigator.permissions.query) {
+            navigator.permissions.query({ name: 'microphone' }).then(function(permissionStatus) {
+                if (permissionStatus.state === 'denied' && permissionModal) {
+                    permissionModal.show();
+                } else {
+                    try {
+                        recognition.start();
+                    } catch (e) {
+                        recognition.stop();
+                    }
+                }
+            });
+        } else {
+            // Fallback for browsers that don't support permission query
+            try {
+                recognition.start();
+            } catch (e) {
+                recognition.stop();
+            }
+        }
+    }
+
+    window.requestMicAccess = function() {
+        if (permissionModal) permissionModal.hide();
+        startListening();
+    };
+
+    if (micBtn) {
+        micBtn.addEventListener('click', function() {
+            if (isListening) {
+                stopListening();
+            } else {
+                startListening();
+            }
+        });
+    }
+</script>
 {% endblock %}
-```
+
