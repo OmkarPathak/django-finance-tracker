@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   web:
-    build: .
+    image: omkarpathak27/trackmyrupee:latest
     command: gunicorn --workers 2 --bind 0.0.0.0:8000 finance_tracker.wsgi:application
     restart: unless-stopped
     deploy:
