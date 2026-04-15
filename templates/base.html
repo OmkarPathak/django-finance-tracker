@@ -174,8 +174,6 @@
                 navigator.serviceWorker.register("{% url 'service-worker' %}")
                     .then(registration => {
                         console.log('SW registered:', registration);
-                        // Force an update check on every page load
-                        registration.update();
                     })
                     .catch(error => {
                         console.log('SW registration failed:', error);
@@ -183,8 +181,14 @@
 
                 // Listen for the controlling service worker changing and reload the page
                 // to ensure the user always has the latest version of the app.
+                // We use a guard to prevent multiple reloads and only reload if there was already a controller.
+                let refreshing = false;
                 navigator.serviceWorker.addEventListener('controllerchange', () => {
-                    window.location.reload();
+                    if (refreshing) return;
+                    if (navigator.serviceWorker.controller) {
+                        refreshing = true;
+                        window.location.reload();
+                    }
                 });
             });
         }
