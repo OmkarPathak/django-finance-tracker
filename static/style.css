@@ -1475,7 +1475,7 @@ a:hover {
   display: flex;
   justify-content: space-around;
   align-items: center;
-  z-index: 1030 !important; /* Standard navbar z-index */
+  z-index: 1090 !important; /* Higher than offcanvas (1080) to stay visible */
   padding-bottom: env(safe-area-inset-bottom, 0px);
   box-shadow: 0 -8px 25px rgba(0,0,0,0.1);
 }
@@ -1570,7 +1570,8 @@ a:hover {
 .mobile-bottom-sheet {
   height: auto !important;
   max-height: calc(85vh - (70px + env(safe-area-inset-bottom, 0px)));
-  margin-bottom: calc(70px + env(safe-area-inset-bottom, 0px)); /* Dynamic offset for bottom nav */
+  margin-bottom: calc(70px + env(safe-area-inset-bottom, 0px)) !important; /* Sit exactly above bottom nav */
+  padding-bottom: 1rem !important;
   padding-left: env(safe-area-inset-left, 0px) !important;
   padding-right: env(safe-area-inset-right, 0px) !important;
   border-top-left-radius: 32px !important;
