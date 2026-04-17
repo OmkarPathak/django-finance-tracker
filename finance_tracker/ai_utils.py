@@ -5,7 +5,7 @@ import re
 # Simple Rule-Based Keyword Mapping
 KEYWORD_MAPPING = {
     'Groceries': ['groceries', 'vegetables', 'fruits'],
-    'Food & Dining': ['food', 'dinner', 'lunch', 'breakfast', 'snack', 'coffee', 'tea', 'cafe', 'restaurant', 'burger', 'pizza', 'zomato', 'swiggy'],
+    'Food': ['food', 'dinner', 'lunch', 'breakfast', 'snack', 'coffee', 'tea', 'cafe', 'restaurant', 'burger', 'pizza', 'zomato', 'swiggy'],
     'Transport': ['taxi', 'uber', 'ola', 'auto', 'bus', 'train', 'metro', 'flight', 'ticket', 'fuel', 'petrol', 'diesel', 'parking', 'toll'],
     'Shopping': ['amazon', 'flipkart', 'myntra', 'clothes', 'shoes', 'mall', 'store', 'shop', 'electronics', 'gadget'],
     'Bills': ['electricity', 'water', 'gas', 'bill', 'recharge', 'wifi', 'internet', 'broadband', 'phone', 'mobile', 'subscription', 'netflix', 'spotify', 'prime'],

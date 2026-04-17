@@ -1,16 +1,17 @@
 import calendar
 import csv
 import io
+import re
 import traceback
 from datetime import date, datetime
+from decimal import Decimal
 
 import openpyxl
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.cache import cache
-from django.db.models import Count, Q, Sum
-from django.http import JsonResponse
+from django.db import IntegrityError, transaction
 from django.shortcuts import redirect, render
 from django.utils.formats import date_format
 from django.utils import timezone
@@ -18,7 +19,7 @@ from django.utils.translation import gettext as _
 from django.views.generic import TemplateView, View
 
 from ..forms import ContactForm
-from ..models import Category, Expense, Income, RecurringTransaction, Transfer
+from ..models import CURRENCY_CHOICES, Category, Expense, Income, RecurringTransaction, UserProfile, Transfer
 from ..utils import get_exchange_rate
 
 
@@ -196,170 +197,252 @@ class CalendarView(LoginRequiredMixin, TemplateView):
 @login_required
 def upload_view(request):
     """
-    Upload view with year selection enforcement.
-    Supports Excel (.xlsx, .xls) and CSV (.csv) files.
+    Robust expense upload view supporting Excel and CSV.
     """
+    results = None
     
     if request.method == 'POST' and request.FILES.get('file'):
         uploaded_file = request.FILES['file']
-        selected_year = int(request.POST.get('year'))
-        created_count = 0
-        skipped_count = 0
+        selected_currency = request.POST.get('currency', request.user.profile.currency)
         
-        try:
-            # --- Phase 1: Concat all data rows ---
-            all_data_rows = []
-            
-            if uploaded_file.name.endswith(('.xlsx', '.xls')):
-                wb = openpyxl.load_workbook(uploaded_file, data_only=True)
-                for sheet_name in wb.sheetnames:
-                    sheet = wb[sheet_name]
-                    rows = list(sheet.iter_rows(values_only=True))
-                    
-                    if not rows: continue
+        from . import predict_category_ai
 
-                    header_row_index = -1
-                    header_cols = []
-                    for i, row in enumerate(rows[:10]):
-                        if not row: continue
-                        row_values = [str(val).strip().title() if val is not None else "" for val in row]
-                        if 'Date' in row_values and 'Amount' in row_values and 'Description' in row_values:
-                            header_row_index = i
-                            header_cols = row_values
+        summary = {
+            'total_rows': 0,
+            'created_count': 0,
+            'duplicate_count': 0,
+            'error_count': 0,
+            'total_amount': 0,
+            'currency_symbol': selected_currency
+        }
+
+        def get_column_mapping(headers):
+            """Intelligently map header names to target fields."""
+            patterns = {
+                'date': ['date', 'time', 'day', 'transaction', 'txn', 'dated'],
+                'amount': ['amount', 'total', 'cost', 'price', 'value', 'debit', 'spent', 'withdraw'],
+                'description': ['description', 'details', 'memo', 'remarks', 'particulars', 'narration', 'payee', 'merchant'],
+                'category': ['category', 'type', 'tag', 'label', 'expense type']
+            }
+            mapping = {}
+            header_l = [str(h).lower().strip() for h in headers if h is not None]
+            
+            for field, keywords in patterns.items():
+                for idx, h in enumerate(header_l):
+                    if any(kw in h for kw in keywords):
+                        mapping[field] = idx
+                        break
+            return mapping
+
+        def parse_robust_date(val):
+            if isinstance(val, (date, datetime)):
+                return val.date() if isinstance(val, datetime) else val
+            
+            if not val or not str(val).strip():
+                return None
+            
+            date_str = str(val).strip()
+            formats = [
+                '%d %b %Y', '%Y-%m-%d', '%d-%m-%Y', '%d/%m/%Y', '%m/%d/%Y', 
+                '%d %B %Y', '%d %b', '%d-%b', '%d %B', '%d/%m', '%Y/%m/%d',
+                '%b %d, %Y', '%B %d, %Y', '%b %d', '%B %d'
+            ]
+            for fmt in formats:
+                try:
+                    parsed = datetime.strptime(date_str, fmt).date()
+                    # If year is not in format, strptime defaults to 1900
+                    if parsed.year == 1900:
+                        return parsed.replace(year=datetime.now().year)
+                    return parsed
+                except ValueError:
+                    continue
+            return None
+
+        def infer_column_mapping(rows):
+            """Try to guess columns based on data types in the first non-empty row."""
+            mapping = {}
+            for row in rows:
+                if not row or not any(row): continue
+                
+                # We need at least 2 or 3 columns to guess
+                cols = [str(c).strip() if c is not None else "" for c in row]
+                
+                # 1. Identify Date
+                for i, val in enumerate(cols):
+                    if parse_robust_date(val):
+                        mapping['date'] = i
+                        break
+                
+                # 2. Identify Amount (looking for numbers in other columns)
+                for i, val in enumerate(cols):
+                    if i == mapping.get('date'): continue
+                    # Remove symbols and try to parse
+                    try:
+                        clean_v = re.sub(r'[^\d\.\-]', '', val)
+                        if clean_v and float(clean_v):
+                            mapping['amount'] = i
+                            break
+                    except (ValueError, TypeError): continue
+                
+                # 3. Identify Description (longest remaining non-empty string)
+                best_desc_idx = -1
+                max_len = -1
+                for i, val in enumerate(cols):
+                    if i in mapping.values(): continue
+                    if len(val) > max_len:
+                        max_len = len(val)
+                        best_desc_idx = i
+                
+                if best_desc_idx != -1:
+                    mapping['description'] = best_desc_idx
+                
+                if len(mapping) >= 2: # Success if we have at least Date and Amount
+                    return mapping
+            return {}
+
+        try:
+            data_rows = []
+            if uploaded_file.name.endswith(('.xlsx', '.xls')):
+                uploaded_file.seek(0)
+                wb = openpyxl.load_workbook(uploaded_file, data_only=True)
+                for sheet in wb.worksheets:
+                    rows = list(sheet.iter_rows(values_only=True))
+                    if not rows: continue
+                    
+                    mapping = {}
+                    start_idx = 0
+                    for i, row in enumerate(rows[:20]):
+                        if not row or not any(row): continue
+                        temp_mapping = get_column_mapping(row)
+                        if len(temp_mapping) >= 3:
+                            mapping = temp_mapping
+                            start_idx = i + 1
                             break
                     
-                    if header_row_index == -1: continue
-
-                    sheet_col_map = {col: idx for idx, col in enumerate(header_cols) if col}
-                    required_columns = ['Date', 'Amount', 'Description', 'Category']
-                    if not all(col in sheet_col_map for col in required_columns): continue
-
-                    for row_data in rows[header_row_index + 1:]:
-                        if row_data and any(row_data):
-                            all_data_rows.append((row_data, sheet_col_map))
+                    if not mapping:
+                        mapping = infer_column_mapping(rows[:20])
+                        start_idx = 0
+                    
+                    if mapping:
+                        for row in rows[start_idx:]:
+                            if row and any(v is not None for v in row):
+                                data_rows.append((row, mapping))
 
             elif uploaded_file.name.endswith('.csv'):
-                try:
-                    decoded_file = uploaded_file.read().decode('utf-8')
-                except UnicodeDecodeError:
-                    uploaded_file.seek(0)
-                    decoded_file = uploaded_file.read().decode('latin-1')
-                
-                io_string = io.StringIO(decoded_file)
-                reader = csv.reader(io_string)
-                rows = list(reader)
-                
-                if rows:
-                    header_row_index = -1
-                    header_cols = []
-                    for i, row in enumerate(rows[:10]):
-                        if not row: continue
-                        row_values = [str(val).strip().title() if val is not None else "" for val in row]
-                        if 'Date' in row_values and 'Amount' in row_values and 'Description' in row_values:
-                            header_row_index = i
-                            header_cols = row_values
-                            break
-                    
-                    if header_row_index != -1:
-                        sheet_col_map = {col: idx for idx, col in enumerate(header_cols) if col}
-                        required_columns = ['Date', 'Amount', 'Description', 'Category']
-                        if all(col in sheet_col_map for col in required_columns):
-                            for row_data in rows[header_row_index + 1:]:
-                                if row_data and any(row_data):
-                                    all_data_rows.append((row_data, sheet_col_map))
-            else:
-                messages.error(request, _("Unsupported file format. Please upload Excel or CSV."))
-                return redirect('upload')
-
-            if not all_data_rows:
-                messages.info(request, _("No data found to import. Please check your file format."))
-                return redirect('expense-list')
-
-            # --- Phase 2: Process all concatenated rows ---
-            for row_data, row_col_map in all_data_rows:
-                try:
-                    # Parse date
-                    date_val = row_data[row_col_map['Date']]
-                    if date_val is None or str(date_val).strip() == "":
-                        skipped_count += 1
-                        continue
-                        
-                    date_obj = None
-                    if isinstance(date_val, str):
-                        formats = ['%d %b %Y', '%Y-%m-%d', '%d-%m-%Y', '%d/%m/%Y', '%m/%d/%Y', '%d %B %Y', '%d %b', '%d-%b', '%d %B', '%d/%m']
-                        for fmt in formats:
-                            try:
-                                parsed_date = datetime.strptime(date_val.strip(), fmt).date()
-                                date_obj = parsed_date.replace(year=selected_year)
-                                break
-                            except ValueError:
-                                continue
-                        if not date_obj:
-                            skipped_count += 1
-                            continue
-                    elif isinstance(date_val, (datetime, date)):
-                        date_obj = date_val.date() if isinstance(date_val, datetime) else date_val
-                        try:
-                            date_obj = date_obj.replace(year=selected_year)
-                        except ValueError:
-                            date_obj = date_obj.replace(day=28, year=selected_year)
-                    else:
-                        skipped_count += 1
-                        continue
-
-                    # Get other fields
-                    amount = row_data[row_col_map['Amount']]
-                    description = row_data[row_col_map['Description']]
-                    category = row_data[row_col_map['Category']] if 'Category' in row_col_map else None
-                    
-                    if amount is None or description is None or str(amount).strip() == "" or str(description).strip() == "":
-                        skipped_count += 1
-                        continue
-                        
-                    # Clean amount string
-                    if isinstance(amount, str):
-                        amount = amount.replace(',', '').replace('₹', '').replace('$', '').strip()
-
+                uploaded_file.seek(0)
+                content = uploaded_file.read()
+                decoded = None
+                for encoding in ['utf-8', 'latin-1', 'cp1252']:
                     try:
-                        amount = float(amount)
-                    except (ValueError, TypeError):
-                        skipped_count += 1
-                        continue
+                        decoded = content.decode(encoding)
+                        break
+                    except UnicodeDecodeError: continue
+                
+                if decoded:
+                    reader = csv.reader(io.StringIO(decoded))
+                    rows = list(reader)
+                    if rows:
+                        mapping = {}
+                        start_idx = 0
+                        for i, row in enumerate(rows[:20]):
+                            if not row or not any(row): continue
+                            temp_mapping = get_column_mapping(row)
+                            if len(temp_mapping) >= 3:
+                                mapping = temp_mapping
+                                start_idx = i + 1
+                                break
+                        if not mapping:
+                            mapping = infer_column_mapping(rows[:20])
+                            start_idx = 0
 
-                    category_obj = None
-                    if category:
-                        category_name = str(category).strip()
-                        if category_name:
-                            category_obj, _created = Category.objects.get_or_create(user=request.user, name=category_name)
+                        if mapping:
+                            for row in rows[start_idx:]:
+                                if row and any(v and str(v).strip() for v in row):
+                                    data_rows.append((row, mapping))
 
-                    Expense.objects.create(
-                        user=request.user,
-                        date=date_obj,
-                        amount=amount,
-                        description=str(description).strip(),
-                        category=category_obj.name if category_obj else "Others"
-                    )
-                    created_count += 1
-                except Exception as e:
-                    print(f"Skipping row {row_data} due to error: {e}")
-                    skipped_count += 1
-                    continue
+            if not data_rows:
+                messages.warning(request, _("Could not detect required columns (Date, Amount, Description). Please check your file."))
+            else:
+                for row, mapping in data_rows:
+                    summary['total_rows'] += 1
+                    try:
+                        # Extract and Parse
+                        date_idx = mapping.get('date')
+                        amount_idx = mapping.get('amount')
+                        desc_idx = mapping.get('description')
+                        
+                        if date_idx is None or amount_idx is None or desc_idx is None:
+                            summary['error_count'] += 1
+                            continue
 
-            if created_count > 0:
-                messages.success(request, f"Successfully imported {created_count} expenses.")
-            if skipped_count > 0:
-                messages.warning(request, f"Skipped {skipped_count} rows due to invalid data.")
-            return redirect('expense-list')
+                        date_val = parse_robust_date(row[date_idx])
+                        if not date_val:
+                            summary['error_count'] += 1
+                            continue
+
+                        raw_amount = row[amount_idx]
+                        if raw_amount is None:
+                            summary['error_count'] += 1
+                            continue
+                        
+                        amount_str = str(raw_amount).replace(',', '').strip()
+                        # Handle cases like "$ 1,200.00" or "(100.00)"
+                        cleaned_amount_str = re.sub(r'[^\d\.\-]', '', amount_str)
+                        if not cleaned_amount_str:
+                            summary['error_count'] += 1
+                            continue
+                        amount = abs(Decimal(cleaned_amount_str))
+                        
+                        desc = str(row[desc_idx]).strip()
+                        if not desc:
+                            summary['error_count'] += 1
+                            continue
+
+                        # Category Logic
+                        category_name = None
+                        cat_idx = mapping.get('category')
+                        if cat_idx is not None and row[cat_idx]:
+                            category_name = str(row[cat_idx]).strip()
+                        
+                        if not category_name:
+                            category_name = predict_category_ai(desc, user=request.user) or 'Others'
+
+                        # Create with Dedup check
+                        try:
+                            with transaction.atomic():
+                                Expense.objects.create(
+                                    user=request.user,
+                                    date=date_val,
+                                    amount=amount,
+                                    description=desc,
+                                    category=category_name,
+                                    currency=selected_currency
+                                )
+                                summary['created_count'] += 1
+                                summary['total_amount'] += float(amount)
+                        except IntegrityError:
+                            summary['duplicate_count'] += 1
+                        except Exception as e:
+                            summary['error_count'] += 1
+
+                    except Exception as e:
+                        summary['error_count'] += 1
+
+                results = summary
+                if summary['created_count'] > 0:
+                    messages.success(request, _("Processing complete! See summary below."))
+                else:
+                    messages.info(request, _("Processing complete. No new expenses were added."))
+
         except Exception as e:
-            print(f"Error processing file: {e}")
             traceback.print_exc()
             messages.error(request, f"Error processing file: {e}")
 
-    # Context for year dropdown
-    current_year = datetime.now().year
-    years = range(current_year, current_year - 5, -1)
-    
-    return render(request, 'upload.html', {'years': years, 'current_year': current_year})
+    return render(request, 'upload.html', {
+        'results': results,
+        'currencies': CURRENCY_CHOICES,
+        'default_currency': request.user.profile.currency
+    })
 
 
 def ping(request):

@@ -9,43 +9,80 @@
     <div>
         <p class="text-muted mb-4 small">
             {% blocktrans %}
-            Upload your Excel or CSV file to update your expense records. For Excel, each sheet corresponds to a month.
+            Upload your Excel or CSV file to update your expense records. For Excel, please ensure you have only one sheet.
             {% endblocktrans %}
         </p>
 
         <div class="alert alert-info border-0 shadow-sm mb-4">
             <h6 class="alert-heading fw-bold">
-                <i class="bi bi-info-circle me-2"></i>{% trans "Required Format" %}</h6>
+                <i class="bi bi-info-circle me-2"></i>{% trans "Flexible Matching" %}</h6>
             <p class="mb-2 small">
                 {% blocktrans %}
-                Your file must contain the following columns (headers are Case-Sensitive):
+                Our parser automatically detects columns for <b>Date</b>, <b>Amount</b>, <b>Description</b>, and <b>Category</b>.
+                You don't need to rename your columns if they are reasonably named.
                 {% endblocktrans %}
             </p>
-            <ul class="small mb-3">
-                <li><code>{% trans "Date" %}</code> (e.g., <i>01 Jan 2025</i>, <i>2025-01-01</i>)</li>
-                <li><code>{% trans "Amount" %}</code> ({% trans "Numeric value" %})</li>
-                <li><code>{% trans "Description" %}</code> ({% trans "Text details" %})</li>
-                <li><code>{% trans "Category" %}</code> (e.g., {% trans "Food" %}, {% trans "Travel" %})</li>
-            </ul>
             <p class="mb-0 small text-muted">
                 <strong>{% trans "Note" %}:</strong>
                 {% blocktrans %}
-                The "Select Year" below will override the year in your file dates to ensure consistency.
+                If a <b>Category</b> is provided in the file, we'll use it. Otherwise, we'll automatically categorize expenses for you.
                 {% endblocktrans %}
             </p>
         </div>
+
+        {% if results %}
+        <div class="card border-0 shadow-sm mb-4 fade-in">
+            <div class="card-body">
+                <h5 class="card-title fw-bold mb-3 text-primary">
+                    <i class="bi bi-bar-chart me-2"></i>{% trans "Upload Summary" %}
+                </h5>
+                <div class="row g-3">
+                    <div class="col-6 col-md-3">
+                        <div class="p-3 bg-light rounded shadow-sm text-center">
+                            <div class="small text-muted">{% trans "Processed" %}</div>
+                            <div class="h4 mb-0 fw-bold">{{ results.total_rows }}</div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="p-3 bg-success bg-opacity-10 rounded shadow-sm text-center">
+                            <div class="small text-success">{% trans "Created" %}</div>
+                            <div class="h4 mb-0 fw-bold text-success">{{ results.created_count }}</div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="p-3 bg-warning bg-opacity-10 rounded shadow-sm text-center">
+                            <div class="small text-warning">{% trans "Duplicates" %}</div>
+                            <div class="h4 mb-0 fw-bold text-warning">{{ results.duplicate_count }}</div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="p-3 bg-danger bg-opacity-10 rounded shadow-sm text-center">
+                            <div class="small text-danger">{% trans "Errors" %}</div>
+                            <div class="h4 mb-0 fw-bold text-danger">{{ results.error_count }}</div>
+                        </div>
+                    </div>
+                </div>
+                {% if results.total_amount > 0 %}
+                <div class="mt-4 p-3 border-top d-flex justify-content-between align-items-center">
+                    <span class="fw-bold">{% trans "Total Amount Imported" %}</span>
+                    <span class="h5 mb-0 fw-bold text-primary">{{ results.currency_symbol }}{{ results.total_amount|floatformat:2 }}</span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
 
 
         <form method="post" enctype="multipart/form-data">
             {% csrf_token %}
             <div class="mb-3">
-                <label for="year" class="form-label">{% trans "Select Year" %}</label>
-                <select name="year" id="year" class="form-select" required>
-                    {% for y in years %}
-                        <option value="{{ y }}" {% if y == current_year %}selected{% endif %}>{{ y|translate_digits }}</option>
+                <label for="currency" class="form-label">{% trans "Currency" %}</label>
+                <select name="currency" id="currency" class="form-select shadow-sm" required>
+                    {% for code, name in currencies %}
+                        <option value="{{ code }}" {% if code == default_currency %}selected{% endif %}>{{ name }}</option>
                     {% endfor %}
                 </select>
-                <div class="form-text">This year will be applied to all uploaded records.</div>
+                <div class="form-text">{% trans "Currency for the uploaded amounts." %}</div>
             </div>
 
             <div class="mb-4">
