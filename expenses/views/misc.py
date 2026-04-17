@@ -214,6 +214,7 @@ def upload_view(request):
             'created_count': 0,
             'duplicate_count': 0,
             'error_count': 0,
+            'errors': [], # Detail log
             'total_amount': 0,
             'currency_symbol': selected_currency
         }
@@ -326,9 +327,9 @@ def upload_view(request):
                         start_idx = 0
                     
                     if mapping:
-                        for row in rows[start_idx:]:
+                        for idx, row in enumerate(rows[start_idx:], start=start_idx + 1):
                             if row and any(v is not None for v in row):
-                                data_rows.append((row, mapping))
+                                data_rows.append((row, mapping, idx))
 
             elif uploaded_file.name.endswith('.csv'):
                 uploaded_file.seek(0)
@@ -358,14 +359,14 @@ def upload_view(request):
                             start_idx = 0
 
                         if mapping:
-                            for row in rows[start_idx:]:
+                            for idx, row in enumerate(rows[start_idx:], start=start_idx + 1):
                                 if row and any(v and str(v).strip() for v in row):
-                                    data_rows.append((row, mapping))
+                                    data_rows.append((row, mapping, idx))
 
             if not data_rows:
                 messages.warning(request, _("Could not detect required columns (Date, Amount, Description). Please check your file."))
             else:
-                for row, mapping in data_rows:
+                for row, mapping, row_idx in data_rows:
                     summary['total_rows'] += 1
                     try:
                         # Extract and Parse
@@ -374,31 +375,26 @@ def upload_view(request):
                         desc_idx = mapping.get('description')
                         
                         if date_idx is None or amount_idx is None or desc_idx is None:
-                            summary['error_count'] += 1
-                            continue
+                            raise ValueError(_("Missing required columns in row"))
 
                         date_val = parse_robust_date(row[date_idx])
                         if not date_val:
-                            summary['error_count'] += 1
-                            continue
+                            raise ValueError(_("Invalid date format: ") + str(row[date_idx]))
 
                         raw_amount = row[amount_idx]
                         if raw_amount is None:
-                            summary['error_count'] += 1
-                            continue
+                            raise ValueError(_("Missing amount"))
                         
                         amount_str = str(raw_amount).replace(',', '').strip()
                         # Handle cases like "$ 1,200.00" or "(100.00)"
                         cleaned_amount_str = re.sub(r'[^\d\.\-]', '', amount_str)
                         if not cleaned_amount_str:
-                            summary['error_count'] += 1
-                            continue
+                            raise ValueError(_("Invalid amount format: ") + str(raw_amount))
                         amount = abs(Decimal(cleaned_amount_str))
                         
                         desc = str(row[desc_idx]).strip()
                         if not desc:
-                            summary['error_count'] += 1
-                            continue
+                            raise ValueError(_("Missing description"))
 
                         # Category Logic
                         category_name = None
@@ -407,7 +403,7 @@ def upload_view(request):
                             category_name = str(row[cat_idx]).strip()
                         
                         if not category_name:
-                            category_name = predict_category_ai(desc, user=request.user) or 'Others'
+                            category_name = predict_category_ai(desc, user=request.user) or 'Food'
 
                         # Create with Dedup check
                         try:
@@ -425,9 +421,13 @@ def upload_view(request):
                         except IntegrityError:
                             summary['duplicate_count'] += 1
                         except Exception as e:
+                            if len(summary['errors']) < 15:
+                                summary['errors'].append({'row': row_idx, 'reason': str(e)})
                             summary['error_count'] += 1
 
                     except Exception as e:
+                        if len(summary['errors']) < 15:
+                            summary['errors'].append({'row': row_idx, 'reason': str(e)})
                         summary['error_count'] += 1
 
                 results = summary

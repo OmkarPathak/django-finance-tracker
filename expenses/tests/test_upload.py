@@ -133,6 +133,9 @@ class UploadViewTest(TestCase):
         self.assertEqual(results['created_count'], 1)
         self.assertEqual(results['error_count'], 2)
         self.assertEqual(results['total_rows'], 3)
+        self.assertEqual(len(results['errors']), 2)
+        self.assertEqual(results['errors'][0]['row'], 3) # Row 1 is header, Row 2 is Valid, Row 3 is Invalid Date
+        self.assertIn("Invalid date format", results['errors'][0]['reason'])
 
     def test_csv_encoding_handling(self):
         # Testing Latin-1 encoding

@@ -68,6 +68,33 @@
                     <span class="h5 mb-0 fw-bold text-primary">{{ results.currency_symbol }}{{ results.total_amount|floatformat:2 }}</span>
                 </div>
                 {% endif %}
+
+                {% if results.errors %}
+                <div class="mt-4">
+                    <h6 class="fw-bold text-danger mb-3">
+                        <i class="bi bi-exclamation-triangle me-2"></i>{% trans "Error Details" %}
+                        <small class="text-muted fw-normal">({% trans "Showing first 15 errors" %})</small>
+                    </h6>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-hover small">
+                            <thead class="table-light">
+                                <tr>
+                                    <th style="width: 80px;">{% trans "Row" %}</th>
+                                    <th>{% trans "Reason" %}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for error in results.errors %}
+                                <tr>
+                                    <td class="fw-bold">#{{ error.row }}</td>
+                                    <td class="text-danger">{{ error.reason }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                {% endif %}
             </div>
         </div>
         {% endif %}
