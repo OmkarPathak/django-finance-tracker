@@ -90,7 +90,10 @@ body {
   border-top-right-radius: inherit;
 }
 
-/* Animations */
+.fs-blog-content {
+  font-size: 1.125rem !important; /* Middle ground between fs-5 (1.25rem) and fs-6 (1rem) */
+}
+
 @keyframes fadeIn {
   from {
     opacity: 0;
