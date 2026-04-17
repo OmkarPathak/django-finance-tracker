@@ -14,6 +14,57 @@ body {
     background-color 0.3s ease,
     color 0.3s ease;
   background-color: #faf9f6; /* Warm Parchment Background */
+  color: #1a1a18;
+}
+
+/* --- Premium Form & Input Refinements --- */
+.input-group {
+  transition: all 0.2s ease;
+}
+
+.form-control, .form-select, .input-group-text {
+  border-color: var(--bs-border-color);
+  background-color: var(--bs-body-bg);
+  color: var(--bs-body-color);
+  transition: all 0.2s ease;
+}
+
+[data-bs-theme="dark"] .form-control, 
+[data-bs-theme="dark"] .form-select, 
+[data-bs-theme="dark"] .input-group-text {
+  background-color: rgba(255, 255, 255, 0.03);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-bs-theme="dark"] .bg-light {
+  background-color: rgba(255, 255, 255, 0.05) !important;
+  color: var(--bs-body-color) !important;
+}
+
+[data-bs-theme="dark"] .input-group.border {
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.form-control:focus {
+  border-color: var(--color-success);
+  box-shadow: 0 0 0 0.25rem rgba(29, 158, 117, 0.15);
+}
+
+/* Search bar specific integration */
+.search-input-group {
+  border: 1px solid var(--bs-border-color);
+  background: var(--bs-body-tertiary-bg);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+[data-bs-theme="dark"] .search-input-group {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.search-input-group:focus-within {
+  border-color: var(--color-success) !important;
+  box-shadow: 0 0 0 0.25rem rgba(29, 158, 117, 0.15) !important;
 }
 
 /* Global Card Refinements */
@@ -43,11 +94,9 @@ body {
 @keyframes fadeIn {
   from {
     opacity: 0;
-    transform: translateY(10px);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
   }
 }
 
@@ -327,6 +376,18 @@ body {
   border-top: 1px solid rgba(255, 255, 255, 0.05) !important;
 }
 
+/* Ensure Main Content stays above Footer stacking context */
+main {
+  position: relative;
+  z-index: 5;
+}
+
+footer {
+  position: relative;
+  z-index: 1;
+}
+
+
 [data-bs-theme="dark"] .card {
   background-color: var(--color-surface);
   border: 1px solid rgba(255, 255, 255, 0.05);
@@ -457,7 +518,10 @@ a:hover {
 .nav-link:hover,
 .nav-link.active {
   color: var(--color-success) !important;
-  font-weight: 500; /* Slightly heavier for active state */
+}
+
+.nav-link.active {
+  font-weight: 500; /* Heavier only for active state */
 }
 
 /* Pagination */
@@ -714,10 +778,20 @@ a:hover {
   display: none !important;
 }
 
-/* Fix Dropdown Z-Index Issue */
 .navbar .dropdown-menu {
-  z-index: 10000 !important; /* Ensure it sits above everything */
+  z-index: 1050 !important; /* Ensure it sits above navbar */
 }
+
+/* Global dropdown fix for mobile & desktop overlay */
+.dropdown-menu {
+  z-index: 3000 !important; /* Above everything including footer (0) and mobile UI (1030-1080) */
+}
+
+/* Ensure transaction list items don't clip dropdowns */
+.list-group-item, .list-group {
+    overflow: visible !important;
+}
+
 
 /* Ensure Navbar sits above filters (which have z-index: 1040) but below modals (1055) */
 /* Essential because backdrop-filter in dark mode creates a new stacking context */
@@ -1404,7 +1478,7 @@ a:hover {
   display: flex;
   justify-content: space-around;
   align-items: center;
-  z-index: 1100 !important; /* Always on top */
+  z-index: 1090 !important; /* Higher than offcanvas (1080) to stay visible */
   padding-bottom: env(safe-area-inset-bottom, 0px);
   box-shadow: 0 -8px 25px rgba(0,0,0,0.1);
 }
@@ -1499,7 +1573,8 @@ a:hover {
 .mobile-bottom-sheet {
   height: auto !important;
   max-height: calc(85vh - (70px + env(safe-area-inset-bottom, 0px)));
-  margin-bottom: calc(70px + env(safe-area-inset-bottom, 0px)); /* Dynamic offset for bottom nav */
+  margin-bottom: calc(70px + env(safe-area-inset-bottom, 0px)) !important; /* Sit exactly above bottom nav */
+  padding-bottom: 1rem !important;
   padding-left: env(safe-area-inset-left, 0px) !important;
   padding-right: env(safe-area-inset-right, 0px) !important;
   border-top-left-radius: 32px !important;
@@ -1524,6 +1599,14 @@ a:hover {
 
 .mobile-bottom-sheet .offcanvas-header {
   padding: 1.5rem 1.75rem 1rem;
+}
+
+/* Utilities */
+.min-width-0 {
+  min-width: 0 !important;
+}
+.overflow-hidden {
+  overflow: hidden !important;
 }
 
 .mobile-bottom-sheet .list-group-item {
