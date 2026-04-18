@@ -2042,7 +2042,6 @@ document.addEventListener('DOMContentLoaded', function() {
         </div>
     </div>
 </div>
-{% include 'partials/savings_modal.html' %}
 
 
 
@@ -3237,6 +3236,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 {% block modals %}
     {{ block.super }}
+    {% include 'partials/savings_modal.html' %}
     {% if request.user.username == 'demo' %}
         {% include "components/demo_welcome_modal.html" %}
         <script>
