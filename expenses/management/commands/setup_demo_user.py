@@ -66,7 +66,7 @@ class Command(BaseCommand):
             user=user, 
             name="Cash Wallet", 
             account_type='CASH', 
-            balance=Decimal('5000.00'), 
+            balance=Decimal('35000.00'), 
             currency='₹'
         )
         acc_invest = Account.objects.create(
@@ -112,7 +112,7 @@ class Command(BaseCommand):
 
         # 3. Time Windows (Last 3 months)
         today = date.today()
-        three_months_ago = (today.replace(day=1) - timedelta(days=62)).replace(day=1) 
+        three_months_ago = (today.replace(day=1) - timedelta(days=125)).replace(day=1) 
         
         # 4. Income History
         income_sources = [
@@ -271,7 +271,7 @@ class Command(BaseCommand):
                     user=user,
                     from_account=acc_main,
                     to_account=acc_cash,
-                    amount=Decimal('15000.00'),
+                    amount=Decimal('25000.00'),
                     date=withdrawal_date,
                     description="ATM Withdrawal"
                 )

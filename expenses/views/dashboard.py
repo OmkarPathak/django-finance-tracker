@@ -962,11 +962,16 @@ def home_view(request):
                 break
         
         if streak > 1:
+            def get_ordinal(n):
+                if 11 <= (n % 100) <= 13:
+                    return f"{n}th"
+                return f"{n}{{}}".format({1: 'st', 2: 'nd', 3: 'rd'}.get(n % 10, 'th'))
+
             insights.append({
                 'type': 'info', # Use Info for "Identity/Streak"
                 'icon': 'fire',
                 'title': _('On a Roll!'),
-                'message': _("This is your %(streak)s month in a row staying under budget.") % {'streak': streak},
+                'message': _("This is your %(streak)s month in a row staying under budget.") % {'streak': get_ordinal(streak)},
                 'allow_share': True,
                 'share_text': _("I've stayed under budget for %(streak)s months in a row! via TrackMyRupee") % {'streak': streak}
             })
