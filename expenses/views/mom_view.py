@@ -195,8 +195,12 @@ def mom_analysis_view(request):
         if top_cat_agg:
             top_category = top_cat_agg['category']
 
+    # Check if there's any actual data (not all None)
+    has_data = any(x is not None for x in inc_data) or any(x is not None for x in exp_data)
+
     context = {
         'labels': json.dumps(labels),
+        'has_data': has_data,
         'nw_data': json.dumps(nw_data),
         'exp_data': json.dumps(exp_data),
         'inv_data': json.dumps(inv_data),

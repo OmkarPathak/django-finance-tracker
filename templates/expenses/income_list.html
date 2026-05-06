@@ -147,7 +147,7 @@
                         </td>
                     </tr>
                     {% empty %}
-                    <tr class="empty-state-row">
+                    <tr class="empty-state-container">
                         <td colspan="5" class="text-center py-5">
                             <div class="py-4">
                                 <div class="mb-4">
@@ -155,7 +155,7 @@
                                 </div>
                                 <h4 class="fw-bold text-muted">{% trans "No Income Records" %}</h4>
                                 <p class="text-muted mb-4">
-                                    {% if filter_form.date_from or filter_form.date_to or filter_form.source %}
+                                    {% if filter_form.date_from.value or filter_form.date_to.value or filter_form.source.value %}
                                         {% trans "We couldn't find any income records matching your filters." %}
                                     {% else %}
                                         {% trans "You haven't recorded any income yet. Start tracking your earnings!" %}
@@ -165,9 +165,9 @@
                                     <a href="{% url 'income-create' %}" class="btn btn-primary">
                                         <i class="bi bi-plus-lg me-1"></i> {% trans "Add Income" %}
                                     </a>
-                                    {% if filter_form.date_from or filter_form.date_to or filter_form.source %}
+                                    {% if filter_form.date_from.value or filter_form.date_to.value or filter_form.source.value %}
                                         <a href="{% url 'income-list' %}" class="btn btn-outline-secondary">
-                                            <i class="bi bi-arrow-counterclockwise me-1"></i> {% trans "Clear Filters" %}
+                                            {% trans "Clear Filters" %}
                                         </a>
                                     {% endif %}
                                 </div>
@@ -180,6 +180,14 @@
         </div>
     </div>
     </div>
+    
+    <style>
+    .empty-state-container svg {
+        max-width: 160px;
+        max-height: 140px;
+        height: auto;
+    }
+    </style>
     
     <!-- Pagination -->
     {% if is_paginated %}

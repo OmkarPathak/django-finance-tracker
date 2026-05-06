@@ -194,7 +194,7 @@
                         </td>
                     </tr>
                     {% empty %}
-                    <tr>
+                    <tr class="empty-state-container">
                         <td colspan="5" class="text-center py-5">
                             <div class="py-4">
                                 <div class="mb-4 text-muted">
@@ -252,6 +252,14 @@
         {% endif %}
     </div>
 </div>
+
+<style>
+.empty-state-container svg {
+    max-width: 160px;
+    max-height: 140px;
+    height: auto;
+}
+</style>
 
 {{ trend_data.labels|json_script:"trend-labels" }}
 {{ trend_data.values|json_script:"trend-values" }}

@@ -29,7 +29,7 @@
 
 .date-range-trigger:hover {
     border-color: var(--bs-primary);
-    background: rgba(var(--bs-primary-rgb), 0.02) !important;
+    background-color: rgba(var(--bs-primary-rgb), 0.02) !important;
 }
 
 .date-range-trigger i {

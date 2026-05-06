@@ -131,7 +131,7 @@
             </div>
         {% else %}
             <!-- No Budget Set -->
-            <div class="card-body p-4 bg-body-primary text-center">
+            <div class="card-body p-4 bg-body-primary text-center empty-state-container">
                 <div class="mb-3">
                     {% include 'illustrations/empty_budget.svg' %}
                 </div>
@@ -225,7 +225,7 @@
                     {% endfor %}
                 </div>
             {% else %}
-                <div class="p-4 text-center">
+                <div class="p-4 text-center empty-state-container">
                     <div class="mb-3">
                         {% include 'illustrations/empty_daily_txn.svg' %}
                     </div>

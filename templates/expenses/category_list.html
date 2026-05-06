@@ -63,7 +63,7 @@
                             </td>
                         </tr>
                         {% empty %}
-                        <tr>
+                        <tr class="empty-state-container">
                             <td colspan="4" class="text-center py-5">
                                 <div class="py-4">
                                     <div class="mb-4">
@@ -82,6 +82,14 @@
                 </table>
             </div>
         </div>
+
+<style>
+.empty-state-container svg {
+    max-width: 160px;
+    max-height: 140px;
+    height: auto;
+}
+</style>
         
         {% if is_paginated %}
         <div class="card-footer bg-transparent py-3">

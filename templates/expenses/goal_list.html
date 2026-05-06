@@ -127,9 +127,9 @@
             </div>
         </div>
         {% empty %}
-        <div class="col-12 text-center py-5">
-            <div class="mb-4 text-primary opacity-50">
-                <i class="bi bi-bullseye display-1"></i>
+        <div class="col-12 text-center py-5 empty-state-container">
+            <div class="mb-4">
+                {% include 'illustrations/empty_goals.svg' %}
             </div>
             <h4 class="fw-bold">{% trans "No Savings Goals Yet" %}</h4>
             <p class="text-muted mb-4">{% trans "Set up a goal to track your savings for a vacation, emergency fund, or a new gadget." %}</p>
@@ -144,6 +144,11 @@
 </div>
 
 <style>
+.empty-state-container svg {
+    max-width: 160px;
+    max-height: 140px;
+    height: auto;
+}
 .hover-elevate {
     transition: transform 0.2s ease, box-shadow 0.2s ease;
 }

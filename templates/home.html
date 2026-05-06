@@ -75,6 +75,12 @@
         min-height: 250px;
         padding: 2rem;
     }
+    .empty-state-container > div > svg,
+    .empty-state-container > svg {
+        max-width: 160px;
+        max-height: 140px;
+        height: auto;
+    }
 
     /* SVG Animations */
     @keyframes bar-grow { 0% { transform: scaleY(0.3); } 100% { transform: scaleY(1); } }
@@ -1217,7 +1223,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     <span class="badge bg-secondary bg-opacity-10 text-secondary rounded-pill px-2 py-1 small border border-secondary border-opacity-10">{% trans "No Data" %}</span>
                 {% endif %}
             </div>
-            {% if hero_metrics.income > 0 or hero_metrics.spent > 0 %}
+            {% if hero_metrics.spent > 0 or salary_breakdown.total_monthly_budget > 0 %}
             <div class="card-body p-4 d-flex flex-column justify-content-center">
 
                 <!-- Ahead / Behind Budget Callout -->
@@ -1244,6 +1250,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 {% endif %}
 
                 <!-- Daily Spend Hero -->
+                {% if salary_breakdown.spending_pace.daily_spending_pace > 0 %}
                 <div class="text-center mb-3">
                     <h2 class="fw-black mb-0 p-0 text-body-emphasis" style="font-size: 1.5rem;">{{ currency_symbol }}{{ salary_breakdown.spending_pace.daily_spending_pace|compact_amount:currency_symbol|translate_digits }} <span class="fs-6 fw-normal text-muted">/ {% trans "day" %}</span></h2>
                     <small class="text-muted text-uppercase fw-bold opacity-75" style="letter-spacing: 0.5px; font-size: 0.65rem;">{% trans "Your Burn Rate" %}</small>
@@ -1255,6 +1262,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     </div>
                     {% endif %}
                 </div>
+                {% endif %}
 
                 <!-- Visual Budget Meter -->
                 {% if salary_breakdown.total_monthly_budget > 0 %}
@@ -1273,7 +1281,7 @@ document.addEventListener('DOMContentLoaded', function() {
                              style="width: {% if salary_breakdown.spending_pace.spent_percent > 100 %}100{% else %}{{ salary_breakdown.spending_pace.spent_percent|floatformat:1 }}{% endif %}%; transition: width 1.5s ease-in-out; z-index: 1;"></div>
                     </div>
                     <div class="d-flex justify-content-between mt-2">
-                        <small class="text-muted" style="font-size: 0.7rem;">{{ currency_symbol }}{{ total_expenses|floatformat:0|humanize_currency:currency_symbol|translate_digits }} {% trans "spent" %}</small>
+                        <small class="text-muted" style="font-size: 0.7rem;">{{ currency_symbol }}{{ hero_metrics.spent|floatformat:0|humanize_currency:currency_symbol|translate_digits }} {% trans "spent" %}</small>
                         <small class="text-muted" style="font-size: 0.7rem;">{{ currency_symbol }}{{ salary_breakdown.total_monthly_budget|floatformat:0|humanize_currency:currency_symbol|translate_digits }}</small>
                     </div>
 
@@ -1290,12 +1298,21 @@ document.addEventListener('DOMContentLoaded', function() {
                         {% endif %}
                     </div>
                 </div>
-                {% else %}
-                <!-- No budget set fallback -->
+                {% elif salary_breakdown.spending_pace.daily_spending_pace > 0 %}
+                <!-- No budget set but have spending data -->
                 <div class="bg-secondary bg-opacity-10 rounded-4 p-3 mb-2 text-center">
                     <small class="text-muted text-uppercase fw-bold d-block mb-1" style="letter-spacing: 0.5px; font-size: 0.65rem;">{% trans "Projected Monthly Spend" %}</small>
                     <div class="fw-black mb-1 text-body-emphasis lh-1" style="font-size: 1.3rem;">{{ currency_symbol }}{{ salary_breakdown.spending_pace.projected_month_spend|floatformat:0|humanize_currency:currency_symbol|translate_digits }}</div>
                     <a href="{% url 'budget' %}" class="text-primary small text-decoration-none fw-bold d-inline-flex align-items-center"><i class="bi bi-plus-circle me-1"></i>{% trans "Set a budget to track pace" %}</a>
+                </div>
+                {% else %}
+                <!-- No budget AND no spending data yet this month -->
+                <div class="empty-state-container text-center py-2">
+                    <div class="mb-3">
+                        {% include 'illustrations/empty_chart_pace.svg' %}
+                    </div>
+                    <p class="text-muted small mb-3">{% trans "Set a budget to monitor your spending pace." %}</p>
+                    <a href="{% url 'budget' %}" class="btn btn-outline-primary btn-sm rounded-pill px-4">{% trans "Set Budget" %}</a>
                 </div>
                 {% endif %}
 

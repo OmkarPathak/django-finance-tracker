@@ -71,7 +71,7 @@
                             </td>
                         </tr>
                         {% empty %}
-                        <tr>
+                        <tr class="empty-state-container">
                             <td colspan="6" class="text-center py-5">
                                 <div class="py-4">
                                     <div class="mb-4">
@@ -92,4 +92,12 @@
         </div>
     </div>
 </div>
+
+<style>
+.empty-state-container svg {
+    max-width: 160px;
+    max-height: 140px;
+    height: auto;
+}
+</style>
 {% endblock %}

@@ -140,14 +140,14 @@
                     </p>
                 </div>
                 <div class="card-body px-4 pb-4">
-                    {% if labels %}
+                    {% if has_data %}
                     <div style="height: 300px;">
                         <canvas id="nwChart"></canvas>
                     </div>
                     {% else %}
-                    <div class="d-flex flex-column align-items-center justify-content-center" style="height: 300px;">
+                    <div class="d-flex flex-column align-items-center justify-content-center mom-empty-state" style="height: 300px;">
                         <div class="mb-3">
-                            {% include 'illustrations/empty_chart_mom.svg' %}
+                            {% include 'illustrations/empty_chart_projection.svg' %}
                         </div>
                         <p class="text-muted small mb-0">{% trans "No data to show trends yet." %}</p>
                     </div>
@@ -177,14 +177,14 @@
                     </p>
                 </div>
                 <div class="card-body px-4 pb-4">
-                    {% if labels %}
+                    {% if has_data %}
                     <div style="height: 300px;">
                         <canvas id="savChart"></canvas>
                     </div>
                     {% else %}
-                    <div class="d-flex flex-column align-items-center justify-content-center" style="height: 300px;">
+                    <div class="d-flex flex-column align-items-center justify-content-center mom-empty-state" style="height: 300px;">
                         <div class="mb-3">
-                            {% include 'illustrations/empty_chart_mom.svg' %}
+                            {% include 'illustrations/empty_chart_daily.svg' %}
                         </div>
                         <p class="text-muted small mb-0">{% trans "Start saving to see your progress!" %}</p>
                     </div>
@@ -215,12 +215,12 @@
                     </p>
                 </div>
                 <div class="card-body px-4 pb-4">
-                    {% if labels %}
+                    {% if has_data %}
                     <div style="height: 300px;">
                         <canvas id="ieChart"></canvas>
                     </div>
                     {% else %}
-                    <div class="d-flex flex-column align-items-center justify-content-center" style="height: 300px;">
+                    <div class="d-flex flex-column align-items-center justify-content-center mom-empty-state" style="height: 300px;">
                         <div class="mb-3">
                             {% include 'illustrations/empty_chart_mom.svg' %}
                         </div>
@@ -253,14 +253,14 @@
                     </p>
                 </div>
                 <div class="card-body px-4 pb-4">
-                    {% if labels %}
+                    {% if has_data %}
                     <div style="height: 300px;">
                         <canvas id="burnChart"></canvas>
                     </div>
                     {% else %}
-                    <div class="d-flex flex-column align-items-center justify-content-center" style="height: 300px;">
+                    <div class="d-flex flex-column align-items-center justify-content-center mom-empty-state" style="height: 300px;">
                         <div class="mb-3">
-                            {% include 'illustrations/empty_chart_mom.svg' %}
+                            {% include 'illustrations/empty_chart_pace.svg' %}
                         </div>
                         <p class="text-muted small mb-0">{% trans "Analyze your spending pace here." %}</p>
                     </div>
@@ -276,6 +276,7 @@
     document.addEventListener('DOMContentLoaded', function() {
         // Shared Configuration
         const labels = {{ labels|safe }};
+        if (!labels || labels.length === 0) return;
         const translateDigits = (val) => {
             const lang = '{{ request.LANGUAGE_CODE }}';
             if (lang !== 'mr' && lang !== 'hi') return val;
@@ -466,7 +467,12 @@
 </script>
 
 <style>
-    /* Redundant styles removed */
+    /* Empty state SVG sizing */
+    .mom-empty-state svg {
+        max-width: 160px;
+        max-height: 140px;
+        height: auto;
+    }
 
     .card { transition: transform 0.2s ease, box-shadow 0.2s ease; }
     .card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.1) !important; }

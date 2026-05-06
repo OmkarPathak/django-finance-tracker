@@ -1,11 +1,42 @@
-<svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <!-- Card Base -->
-    <rect x="20" y="25" width="40" height="30" rx="4" stroke="currentColor" stroke-width="2" stroke-opacity="0.3"/>
+<svg width="200" height="160" viewBox="0 0 200 160" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background horizontal streaks -->
+  <rect x="20" y="62" width="160" height="10" rx="5" fill="#1D9E75" fill-opacity="0.06"/>
+  <rect x="35" y="78" width="130" height="8" rx="4" fill="#1D9E75" fill-opacity="0.08"/>
+  <rect x="50" y="92" width="100" height="6" rx="3" fill="#1D9E75" fill-opacity="0.05"/>
+  <rect x="10" y="48" width="80" height="6" rx="3" fill="#1D9E75" fill-opacity="0.04"/>
+  <rect x="130" y="48" width="60" height="6" rx="3" fill="#1D9E75" fill-opacity="0.04"/>
+
+  <!-- Stacked cards (payment methods) -->
+  <g transform="translate(50, 22)">
+    <!-- Back card (tilted) -->
+    <rect x="20" y="8" width="72" height="45" rx="6" stroke="#1D9E75" stroke-width="2" fill="white" transform="rotate(-5, 56, 30)" opacity="0.4"/>
+    <!-- Middle card (slight tilt) -->
+    <rect x="15" y="12" width="72" height="45" rx="6" stroke="#1D9E75" stroke-width="2" fill="white" transform="rotate(-2, 51, 34)" opacity="0.6"/>
+    <!-- Front card -->
+    <rect x="10" y="18" width="72" height="45" rx="6" stroke="#1D9E75" stroke-width="2.5" fill="white"/>
     
-    <!-- Card Stripe -->
-    <rect x="20" y="32" width="40" height="6" fill="currentColor" fill-opacity="0.1"/>
+    <!-- Card chip -->
+    <rect x="20" y="30" width="14" height="10" rx="2" stroke="#1D9E75" stroke-width="1.5" fill="none"/>
+    <path d="M20 35H34" stroke="#1D9E75" stroke-width="0.75" opacity="0.4"/>
+    <path d="M27 30V40" stroke="#1D9E75" stroke-width="0.75" opacity="0.4"/>
     
-    <!-- Card Accent (Chip/Logo) -->
-    <rect x="26" y="42" width="8" height="6" rx="1.5" fill="#1D9E75" fill-opacity="0.4" stroke="#1D9E75" stroke-width="1.5"/>
-    <circle cx="52" cy="45" r="4" fill="currentColor" fill-opacity="0.1"/>
+    <!-- Card number dots -->
+    <g fill="#1D9E75" opacity="0.3">
+      <circle cx="46" cy="42" r="1.5"/><circle cx="51" cy="42" r="1.5"/><circle cx="56" cy="42" r="1.5"/><circle cx="61" cy="42" r="1.5"/>
+    </g>
+    <!-- Magnetic strip -->
+    <path d="M10 50H82" stroke="#1D9E75" stroke-width="3" opacity="0.08"/>
+
+    <!-- UPI icon (₹ in circle, floating) -->
+    <circle cx="88" cy="68" r="14" stroke="#1D9E75" stroke-width="2" fill="white"/>
+    <text x="88" y="73" text-anchor="middle" font-family="system-ui" font-size="12" fill="#1D9E75" opacity="0.6">₹</text>
+  </g>
+
+  <!-- Sparkle accents -->
+  <g stroke="#1D9E75" stroke-width="1.5" stroke-linecap="round">
+    <path d="M155 18L158 21M158 18L155 21"/>
+    <path d="M38 122L40 124M40 122L38 124"/>
+    <circle cx="162" cy="108" r="2" fill="#1D9E75" fill-opacity="0.15"/>
+    <circle cx="32" cy="22" r="1.5" fill="#1D9E75" fill-opacity="0.2"/>
+  </g>
 </svg>

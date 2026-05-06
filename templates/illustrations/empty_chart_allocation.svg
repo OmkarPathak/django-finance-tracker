@@ -1,14 +1,37 @@
-<svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <!-- Donut Base (Gray Outline) -->
-    <circle cx="40" cy="40" r="28" stroke="currentColor" stroke-width="4" stroke-opacity="0.1"/>
-    
-    <!-- ACCENT SEGMENT (Top-Right Allocation) -->
-    <path d="M40 12C55.464 12 68 24.536 68 40" stroke="#1D9E75" stroke-width="6" stroke-linecap="round"/>
-    
-    <!-- Secondary Ghost Segments -->
-    <path d="M68 40C68 55.464 55.464 68 40 68" stroke="currentColor" stroke-width="4" stroke-opacity="0.1" stroke-linecap="round"/>
-    <path d="M40 68C24.536 68 12 55.464 12 40" stroke="currentColor" stroke-width="4" stroke-opacity="0.1" stroke-linecap="round"/>
-    
-    <!-- Centered Stack icon -->
-    <rect x="34" y="34" width="12" height="12" rx="2" stroke="currentColor" stroke-width="2" stroke-opacity="0.2"/>
+<svg width="200" height="160" viewBox="0 0 200 160" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background horizontal streaks -->
+  <rect x="20" y="62" width="160" height="10" rx="5" fill="#1D9E75" fill-opacity="0.06"/>
+  <rect x="35" y="78" width="130" height="8" rx="4" fill="#1D9E75" fill-opacity="0.08"/>
+  <rect x="50" y="92" width="100" height="6" rx="3" fill="#1D9E75" fill-opacity="0.05"/>
+  <rect x="10" y="48" width="80" height="6" rx="3" fill="#1D9E75" fill-opacity="0.04"/>
+  <rect x="130" y="48" width="60" height="6" rx="3" fill="#1D9E75" fill-opacity="0.04"/>
+
+  <!-- Stacked horizontal bars (allocation) -->
+  <g transform="translate(45, 25)">
+    <!-- Bar backgrounds -->
+    <rect x="0" y="0" width="110" height="14" rx="4" stroke="#1D9E75" stroke-width="2" fill="white"/>
+    <rect x="0" y="22" width="110" height="14" rx="4" stroke="#1D9E75" stroke-width="2" fill="white"/>
+    <rect x="0" y="44" width="110" height="14" rx="4" stroke="#1D9E75" stroke-width="2" fill="white"/>
+    <rect x="0" y="66" width="110" height="14" rx="4" stroke="#1D9E75" stroke-width="2" fill="white"/>
+
+    <!-- Filled portions (varying widths to show allocation) -->
+    <rect x="1" y="1" width="75" height="12" rx="3" fill="#1D9E75" fill-opacity="0.25"/>
+    <rect x="1" y="23" width="55" height="12" rx="3" fill="#1D9E75" fill-opacity="0.18"/>
+    <rect x="1" y="45" width="35" height="12" rx="3" fill="#1D9E75" fill-opacity="0.12"/>
+    <rect x="1" y="67" width="90" height="12" rx="3" fill="#1D9E75" fill-opacity="0.08"/>
+
+    <!-- Labels (dots) -->
+    <circle cx="-8" cy="7" r="3" fill="#1D9E75" opacity="0.5"/>
+    <circle cx="-8" cy="29" r="3" fill="#1D9E75" opacity="0.35"/>
+    <circle cx="-8" cy="51" r="3" fill="#1D9E75" opacity="0.2"/>
+    <circle cx="-8" cy="73" r="3" fill="#1D9E75" opacity="0.1"/>
+  </g>
+
+  <!-- Sparkle accents -->
+  <g stroke="#1D9E75" stroke-width="1.5" stroke-linecap="round">
+    <path d="M160 20L163 23M163 20L160 23"/>
+    <path d="M30 125L32 127M32 125L30 127"/>
+    <circle cx="165" cy="108" r="2" fill="#1D9E75" fill-opacity="0.15"/>
+    <circle cx="28" cy="22" r="1.5" fill="#1D9E75" fill-opacity="0.2"/>
+  </g>
 </svg>

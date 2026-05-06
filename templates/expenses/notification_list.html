@@ -59,7 +59,7 @@
                     {% endif %}
                 </div>
                 {% empty %}
-                <div class="text-center py-5 fade-in">
+                <div class="text-center py-5 fade-in empty-state-container">
                     <div class="d-inline-flex align-items-center justify-content-center">
                         {% include 'illustrations/empty_notifications.svg' %}
                     </div>
@@ -96,4 +96,12 @@
         {% endif %}
     </div>
 </div>
+
+<style>
+.empty-state-container svg {
+    max-width: 160px;
+    max-height: 140px;
+    height: auto;
+}
+</style>
 {% endblock %}
