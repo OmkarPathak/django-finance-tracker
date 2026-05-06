@@ -32,7 +32,7 @@
   <!-- Sparkle accents -->
   <g stroke="#1D9E75" stroke-width="1.5" stroke-linecap="round">
     <path d="M160 18L163 21M163 18L160 21"/>
-    <path d="M32" cy="120L34 122M34 120L32 122"/>
+    <path d="M32 120L34 122M34 120L32 122"/>
     <circle cx="165" cy="105" r="2" fill="#1D9E75" fill-opacity="0.15"/>
     <circle cx="28" cy="22" r="1.5" fill="#1D9E75" fill-opacity="0.2"/>
   </g>
