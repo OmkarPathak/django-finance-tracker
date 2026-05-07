@@ -2700,6 +2700,9 @@ class YearInReviewView(LoginRequiredMixin, TemplateView):
 
     def dispatch(self, request, *args, **kwargs):
         from django.shortcuts import redirect
+        if not request.user.is_authenticated:
+            return super().dispatch(request, *args, **kwargs)
+            
         if not request.user.profile.is_plus:
             messages.info(request, "Year in Review is a Premium feature. Upgrade to Plus or Pro to unlock your personalized financial story!")
             return redirect('pricing')

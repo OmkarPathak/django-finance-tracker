@@ -19,6 +19,8 @@ class RecurringTransactionListView(LoginRequiredMixin, RecurringTransactionMixin
     filter_expenses_only = True
 
     def get_queryset(self):
+        if not self.request.user.is_authenticated:
+            return RecurringTransaction.objects.none()
         queryset = RecurringTransaction.objects.filter(user=self.request.user)
         if self.filter_expenses_only:
             queryset = queryset.filter(transaction_type__in=['EXPENSE', 'TRANSFER'])
@@ -293,12 +295,17 @@ class RecurringTransactionUpdateView(LoginRequiredMixin, UpdateView):
     def get_queryset(self):
         # We need to import RecurringTransaction if not already in scope, but it's in models.
         # This view already defines model=RecurringTransaction, so it's in scope.
+        if not self.request.user.is_authenticated:
+            return super().get_queryset().none()
         return super().get_queryset().filter(user=self.request.user)
 
 class RecurringTransactionDeleteView(LoginRequiredMixin, DeleteView):
     model = RecurringTransaction
     success_url = reverse_lazy('recurring-list')
-    def get_queryset(self): return RecurringTransaction.objects.filter(user=self.request.user)
+    def get_queryset(self): 
+        if not self.request.user.is_authenticated:
+            return RecurringTransaction.objects.none()
+        return RecurringTransaction.objects.filter(user=self.request.user)
 
     def form_valid(self, form):
         # Calculate savings
