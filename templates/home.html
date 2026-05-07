@@ -667,6 +667,7 @@
                             {% include 'illustrations/empty_home.svg' %}
                         </div>
                         <p class="text-muted mb-0">{% trans "No data available yet." %}</p>
+                        <a href="{% url 'expense-create' %}" class="btn btn-outline-primary btn-sm rounded-pill mt-3 px-4">{% trans "Add Expense" %}</a>
                     </div>
                     {% endif %}
                 </div>
@@ -1219,8 +1220,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     {% else %}
                         <span class="badge bg-secondary bg-opacity-10 text-secondary rounded-pill px-2 py-1 small border border-secondary border-opacity-10">{% trans "No Budget" %}</span>
                     {% endif %}
-                {% else %}
-                    <span class="badge bg-secondary bg-opacity-10 text-secondary rounded-pill px-2 py-1 small border border-secondary border-opacity-10">{% trans "No Data" %}</span>
                 {% endif %}
             </div>
             {% if hero_metrics.spent > 0 or salary_breakdown.total_monthly_budget > 0 %}
@@ -1323,7 +1322,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     <div class="mb-3">
                         {% include 'illustrations/empty_chart_pace.svg' %}
                     </div>
-                    <p class="text-muted small mb-0">{% trans "No spending data available." %}</p>
+                    <p class="text-muted small mb-0">{% trans "Log your first expense for this month to see your pace." %}</p>
+                    <a href="{% url 'expense-create' %}" class="btn btn-outline-primary btn-sm rounded-pill mt-3 px-4">{% trans "Add Expense" %}</a>
                 </div>
             </div>
             {% endif %}
@@ -1418,6 +1418,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         {% include 'illustrations/empty_chart_allocation.svg' %}
                     </div>
                     <p class="text-muted small mb-0">{% trans "Add accounts to see your allocation." %}</p>
+                    <a href="{% url 'account-create' %}" class="btn btn-outline-primary btn-sm rounded-pill mt-3 px-4">{% trans "Add Account" %}</a>
                 </div>
             </div>
             {% endif %}
@@ -1445,8 +1446,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     {% else %}
                         <span class="badge bg-warning bg-opacity-10 text-warning rounded-pill px-3 border border-warning border-opacity-10 d-inline-flex align-items-center"><i class="bi bi-exclamation-triangle-fill me-1"></i> {% trans "Needs Attention" %}</span>
                     {% endif %}
-                {% else %}
-                    <span class="badge bg-secondary bg-opacity-10 text-secondary rounded-pill px-3 border border-secondary border-opacity-10">{% trans "No Data" %}</span>
                 {% endif %}
             </div>
             
@@ -1549,7 +1548,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     <div class="mb-3">
                         {% include 'illustrations/empty_chart_health.svg' %}
                     </div>
-                    <p class="text-muted small mb-0">{% trans "No financial data for this period." %}</p>
+                    <p class="text-muted small mb-0">{% trans "Your financial overview will appear here." %}</p>
+                    <a href="{% url 'expense-create' %}" class="btn btn-outline-primary btn-sm rounded-pill mt-3 px-4">{% trans "Add Expense" %}</a>
                 </div>
             </div>
             {% endif %}
@@ -1593,17 +1593,18 @@ document.addEventListener('DOMContentLoaded', function() {
                 </div>
                 {% endif %}
             </div>
-            <div class="card-body">
+            <div class="card-body d-flex flex-column">
                 {% if trend_labels %}
                 <div style="height: 350px; width: 100%;">
                     <canvas id="trendChart"></canvas>
                 </div>
                 {% else %}
-                <div class="empty-state-container" style="min-height: 350px;">
+                <div class="empty-state-container d-flex flex-column justify-content-center align-items-center flex-grow-1" style="min-height: 350px;">
                     <div class="mb-3">
                         {% include 'illustrations/empty_chart_daily.svg' %}
                     </div>
-                    <p class="text-muted mb-0">{% trans "Start tracking to see your spending trends!" %}</p>
+                    <p class="text-muted mb-0">{% trans "Start tracking to see your spending trends." %}</p>
+                    <a href="{% url 'expense-create' %}" class="btn btn-outline-primary btn-sm rounded-pill mt-3 px-4">{% trans "Add Expense" %}</a>
                 </div>
                 {% endif %}
             </div>
@@ -1623,8 +1624,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 </div>
                 <a href="{% url 'category-list' %}" class="btn btn-sm text-decoration-none opacity-25"><i class="bi bi-box-arrow-up-right"></i></a>
             </div>
-            <div class="card-body p-0">
-                <div class="d-flex flex-column">
+            <div class="card-body p-0 d-flex flex-column">
+                <div class="d-flex flex-column flex-grow-1">
                     {% for item in category_limits|slice:":5" %}
                     <div class="list-group-item border-0 d-flex align-items-center py-2 px-4 hover-bg-light position-relative" style="cursor: pointer;" onclick="filterByCategory('{{ item.name|escapejs }}')">
                         <!-- Left: Name -->
@@ -1669,11 +1670,12 @@ document.addEventListener('DOMContentLoaded', function() {
                         </div>
                     </div>
                     {% empty %}
-                    <div class="empty-state-container" style="min-height: 320px;">
+                    <div class="empty-state-container d-flex flex-column justify-content-center align-items-center flex-grow-1" style="min-height: 320px;">
                         <div class="mb-3">
                             {% include 'illustrations/empty_chart_categories.svg' %}
                         </div>
-                        <p class="text-muted mb-0">{% trans "No expense data available" %}</p>
+                        <p class="text-muted mb-0">{% trans "Add an expense to watch your breakdown appear." %}</p>
+                        <a href="{% url 'expense-create' %}" class="btn btn-outline-primary btn-sm rounded-pill mt-3 px-4">{% trans "Add Expense" %}</a>
                     </div>
                     {% endfor %}
                 </div>
@@ -1706,7 +1708,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     <div class="mb-3">
                         {% include 'illustrations/empty_chart_distribution.svg' %}
                     </div>
-                    <p class="text-muted mb-0">{% trans "No categories to display" %}</p>
+                    <p class="text-muted mb-0">{% trans "Your categories will appear as you track." %}</p>
+                    <a href="{% url 'expense-create' %}" class="btn btn-outline-primary btn-sm rounded-pill mt-3 px-4">{% trans "Add Expense" %}</a>
                 </div>
                 {% endif %}
             </div>
@@ -1785,7 +1788,8 @@ document.addEventListener('DOMContentLoaded', function() {
                         <div class="mb-3">
                             {% include 'illustrations/empty_recent_activity.svg' %}
                         </div>
-                        <p class="text-muted mb-0">{% trans "No recent activity" %}</p>
+                        <p class="text-muted mb-0">{% trans "Your transactions will show up here." %}</p>
+                        <a href="{% url 'expense-create' %}" class="btn btn-outline-primary btn-sm rounded-pill mt-3 px-4">{% trans "Add Expense" %}</a>
                     </div>
                     {% endfor %}
                 </div>
@@ -1930,7 +1934,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     <div class="mb-3">
                         {% include 'illustrations/empty_chart_payment.svg' %}
                     </div>
-                    <p class="text-muted small mb-0">{% trans "No payment data available" %}</p>
+                    <p class="text-muted mb-0">{% trans "Your transaction payment methods will appear here." %}</p>
+                    <a href="{% url 'expense-create' %}" class="btn btn-outline-primary btn-sm rounded-pill mt-3 px-4">{% trans "Add Expense" %}</a>
                 </div>
                 {% endif %}
             </div>
@@ -1973,6 +1978,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         {% include 'illustrations/empty_chart_projection.svg' %}
                     </div>
                     <p class="text-muted mb-0">{% trans "Not enough data yet to generate a projection. Keep tracking for a few months!" %}</p>
+                    <a href="{% url 'expense-create' %}" class="btn btn-outline-primary btn-sm rounded-pill mt-3 px-4">{% trans "Add Expense" %}</a>
                 </div>
                 {% endif %}
 
