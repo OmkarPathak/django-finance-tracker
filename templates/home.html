@@ -848,13 +848,23 @@
             </div>
         </div>
 
-        <div style="background: rgba(255,255,255,0.1); padding: 20px; border-radius: 15px; border-left: 4px solid #1D9E75; margin-bottom: 25px;">
+        <div style="background: rgba(255,255,255,0.1); padding: 20px; border-radius: 15px; border-left: 4px solid {% if hero_metrics.savings_rate < 0 %}#E53E3E{% else %}#1D9E75{% endif %}; margin-bottom: 25px;">
              <div style="font-weight: 700; font-size: 14px; margin-bottom: 6px; color: #ffffff;">✨ {% trans "AI Insight" %}</div>
              <div style="font-size: 14px; opacity: 0.9; line-height: 1.5; color: #ffffff;">
-                {% if salary_breakdown.viral_insight %}
-                    {{ salary_breakdown.viral_insight }}
+                {% if hero_metrics.savings_rate < 0 %}
+                    {% if salary_breakdown.top_categories|length > 1 %}
+                        {% blocktrans with month=salary_breakdown.month_name cat1=salary_breakdown.top_categories.0.name cat2=salary_breakdown.top_categories.1.name %}{{ month }} was a tough month — {{ cat1 }} and {{ cat2 }} ran over. Next month is a fresh start.{% endblocktrans %}
+                    {% elif salary_breakdown.top_categories|length == 1 %}
+                        {% blocktrans with month=salary_breakdown.month_name cat1=salary_breakdown.top_categories.0.name %}{{ month }} was a tough month — {{ cat1 }} ran over. Next month is a fresh start.{% endblocktrans %}
+                    {% else %}
+                        {% blocktrans with month=salary_breakdown.month_name %}{{ month }} was a tough month — spending ran over. Next month is a fresh start.{% endblocktrans %}
+                    {% endif %}
                 {% else %}
-                    {% trans "You're consistently building wealth with a positive savings rate. That's a huge win!" %}
+                    {% if salary_breakdown.viral_insight %}
+                        {{ salary_breakdown.viral_insight }}
+                    {% else %}
+                        {% trans "You're consistently building wealth with a positive savings rate. That's a huge win!" %}
+                    {% endif %}
                 {% endif %}
              </div>
         </div>
