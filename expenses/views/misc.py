@@ -403,7 +403,7 @@ def upload_view(request):
                             category_name = str(row[cat_idx]).strip()
                         
                         if not category_name:
-                            category_name = predict_category_ai(desc, user=request.user) or 'Food'
+                            category_name = predict_category_ai(desc, user=request.user, skip_genai=True) or 'Food'
 
                         # Create with Dedup check
                         try:

@@ -36,7 +36,7 @@ def predict_category_rule_based(description):
                 return category
     return None
 
-def predict_category_ai(description, user=None, categories=None):
+def predict_category_ai(description, user=None, categories=None, skip_genai=False):
     """
     Predicts category using:
     1. Historical Data (User-specific Custom Categories)
@@ -92,7 +92,7 @@ def predict_category_ai(description, user=None, categories=None):
 
     # 2. Try Gemini AI (if configured)
     api_key = os.getenv('GEMINI_API_KEY')
-    if api_key:
+    if api_key and not skip_genai:
         try:
             # Lazy import to avoid import errors if library not installed
             import google.generativeai as genai
