@@ -895,6 +895,7 @@
             <li><a href="#features" class="text-decoration-none">{% trans "Features" %}</a></li>
             <li><a href="#pricing" class="text-decoration-none">{% trans "Pricing" %}</a></li>
             <li><a href="{% url 'demo_login' %}" class="text-decoration-none">{% trans "Live Demo" %}</a></li>
+            <li><a href="{% url 'blog_list' %}" class="text-decoration-none">{% trans "Blog" %}</a></li>
             <li><a href="{% url 'account_login' %}" class="text-decoration-none">{% trans "Login" %}</a></li>
             <li><a class="nav-cta text-decoration-none" href="{% url 'account_signup' %}">{% trans "Start Free" %}</a></li>
         </ul>
@@ -915,6 +916,7 @@
 <div class="mobile-menu" id="mobile-menu">
     <a href="#features" onclick="toggleMenu()">{% trans "Features" %}</a>
     <a href="#pricing" onclick="toggleMenu()">{% trans "Pricing" %}</a>
+    <a href="{% url 'blog_list' %}">{% trans "Blog" %}</a>
     <a href="{% url 'demo_login' %}">{% trans "Live Demo" %}</a>
     <a href="{% url 'account_signup' %}" class="nav-cta">{% trans "Start Free" %}</a>
 </div>
