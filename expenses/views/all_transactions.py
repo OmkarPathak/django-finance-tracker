@@ -175,4 +175,54 @@ class AllTransactionsListView(LoginRequiredMixin, ListView):
         context['start_date'] = start_date or ''
         context['end_date'] = end_date or ''
 
+        # Month Navigation Logic
+        display_year = None
+        display_month = None
+        
+        if len(selected_years) == 1:
+            display_year = selected_years[0]
+            
+        if len(selected_months) == 1:
+            try:
+                m_idx = int(selected_months[0])
+                display_month = calendar.month_name[m_idx]
+            except (ValueError, IndexError):
+                pass
+                
+        context['display_year'] = display_year
+        context['display_month'] = display_month
+
+        if len(selected_years) == 1 and len(selected_months) == 1:
+            try:
+                curr_year = int(selected_years[0])
+                curr_month = int(selected_months[0])
+                
+                pm = 12 if curr_month == 1 else curr_month - 1
+                py = curr_year - 1 if curr_month == 1 else curr_year
+                
+                nm = 1 if curr_month == 12 else curr_month + 1
+                ny = curr_year + 1 if curr_month == 12 else curr_year
+
+                from django.urls import reverse
+                base_url = reverse('all-transactions')
+                
+                # Keep other filters (types, search)
+                query_params = []
+                for t in selected_types:
+                    query_params.append(f'type={t}')
+                if search_query:
+                    query_params.append(f'search={search_query}')
+                
+                sort_by = self.request.GET.get('sort')
+                if sort_by:
+                    query_params.append(f'sort={sort_by}')
+                
+                qp_prev = query_params + [f'year={py}', f'month={pm}']
+                qp_next = query_params + [f'year={ny}', f'month={nm}']
+                
+                context['prev_month_url'] = f"{base_url}?{'&'.join(qp_prev)}"
+                context['next_month_url'] = f"{base_url}?{'&'.join(qp_next)}"
+            except ValueError:
+                pass
+
         return context
