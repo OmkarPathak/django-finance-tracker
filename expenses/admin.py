@@ -100,9 +100,15 @@ class UserProfileAdmin(admin.ModelAdmin):
     
 @admin.register(PaymentHistory)
 class PaymentHistoryAdmin(admin.ModelAdmin):
-    list_display = ('user', 'amount', 'tier', 'status', 'created_at')
-    list_filter = ('status', 'tier')
+    list_display = ('user', 'amount', 'tier', 'status', 'created_at', 'subscription_end_date')
+    list_select_related = ('user', 'user__profile')
+    list_filter = ('status', 'tier', 'created_at')
     search_fields = ('user__username', 'order_id', 'payment_id')
+
+    def subscription_end_date(self, obj):
+        return obj.user.profile.subscription_end_date
+    subscription_end_date.short_description = 'Sub End Date'
+    subscription_end_date.admin_order_field = 'user__profile__subscription_end_date'
 
 from .models import SubscriptionPlan
 
