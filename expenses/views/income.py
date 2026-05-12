@@ -18,7 +18,7 @@ class IncomeListView(LoginRequiredMixin, RecurringTransactionMixin, ListView):
     paginate_by = 20
 
     def get_queryset(self):
-        queryset = Income.objects.filter(user=self.request.user).order_by('-date')
+        queryset = Income.objects.filter(user=self.request.user).select_related('account').order_by('-date')
         
         # Date Filter
         date_from = self.request.GET.get('date_from')

@@ -195,7 +195,7 @@ class TransferListView(LoginRequiredMixin, RecurringTransactionMixin, ListView):
     context_object_name = 'transfers'
 
     def get_queryset(self):
-        return Transfer.objects.filter(user=self.request.user).order_by('-date')
+        return Transfer.objects.filter(user=self.request.user).select_related('from_account', 'to_account').order_by('-date')
 
 class TransferUpdateView(LoginRequiredMixin, UpdateView):
     model = Transfer

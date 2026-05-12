@@ -31,7 +31,7 @@ class ExpenseListView(LoginRequiredMixin, RecurringTransactionMixin, ListView):
         return super().dispatch(request, *args, **kwargs)
 
     def get_queryset(self):
-        queryset = Expense.objects.filter(user=self.request.user).order_by('-date')
+        queryset = Expense.objects.filter(user=self.request.user).select_related('account').order_by('-date')
         
         # Filtering
         selected_years = self.request.GET.getlist('year')

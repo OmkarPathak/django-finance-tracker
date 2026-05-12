@@ -50,7 +50,7 @@ class ExpenseForm(forms.ModelForm):
             all_accounts = Account.objects.filter(user=user, is_active=True).order_by('created_at', 'id')
             limit = get_limit(profile.active_tier, 'accounts')
             if limit != -1:
-                unlocked_ids = all_accounts.values_list('id', flat=True)[:limit]
+                unlocked_ids = list(all_accounts.values_list('id', flat=True)[:limit])
                 self.fields['account'].queryset = all_accounts.filter(id__in=unlocked_ids)
             else:
                 self.fields['account'].queryset = all_accounts
