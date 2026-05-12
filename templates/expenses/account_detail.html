@@ -12,18 +12,35 @@
                     <li class="breadcrumb-item active" aria-current="page">{{ account.name }}</li>
                 </ol>
             </nav>
-            <h1 class="h2 fw-bold mb-0">{{ account.name }}</h1>
+            <div class="d-flex align-items-center gap-2 mb-0">
+                <h1 class="h2 fw-bold mb-0">{{ account.name }}</h1>
+                {% if not account.is_active %}
+                    <span class="badge bg-secondary bg-opacity-10 text-secondary rounded-pill border">{% trans "Inactive" %}</span>
+                {% endif %}
+            </div>
             <p class="text-muted mb-0">{{ account.get_account_type_display }} • {{ account.currency }}</p>
         </div>
         <div class="d-flex gap-2">
             {% if user.username != 'demo' %}
-            <a href="{% url 'transfer-create' %}?from_account={{ account.id }}" class="btn btn-outline-primary fw-bold">
-                <i class="bi bi-arrow-left-right me-1"></i> {% trans "Transfer" %}
-            </a>
+                {% if account.is_active %}
+                <a href="{% url 'transfer-create' %}?from_account={{ account.id }}" class="btn btn-outline-primary fw-bold">
+                    <i class="bi bi-arrow-left-right me-1"></i> {% trans "Transfer" %}
+                </a>
+                {% else %}
+                <button class="btn btn-outline-primary fw-bold disabled" disabled title="{% trans 'Restore account to transfer' %}">
+                    <i class="bi bi-arrow-left-right me-1"></i> {% trans "Transfer" %}
+                </button>
+                {% endif %}
             {% endif %}
-            <a href="{% url 'account-edit' account.id %}" class="btn btn-primary fw-bold">
-                <i class="bi bi-pencil me-1"></i> {% trans "Edit Account" %}
-            </a>
+            {% if account.is_active %}
+                <a href="{% url 'account-edit' account.id %}" class="btn btn-primary fw-bold">
+                    <i class="bi bi-pencil me-1"></i> {% trans "Edit Account" %}
+                </a>
+            {% else %}
+                <button class="btn btn-primary fw-bold disabled" disabled title="{% trans 'Restore account to edit' %}">
+                    <i class="bi bi-pencil me-1"></i> {% trans "Edit Account" %}
+                </button>
+            {% endif %}
         </div>
     </div>
 

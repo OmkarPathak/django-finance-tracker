@@ -2,12 +2,23 @@
 {% load i18n digit_filters %}
 
 {% block settings_content %}
+<style>
+    .nav-pills-custom .nav-link.active {
+        background-color: #1D9E75 !important;
+        color: white !important;
+    }
+    .nav-pills-custom .nav-link:not(.active):hover {
+        background-color: rgba(29, 158, 117, 0.1);
+        color: #1D9E75;
+    }
+</style>
 <div class="fade-in">
     <div class="pt-1 pb-3 mb-2">
         <div class="d-flex align-items-center justify-content-between gap-3 mb-1">
             <div class="d-flex align-items-center gap-2">
-                <h2 class="h4 mb-0 fw-bold">{% trans "Accounts" %}
-                    <span class="badge-soft badge-soft-success" style="font-size: 1rem;">{{ accounts|length }}</span>
+                <h2 class="h4 mb-0 fw-bold">
+                    {% if current_status == 'inactive' %}{% trans "Inactive Accounts" %}{% else %}{% trans "Accounts" %}{% endif %}
+                    <span class="badge-soft {% if current_status == 'inactive' %}badge-soft-secondary{% else %}badge-soft-success{% endif %}" style="font-size: 1rem;">{{ accounts|length }}</span>
                 </h2>
                 <button class="btn btn-outline-secondary rounded-circle p-0 d-flex align-items-center justify-content-center" style="width: 24px; height: 24px; min-width: 24px; line-height: 1;" data-bs-toggle="collapse" data-bs-target="#guideAccounts" aria-expanded="false" title="{% trans 'How it works' %}">
                     <i class="bi bi-info-lg" style="font-size: 0.7rem;"></i>
@@ -24,27 +35,38 @@
         </div>
         <p class="text-muted small mb-3">{% trans "Manage your wallets, bank accounts, and investment portfolios" %}</p>
     </div>
-
-    <!-- Filter Form -->
+    
+    <!-- Filter & Status Row -->
     <div class="mb-4">
         <form method="get" class="d-flex align-items-center flex-wrap gap-3">
-            <div class="d-flex align-items-center">
-                <span class="fw-bold text-muted text-uppercase" style="letter-spacing: 1px; font-size: 0.75rem;">
-                    <i class="bi bi-filter-left me-1"></i>{% trans "Filter" %}
+            <!-- Status Filter -->
+            <div class="d-flex align-items-center gap-2">
+                <span class="fw-bold text-muted text-uppercase d-none d-sm-inline" style="letter-spacing: 1px; font-size: 1rem; opacity: 0.8; line-height: 1;">
+                    <i class="bi bi-eye"></i>
                 </span>
+                <select name="status" class="form-select" style="border-radius: 8px; cursor: pointer; height: 38px; font-size: 0.9rem; border-color: rgba(0,0,0,0.1); width: auto; min-width: 110px;" onchange="this.form.submit()">
+                    <option value="active" {% if current_status == 'active' %}selected{% endif %}>{% trans "Active" %}</option>
+                    <option value="inactive" {% if current_status == 'inactive' %}selected{% endif %}>{% trans "Inactive" %}</option>
+                </select>
             </div>
-            <div style="min-width: 180px;">
-                <select name="type" class="form-select" style="border-radius: 12px; cursor: pointer; transition: all 0.2s;" onchange="this.form.submit()">
-                    <option value="">{% trans "All" %}</option>
+
+            <!-- Type Filter -->
+            <div class="d-flex align-items-center gap-2">
+                <span class="fw-bold text-muted text-uppercase d-none d-sm-inline" style="letter-spacing: 1px; font-size: 1rem; opacity: 0.8; line-height: 1;">
+                    <i class="bi bi-filter-left"></i>
+                </span>
+                <select name="type" class="form-select" style="border-radius: 8px; cursor: pointer; height: 38px; font-size: 0.9rem; border-color: rgba(0,0,0,0.1); width: auto; min-width: 130px;" onchange="this.form.submit()">
+                    <option value="">{% trans "All Types" %}</option>
                     {% for val, label in account_types %}
                         <option value="{{ val }}" {% if selected_type == val %}selected{% endif %}>{{ label }}</option>
                     {% endfor %}
                 </select>
             </div>
-            {% if selected_type %}
+
+            {% if selected_type or current_status != 'active' %}
             <div class="d-flex align-items-center">
-                <a href="{% url 'account-list' %}" class="btn btn-sm border-0 text-decoration-none text-muted d-flex align-items-center px-2 py-1" style="border-radius: 10px; font-size: 0.85rem;">
-                    <i class="bi bi-x-circle me-1 text-danger"></i>{% trans "Clear" %}
+                <a href="{% url 'account-list' %}" class="text-decoration-none text-muted d-flex align-items-center" style="font-size: 0.9rem; height: 38px; padding-top: 2px;">
+                    <i class="bi bi-x-circle me-2 text-danger"></i> {% trans "Reset Filters" %}
                 </a>
             </div>
             {% endif %}
@@ -104,7 +126,14 @@
                                     <i class="bi bi-three-dots-vertical" style="font-size: 1rem;"></i>
                                 </button>
                                 <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 rounded-3 mt-1">
-                                    {% if account.is_locked %}
+                                    {% if current_status == 'inactive' %}
+                                        <li>
+                                            <a class="dropdown-item py-1.5 d-flex align-items-center gap-2 small text-success fw-bold" href="{% url 'account-restore' account.pk %}">
+                                                <i class="bi bi-arrow-counterclockwise"></i>
+                                                <span>{% trans "Restore Account" %}</span>
+                                            </a>
+                                        </li>
+                                    {% elif account.is_locked %}
                                         <li>
                                             <a class="dropdown-item py-1.5 d-flex align-items-center gap-2 small text-primary fw-bold" href="{% url 'pricing' %}">
                                                 <i class="bi bi-rocket-takeoff"></i>
@@ -137,11 +166,25 @@
                 <div class="mb-4">
                     {% include 'illustrations/empty_accounts.svg' %}
                 </div>
-                <h5 class="fw-bold text-muted">{% trans "No Accounts Found" %}</h5>
-                <p class="text-muted small mb-4">{% trans "Start by adding your first account." %}</p>
+                <h5 class="fw-bold text-muted">
+                    {% if current_status == 'inactive' %}
+                        {% trans "No Inactive Accounts" %}
+                    {% else %}
+                        {% trans "No Accounts Found" %}
+                    {% endif %}
+                </h5>
+                <p class="text-muted small mb-4">
+                    {% if current_status == 'inactive' %}
+                        {% trans "Accounts you deactivate will appear here." %}
+                    {% else %}
+                        {% trans "Start by adding your first account." %}
+                    {% endif %}
+                </p>
+                {% if current_status == 'active' %}
                 <a href="{% url 'account-create' %}" class="btn btn-primary btn-sm px-4 rounded-pill">
                     <i class="bi bi-plus-lg me-1"></i> {% trans "Add Account" %}
                 </a>
+                {% endif %}
             </div>
             {% endfor %}
         </div>

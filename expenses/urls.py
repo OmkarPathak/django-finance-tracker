@@ -41,6 +41,7 @@ urlpatterns = [
     path('accounts/add/', views.AccountCreateView.as_view(), name='account-create'),
     path('accounts/<int:pk>/edit/', views.AccountUpdateView.as_view(), name='account-edit'),
     path('accounts/<int:pk>/delete/', views.AccountDeleteView.as_view(), name='account-delete'),
+    path('accounts/<int:pk>/restore/', views.AccountRestoreView.as_view(), name='account-restore'),
     path('accounts/<int:pk>/', views.AccountDetailView.as_view(), name='account-detail'),
     path('accounts/quick-add/', views.AccountQuickCreateView.as_view(), name='account-quick-create'),
     

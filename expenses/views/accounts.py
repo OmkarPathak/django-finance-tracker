@@ -12,6 +12,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
 from django.utils.translation import gettext as _
 from django.views.generic import CreateView, DeleteView, ListView, UpdateView, View
+from finance_tracker.plans import get_limit
 
 from ..forms import AccountForm, TransferForm
 from ..models import Account, Expense, GoalContribution, Income, Transfer
@@ -27,8 +28,11 @@ class AccountListView(LoginRequiredMixin, ListView):
     def get_queryset(self):
         from .mixins import process_user_recurring_transactions
         process_user_recurring_transactions(self.request.user)
+        status = self.request.GET.get('status', 'active')
+        is_active = status == 'active'
+        
         # Order by created_at to ensure consistent locking of 'newer' accounts
-        queryset = list(Account.objects.filter(user=self.request.user, is_active=True).order_by('created_at', 'id'))
+        queryset = list(Account.objects.filter(user=self.request.user, is_active=is_active).order_by('created_at', 'id'))
         
         account_type = self.request.GET.get('type')
         if account_type:
@@ -36,7 +40,6 @@ class AccountListView(LoginRequiredMixin, ListView):
             
         # Annotate locked status
         if self.request.user.is_authenticated:
-            from finance_tracker.plans import get_limit
             limit = get_limit(self.request.user.profile.active_tier, 'accounts')
             for i, acc in enumerate(queryset):
                 acc.is_locked = (limit != -1 and i >= limit)
@@ -50,6 +53,7 @@ class AccountListView(LoginRequiredMixin, ListView):
         context = super().get_context_data(**kwargs)
         context['account_types'] = Account.ACCOUNT_TYPES
         context['selected_type'] = self.request.GET.get('type', '')
+        context['current_status'] = self.request.GET.get('status', 'active')
         return context
 
 class AccountCreateView(LoginRequiredMixin, CreateView):
@@ -65,7 +69,6 @@ class AccountCreateView(LoginRequiredMixin, CreateView):
 
     def form_valid(self, form):
         if not self.request.user.profile.can_add_account():
-            from finance_tracker.plans import get_limit
             limit = get_limit(self.request.user.profile.active_tier, 'accounts')
             messages.error(self.request, _("You have reached the limit of %(limit)s accounts for your current plan. Please upgrade to add more.") % {'limit': limit})
             return redirect('pricing')
@@ -125,6 +128,21 @@ class AccountDeleteView(LoginRequiredMixin, DeleteView):
         self.object.save()
         messages.success(self.request, _("Account deleted successfully."))
         return redirect(success_url)
+
+
+class AccountRestoreView(LoginRequiredMixin, View):
+    def get(self, request, pk):
+        account = get_object_or_404(Account, pk=pk, user=request.user, is_active=False)
+        if not request.user.profile.can_add_account():
+            limit = get_limit(request.user.profile.active_tier, 'accounts')
+            messages.error(request, _("You have reached the limit of %(limit)s accounts for your current plan. Please upgrade to restore this account.") % {'limit': limit})
+            return redirect('pricing')
+            
+        account.is_active = True
+        account.save()
+        messages.success(request, _("Account restored successfully!"))
+        return redirect('account-list')
+
 
 class AccountQuickCreateView(LoginRequiredMixin, View):
     """AJAX endpoint for creating an account from a modal and returning JSON."""
