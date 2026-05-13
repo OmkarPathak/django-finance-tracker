@@ -1259,6 +1259,9 @@
                 const inputEvent = new Event('input', { bubbles: true });
                 nlInput.dispatchEvent(inputEvent);
             }
+            
+            // Stop listening once the text is converted
+            stopListening();
         };
 
         recognition.onerror = function(event) {
