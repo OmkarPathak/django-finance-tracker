@@ -177,8 +177,12 @@
         to { opacity: 1; transform: translateY(0); }
     }
     .nw-sparkline-container {
-        height: 50px;
-        width: 120px;
+        height: 100px;
+        width: calc(100% + 2rem);
+        margin-left: -1rem;
+        margin-right: -1rem;
+        margin-bottom: -1rem;
+        margin-top: 0rem;
         position: relative;
     }
     .nw-sparkline-svg {
@@ -1132,17 +1136,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     </div>
 
                     <div class="mt-3 nw-animate-in">
-                        <div class="d-flex justify-content-between align-items-center mb-1">
+                        <div class="mb-0">
                             <h1 class="text-body-emphasis mb-0 fw-bold nw-glow" style="font-family: 'DM Sans', 'Inter', sans-serif; font-size: clamp(2.2rem, 5vw, 2.8rem); letter-spacing: -1.5px;">
                                 {{ currency_symbol }}{{ net_worth|humanize_currency:currency_symbol|translate_digits }}
                             </h1>
-                            
-                            {% if net_worth_trend %}
-                            <div class="nw-sparkline-container ms-3 flex-shrink-0" id="nw-sparkline-wrapper">
-                                <canvas id="nwSparklineChart"></canvas>
-                                <div id="nw-tooltip" class="chartjs-tooltip shadow-sm" style="opacity: 0; position: absolute; pointer-events: none; background: rgba(0,0,0,0.85); color: white; border-radius: 4px; padding: 4px 8px; font-size: 11px; white-space: nowrap; z-index: 1000; transition: opacity 0.2s ease;"></div>
-                            </div>
-                            {% endif %}
                         </div>
 
                         <div class="d-flex align-items-center gap-2" style="font-size: 0.85rem;">
@@ -1167,6 +1164,13 @@ document.addEventListener('DOMContentLoaded', function() {
                             </span>
                             {% endif %}
                         </div>
+
+                        {% if net_worth_trend %}
+                        <div class="nw-sparkline-container" id="nw-sparkline-wrapper">
+                            <canvas id="nwSparklineChart"></canvas>
+                            <div id="nw-tooltip" class="chartjs-tooltip shadow-sm" style="opacity: 0; position: absolute; pointer-events: none; background: rgba(0,0,0,0.85); color: white; border-radius: 4px; padding: 4px 8px; font-size: 11px; white-space: nowrap; z-index: 1000; transition: opacity 0.2s ease;"></div>
+                        </div>
+                        {% endif %}
                     </div>
                 </div>
             </div>
@@ -2248,25 +2252,31 @@ document.addEventListener('DOMContentLoaded', function() {
         const forecastIndexStart = {{ forecast_index_start|default:6 }};
         
         if (ctxNW && nwTrend.length > 0) {
-            charts.netWorthSparkline = new Chart(ctxNW.getContext('2d'), {
+            const ctx2d = ctxNW.getContext('2d');
+            const nwGradient = ctx2d.createLinearGradient(0, 0, 0, 100);
+            nwGradient.addColorStop(0, 'rgba(29, 158, 117, 0.25)');
+            nwGradient.addColorStop(1, 'rgba(29, 158, 117, 0)');
+
+            charts.netWorthSparkline = new Chart(ctx2d, {
                 type: 'line',
                 data: {
                     labels: nwLabels.length > 0 ? nwLabels : nwTrend.map((_, i) => i),
                     datasets: [{
                         data: nwTrend,
                         borderColor: CHART_COLORS.teal,
-                        borderWidth: 2.5,
+                        borderWidth: 2,
                         pointRadius: 0,
                         pointHitRadius: 20,
                         pointHoverRadius: 5,
                         pointHoverBackgroundColor: CHART_COLORS.teal,
                         pointHoverBorderColor: '#fff',
                         pointHoverBorderWidth: 2,
-                        fill: false,
+                        fill: true,
+                        backgroundColor: nwGradient,
                         tension: 0.4,
                         segment: {
-                            borderDash: ctx => ctx.p0DataIndex >= forecastIndexStart - 1 ? [5, 5] : undefined,
-                            borderColor: ctx => ctx.p0DataIndex >= forecastIndexStart - 1 ? 'rgba(29, 158, 117, 0.5)' : undefined,
+                            borderDash: ctx => (ctx.p0DataIndex >= forecastIndexStart - 1) ? [5, 5] : [],
+                            borderColor: ctx => (ctx.p0DataIndex >= forecastIndexStart - 1) ? 'rgba(29, 158, 117, 0.5)' : CHART_COLORS.teal,
                         }
                     }]
                 },
@@ -2335,7 +2345,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         intersect: false,
                     },
                     layout: {
-                        padding: { top: 15, bottom: 5, left: 5, right: 5 }
+                        padding: { top: 20, bottom: 0, left: 0, right: 0 }
                     }
                 }
             });
