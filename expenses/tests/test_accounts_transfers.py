@@ -157,10 +157,11 @@ class AccountTransferTest(TestCase):
         account.refresh_from_db()
         self.assertEqual(account.name, 'Updated Wallet')
         
-        # Delete
+        # Delete (soft delete)
         response = self.client.post(reverse('account-delete', kwargs={'pk': account.pk}))
         self.assertEqual(response.status_code, 302)
-        self.assertFalse(Account.objects.filter(name='Updated Wallet').exists())
+        self.assertFalse(Account.objects.filter(name='Updated Wallet', is_active=True).exists())
+        self.assertTrue(Account.objects.filter(name='Updated Wallet', is_active=False).exists())
 
     def test_view_transfer_crud(self):
         # Create via view
