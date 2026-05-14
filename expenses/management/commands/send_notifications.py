@@ -61,7 +61,7 @@ class Command(BaseCommand):
         # 6. Pre-fetch Push Information presence
         self.users_with_push = set(PushInformation.objects.values_list('user_id', flat=True))
 
-        users = UserProfile.objects.all().select_related('user')
+        users = UserProfile.objects.exclude(user__username='demo').select_related('user')
 
         
         for profile in users:

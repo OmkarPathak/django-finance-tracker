@@ -35,7 +35,8 @@ class Command(BaseCommand):
             profile__tier='FREE',
             email__isnull=False,
         ).exclude(
-            email='',
+            email=''
+        ).exclude(
             username='demo'
         ).select_related('profile')
 
