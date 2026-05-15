@@ -1,4 +1,4 @@
-from datetime import timedelta
+from datetime import timedelta, date
 from decimal import Decimal
 
 from django.contrib.auth.models import User
@@ -443,6 +443,45 @@ class RecurringTransaction(models.Model):
     def next_due_date(self):
         if not self.last_processed_date or self.last_processed_date < self.start_date:
             return self.start_date
+
+        if self.frequency == 'DAILY':
+            return self.last_processed_date + timedelta(days=1)
+            
+        elif self.frequency == 'WEEKLY':
+            target = self.last_processed_date + timedelta(days=1)
+            days_ahead = (self.start_date.weekday() - target.weekday()) % 7
+            return target + timedelta(days=days_ahead)
+            
+        elif self.frequency == 'MONTHLY':
+            target = self.last_processed_date + timedelta(days=1)
+            month = target.month
+            year = target.year
+            
+            if target.day > self.start_date.day:
+                month += 1
+                if month > 12:
+                    month = 1
+                    year += 1
+                    
+            while True:
+                try:
+                    return date(year, month, self.start_date.day)
+                except ValueError:
+                    if month == 12:
+                        return date(year + 1, 1, 1) - timedelta(days=1)
+                    else:
+                        return date(year, month + 1, 1) - timedelta(days=1)
+
+        elif self.frequency == 'YEARLY':
+            target = self.last_processed_date + timedelta(days=1)
+            year = target.year
+            if (target.month, target.day) > (self.start_date.month, self.start_date.day):
+                year += 1
+            try:
+                return date(year, self.start_date.month, self.start_date.day)
+            except ValueError:
+                return date(year, 2, 28)
+                
         return self.get_next_date(self.last_processed_date, self.frequency)
 
     def save(self, *args, **kwargs):
