@@ -1,4 +1,5 @@
 from datetime import date
+from decimal import Decimal
 
 from allauth.socialaccount.models import SocialAccount
 from django import forms
@@ -474,4 +475,127 @@ class TransferForm(forms.ModelForm):
             pass
 
         return cleaned_data
+
+
+from .models import Loan, LoanInterestRate, LoanRepayment
+
+
+class LoanForm(forms.ModelForm):
+    class Meta:
+        model = Loan
+        fields = ['name', 'loan_type', 'initial_principal', 'duration_months', 'start_date', 'currency']
+        widgets = {
+            'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': _('e.g. Home Loan')}),
+            'loan_type': forms.Select(attrs={'class': 'form-select'}),
+            'initial_principal': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
+            'duration_months': forms.NumberInput(attrs={'class': 'form-control'}),
+            'start_date': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
+            'currency': forms.Select(attrs={'class': 'form-select'}),
+        }
+
+    interest_rate = forms.DecimalField(
+        max_digits=5, decimal_places=2, label=_('Initial Interest Rate (%)'),
+        widget=forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'})
+    )
+
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)
+        super().__init__(*args, **kwargs)
+        self.fields['start_date'].initial = date.today
+        if user:
+            self.fields['currency'].initial = user.profile.currency
+        
+        if self.instance.pk:
+            latest_rate = self.instance.interest_rates.order_by('-effective_date').first()
+            if latest_rate:
+                self.fields['interest_rate'].initial = latest_rate.interest_rate
+
+class LoanInterestRateForm(forms.ModelForm):
+    class Meta:
+        model = LoanInterestRate
+        fields = ['interest_rate', 'effective_date']
+        widgets = {
+            'interest_rate': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
+            'effective_date': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['effective_date'].initial = date.today
+
+class LoanRepaymentForm(forms.ModelForm):
+    class Meta:
+        model = LoanRepayment
+        fields = ['from_account', 'amount', 'principal_portion', 'interest_portion', 'date']
+        widgets = {
+            'from_account': forms.Select(attrs={'class': 'form-select searchable-select'}),
+            'amount': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01', 'onchange': 'recalculatePortions()'}),
+            'principal_portion': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
+            'interest_portion': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
+            'date': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)
+        loan = kwargs.pop('loan', None)
+        super().__init__(*args, **kwargs)
+        self.fields['date'].initial = date.today
+        
+        if user:
+            # Enforce Tier Limits for Accounts
+            all_accounts = Account.objects.filter(user=user, is_active=True).order_by('created_at', 'id')
+            from finance_tracker.plans import get_limit
+            limit = get_limit(user.profile.active_tier, 'accounts')
+            if limit != -1:
+                unlocked_ids = list(all_accounts.values_list('id', flat=True)[:limit])
+                self.fields['from_account'].queryset = all_accounts.filter(id__in=unlocked_ids)
+            else:
+                self.fields['from_account'].queryset = all_accounts
+
+            # Default to the first account (likely 'Cash')
+            default_account = self.fields['from_account'].queryset.filter(name='Cash').first()
+            if default_account:
+                self.fields['from_account'].initial = default_account
+        
+        if loan:
+            # Pre-calculate suggested EMI breakdown
+            from .services import LoanService
+            summary = LoanService.get_loan_summary(loan)
+            latest_rate_obj = loan.interest_rates.order_by('-effective_date').first()
+            annual_rate = float(latest_rate_obj.interest_rate) if latest_rate_obj else 0.0
+            
+            # Approximate remaining months
+            today = date.today()
+            months_passed = (today.year - loan.start_date.year) * 12 + today.month - loan.start_date.month
+            remaining_months = max(1, loan.duration_months - months_passed)
+            
+            emi = LoanService.calculate_emi(summary['remaining_principal'], annual_rate, remaining_months)
+            interest_portion = summary['remaining_principal'] * (annual_rate / 12.0 / 100.0)
+            principal_portion = emi - interest_portion
+            
+            self.fields['amount'].initial = round(emi, 2)
+            self.fields['principal_portion'].initial = round(principal_portion, 2)
+            self.fields['interest_portion'].initial = round(interest_portion, 2)
+
+    def clean(self):
+        cleaned_data = super().clean()
+        amount = cleaned_data.get('amount')
+        principal = cleaned_data.get('principal_portion')
+        interest = cleaned_data.get('interest_portion')
+
+        if amount is not None and amount <= 0:
+            self.add_error('amount', _("Repayment amount must be greater than zero."))
+
+        if principal is not None and principal < 0:
+            self.add_error('principal_portion', _("Principal portion cannot be negative."))
+
+        if interest is not None and interest < 0:
+            self.add_error('interest_portion', _("Interest portion cannot be negative."))
+
+        if amount is not None and principal is not None and interest is not None:
+            if (principal + interest).quantize(Decimal('0.01')) != amount.quantize(Decimal('0.01')):
+                self.add_error(None, _("Repayment amount must equal principal plus interest."))
+
+        return cleaned_data
+
 

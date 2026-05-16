@@ -5,7 +5,7 @@ from decimal import Decimal
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.db.models import Avg, Count, Sum
+from django.db.models import Avg, Count, Sum, F
 from django.db.models.functions import ExtractWeekDay, TruncDay, TruncMonth
 from django.http import JsonResponse
 from django.shortcuts import redirect, render
@@ -22,6 +22,7 @@ from ..models import (
     Expense,
     GoalContribution,
     Income,
+    LoanRepayment,
     Notification,
     RecurringTransaction,
     Transfer,
@@ -29,7 +30,7 @@ from ..models import (
 )
 from ..templatetags.digit_filters import compact_amount
 from ..utils import format_indian_number, generate_year_in_review_data, get_exchange_rate
-from ..services import FinancialService
+from ..services import FinancialService, LoanService
 from .mixins import process_user_recurring_transactions
 
 
@@ -159,6 +160,24 @@ def home_view(request):
     
     total_income = incomes.aggregate(Sum('base_amount'))['base_amount__sum'] or 0
     total_investments = sum_transfers_base(investments)
+    
+    # Fetch loan repayments for the selected period (moved up to fix UnboundLocalError)
+    loan_repayments_selected = LoanRepayment.objects.filter(loan__user=request.user)
+    if start_date or end_date:
+        if start_date: loan_repayments_selected = loan_repayments_selected.filter(date__gte=start_date)
+        if end_date: loan_repayments_selected = loan_repayments_selected.filter(date__lte=end_date)
+    else:
+        if selected_years: loan_repayments_selected = loan_repayments_selected.filter(date__year__in=selected_years)
+        if selected_months: loan_repayments_selected = loan_repayments_selected.filter(date__month__in=selected_months)
+    
+    loan_stats = loan_repayments_selected.aggregate(
+        total_interest=Sum(F('interest_portion') * F('exchange_rate')),
+        total_emi=Sum('base_amount')
+    )
+    total_loan_interest = loan_stats['total_interest'] or 0
+    total_loan_emi = loan_stats['total_emi'] or 0
+    total_loan_principal = total_loan_emi - total_loan_interest
+
     all_dates = Expense.objects.filter(user=request.user).dates('date', 'year', order='DESC')
     years = sorted(list(set([d.year for d in all_dates] + [datetime.now().year])), reverse=True)
     all_categories = Expense.objects.filter(user=request.user).values_list('category', flat=True).distinct().order_by('category')
@@ -168,6 +187,7 @@ def home_view(request):
     hist_start = (timezone.now().replace(day=1) - timedelta(days=730)).date()
     batch_inc = Income.objects.filter(user=request.user, date__gte=hist_start).annotate(m=TruncMonth('date')).values('m').annotate(total=Sum('base_amount'))
     batch_exp = Expense.objects.filter(user=request.user, date__gte=hist_start).annotate(m=TruncMonth('date')).values('m').annotate(total=Sum('base_amount'))
+    batch_loan = LoanRepayment.objects.filter(loan__user=request.user, date__gte=hist_start).annotate(m=TruncMonth('date')).values('m').annotate(total_interest=Sum(F('interest_portion') * F('exchange_rate')))
     
     monthly_summary_map = {} # (year, month) -> {'income': 0, 'expense': 0}
     for item in batch_inc:
@@ -178,6 +198,11 @@ def home_view(request):
         if (dt.year, dt.month) not in monthly_summary_map:
             monthly_summary_map[(dt.year, dt.month)] = {'income': 0.0, 'expense': 0.0}
         monthly_summary_map[(dt.year, dt.month)]['expense'] = float(item['total'])
+    for item in batch_loan:
+        dt = item['m'].date() if hasattr(item['m'], 'date') else item['m']
+        if (dt.year, dt.month) not in monthly_summary_map:
+            monthly_summary_map[(dt.year, dt.month)] = {'income': 0.0, 'expense': 0.0}
+        monthly_summary_map[(dt.year, dt.month)]['expense'] += float(item['total_interest'] or 0)
 
 
     # 1. Category Chart Data (Distribution) & Summary Table
@@ -195,6 +220,11 @@ def home_view(request):
             merged_category_map[cat_name] += amount
         else:
             merged_category_map[cat_name] = amount
+    
+    # Add Loan Interest to breakdown
+    if total_loan_interest > 0:
+        cat_name = str(_("Loan Interest"))
+        merged_category_map[cat_name] = merged_category_map.get(cat_name, 0.0) + float(total_loan_interest)
             
     # Convert back to list of dicts for template/charts, sorted by total
     # This replaces the DB-ordered queryset with a sorted list
@@ -318,22 +348,50 @@ def home_view(request):
         trunc_func = TruncMonth
         
     inc_trend = incomes.annotate(period=trunc_func('date')).values('period').annotate(total=Sum('base_amount')).order_by('period')
-    exp_trend = expenses.annotate(period=trunc_func('date')).values('period').annotate(total=Sum('base_amount')).order_by('period')
+    exp_trend_base = expenses.annotate(period=trunc_func('date')).values('period').annotate(total=Sum('base_amount')).order_by('period')
+    
+    # Include loan repayments in expense trend
+    loan_repayments_filtered = LoanRepayment.objects.filter(loan__user=request.user)
+    if start_date or end_date:
+        if start_date: loan_repayments_filtered = loan_repayments_filtered.filter(date__gte=start_date)
+        if end_date: loan_repayments_filtered = loan_repayments_filtered.filter(date__lte=end_date)
+    else:
+        if selected_years: loan_repayments_filtered = loan_repayments_filtered.filter(date__year__in=selected_years)
+        if selected_months: loan_repayments_filtered = loan_repayments_filtered.filter(date__month__in=selected_months)
+
+    loan_trend = loan_repayments_filtered.annotate(period=trunc_func('date')).values('period').annotate(
+        total_interest=Sum(F('interest_portion') * F('exchange_rate')),
+        total_emi=Sum('base_amount')
+    ).order_by('period')
     
     # Merge periods
     inc_periods = set(i['period'] for i in inc_trend)
-    exp_periods = set(e['period'] for e in exp_trend)
-    all_periods_sorted = sorted(list(inc_periods.union(exp_periods)))
+    exp_periods_base = set(e['period'] for e in exp_trend_base)
+    loan_periods = set(l['period'] for l in loan_trend)
+    all_periods_sorted = sorted(list(inc_periods.union(exp_periods_base).union(loan_periods)))
     
     ie_labels = [p.strftime(date_fmt) for p in all_periods_sorted]
     
     # Optimization: Use dict lookup instead of filter inside loop
     inc_map = {i['period']: float(i['total']) for i in inc_trend}
-    exp_map = {e['period']: float(e['total']) for e in exp_trend}
+    exp_map = {e['period']: float(e['total']) for e in exp_trend_base}
+    loan_map = {l['period']: {'interest': float(l['total_interest'] or 0), 'emi': float(l['total_emi'] or 0)} for l in loan_trend}
     
-    ie_income_data = [inc_map.get(p, 0.0) for p in all_periods_sorted]
-    ie_expense_data = [exp_map.get(p, 0.0) for p in all_periods_sorted]
-    ie_savings_data = [inc_map.get(p, 0.0) - exp_map.get(p, 0.0) for p in all_periods_sorted]
+    # Add loan interest to exp_map and calculate savings
+    ie_income_data = []
+    ie_expense_data = []
+    ie_savings_data = []
+    
+    for p in all_periods_sorted:
+        inc_val = inc_map.get(p, 0.0)
+        exp_val = exp_map.get(p, 0.0) + loan_map.get(p, {}).get('interest', 0.0)
+        emi_val = loan_map.get(p, {}).get('emi', 0.0)
+        
+        ie_income_data.append(inc_val)
+        ie_expense_data.append(exp_val)
+        # Savings = Income - Expenses (with interest) - Principal
+        # Principal = EMI - Interest
+        ie_savings_data.append(inc_val - exp_val - (emi_val - loan_map.get(p, {}).get('interest', 0.0)))
 
     # --- NEW: Payment Method Distribution ---
     raw_payment_data = expenses.values('payment_method').annotate(total=Sum('base_amount')).order_by('payment_method')
@@ -349,9 +407,13 @@ def home_view(request):
 
 
     # 4. Summary Stats
-    total_expenses = expenses.aggregate(Sum('base_amount'))['base_amount__sum'] or 0
-    transaction_count = expenses.count()
-    savings = total_income - total_expenses
+    total_expenses_base = expenses.aggregate(Sum('base_amount'))['base_amount__sum'] or 0
+    total_expenses = total_expenses_base + total_loan_interest
+    transaction_count = expenses.count() + loan_repayments_selected.count()
+    
+    # Real savings (cashflow) = Income - Expenses - Principal_Repayment
+    # Principal_Repayment = total_loan_emi - total_loan_interest
+    savings = total_income - total_expenses - total_loan_principal
     
     # Calculate MoM Changes ONLY if exactly one year and one month are selected
     prev_month_data = None
@@ -377,7 +439,19 @@ def home_view(request):
             ))
 
             prev_income = Income.objects.filter(user=request.user, date__year=prev_year, date__month=prev_month).aggregate(Sum('base_amount'))['base_amount__sum'] or 0
-            prev_savings = prev_income - prev_expenses_op
+            prev_loan_stats = LoanRepayment.objects.filter(
+                loan__user=request.user,
+                date__year=prev_year,
+                date__month=prev_month,
+            ).aggregate(
+                total_interest=Sum(F('interest_portion') * F('exchange_rate')),
+                total_emi=Sum('base_amount')
+            )
+            prev_loan_interest = prev_loan_stats['total_interest'] or 0
+            prev_loan_emi = prev_loan_stats['total_emi'] or 0
+            prev_loan_principal = prev_loan_emi - prev_loan_interest
+            prev_expenses_total = prev_expenses_op + prev_loan_interest
+            prev_savings = prev_income - prev_expenses_total - prev_loan_principal
 
             def calc_pct(current, previous):
                 if previous == 0:
@@ -390,20 +464,20 @@ def home_view(request):
             prev_day_map = {item['period'].day: float(item['total']) for item in prev_day_data}
             
             prev_num_days = calendar.monthrange(prev_year, prev_month)[1]
-            prev_daily_burn = float(prev_expenses_op) / prev_num_days if prev_num_days > 0 else 0
+            prev_daily_burn = float(prev_expenses_total) / prev_num_days if prev_num_days > 0 else 0
 
             prev_month_data = {
                 'income': prev_income,
-                'expense': prev_expenses_op,
+                'expense': prev_expenses_total,
                 'investments': prev_investments,
                 'savings': prev_savings,
                 'income_pct': calc_pct(total_income, prev_income),
-                'expense_pct': calc_pct(total_expenses, prev_expenses_op),
+                'expense_pct': calc_pct(total_expenses, prev_expenses_total),
                 'investments_pct': calc_pct(total_investments, prev_investments),
                 'savings_pct': calc_pct(savings, prev_savings),
                 'savings_rate': (prev_savings / prev_income * 100) if prev_income > 0 else 0,
                 'income_diff_amount': total_income - prev_income,
-                'expense_diff_amount': total_expenses - prev_expenses_op,
+                'expense_diff_amount': total_expenses - prev_expenses_total,
                 'investments_diff_amount': total_investments - prev_investments,
                 'daily_burn': prev_daily_burn,
                 'daily_map': prev_day_map,
@@ -448,7 +522,18 @@ def home_view(request):
     # 1. Calculate YTD Savings (Strictly for current year, regardless of filters)
     ytd_income = Income.objects.filter(user=request.user, date__year=current_year, date__month__lte=current_month).aggregate(Sum('base_amount'))['base_amount__sum'] or 0
     ytd_expenses = Expense.objects.filter(user=request.user, date__year=current_year, date__month__lte=current_month).aggregate(Sum('base_amount'))['base_amount__sum'] or 0
-    ytd_savings = ytd_income - ytd_expenses
+    ytd_loan_stats = LoanRepayment.objects.filter(
+        loan__user=request.user,
+        date__year=current_year,
+        date__month__lte=current_month,
+    ).aggregate(
+        total_interest=Sum(F('interest_portion') * F('exchange_rate')),
+        total_emi=Sum('base_amount')
+    )
+    ytd_loan_interest = ytd_loan_stats['total_interest'] or 0
+    ytd_loan_emi = ytd_loan_stats['total_emi'] or 0
+    ytd_loan_principal = ytd_loan_emi - ytd_loan_interest
+    ytd_savings = ytd_income - (ytd_expenses + ytd_loan_interest) - ytd_loan_principal
     
     projected_savings = 0
     
@@ -1456,6 +1541,11 @@ def home_view(request):
     # Net Worth Change Calculation (Growth this month)
     # We estimate start-of-month net worth as current net worth minus this month's net cashflow (income - expense)
     # This assumes all income/expense transactions affect the total net worth.
+    
+    total_liabilities = Decimal(str(LoanService.get_total_liabilities(request.user)))
+    # Subtract liabilities from the total account balances to get true net worth
+    net_worth -= total_liabilities
+    
     net_worth_change = Decimal('0.00')
     net_worth_percent = Decimal('0.00')
     
@@ -1622,6 +1712,7 @@ def home_view(request):
         'sparkline_points': sparkline_points,
         'accounts': accounts,
         'account_base_balances': account_base_balances,
+        'total_liabilities': total_liabilities,
         'asset_allocation': asset_allocation,
         'recent_activity': recent_activity,
         'investment_accounts_balance': investment_accounts_balance,

@@ -1,5 +1,6 @@
 from datetime import date, timedelta
 import calendar
+from decimal import Decimal, ROUND_HALF_UP
 from django.db.models import Sum, Avg, Count
 from django.utils import timezone
 from .models import Expense, Income, Category
@@ -26,17 +27,38 @@ class FinancialService:
         expense_qs = Expense.objects.filter(
             user=user, date__gte=start_date, date__lte=today
         ).annotate(month=TruncMonth('date')).values('month').annotate(total=Sum('base_amount'))
+
+        # Include Loan Repayment interest as expense
+        from django.db.models import F
+        from .models import LoanRepayment
+        
+        loan_repayment_qs = LoanRepayment.objects.filter(
+            loan__user=user, date__gte=start_date, date__lte=today
+        ).annotate(month=TruncMonth('date')).values('month').annotate(
+            total_interest=Sum(F('interest_portion') * F('exchange_rate')),
+            total_emi=Sum('base_amount')
+        )
         
         income_map = {item['month'].date() if hasattr(item['month'], 'date') else item['month']: item['total'] for item in income_qs}
         expense_map = {item['month'].date() if hasattr(item['month'], 'date') else item['month']: item['total'] for item in expense_qs}
+        loan_interest_map = {item['month'].date() if hasattr(item['month'], 'date') else item['month']: item['total_interest'] for item in loan_repayment_qs}
+        loan_emi_map = {item['month'].date() if hasattr(item['month'], 'date') else item['month']: item['total_emi'] for item in loan_repayment_qs}
         
         curr = start_date
         for _ in range(months):
+            inc = float(income_map.get(curr, 0))
+            exp = float(expense_map.get(curr, 0)) + float(loan_interest_map.get(curr, 0))
+            emi = float(loan_emi_map.get(curr, 0))
+            
+            # Savings = Income - Expenses (including interest) - Principal portion
+            # Which is same as Income - (Expenses + Principal portion) = Income - (Expenses without interest + EMI)
+            # Actually, Income - Expense - EMI_Principal = Income - (Expense_with_interest) - EMI_Principal
+            
             history.append({
                 'month': curr,
-                'income': float(income_map.get(curr, 0)),
-                'expense': float(expense_map.get(curr, 0)),
-                'savings': float(income_map.get(curr, 0) - expense_map.get(curr, 0))
+                'income': inc,
+                'expense': exp,
+                'savings': inc - exp - (emi - float(loan_interest_map.get(curr, 0))) # EMI - Interest = Principal
             })
             # Move to next month
             if curr.month == 12:
@@ -155,3 +177,132 @@ class FinancialService:
         # Reverse back so it's oldest to newest
         cumulative_history.reverse()
         return cumulative_history
+
+class LoanService:
+    @staticmethod
+    def calculate_emi(principal, annual_rate, months):
+        """
+        Standard EMI formula: E = P * r * (1 + r)^n / ((1 + r)^n - 1)
+        r = monthly interest rate (annual_rate / 12 / 100)
+        """
+        principal_dec = Decimal(str(principal or 0))
+        annual_rate_dec = Decimal(str(annual_rate or 0))
+
+        if principal_dec <= 0 or months <= 0:
+            return 0.0
+        if annual_rate_dec == 0:
+            return float(principal_dec / Decimal(months))
+
+        monthly_rate = annual_rate_dec / Decimal('12') / Decimal('100')
+        n = int(months)
+        one_plus_r_pow_n = (Decimal('1') + monthly_rate) ** n
+        emi = principal_dec * monthly_rate * one_plus_r_pow_n / (one_plus_r_pow_n - Decimal('1'))
+        return float(emi.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP))
+
+    @staticmethod
+    def get_total_liabilities(user):
+        """
+        Returns the sum of remaining principal for all active loans.
+        """
+        from .models import Loan
+        active_loans = Loan.objects.filter(user=user, is_active=True)
+        total = Decimal('0.00')
+        for loan in active_loans:
+            summary = LoanService.get_loan_summary(loan)
+            total += Decimal(str(summary['remaining_principal']))
+        return float(total)
+
+    @staticmethod
+    def get_loan_summary(loan):
+        """
+        Calculates total paid and remaining principal based on actual repayments.
+        """
+        from django.db.models import Sum
+        repayments = loan.repayments.aggregate(
+            total_principal=Sum('principal_portion'),
+            total_interest=Sum('interest_portion'),
+            total_amount=Sum('amount')
+        )
+        
+        principal_paid = repayments['total_principal'] or Decimal('0.00')
+        interest_paid = repayments['total_interest'] or Decimal('0.00')
+        total_paid = repayments['total_amount'] or Decimal('0.00')
+        
+        remaining_principal = loan.initial_principal - principal_paid
+        if remaining_principal < 0:
+            remaining_principal = Decimal('0.00')
+            
+        return {
+            'principal_paid': float(principal_paid),
+            'interest_paid': float(interest_paid),
+            'total_paid': float(total_paid),
+            'remaining_principal': float(remaining_principal)
+        }
+
+    @staticmethod
+    def generate_amortization_schedule(loan):
+        """
+        Generates the planned amortization schedule from today until the end of the loan,
+        taking into account current remaining principal and latest interest rate.
+        """
+        summary = LoanService.get_loan_summary(loan)
+        remaining_principal = Decimal(str(summary['remaining_principal']))
+        
+        # Get latest interest rate
+        latest_rate_obj = loan.interest_rates.order_by('-effective_date').first()
+        annual_rate = Decimal(str(latest_rate_obj.interest_rate)) if latest_rate_obj else Decimal('0.00')
+        
+        # Approximate remaining months based on start date and duration
+        # Or better, just calculate how many months of EMI are left based on remaining principal
+        import math
+        from datetime import date
+        from dateutil.relativedelta import relativedelta
+        
+        today = date.today()
+        # Find how many months have passed since start
+        months_passed = (today.year - loan.start_date.year) * 12 + today.month - loan.start_date.month
+        remaining_months = loan.duration_months - months_passed
+        
+        if remaining_months <= 0 and remaining_principal > 0:
+            # If past term but still has balance, maybe they missed payments. Just use 1 month to clear it or recalculate.
+            # Let's just assume remaining balance is paid in 1 final payment for the schedule display.
+            remaining_months = 1
+            
+        if remaining_months <= 0 or remaining_principal <= 0:
+            return []
+
+        emi = Decimal(str(LoanService.calculate_emi(remaining_principal, annual_rate, remaining_months)))
+        
+        schedule = []
+        current_date = loan.start_date + relativedelta(months=max(0, months_passed))
+        balance = remaining_principal
+        
+        r = annual_rate / Decimal('12') / Decimal('100')
+        
+        for i in range(remaining_months):
+            if balance <= 0:
+                break
+                
+            interest_payment = Decimal(str(balance)) * r
+            principal_payment = emi - interest_payment
+            
+            # Adjust final payment
+            if principal_payment > balance:
+                principal_payment = balance
+                emi = principal_payment + interest_payment
+                
+            balance = Decimal(str(balance)) - principal_payment
+            
+            schedule.append({
+                'month': current_date.strftime('%b %Y'),
+                'date': current_date,
+                'emi': float(emi.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)),
+                'principal': float(principal_payment.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)),
+                'interest': float(interest_payment.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)),
+                'balance': float(abs(balance).quantize(Decimal('0.01'), rounding=ROUND_HALF_UP))
+            })
+            
+            current_date += relativedelta(months=1)
+            
+        return schedule
+

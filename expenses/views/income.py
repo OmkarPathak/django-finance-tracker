@@ -1,5 +1,6 @@
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.core.exceptions import ValidationError
 from django.db.models import Sum
 from django.urls import reverse_lazy
 from django.utils import timezone
@@ -105,8 +106,13 @@ class IncomeCreateView(LoginRequiredMixin, CreateView):
 
     def form_valid(self, form):
         form.instance.user = self.request.user
+        try:
+            response = super().form_valid(form)
+        except (RuntimeError, ValidationError):
+            messages.error(self.request, _("Unable to save income because currency conversion failed or data is invalid."))
+            return self.form_invalid(form)
+
         messages.success(self.request, _("Income record added successfully!"))
-        response = super().form_valid(form)
         
         if form.cleaned_data.get('add_to_recurring'):
             existing_rt = RecurringTransaction.objects.filter(
@@ -168,8 +174,8 @@ class IncomeUpdateView(LoginRequiredMixin, UpdateView):
     def form_valid(self, form):
         from django.db import IntegrityError
         try:
-            messages.success(self.request, _("Income record updated successfully!"))
             response = super().form_valid(form)
+            messages.success(self.request, _("Income record updated successfully!"))
             if form.cleaned_data.get('add_to_recurring'):
                 existing_rt = RecurringTransaction.objects.filter(
                     user=self.request.user,
@@ -198,6 +204,9 @@ class IncomeUpdateView(LoginRequiredMixin, UpdateView):
             return response
         except IntegrityError:
             messages.error(self.request, _("This income entry already exists."))
+            return self.form_invalid(form)
+        except (RuntimeError, ValidationError):
+            messages.error(self.request, _("Unable to update income because currency conversion failed or data is invalid."))
             return self.form_invalid(form)
 
     def get_context_data(self, **kwargs):

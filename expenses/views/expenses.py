@@ -3,8 +3,11 @@ import json
 from datetime import datetime
 
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.core.exceptions import ValidationError
 from django.db import IntegrityError
+from django.db import transaction
 from django.db.models import Count, Sum
 from django.forms import modelformset_factory
 from django.http import JsonResponse
@@ -313,6 +316,9 @@ class ExpenseCreateView(LoginRequiredMixin, View):
             except IntegrityError:
                 messages.error(request, _("Duplicate record found! You already have this expense recorded for this date."))
                 return render(request, self.template_name, {'formset': formset})
+            except (RuntimeError, ValidationError):
+                messages.error(request, _("Unable to save expense right now because currency conversion failed or data is invalid."))
+                return render(request, self.template_name, {'formset': formset})
         return render(request, self.template_name, {'formset': formset})
 
 class ExpenseUpdateView(LoginRequiredMixin, UpdateView):
@@ -327,8 +333,13 @@ class ExpenseUpdateView(LoginRequiredMixin, UpdateView):
         return kwargs
 
     def form_valid(self, form):
-        messages.success(self.request, _("Expense updated successfully!"))
-        return super().form_valid(form)
+        try:
+            response = super().form_valid(form)
+            messages.success(self.request, _("Expense updated successfully!"))
+            return response
+        except (RuntimeError, ValidationError):
+            messages.error(self.request, _("Unable to update expense because currency conversion failed or data is invalid."))
+            return self.form_invalid(form)
 
     def get_queryset(self):
         return Expense.objects.filter(user=self.request.user)
@@ -383,7 +394,10 @@ class ExpenseBulkDeleteView(LoginRequiredMixin, View):
         deleted_count = expenses_to_delete.count()
         
         if deleted_count > 0:
-            expenses_to_delete.delete()
+            with transaction.atomic():
+                for expense in expenses_to_delete.select_related('account'):
+                    # Call model delete to ensure account balances are restored.
+                    expense.delete()
             messages.success(request, _('%(count)d expenses deleted successfully.') % {'count': deleted_count})
         else:
             messages.warning(request, _('No valid expenses found to delete.'))
@@ -430,6 +444,7 @@ class ExpenseBulkUpdateView(LoginRequiredMixin, View):
         return redirect('expense-list')
 
 @require_POST
+@login_required
 def parse_expense_view(request):
     """
     API endpoint for natural language expense parsing.
@@ -466,4 +481,4 @@ def parse_expense_view(request):
             return JsonResponse({'success': True, 'data': result})
         return JsonResponse({'success': False, 'error': 'No input text provided.'})
     except Exception as e:
-        return JsonResponse({'success': False, 'error': str(e)}, status=400)
+        return JsonResponse({'success': False, 'error': _('Unable to parse expense right now.')}, status=400)

@@ -15,3 +15,4 @@ from .recurring import *
 from .export import *
 from .all_transactions import *
 from .settings import *
+from .loans import *

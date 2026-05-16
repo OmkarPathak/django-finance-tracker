@@ -2,6 +2,7 @@ from datetime import timedelta, date
 from decimal import Decimal
 
 from django.contrib.auth.models import User
+from django.core.exceptions import ValidationError
 from django.db import models, transaction
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
@@ -120,16 +121,17 @@ class Expense(models.Model):
         with transaction.atomic():
             # Handle balance reversal for updates
             if self.pk:
-                old_instance = Expense.objects.get(pk=self.pk)
+                old_instance = Expense.objects.select_related('account').select_for_update().get(pk=self.pk)
                 if old_instance.account:
+                    old_account = Account.objects.select_for_update().get(pk=old_instance.account_id)
                     # Convert old amount to account currency for reversal
                     reversal_amount = old_instance.amount
                     if old_instance.currency != old_instance.account.currency:
                         rate = get_exchange_rate(old_instance.currency, old_instance.account.currency)
                         reversal_amount = (old_instance.amount * rate).quantize(Decimal('0.01'))
                     
-                    old_instance.account.balance += reversal_amount
-                    old_instance.account.save()
+                    old_account.balance += reversal_amount
+                    old_account.save(update_fields=['balance', 'updated_at'])
 
             if self.category:
                 self.category = self.category.strip()
@@ -147,27 +149,28 @@ class Expense(models.Model):
             
             # Apply new balance
             if self.account:
-                self.account.refresh_from_db()
+                locked_account = Account.objects.select_for_update().get(pk=self.account_id)
                 # Convert current amount to account currency
                 apply_amount = self.amount
-                if self.currency != self.account.currency:
-                    rate = get_exchange_rate(self.currency, self.account.currency)
+                if self.currency != locked_account.currency:
+                    rate = get_exchange_rate(self.currency, locked_account.currency)
                     apply_amount = (self.amount * rate).quantize(Decimal('0.01'))
                 
-                self.account.balance -= apply_amount
-                self.account.save()
+                locked_account.balance -= apply_amount
+                locked_account.save(update_fields=['balance', 'updated_at'])
 
     def delete(self, *args, **kwargs):
         with transaction.atomic():
             if self.account:
+                locked_account = Account.objects.select_for_update().get(pk=self.account_id)
                 # Convert to account currency for deletion reversal
                 apply_amount = self.amount
-                if self.currency != self.account.currency:
-                    rate = get_exchange_rate(self.currency, self.account.currency)
+                if self.currency != locked_account.currency:
+                    rate = get_exchange_rate(self.currency, locked_account.currency)
                     apply_amount = (self.amount * rate).quantize(Decimal('0.01'))
                 
-                self.account.balance += apply_amount
-                self.account.save()
+                locked_account.balance += apply_amount
+                locked_account.save(update_fields=['balance', 'updated_at'])
             super().delete(*args, **kwargs)
 
     class Meta:
@@ -231,16 +234,17 @@ class Income(models.Model):
         with transaction.atomic():
             # Handle balance reversal for updates
             if self.pk:
-                old_instance = Income.objects.get(pk=self.pk)
+                old_instance = Income.objects.select_related('account').select_for_update().get(pk=self.pk)
                 if old_instance.account:
+                    old_account = Account.objects.select_for_update().get(pk=old_instance.account_id)
                     # Convert to account currency for reversal
                     reversal_amount = old_instance.amount
                     if old_instance.currency != old_instance.account.currency:
                         rate = get_exchange_rate(old_instance.currency, old_instance.account.currency)
                         reversal_amount = (old_instance.amount * rate).quantize(Decimal('0.01'))
                     
-                    old_instance.account.balance -= reversal_amount
-                    old_instance.account.save()
+                    old_account.balance -= reversal_amount
+                    old_account.save(update_fields=['balance', 'updated_at'])
 
             if self.source:
                 self.source = self.source.strip()
@@ -258,27 +262,28 @@ class Income(models.Model):
 
             # Apply new balance
             if self.account:
-                self.account.refresh_from_db()
+                locked_account = Account.objects.select_for_update().get(pk=self.account_id)
                 # Convert to account currency
                 apply_amount = self.amount
-                if self.currency != self.account.currency:
-                    rate = get_exchange_rate(self.currency, self.account.currency)
+                if self.currency != locked_account.currency:
+                    rate = get_exchange_rate(self.currency, locked_account.currency)
                     apply_amount = (self.amount * rate).quantize(Decimal('0.01'))
                     
-                self.account.balance += apply_amount
-                self.account.save()
+                locked_account.balance += apply_amount
+                locked_account.save(update_fields=['balance', 'updated_at'])
 
     def delete(self, *args, **kwargs):
         with transaction.atomic():
             if self.account:
+                locked_account = Account.objects.select_for_update().get(pk=self.account_id)
                 # Convert to account currency for deletion reversal
                 apply_amount = self.amount
-                if self.currency != self.account.currency:
-                    rate = get_exchange_rate(self.currency, self.account.currency)
+                if self.currency != locked_account.currency:
+                    rate = get_exchange_rate(self.currency, locked_account.currency)
                     apply_amount = (self.amount * rate).quantize(Decimal('0.01'))
                 
-                self.account.balance -= apply_amount
-                self.account.save()
+                locked_account.balance -= apply_amount
+                locked_account.save(update_fields=['balance', 'updated_at'])
             super().delete(*args, **kwargs)
 
     class Meta:
@@ -312,14 +317,28 @@ class Transfer(models.Model):
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    def clean(self):
+        if self.from_account_id and self.to_account_id and self.from_account_id == self.to_account_id:
+            raise ValidationError({'to_account': _('Source and destination accounts must be different.')})
+
+        if self.user_id and self.from_account and self.from_account.user_id != self.user_id:
+            raise ValidationError({'from_account': _('From account must belong to the current user.')})
+
+        if self.user_id and self.to_account and self.to_account.user_id != self.user_id:
+            raise ValidationError({'to_account': _('To account must belong to the current user.')})
+
     def save(self, *args, **kwargs):
+        self.full_clean()
         with transaction.atomic():
             # Revert-and-Apply pattern for updates
             if self.pk:
-                old_instance = Transfer.objects.get(pk=self.pk)
+                old_instance = Transfer.objects.select_related('from_account', 'to_account').select_for_update().get(pk=self.pk)
+                old_from_account = Account.objects.select_for_update().get(pk=old_instance.from_account_id)
+                old_to_account = Account.objects.select_for_update().get(pk=old_instance.to_account_id)
                 # Revert old
-                old_instance.from_account.balance += old_instance.amount
-                old_instance.from_account.save()
+                old_from_account.balance += old_instance.amount
+                old_from_account.save(update_fields=['balance', 'updated_at'])
                 
                 # Convert from_account's amount to to_account's currency for reversal
                 reversal_to_amount = old_instance.amount
@@ -327,8 +346,8 @@ class Transfer(models.Model):
                     rate = get_exchange_rate(old_instance.from_account.currency, old_instance.to_account.currency)
                     reversal_to_amount = (old_instance.amount * rate).quantize(Decimal('0.01'))
                 
-                old_instance.to_account.balance -= reversal_to_amount
-                old_instance.to_account.save()
+                old_to_account.balance -= reversal_to_amount
+                old_to_account.save(update_fields=['balance', 'updated_at'])
 
             # Multi-currency normalization (Transfers use the currency of the from_account usually)
             currency = self.from_account.currency
@@ -344,36 +363,45 @@ class Transfer(models.Model):
             super().save(*args, **kwargs)
 
             # Apply new
-            # Refresh accounts to get reverted balances
-            self.from_account.refresh_from_db()
-            self.to_account.refresh_from_db()
+            from_account = Account.objects.select_for_update().get(pk=self.from_account_id)
+            to_account = Account.objects.select_for_update().get(pk=self.to_account_id)
             
-            self.from_account.balance -= self.amount # amount is in from_account currency
-            self.from_account.save()
+            from_account.balance -= self.amount # amount is in from_account currency
+            from_account.save(update_fields=['balance', 'updated_at'])
             
             # Convert to to_account currency
             to_apply_amount = self.amount
-            if self.from_account.currency != self.to_account.currency:
-                rate = get_exchange_rate(self.from_account.currency, self.to_account.currency)
+            if from_account.currency != to_account.currency:
+                rate = get_exchange_rate(from_account.currency, to_account.currency)
                 to_apply_amount = (self.amount * rate).quantize(Decimal('0.01'))
                 
-            self.to_account.balance += to_apply_amount
-            self.to_account.save()
+            to_account.balance += to_apply_amount
+            to_account.save(update_fields=['balance', 'updated_at'])
 
     def delete(self, *args, **kwargs):
         with transaction.atomic():
-            self.from_account.balance += self.amount
-            self.from_account.save()
+            from_account = Account.objects.select_for_update().get(pk=self.from_account_id)
+            to_account = Account.objects.select_for_update().get(pk=self.to_account_id)
+            from_account.balance += self.amount
+            from_account.save(update_fields=['balance', 'updated_at'])
             
             # Convert for reversal
             to_revert_amount = self.amount
-            if self.from_account.currency != self.to_account.currency:
-                rate = get_exchange_rate(self.from_account.currency, self.to_account.currency)
+            if from_account.currency != to_account.currency:
+                rate = get_exchange_rate(from_account.currency, to_account.currency)
                 to_revert_amount = (self.amount * rate).quantize(Decimal('0.01'))
                 
-            self.to_account.balance -= to_revert_amount
-            self.to_account.save()
+            to_account.balance -= to_revert_amount
+            to_account.save(update_fields=['balance', 'updated_at'])
             super().delete(*args, **kwargs)
+
+    class Meta:
+        constraints = [
+            models.CheckConstraint(
+                check=~models.Q(from_account=models.F('to_account')),
+                name='transfer_accounts_must_differ',
+            )
+        ]
 
     def __str__(self):
         return f"{self.date} - Transfer {self.amount} from {self.from_account.name} to {self.to_account.name}"
@@ -805,32 +833,33 @@ class GoalContribution(models.Model):
     def save(self, *args, **kwargs):
         with transaction.atomic():
             if self.pk:
-                old_instance = GoalContribution.objects.get(pk=self.pk)
+                old_instance = GoalContribution.objects.select_related('account', 'goal').select_for_update().get(pk=self.pk)
                 # Revert old balance and goal amount
                 if old_instance.account:
+                    old_account = Account.objects.select_for_update().get(pk=old_instance.account_id)
                     # Convert goal currency to account currency for reversal
                     reversal_amount = old_instance.amount
                     if old_instance.goal.currency != old_instance.account.currency:
                         rate = get_exchange_rate(old_instance.goal.currency, old_instance.account.currency)
                         reversal_amount = (old_instance.amount * rate).quantize(Decimal('0.01'))
                         
-                    old_instance.account.balance += reversal_amount
-                    old_instance.account.save()
+                    old_account.balance += reversal_amount
+                    old_account.save(update_fields=['balance', 'updated_at'])
                 self.goal.current_amount -= old_instance.amount
             
             super().save(*args, **kwargs)
             
             # Apply new balance and goal amount
             if self.account:
-                self.account.refresh_from_db()
+                locked_account = Account.objects.select_for_update().get(pk=self.account_id)
                 # Convert goal currency to account currency
                 apply_amount = self.amount
-                if self.goal.currency != self.account.currency:
-                    rate = get_exchange_rate(self.goal.currency, self.account.currency)
+                if self.goal.currency != locked_account.currency:
+                    rate = get_exchange_rate(self.goal.currency, locked_account.currency)
                     apply_amount = (self.amount * rate).quantize(Decimal('0.01'))
                 
-                self.account.balance -= apply_amount
-                self.account.save()
+                locked_account.balance -= apply_amount
+                locked_account.save(update_fields=['balance', 'updated_at'])
             
             self.goal.current_amount += self.amount
             self.goal.save()
@@ -839,14 +868,15 @@ class GoalContribution(models.Model):
         with transaction.atomic():
             # Update account balance and goal's current amount when deleting a contribution
             if self.account:
+                locked_account = Account.objects.select_for_update().get(pk=self.account_id)
                 # Convert for deletion reversal
                 apply_amount = self.amount
-                if self.goal.currency != self.account.currency:
-                    rate = get_exchange_rate(self.goal.currency, self.account.currency)
+                if self.goal.currency != locked_account.currency:
+                    rate = get_exchange_rate(self.goal.currency, locked_account.currency)
                     apply_amount = (self.amount * rate).quantize(Decimal('0.01'))
                     
-                self.account.balance += apply_amount
-                self.account.save()
+                locked_account.balance += apply_amount
+                locked_account.save(update_fields=['balance', 'updated_at'])
                 
             self.goal.current_amount -= self.amount
             self.goal.save()
@@ -871,3 +901,136 @@ class EmailLog(models.Model):
 
     def __str__(self):
         return f"{self.to_email}: {self.subject}"
+
+class Loan(models.Model):
+    LOAN_TYPES = [
+        ('HOME', _('Home Loan')),
+        ('CAR', _('Car Loan')),
+        ('PERSONAL', _('Personal Loan')),
+        ('EDUCATION', _('Education Loan')),
+        ('BUSINESS', _('Business Loan')),
+        ('OTHER', _('Other')),
+    ]
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='loans')
+    name = models.CharField(max_length=100, verbose_name=_('Loan Name'))
+    loan_type = models.CharField(max_length=20, choices=LOAN_TYPES, default='HOME', verbose_name=_('Loan Type'))
+    initial_principal = models.DecimalField(max_digits=15, decimal_places=2, verbose_name=_('Initial Principal Amount'))
+    duration_months = models.IntegerField(verbose_name=_('Duration (Months)'))
+    start_date = models.DateField(default=timezone.now, verbose_name=_('Start Date'))
+    currency = models.CharField(max_length=5, choices=CURRENCY_CHOICES, default='₹', verbose_name=_('Currency'))
+    is_active = models.BooleanField(default=True, verbose_name=_('Is Active'))
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.name} - {self.initial_principal} {self.currency}"
+
+class LoanInterestRate(models.Model):
+    loan = models.ForeignKey(Loan, on_delete=models.CASCADE, related_name='interest_rates')
+    interest_rate = models.DecimalField(max_digits=5, decimal_places=2, verbose_name=_('Annual Interest Rate (%)'))
+    effective_date = models.DateField(default=timezone.now, verbose_name=_('Effective Date'))
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-effective_date']
+
+    def __str__(self):
+        return f"{self.loan.name} - {self.interest_rate}% from {self.effective_date}"
+
+class LoanRepayment(models.Model):
+    loan = models.ForeignKey(Loan, on_delete=models.CASCADE, related_name='repayments')
+    from_account = models.ForeignKey(Account, on_delete=models.SET_NULL, null=True, blank=True, related_name='loan_repayments', verbose_name=_('Paid From Account'))
+    amount = models.DecimalField(max_digits=12, decimal_places=2, verbose_name=_('Total Amount Paid (EMI)'))
+    principal_portion = models.DecimalField(max_digits=12, decimal_places=2, verbose_name=_('Principal Portion'))
+    interest_portion = models.DecimalField(max_digits=12, decimal_places=2, verbose_name=_('Interest Portion'))
+    date = models.DateField(default=timezone.now, verbose_name=_('Payment Date'))
+    
+    # Multi-currency support
+    exchange_rate = models.DecimalField(max_digits=15, decimal_places=6, default=1.0, verbose_name=_('Exchange Rate'))
+    base_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0.0, verbose_name=_('Amount in Base Currency'))
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['date']
+
+    def __str__(self):
+        return f"{self.loan.name} Repayment - {self.amount} on {self.date}"
+
+    def clean(self):
+        if self.amount is None or self.amount <= 0:
+            raise ValidationError({'amount': _('Repayment amount must be greater than zero.')})
+
+        if self.principal_portion is None or self.principal_portion < 0:
+            raise ValidationError({'principal_portion': _('Principal portion cannot be negative.')})
+
+        if self.interest_portion is None or self.interest_portion < 0:
+            raise ValidationError({'interest_portion': _('Interest portion cannot be negative.')})
+
+        if (self.principal_portion + self.interest_portion).quantize(Decimal('0.01')) != self.amount.quantize(Decimal('0.01')):
+            raise ValidationError(_('Repayment must equal principal portion plus interest portion.'))
+
+        if self.from_account and self.from_account.user_id != self.loan.user_id:
+            raise ValidationError({'from_account': _('Selected account does not belong to this user.')})
+
+        prior_paid = self.loan.repayments.exclude(pk=self.pk).aggregate(
+            total_principal=models.Sum('principal_portion')
+        )['total_principal'] or Decimal('0.00')
+        remaining_principal = self.loan.initial_principal - prior_paid
+        if self.principal_portion > remaining_principal:
+            raise ValidationError({'principal_portion': _('Principal portion cannot exceed remaining principal.')})
+
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        with transaction.atomic():
+            # Handle balance reversal for updates
+            if self.pk:
+                old_instance = LoanRepayment.objects.select_related('from_account', 'loan').select_for_update().get(pk=self.pk)
+                if old_instance.from_account:
+                    old_account = Account.objects.select_for_update().get(pk=old_instance.from_account_id)
+                    # Convert old amount to account currency for reversal
+                    reversal_amount = old_instance.amount
+                    if old_instance.loan.currency != old_instance.from_account.currency:
+                        rate = get_exchange_rate(old_instance.loan.currency, old_instance.from_account.currency)
+                        reversal_amount = (old_instance.amount * rate).quantize(Decimal('0.01'))
+                    
+                    old_account.balance += reversal_amount
+                    old_account.save(update_fields=['balance', 'updated_at'])
+
+            # Multi-currency normalization (amount is in loan currency)
+            base_currency = self.loan.user.profile.currency
+            if self.loan.currency == base_currency:
+                self.exchange_rate = Decimal('1.0')
+                self.base_amount = self.amount
+            else:
+                self.exchange_rate = get_exchange_rate(self.loan.currency, base_currency)
+                self.base_amount = (self.amount * self.exchange_rate).quantize(Decimal('0.01'))
+
+            super().save(*args, **kwargs)
+
+            # Apply new balance
+            if self.from_account:
+                locked_account = Account.objects.select_for_update().get(pk=self.from_account_id)
+                # Convert current amount to account currency
+                apply_amount = self.amount
+                if self.loan.currency != locked_account.currency:
+                    rate = get_exchange_rate(self.loan.currency, locked_account.currency)
+                    apply_amount = (self.amount * rate).quantize(Decimal('0.01'))
+                
+                locked_account.balance -= apply_amount
+                locked_account.save(update_fields=['balance', 'updated_at'])
+
+    def delete(self, *args, **kwargs):
+        with transaction.atomic():
+            if self.from_account:
+                locked_account = Account.objects.select_for_update().get(pk=self.from_account_id)
+                # Convert to account currency for deletion reversal
+                apply_amount = self.amount
+                if self.loan.currency != locked_account.currency:
+                    rate = get_exchange_rate(self.loan.currency, locked_account.currency)
+                    apply_amount = (self.amount * rate).quantize(Decimal('0.01'))
+                
+                locked_account.balance += apply_amount
+                locked_account.save(update_fields=['balance', 'updated_at'])
+            super().delete(*args, **kwargs)
+

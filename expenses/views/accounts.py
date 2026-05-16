@@ -6,6 +6,7 @@ from datetime import date, timedelta
 from django.contrib import messages
 from django.core.paginator import Paginator
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.core.exceptions import ValidationError
 from django.http import JsonResponse
 from django.db.models import Q, Sum
 from django.shortcuts import get_object_or_404, redirect, render
@@ -15,7 +16,7 @@ from django.views.generic import CreateView, DeleteView, ListView, UpdateView, V
 from finance_tracker.plans import get_limit
 
 from ..forms import AccountForm, TransferForm
-from ..models import Account, Expense, GoalContribution, Income, Transfer
+from ..models import Account, Expense, GoalContribution, Income, Transfer, LoanRepayment
 from ..utils import get_exchange_rate
 from .mixins import RecurringTransactionMixin
 
@@ -186,8 +187,13 @@ class TransferCreateView(LoginRequiredMixin, CreateView):
 
     def form_valid(self, form):
         form.instance.user = self.request.user
-        messages.success(self.request, _("Transfer completed successfully!"))
-        return super().form_valid(form)
+        try:
+            response = super().form_valid(form)
+            messages.success(self.request, _("Transfer completed successfully!"))
+            return response
+        except (RuntimeError, ValidationError):
+            messages.error(self.request, _("Unable to complete transfer because currency conversion failed or transfer data is invalid."))
+            return self.form_invalid(form)
 
 class TransferListView(LoginRequiredMixin, RecurringTransactionMixin, ListView):
     model = Transfer
@@ -212,8 +218,13 @@ class TransferUpdateView(LoginRequiredMixin, UpdateView):
         return Transfer.objects.filter(user=self.request.user)
 
     def form_valid(self, form):
-        messages.success(self.request, _("Transfer updated successfully!"))
-        return super().form_valid(form)
+        try:
+            response = super().form_valid(form)
+            messages.success(self.request, _("Transfer updated successfully!"))
+            return response
+        except (RuntimeError, ValidationError):
+            messages.error(self.request, _("Unable to update transfer because currency conversion failed or transfer data is invalid."))
+            return self.form_invalid(form)
 
 class TransferDeleteView(LoginRequiredMixin, DeleteView):
     model = Transfer
@@ -222,10 +233,10 @@ class TransferDeleteView(LoginRequiredMixin, DeleteView):
 
     def get_queryset(self):
         return Transfer.objects.filter(user=self.request.user)
-    
-    def delete(self, request, *args, **kwargs):
+
+    def form_valid(self, form):
         messages.success(self.request, _("Transfer deleted successfully!"))
-        return super().delete(request, *args, **kwargs)
+        return super().form_valid(form)
 
     def get_success_url(self):
         next_url = self.request.GET.get('next') or self.request.POST.get('next')
@@ -252,6 +263,7 @@ class AccountDetailView(LoginRequiredMixin, View):
         transfers_from = Transfer.objects.filter(user=request.user, from_account=account)
         transfers_to = Transfer.objects.filter(user=request.user, to_account=account)
         contributions = GoalContribution.objects.filter(goal__user=request.user, account=account)
+        loan_repayments = LoanRepayment.objects.filter(loan__user=request.user, from_account=account)
 
         if query:
             expenses = expenses.filter(Q(description__icontains=query) | Q(category__icontains=query))
@@ -259,6 +271,7 @@ class AccountDetailView(LoginRequiredMixin, View):
             transfers_from = transfers_from.filter(Q(description__icontains=query))
             transfers_to = transfers_to.filter(Q(description__icontains=query))
             contributions = contributions.filter(Q(goal__name__icontains=query))
+            loan_repayments = loan_repayments.filter(Q(loan__name__icontains=query))
 
         expenses = expenses.order_by('-date')
         incomes = incomes.order_by('-date')
@@ -304,7 +317,16 @@ class AccountDetailView(LoginRequiredMixin, View):
             else:
                 sav_total += c.amount
         
-        filtered_net_total = inc_total + in_total - exp_total - out_total - sav_total
+        # Loan repayments are in the loan's currency
+        loan_total = Decimal('0.00')
+        for lr in loan_repayments:
+            if lr.loan.currency != account.currency:
+                rate = get_exchange_rate(lr.loan.currency, account.currency)
+                loan_total += (lr.amount * rate).quantize(Decimal('0.01'))
+            else:
+                loan_total += lr.amount
+
+        filtered_net_total = inc_total + in_total - exp_total - out_total - sav_total - loan_total
 
         # Combine everything and sort by date descending
         # We'll add 'transaction_type', 'display_currency', and 'base_amount_display' to each for the template
@@ -345,8 +367,18 @@ class AccountDetailView(LoginRequiredMixin, View):
                 c.base_amount_display = None
             c.description = _("Savings: %(goal)s") % {'goal': c.goal.name}
 
+        for lr in loan_repayments:
+            lr.transaction_type = 'LOAN_REPAYMENT'
+            lr.display_currency = lr.loan.currency
+            if lr.loan.currency != account.currency:
+                rate = get_exchange_rate(lr.loan.currency, account.currency)
+                lr.base_amount_display = (lr.amount * rate).quantize(Decimal('0.01'))
+            else:
+                lr.base_amount_display = None
+            lr.description = _("Loan Repayment: %(loan)s") % {'loan': lr.loan.name}
+
         ledger = sorted(
-            chain(expenses, incomes, transfers_from, transfers_to, contributions),
+            chain(expenses, incomes, transfers_from, transfers_to, contributions, loan_repayments),
             key=lambda x: x.date,
             reverse=True
         )
@@ -448,6 +480,7 @@ class AccountDetailView(LoginRequiredMixin, View):
         transfers_out = Transfer.objects.filter(user=user, from_account=account)
         transfers_in = Transfer.objects.filter(user=user, to_account=account).select_related('from_account')
         contributions = GoalContribution.objects.filter(goal__user=user, account=account).select_related('goal')
+        loan_repayments = LoanRepayment.objects.filter(loan__user=user, from_account=account).select_related('loan')
         
         if start_date:
             expenses = expenses.filter(date__gte=start_date)
@@ -455,6 +488,7 @@ class AccountDetailView(LoginRequiredMixin, View):
             transfers_out = transfers_out.filter(date__gte=start_date)
             transfers_in = transfers_in.filter(date__gte=start_date)
             contributions = contributions.filter(date__gte=start_date)
+            loan_repayments = loan_repayments.filter(date__gte=start_date)
             
         # For simplicity, we'll manually handle the currency conversion logic in Python 
         # because doing it in SQL with exchange rates is complex and might be slow for few records.
@@ -491,6 +525,13 @@ class AccountDetailView(LoginRequiredMixin, View):
                 rate = get_exchange_rate(c.goal.currency, account.currency)
                 amt = (amt * rate).quantize(Decimal('0.01'))
             all_tx.append({'date': c.date, 'net_amount': -amt})
+
+        for lr in loan_repayments:
+            amt = lr.amount
+            if lr.loan.currency != account.currency:
+                rate = get_exchange_rate(lr.loan.currency, account.currency)
+                amt = (amt * rate).quantize(Decimal('0.01'))
+            all_tx.append({'date': lr.date, 'net_amount': -amt})
             
         # Return as a simple list of dicts
         # Sort it if needed, but the grouping logic handles it

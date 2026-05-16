@@ -68,8 +68,10 @@ def get_exchange_rate(from_curr, to_curr):
             return Decimal(str(rate))
         except Exception as fb_e:
             print(f"Fallback API error: {fb_e}")
-            # Final fallback to 1.0 to avoid breaking app
-            return Decimal('1.0')
+            # Fail closed for financial integrity instead of masking conversion failures.
+            raise RuntimeError(
+                f"Exchange rate unavailable for {from_code}->{to_code}."
+            ) from fb_e
 
 
 def generate_year_in_review_data(user, year):

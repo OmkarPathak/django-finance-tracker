@@ -75,33 +75,31 @@ class CurrencyConversionTest(TestCase):
 
     @patch('requests.get')
     def test_api_failure_fallback(self, mock_get):
-        """If API fails (e.g., 500 error), it should fallback to 1.0."""
+        """If both providers fail, conversion should fail closed."""
         mock_get.side_effect = requests.exceptions.HTTPError("API Down")
-        
-        rate = get_exchange_rate('$', '₹')
-        self.assertEqual(rate, Decimal('1.0'))
-        
-        # Verify transaction still saves with 1.0
-        obj = Expense.objects.create(
-            user=self.user,
-            date='2024-01-01',
-            amount=Decimal('50.00'),
-            currency='$',
-            description='Fallback Test'
-        )
-        self.assertEqual(obj.exchange_rate, Decimal('1.0'))
-        self.assertEqual(obj.base_amount, Decimal('50.00'))
+
+        with self.assertRaises(RuntimeError):
+            get_exchange_rate('$', '₹')
+
+        with self.assertRaises(RuntimeError):
+            Expense.objects.create(
+                user=self.user,
+                date='2024-01-01',
+                amount=Decimal('50.00'),
+                currency='$',
+                description='Fallback Test'
+            )
 
     @patch('requests.get')
     def test_malformed_json_fallback(self, mock_get):
-        """Handle cases where API returns invalid JSON."""
+        """Malformed responses should fail conversion instead of assuming 1.0."""
         mock_response = MagicMock()
         mock_response.status_code = 200
         mock_response.json.side_effect = ValueError("Invalid JSON")
         mock_get.return_value = mock_response
 
-        rate = get_exchange_rate('$', '₹')
-        self.assertEqual(rate, Decimal('1.0'))
+        with self.assertRaises(RuntimeError):
+            get_exchange_rate('$', '₹')
 
     @patch('requests.get')
     def test_precision_preservation(self, mock_get):
@@ -125,10 +123,10 @@ class CurrencyConversionTest(TestCase):
         self.assertEqual(obj.base_amount, Decimal('8312.35'))
 
     def test_unsupported_currency_symbol(self, mock_get=None):
-        """If a symbol is unknown, it should attempt to use literal or fallback."""
+        """Unknown symbols should fail if no provider can resolve them."""
         # 'XYZ' is not in our mapping
-        rate = get_exchange_rate('XYZ', 'INR')
-        self.assertEqual(rate, Decimal('1.0')) # Should fallback gracefully
+        with self.assertRaises(RuntimeError):
+            get_exchange_rate('XYZ', 'INR')
 
     @patch('expenses.utils.get_exchange_rate')
     def test_historical_normalization_on_currency_change(self, mock_get_rate):

@@ -1,0 +1,341 @@
+{% extends 'base.html' %}
+{% load i18n digit_filters humanize %}
+
+{% block content %}
+<div class="fade-in">
+    <!-- Header -->
+    <div class="row align-items-center mb-4">
+        <div class="col-md-8">
+            <div class="d-flex align-items-center mb-2">
+                <a href="{% url 'loan-list' %}" class="btn btn-outline-secondary btn-sm rounded-circle me-3 icon-btn">
+                    <i class="bi bi-arrow-left"></i>
+                </a>
+                <h1 class="h3 fw-bold mb-0">{{ loan.name }}</h1>
+                <span class="badge bg-primary ms-3 rounded-pill px-3">{{ loan.get_loan_type_display }}</span>
+            </div>
+            <p class="text-muted ms-5 mb-0">{% trans "Track repayments and monitor your amortization schedule." %}</p>
+        </div>
+        <div class="col-md-4 text-md-end mt-3 mt-md-0">
+            <button type="button" class="btn btn-success shadow-sm rounded-3 fw-bold" data-bs-toggle="modal" data-bs-target="#repaymentModal">
+                <i class="bi bi-plus-lg me-1"></i> {% trans "Record Repayment" %}
+            </button>
+        </div>
+    </div>
+
+    <!-- Stats Row -->
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-lg-3">
+            <div class="card border-0 shadow-sm rounded-4 h-100">
+                <div class="card-body p-3">
+                    <p class="text-muted small mb-1">{% trans "Remaining Principal" %}</p>
+                    <h4 class="fw-bold mb-0 text-danger">{{ loan.currency }}{{ summary.remaining_principal|compact_amount:loan.currency|translate_digits }}</h4>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="card border-0 shadow-sm rounded-4 h-100">
+                <div class="card-body p-3">
+                    <p class="text-muted small mb-1">{% trans "Principal Paid" %}</p>
+                    <h4 class="fw-bold mb-0 text-success">{{ loan.currency }}{{ summary.principal_paid|compact_amount:loan.currency|translate_digits }}</h4>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="card border-0 shadow-sm rounded-4 h-100">
+                <div class="card-body p-3">
+                    <p class="text-muted small mb-1">{% trans "Interest Paid" %}</p>
+                    <h4 class="fw-bold mb-0 text-warning">{{ loan.currency }}{{ summary.interest_paid|compact_amount:loan.currency|translate_digits }}</h4>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="card border-0 shadow-sm rounded-4 h-100">
+                <div class="card-body p-3">
+                    <p class="text-muted small mb-1">{% trans "Interest Rate" %}</p>
+                    <div class="d-flex align-items-center justify-content-between">
+                        <h4 class="fw-bold mb-0 text-primary">{{ loan.interest_rates.first.interest_rate|translate_digits }}%</h4>
+                        <button class="btn btn-link btn-sm p-0 text-decoration-none" data-bs-toggle="modal" data-bs-target="#rateModal">
+                            <i class="bi bi-pencil-square"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Main Content: Schedule & History -->
+        <div class="col-lg-8">
+            <!-- Amortization Schedule -->
+            <div class="card border-0 shadow-sm rounded-4 mb-4">
+                <div class="card-header bg-transparent border-0 p-4 pb-0">
+                    <h5 class="fw-bold mb-0">{% trans "Amortization Schedule" %}</h5>
+                    <p class="text-muted small">{% trans "Planned payments for the remaining term." %}</p>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th class="ps-4 border-0">{% trans "Month" %}</th>
+                                    <th class="border-0 text-end">{% trans "EMI" %}</th>
+                                    <th class="border-0 text-end d-none d-md-table-cell">{% trans "Principal" %}</th>
+                                    <th class="border-0 text-end d-none d-md-table-cell">{% trans "Interest" %}</th>
+                                    <th class="pe-4 border-0 text-end">{% trans "Balance" %}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in schedule %}
+                                <tr>
+                                    <td class="ps-4 fw-medium">{{ item.month }}</td>
+                                    <td class="text-end fw-bold">{{ loan.currency }}{{ item.emi|compact_amount:loan.currency|translate_digits }}</td>
+                                    <td class="text-end d-none d-md-table-cell text-success">{{ loan.currency }}{{ item.principal|compact_amount:loan.currency|translate_digits }}</td>
+                                    <td class="text-end d-none d-md-table-cell text-warning">{{ loan.currency }}{{ item.interest|compact_amount:loan.currency|translate_digits }}</td>
+                                    <td class="pe-4 text-end text-muted">{{ loan.currency }}{{ item.balance|compact_amount:loan.currency|translate_digits }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="5" class="text-center py-4 text-muted">
+                                        <i class="bi bi-check-circle-fill text-success d-block fs-2 mb-2"></i>
+                                        {% trans "This loan is fully paid off!" %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Repayment History -->
+            <div class="card border-0 shadow-sm rounded-4">
+                <div class="card-header bg-transparent border-0 p-4 pb-0">
+                    <h5 class="fw-bold mb-0">{% trans "Repayment History" %}</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th class="ps-4 border-0">{% trans "Date" %}</th>
+                                    <th class="border-0">{% trans "Account" %}</th>
+                                    <th class="border-0 text-end">{% trans "Amount" %}</th>
+                                    <th class="pe-4 border-0 text-end">{% trans "Actions" %}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for r in repayments %}
+                                <tr>
+                                    <td class="ps-4">{{ r.date|date:"M d, Y" }}</td>
+                                    <td>
+                                        <span class="badge bg-body-tertiary text-dark border shadow-sm">
+                                            <i class="bi bi-wallet2 me-1"></i> {{ r.from_account.name }}
+                                        </span>
+                                    </td>
+                                    <td class="text-end fw-bold">{{ loan.currency }}{{ r.amount|compact_amount:loan.currency|translate_digits }}</td>
+                                    <td class="pe-4 text-end">
+                                        <!-- No edit for now to keep it simple, just delete and re-log if error -->
+                                        <button type="button" class="btn btn-outline-danger btn-sm rounded-circle icon-btn" 
+                                                data-bs-toggle="modal" data-bs-target="#deleteModal"
+                                                data-url="{% url 'loan-repayment-delete' r.pk %}?next={{ request.get_full_path|urlencode }}"
+                                                data-message="{% trans 'Delete this repayment record? The account balance will be restored.' %}">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="4" class="text-center py-4 text-muted">{% trans "No repayments recorded yet." %}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar Info -->
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm rounded-4 bg-primary text-white mb-4">
+                <div class="card-body p-4">
+                    <h5 class="fw-bold mb-3">{% trans "Loan Summary" %}</h5>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="opacity-75">{% trans "Initial Principal" %}</span>
+                        <span class="fw-bold">{{ loan.currency }}{{ loan.initial_principal|compact_amount:loan.currency|translate_digits }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="opacity-75">{% trans "Duration" %}</span>
+                        <span class="fw-bold">{{ loan.duration_months }} {% trans "Months" %}</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="opacity-75">{% trans "Interest Rate" %}</span>
+                        <span class="fw-bold">{{ loan.interest_rates.first.interest_rate|translate_digits }}%</span>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span class="opacity-75">{% trans "Monthly EMI (Approx)" %}</span>
+                        <span class="fw-bold fs-5">
+                            {% if schedule %}
+                                {{ loan.currency }}{{ schedule.0.emi|compact_amount:loan.currency|translate_digits }}
+                            {% else %}
+                                {{ loan.currency }}0
+                            {% endif %}
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Floating Rate Info -->
+            <div class="card border-0 shadow-sm rounded-4">
+                <div class="card-header bg-transparent border-0 p-4 pb-0">
+                    <h6 class="fw-bold mb-0">{% trans "Interest Rate History" %}</h6>
+                </div>
+                <div class="card-body p-4">
+                    <div class="list-group list-group-flush">
+                        {% for rate in loan.interest_rates.all %}
+                        <div class="list-group-item bg-transparent px-0 border-0 d-flex justify-content-between align-items-center">
+                            <div>
+                                <p class="mb-0 fw-bold">{{ rate.interest_rate|translate_digits }}%</p>
+                                <p class="mb-0 text-muted small">{% trans "from" %} {{ rate.effective_date|date:"M Y" }}</p>
+                            </div>
+                            {% if forloop.first %}
+                            <span class="badge bg-success rounded-pill small">{% trans "Current" %}</span>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block modals %}
+    {{ block.super }}
+    <!-- Repayment Modal -->
+    <div class="modal fade" id="repaymentModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 rounded-4 shadow">
+                <div class="modal-header border-0 p-4 pb-0">
+                    <h5 class="modal-title fw-bold">{% trans "Record Repayment" %}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form action="{% url 'loan-repayment-create' loan.pk %}" method="post">
+                    {% csrf_token %}
+                    <div class="modal-body p-4">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small text-uppercase text-muted">{% trans "Funding Account" %}</label>
+                            {{ repayment_form.from_account }}
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small text-uppercase text-muted">{% trans "Total Amount (EMI)" %}</label>
+                            {{ repayment_form.amount }}
+                        </div>
+                        <div class="row">
+                            <div class="col-6 mb-3">
+                                <label class="form-label fw-bold small text-uppercase text-muted">{% trans "Principal" %}</label>
+                                {{ repayment_form.principal_portion }}
+                            </div>
+                            <div class="col-6 mb-3">
+                                <label class="form-label fw-bold small text-uppercase text-muted">{% trans "Interest" %}</label>
+                                {{ repayment_form.interest_portion }}
+                            </div>
+                        </div>
+                        <div class="mb-0">
+                            <label class="form-label fw-bold small text-uppercase text-muted">{% trans "Payment Date" %}</label>
+                            {{ repayment_form.date }}
+                        </div>
+                    </div>
+                    <div class="modal-footer border-0 p-4 pt-0">
+                        <button type="button" class="btn btn-light rounded-3" data-bs-dismiss="modal">{% trans "Cancel" %}</button>
+                        <button type="submit" class="btn btn-primary rounded-3 fw-bold px-4" onclick="setButtonLoading(this, '{% trans 'Logging...' %}')">{% trans "Log Repayment" %}</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Interest Rate Modal -->
+    <div class="modal fade" id="rateModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 rounded-4 shadow">
+                <div class="modal-header border-0 p-4 pb-0">
+                    <h5 class="modal-title fw-bold">{% trans "Update Interest Rate" %}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form action="{% url 'loan-rate-update' loan.pk %}" method="post">
+                    {% csrf_token %}
+                    <div class="modal-body p-4">
+                        <p class="text-muted small mb-4">{% trans "Changing the rate will update all future projections in the amortization schedule." %}</p>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small text-uppercase text-muted">{% trans "New Annual Rate (%)" %}</label>
+                            {{ rate_form.interest_rate }}
+                        </div>
+                        <div class="mb-0">
+                            <label class="form-label fw-bold small text-uppercase text-muted">{% trans "Effective From" %}</label>
+                            {{ rate_form.effective_date }}
+                        </div>
+                    </div>
+                    <div class="modal-footer border-0 p-4 pt-0">
+                        <button type="button" class="btn btn-light rounded-3" data-bs-dismiss="modal">{% trans "Cancel" %}</button>
+                        <button type="submit" class="btn btn-primary rounded-3 fw-bold px-4" onclick="setButtonLoading(this, '{% trans 'Updating...' %}')">{% trans "Update Rate" %}</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+    {{ block.super }}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Recalculate portions (stub for future logic)
+            function recalculatePortions() {
+                const amountInput = document.getElementById('id_amount');
+                if (!amountInput) return;
+                // Add logic if needed
+            }
+
+            // Centralized focus logic following base.html pattern
+            const loanModals = ['repaymentModal', 'rateModal'];
+            loanModals.forEach(modalId => {
+                const modalEl = document.getElementById(modalId);
+                if (modalEl) {
+                    modalEl.addEventListener('show.bs.modal', function() {
+                        // Small delay to allow modal initialization and searchable-select to be ready
+                        setTimeout(() => {
+                            // 1. Try to find the custom searchable-select button
+                            const searchableBtn = modalEl.querySelector('.searchable-select-btn');
+                            if (searchableBtn) {
+                                searchableBtn.focus();
+                                return;
+                            }
+
+                            // 2. Fallback: First visible input/select/textarea
+                            const firstInput = modalEl.querySelector('input:not([type="hidden"]):not([disabled]):not([readonly]), select:not([disabled]), textarea:not([disabled])');
+                            if (firstInput) {
+                                firstInput.focus();
+                            }
+                        }, 500); // Consistent with base.html deleteModal pattern
+                    });
+                }
+            });
+        });
+    </script>
+
+
+<style>
+.icon-btn {
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+</style>
+{% endblock %}
+

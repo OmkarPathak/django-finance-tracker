@@ -112,6 +112,17 @@ urlpatterns = [
     path('api/cron/send-monthly-reports/', views.trigger_monthly_reports_view, name='cron-send-monthly-reports'),
     path('api/cron/send-daily-reminders/', views.trigger_daily_reminders_view, name='cron-send-daily-reminders'),
 
+    # Loans
+    path('loans/', views.LoanListView.as_view(), name='loan-list'),
+    path('loans/add/', views.LoanCreateView.as_view(), name='loan-create'),
+    path('loans/<int:pk>/edit/', views.LoanUpdateView.as_view(), name='loan-edit'),
+    path('loans/<int:pk>/delete/', views.LoanDeleteView.as_view(), name='loan-delete'),
+    path('loans/<int:pk>/', views.LoanDetailView.as_view(), name='loan-detail'),
+    path('loans/<int:pk>/repayment/', views.LoanRepaymentCreateView.as_view(), name='loan-repayment-create'),
+    path('loans/repayment/<int:pk>/delete/', views.LoanRepaymentDeleteView.as_view(), name='loan-repayment-delete'),
+    path('loans/<int:pk>/rate-update/', views.LoanInterestRateCreateView.as_view(), name='loan-rate-update'),
+
     # Sentry Debug
     path('sentry-debug/', lambda request: 1 / 0),
 ]
+

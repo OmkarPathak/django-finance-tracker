@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+{% load i18n %}
+
+{% block content %}
+<div class="row justify-content-center fade-in">
+    <div class="col-md-6">
+        <div class="card border-0 shadow-sm rounded-4">
+            <div class="card-body p-4">
+                <div class="d-flex align-items-center mb-4">
+                    <a href="{% url 'loan-list' %}" class="btn btn-outline-secondary btn-sm rounded-circle me-3 icon-btn">
+                        <i class="bi bi-arrow-left"></i>
+                    </a>
+                    <h4 class="fw-bold mb-0">
+                        {% if form.instance.pk %}
+                            {% trans "Edit Loan" %}
+                        {% else %}
+                            {% trans "Add New Loan" %}
+                        {% endif %}
+                    </h4>
+                </div>
+
+                <form method="post" onsubmit="window.showLoader()">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small text-uppercase">{% trans "Loan Name" %}</label>
+                        {{ form.name }}
+                        {% if form.name.errors %}<div class="text-danger small">{{ form.name.errors }}</div>{% endif %}
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold small text-uppercase">{% trans "Loan Type" %}</label>
+                            {{ form.loan_type }}
+                            {% if form.loan_type.errors %}<div class="text-danger small">{{ form.loan_type.errors }}</div>{% endif %}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold small text-uppercase">{% trans "Currency" %}</label>
+                            {{ form.currency }}
+                            {% if form.currency.errors %}<div class="text-danger small">{{ form.currency.errors }}</div>{% endif %}
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold small text-uppercase">{% trans "Principal Amount" %}</label>
+                            {{ form.initial_principal }}
+                            {% if form.initial_principal.errors %}<div class="text-danger small">{{ form.initial_principal.errors }}</div>{% endif %}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold small text-uppercase">{% trans "Interest Rate (%)" %}</label>
+                            {{ form.interest_rate }}
+                            {% if form.interest_rate.errors %}<div class="text-danger small">{{ form.interest_rate.errors }}</div>{% endif %}
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold small text-uppercase">{% trans "Duration (Months)" %}</label>
+                            {{ form.duration_months }}
+                            {% if form.duration_months.errors %}<div class="text-danger small">{{ form.duration_months.errors }}</div>{% endif %}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold small text-uppercase">{% trans "Start Date" %}</label>
+                            {{ form.start_date }}
+                            {% if form.start_date.errors %}<div class="text-danger small">{{ form.start_date.errors }}</div>{% endif %}
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2 mt-4">
+                        <button type="submit" class="btn btn-primary py-2 fw-bold shadow-sm rounded-3">
+                            {% if form.instance.pk %}
+                                {% trans "Update Loan" %}
+                            {% else %}
+                                {% trans "Create Loan" %}
+                            {% endif %}
+                        </button>
+                        <a href="{% url 'loan-list' %}" class="btn btn-light py-2 fw-bold rounded-3">{% trans "Cancel" %}</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.icon-btn {
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+</style>
+{% endblock %}

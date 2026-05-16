@@ -1,8 +1,11 @@
 from datetime import date
 from decimal import Decimal
+import logging
 
 from ..models import Expense, Income, RecurringTransaction, Transfer, UserProfile
 from ..utils import get_exchange_rate
+
+logger = logging.getLogger(__name__)
 
 
 class RecurringTransactionMixin:
@@ -52,6 +55,7 @@ def process_user_recurring_transactions(user):
 
         while current_date <= today:
             description = f"{rt.description} (Recurring)"
+            posted_successfully = False
             
             if rt.transaction_type == 'EXPENSE':
                 category = rt.category or 'Uncategorized'
@@ -65,8 +69,12 @@ def process_user_recurring_transactions(user):
                             exchange_rate=exchange_rate, base_amount=base_amount,
                             account=rt.account,
                         ).save()
-                    except Exception:
-                        pass  # Skip duplicates or constraint violations
+                        posted_successfully = True
+                    except Exception as exc:
+                        logger.warning("Recurring expense posting failed", exc_info=exc)
+                        break
+                else:
+                    posted_successfully = True
 
             elif rt.transaction_type == 'TRANSFER':
                 if rt.from_account and rt.to_account:
@@ -85,10 +93,12 @@ def process_user_recurring_transactions(user):
                                 description=description
                             )
                             new_transfer.save()
+                            posted_successfully = True
                         except Exception as e:
-                            # If it fails (e.g. database error), don't update last_processed_date
-                            # so it can be retried on next page load
+                            logger.warning("Recurring transfer posting failed", exc_info=e)
                             break 
+                    else:
+                        posted_successfully = True
 
             else:
                 source = rt.source or 'Other'
@@ -101,8 +111,15 @@ def process_user_recurring_transactions(user):
                             description=description, exchange_rate=exchange_rate,
                             base_amount=base_amount, account=rt.account,
                         ).save()
-                    except Exception:
-                        pass  # Skip duplicates or constraint violations
+                        posted_successfully = True
+                    except Exception as exc:
+                        logger.warning("Recurring income posting failed", exc_info=exc)
+                        break
+                else:
+                    posted_successfully = True
+
+            if not posted_successfully:
+                break
             
             rt.last_processed_date = current_date
             current_date = rt.get_next_date(current_date, rt.frequency)
