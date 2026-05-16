@@ -1,6 +1,8 @@
 from datetime import timedelta, date
 from decimal import Decimal
+import logging
 
+from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.db import models, transaction
@@ -22,6 +24,34 @@ CURRENCY_CHOICES = [
     ('元', _('Chinese Yuan (元)')),
     ('₩', _('South Korean Won (₩)')),
 ]
+
+logger = logging.getLogger(__name__)
+
+
+def _build_ledger_version(instance, action):
+    action_prefix = (action or 'OP').upper()
+    ts = getattr(instance, 'updated_at', None) or getattr(instance, 'created_at', None) or timezone.now()
+    return f"{action_prefix}-{int(ts.timestamp() * 1000000)}"
+
+
+def _run_ledger_shadow(posting_fn, source_type=None, source_id=None, action=None, payload=None):
+    if not getattr(settings, 'LEDGER_WRITE_ENABLED', False):
+        return
+    try:
+        posting_fn()
+    except Exception as exc:
+        logger.exception('Ledger shadow posting failed.')
+        LedgerPostingFailure.objects.create(
+            source_type=source_type or 'ADJUSTMENT',
+            source_id=source_id or 0,
+            action=action or 'UNKNOWN',
+            payload=payload or {},
+            error_message=str(exc),
+            status='PENDING',
+            next_retry_at=timezone.now(),
+        )
+        if getattr(settings, 'LEDGER_ENFORCE_BALANCED_WRITE', False):
+            raise ValidationError(_('Unable to save transaction right now. Please try again.'))
 
 class FinanceBaseManager(models.Manager):
     def get_monthly_summary(self, user, year, month):
@@ -90,6 +120,165 @@ class Account(models.Model):
     def __str__(self):
         return f"{self.name} ({self.currency}{self.balance})"
 
+
+class LedgerAccount(models.Model):
+    ACCOUNT_TYPE_CHOICES = [
+        ('ASSET', _('Asset')),
+        ('LIABILITY', _('Liability')),
+        ('INCOME', _('Income')),
+        ('EXPENSE', _('Expense')),
+        ('EQUITY', _('Equity')),
+    ]
+
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name='ledger_accounts',
+    )
+    code = models.CharField(max_length=100, unique=True)
+    name = models.CharField(max_length=150)
+    account_type = models.CharField(max_length=20, choices=ACCOUNT_TYPE_CHOICES)
+    currency = models.CharField(max_length=5, choices=CURRENCY_CHOICES, null=True, blank=True)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['user', 'account_type']),
+            models.Index(fields=['is_active']),
+        ]
+
+    def __str__(self):
+        return f"{self.code} - {self.name}"
+
+
+class JournalEntry(models.Model):
+    SOURCE_TYPE_CHOICES = [
+        ('EXPENSE', _('Expense')),
+        ('INCOME', _('Income')),
+        ('TRANSFER', _('Transfer')),
+        ('LOAN_REPAYMENT', _('Loan Repayment')),
+        ('ADJUSTMENT', _('Adjustment')),
+    ]
+    STATUS_CHOICES = [
+        ('POSTED', _('Posted')),
+        ('REVERSED', _('Reversed')),
+    ]
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='journal_entries')
+    posted_at = models.DateTimeField(default=timezone.now)
+    source_type = models.CharField(max_length=30, choices=SOURCE_TYPE_CHOICES)
+    source_id = models.BigIntegerField()
+    idempotency_key = models.CharField(max_length=255, unique=True)
+    description = models.TextField(blank=True, null=True)
+    metadata = models.JSONField(default=dict, blank=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='POSTED')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['user', 'posted_at']),
+            models.Index(fields=['source_type', 'source_id']),
+            models.Index(fields=['status']),
+        ]
+
+    def __str__(self):
+        return f"{self.source_type}:{self.source_id} ({self.status})"
+
+
+class JournalLine(models.Model):
+    DIRECTION_CHOICES = [
+        ('DEBIT', _('Debit')),
+        ('CREDIT', _('Credit')),
+    ]
+
+    journal_entry = models.ForeignKey(JournalEntry, on_delete=models.CASCADE, related_name='lines')
+    ledger_account = models.ForeignKey(LedgerAccount, on_delete=models.PROTECT, related_name='journal_lines')
+    direction = models.CharField(max_length=10, choices=DIRECTION_CHOICES)
+    amount = models.DecimalField(max_digits=15, decimal_places=2)
+    currency = models.CharField(max_length=5, choices=CURRENCY_CHOICES)
+    fx_rate_to_base = models.DecimalField(max_digits=15, decimal_places=6, default=Decimal('1.0'))
+    base_amount = models.DecimalField(max_digits=15, decimal_places=2)
+    account_ref = models.ForeignKey(
+        Account,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='journal_lines',
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['ledger_account', 'journal_entry']),
+            models.Index(fields=['account_ref']),
+        ]
+
+    def __str__(self):
+        return f"{self.direction} {self.amount} {self.currency}"
+
+
+class LedgerPostingFailure(models.Model):
+    STATUS_CHOICES = [
+        ('PENDING', _('Pending')),
+        ('RETRYING', _('Retrying')),
+        ('RESOLVED', _('Resolved')),
+        ('FAILED', _('Failed')),
+    ]
+
+    source_type = models.CharField(max_length=30, choices=JournalEntry.SOURCE_TYPE_CHOICES)
+    source_id = models.BigIntegerField()
+    action = models.CharField(max_length=30)
+    payload = models.JSONField(default=dict, blank=True)
+    error_message = models.TextField()
+    attempts = models.PositiveIntegerField(default=0)
+    max_attempts = models.PositiveIntegerField(default=5)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='PENDING')
+    last_attempt_at = models.DateTimeField(null=True, blank=True)
+    next_retry_at = models.DateTimeField(null=True, blank=True)
+    resolved_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['status', 'next_retry_at']),
+            models.Index(fields=['source_type', 'source_id']),
+        ]
+
+    def __str__(self):
+        return f"{self.source_type}:{self.source_id} {self.action} ({self.status})"
+
+
+class LedgerReconciliationReport(models.Model):
+    STATUS_CHOICES = [
+        ('MATCH', _('Match')),
+        ('DRIFT', _('Drift')),
+    ]
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='ledger_reconciliation_reports')
+    account = models.ForeignKey(Account, on_delete=models.CASCADE, related_name='ledger_reconciliation_reports')
+    as_of_date = models.DateField()
+    account_balance = models.DecimalField(max_digits=15, decimal_places=2)
+    ledger_balance = models.DecimalField(max_digits=15, decimal_places=2)
+    drift_amount = models.DecimalField(max_digits=15, decimal_places=2)
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES)
+    metadata = models.JSONField(default=dict, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['user', 'as_of_date']),
+            models.Index(fields=['account', 'as_of_date']),
+            models.Index(fields=['status']),
+        ]
+
+    def __str__(self):
+        return f"{self.user_id}:{self.account_id}:{self.as_of_date} ({self.status})"
+
 class Expense(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     date = models.DateField(verbose_name=_('Date'))
@@ -119,6 +308,7 @@ class Expense(models.Model):
 
     def save(self, *args, **kwargs):
         with transaction.atomic():
+            old_instance = None
             # Handle balance reversal for updates
             if self.pk:
                 old_instance = Expense.objects.select_related('account').select_for_update().get(pk=self.pk)
@@ -159,6 +349,51 @@ class Expense(models.Model):
                 locked_account.balance -= apply_amount
                 locked_account.save(update_fields=['balance', 'updated_at'])
 
+            def _post_shadow_entry():
+                from .ledger_service import LedgerPostingService
+
+                version_token = _build_ledger_version(self, 'CREATE' if old_instance is None else 'UPDATE')
+                if old_instance is None:
+                    LedgerPostingService.shadow_post_expense_create(
+                        expense=self,
+                        version_token=version_token,
+                    )
+                else:
+                    LedgerPostingService.shadow_post_expense_update(
+                        expense=self,
+                        previous_expense=old_instance,
+                        version_token=version_token,
+                    )
+
+            _run_ledger_shadow(
+                _post_shadow_entry,
+                source_type='EXPENSE',
+                source_id=self.id,
+                action='CREATE' if old_instance is None else 'UPDATE',
+                payload={
+                    'handler': 'expense_create' if old_instance is None else 'expense_update',
+                    'version_token': _build_ledger_version(self, 'CREATE' if old_instance is None else 'UPDATE'),
+                    'expense': {
+                        'user_id': self.user_id,
+                        'amount': str(self.amount),
+                        'currency': self.currency,
+                        'category': self.category,
+                        'description': self.description,
+                        'account_id': self.account_id,
+                        'source_id': self.id,
+                    },
+                    'previous_expense': {
+                        'user_id': old_instance.user_id,
+                        'amount': str(old_instance.amount),
+                        'currency': old_instance.currency,
+                        'category': old_instance.category,
+                        'description': old_instance.description,
+                        'account_id': old_instance.account_id,
+                        'source_id': old_instance.id,
+                    } if old_instance else None,
+                },
+            )
+
     def delete(self, *args, **kwargs):
         with transaction.atomic():
             if self.account:
@@ -171,6 +406,34 @@ class Expense(models.Model):
                 
                 locked_account.balance += apply_amount
                 locked_account.save(update_fields=['balance', 'updated_at'])
+
+            def _post_shadow_entry():
+                from .ledger_service import LedgerPostingService
+
+                LedgerPostingService.shadow_post_expense_delete(
+                    expense=self,
+                    version_token=_build_ledger_version(self, 'DELETE'),
+                )
+
+            _run_ledger_shadow(
+                _post_shadow_entry,
+                source_type='EXPENSE',
+                source_id=self.id,
+                action='DELETE',
+                payload={
+                    'handler': 'expense_delete',
+                    'version_token': _build_ledger_version(self, 'DELETE'),
+                    'expense': {
+                        'user_id': self.user_id,
+                        'amount': str(self.amount),
+                        'currency': self.currency,
+                        'category': self.category,
+                        'description': self.description,
+                        'account_id': self.account_id,
+                        'source_id': self.id,
+                    },
+                },
+            )
             super().delete(*args, **kwargs)
 
     class Meta:
@@ -232,6 +495,7 @@ class Income(models.Model):
 
     def save(self, *args, **kwargs):
         with transaction.atomic():
+            old_instance = None
             # Handle balance reversal for updates
             if self.pk:
                 old_instance = Income.objects.select_related('account').select_for_update().get(pk=self.pk)
@@ -272,6 +536,51 @@ class Income(models.Model):
                 locked_account.balance += apply_amount
                 locked_account.save(update_fields=['balance', 'updated_at'])
 
+            def _post_shadow_entry():
+                from .ledger_service import LedgerPostingService
+
+                version_token = _build_ledger_version(self, 'CREATE' if old_instance is None else 'UPDATE')
+                if old_instance is None:
+                    LedgerPostingService.shadow_post_income_create(
+                        income=self,
+                        version_token=version_token,
+                    )
+                else:
+                    LedgerPostingService.shadow_post_income_update(
+                        income=self,
+                        previous_income=old_instance,
+                        version_token=version_token,
+                    )
+
+            _run_ledger_shadow(
+                _post_shadow_entry,
+                source_type='INCOME',
+                source_id=self.id,
+                action='CREATE' if old_instance is None else 'UPDATE',
+                payload={
+                    'handler': 'income_create' if old_instance is None else 'income_update',
+                    'version_token': _build_ledger_version(self, 'CREATE' if old_instance is None else 'UPDATE'),
+                    'income': {
+                        'user_id': self.user_id,
+                        'amount': str(self.amount),
+                        'currency': self.currency,
+                        'source': self.source,
+                        'description': self.description,
+                        'account_id': self.account_id,
+                        'source_id': self.id,
+                    },
+                    'previous_income': {
+                        'user_id': old_instance.user_id,
+                        'amount': str(old_instance.amount),
+                        'currency': old_instance.currency,
+                        'source': old_instance.source,
+                        'description': old_instance.description,
+                        'account_id': old_instance.account_id,
+                        'source_id': old_instance.id,
+                    } if old_instance else None,
+                },
+            )
+
     def delete(self, *args, **kwargs):
         with transaction.atomic():
             if self.account:
@@ -284,6 +593,34 @@ class Income(models.Model):
                 
                 locked_account.balance -= apply_amount
                 locked_account.save(update_fields=['balance', 'updated_at'])
+
+            def _post_shadow_entry():
+                from .ledger_service import LedgerPostingService
+
+                LedgerPostingService.shadow_post_income_delete(
+                    income=self,
+                    version_token=_build_ledger_version(self, 'DELETE'),
+                )
+
+            _run_ledger_shadow(
+                _post_shadow_entry,
+                source_type='INCOME',
+                source_id=self.id,
+                action='DELETE',
+                payload={
+                    'handler': 'income_delete',
+                    'version_token': _build_ledger_version(self, 'DELETE'),
+                    'income': {
+                        'user_id': self.user_id,
+                        'amount': str(self.amount),
+                        'currency': self.currency,
+                        'source': self.source,
+                        'description': self.description,
+                        'account_id': self.account_id,
+                        'source_id': self.id,
+                    },
+                },
+            )
             super().delete(*args, **kwargs)
 
     class Meta:
@@ -331,6 +668,7 @@ class Transfer(models.Model):
     def save(self, *args, **kwargs):
         self.full_clean()
         with transaction.atomic():
+            old_instance = None
             # Revert-and-Apply pattern for updates
             if self.pk:
                 old_instance = Transfer.objects.select_related('from_account', 'to_account').select_for_update().get(pk=self.pk)
@@ -378,6 +716,49 @@ class Transfer(models.Model):
             to_account.balance += to_apply_amount
             to_account.save(update_fields=['balance', 'updated_at'])
 
+            def _post_shadow_entry():
+                from .ledger_service import LedgerPostingService
+
+                version_token = _build_ledger_version(self, 'CREATE' if old_instance is None else 'UPDATE')
+                if old_instance is None:
+                    LedgerPostingService.shadow_post_transfer_create(
+                        transfer=self,
+                        version_token=version_token,
+                    )
+                else:
+                    LedgerPostingService.shadow_post_transfer_update(
+                        transfer=self,
+                        previous_transfer=old_instance,
+                        version_token=version_token,
+                    )
+
+            _run_ledger_shadow(
+                _post_shadow_entry,
+                source_type='TRANSFER',
+                source_id=self.id,
+                action='CREATE' if old_instance is None else 'UPDATE',
+                payload={
+                    'handler': 'transfer_create' if old_instance is None else 'transfer_update',
+                    'version_token': _build_ledger_version(self, 'CREATE' if old_instance is None else 'UPDATE'),
+                    'transfer': {
+                        'user_id': self.user_id,
+                        'amount': str(self.amount),
+                        'description': self.description,
+                        'from_account_id': self.from_account_id,
+                        'to_account_id': self.to_account_id,
+                        'source_id': self.id,
+                    },
+                    'previous_transfer': {
+                        'user_id': old_instance.user_id,
+                        'amount': str(old_instance.amount),
+                        'description': old_instance.description,
+                        'from_account_id': old_instance.from_account_id,
+                        'to_account_id': old_instance.to_account_id,
+                        'source_id': old_instance.id,
+                    } if old_instance else None,
+                },
+            )
+
     def delete(self, *args, **kwargs):
         with transaction.atomic():
             from_account = Account.objects.select_for_update().get(pk=self.from_account_id)
@@ -393,6 +774,33 @@ class Transfer(models.Model):
                 
             to_account.balance -= to_revert_amount
             to_account.save(update_fields=['balance', 'updated_at'])
+
+            def _post_shadow_entry():
+                from .ledger_service import LedgerPostingService
+
+                LedgerPostingService.shadow_post_transfer_delete(
+                    transfer=self,
+                    version_token=_build_ledger_version(self, 'DELETE'),
+                )
+
+            _run_ledger_shadow(
+                _post_shadow_entry,
+                source_type='TRANSFER',
+                source_id=self.id,
+                action='DELETE',
+                payload={
+                    'handler': 'transfer_delete',
+                    'version_token': _build_ledger_version(self, 'DELETE'),
+                    'transfer': {
+                        'user_id': self.user_id,
+                        'amount': str(self.amount),
+                        'description': self.description,
+                        'from_account_id': self.from_account_id,
+                        'to_account_id': self.to_account_id,
+                        'source_id': self.id,
+                    },
+                },
+            )
             super().delete(*args, **kwargs)
 
     class Meta:
@@ -983,6 +1391,7 @@ class LoanRepayment(models.Model):
     def save(self, *args, **kwargs):
         self.full_clean()
         with transaction.atomic():
+            old_instance = None
             # Handle balance reversal for updates
             if self.pk:
                 old_instance = LoanRepayment.objects.select_related('from_account', 'loan').select_for_update().get(pk=self.pk)
@@ -1020,6 +1429,49 @@ class LoanRepayment(models.Model):
                 locked_account.balance -= apply_amount
                 locked_account.save(update_fields=['balance', 'updated_at'])
 
+            def _post_shadow_entry():
+                from .ledger_service import LedgerPostingService
+
+                version_token = _build_ledger_version(self, 'CREATE' if old_instance is None else 'UPDATE')
+                if old_instance is None:
+                    LedgerPostingService.shadow_post_loan_repayment_create(
+                        repayment=self,
+                        version_token=version_token,
+                    )
+                else:
+                    LedgerPostingService.shadow_post_loan_repayment_update(
+                        repayment=self,
+                        previous_repayment=old_instance,
+                        version_token=version_token,
+                    )
+
+            _run_ledger_shadow(
+                _post_shadow_entry,
+                source_type='LOAN_REPAYMENT',
+                source_id=self.id,
+                action='CREATE' if old_instance is None else 'UPDATE',
+                payload={
+                    'handler': 'loan_repayment_create' if old_instance is None else 'loan_repayment_update',
+                    'version_token': _build_ledger_version(self, 'CREATE' if old_instance is None else 'UPDATE'),
+                    'loan_repayment': {
+                        'loan_id': self.loan_id,
+                        'amount': str(self.amount),
+                        'principal_portion': str(self.principal_portion),
+                        'interest_portion': str(self.interest_portion),
+                        'from_account_id': self.from_account_id,
+                        'source_id': self.id,
+                    },
+                    'previous_loan_repayment': {
+                        'loan_id': old_instance.loan_id,
+                        'amount': str(old_instance.amount),
+                        'principal_portion': str(old_instance.principal_portion),
+                        'interest_portion': str(old_instance.interest_portion),
+                        'from_account_id': old_instance.from_account_id,
+                        'source_id': old_instance.id,
+                    } if old_instance else None,
+                },
+            )
+
     def delete(self, *args, **kwargs):
         with transaction.atomic():
             if self.from_account:
@@ -1032,5 +1484,32 @@ class LoanRepayment(models.Model):
                 
                 locked_account.balance += apply_amount
                 locked_account.save(update_fields=['balance', 'updated_at'])
+
+            def _post_shadow_entry():
+                from .ledger_service import LedgerPostingService
+
+                LedgerPostingService.shadow_post_loan_repayment_delete(
+                    repayment=self,
+                    version_token=_build_ledger_version(self, 'DELETE'),
+                )
+
+            _run_ledger_shadow(
+                _post_shadow_entry,
+                source_type='LOAN_REPAYMENT',
+                source_id=self.id,
+                action='DELETE',
+                payload={
+                    'handler': 'loan_repayment_delete',
+                    'version_token': _build_ledger_version(self, 'DELETE'),
+                    'loan_repayment': {
+                        'loan_id': self.loan_id,
+                        'amount': str(self.amount),
+                        'principal_portion': str(self.principal_portion),
+                        'interest_portion': str(self.interest_portion),
+                        'from_account_id': self.from_account_id,
+                        'source_id': self.id,
+                    },
+                },
+            )
             super().delete(*args, **kwargs)
 

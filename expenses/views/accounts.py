@@ -16,6 +16,7 @@ from django.views.generic import CreateView, DeleteView, ListView, UpdateView, V
 from finance_tracker.plans import get_limit
 
 from ..forms import AccountForm, TransferForm
+from ..ledger_read_service import LedgerReadService
 from ..models import Account, Expense, GoalContribution, Income, Transfer, LoanRepayment
 from ..utils import get_exchange_rate
 from .mixins import RecurringTransactionMixin
@@ -428,7 +429,7 @@ class AccountDetailView(LoginRequiredMixin, View):
                 key = tx['date'].strftime('%Y-%m')
                 monthly_diffs[key] += tx['net_amount']
                 
-            current_bal = account.balance
+            current_bal = LedgerReadService.get_account_balance(account)
             check_date = today
             
             for i in range(13): # 12 months + start point
@@ -457,7 +458,7 @@ class AccountDetailView(LoginRequiredMixin, View):
             for tx in transactions:
                 daily_diffs[tx['date']] += tx['net_amount']
                 
-            current_bal = account.balance
+            current_bal = LedgerReadService.get_account_balance(account)
             
             for i in range(31): # 30 days + start point
                 d = today - timedelta(days=i)

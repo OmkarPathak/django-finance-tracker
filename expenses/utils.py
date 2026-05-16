@@ -1,10 +1,13 @@
 from decimal import Decimal
+import logging
 
 import requests
 from django.core.cache import cache
 from django.db.models import Count, Sum
 from django.db.models.functions import ExtractMonth
 from django.utils.translation import get_language
+
+logger = logging.getLogger(__name__)
 
 
 def get_exchange_rate(from_curr, to_curr):
@@ -68,7 +71,7 @@ def get_exchange_rate(from_curr, to_curr):
             return Decimal(str(rate))
         except Exception as fb_e:
             print(f"Fallback API error: {fb_e}")
-            # Fail closed for financial integrity instead of masking conversion failures.
+            logger.warning("All exchange rate APIs failed for %s->%s.", from_code, to_code)
             raise RuntimeError(
                 f"Exchange rate unavailable for {from_code}->{to_code}."
             ) from fb_e

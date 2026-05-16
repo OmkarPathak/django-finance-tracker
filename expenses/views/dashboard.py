@@ -30,6 +30,7 @@ from ..models import (
 )
 from ..templatetags.digit_filters import compact_amount
 from ..utils import format_indian_number, generate_year_in_review_data, get_exchange_rate
+from ..ledger_read_service import LedgerReadService
 from ..services import FinancialService, LoanService
 from .mixins import process_user_recurring_transactions
 
@@ -1523,20 +1524,12 @@ def home_view(request):
     accounts = Account.objects.filter(user=request.user, is_active=True)
     base_currency = currency_symbol  # user's profile currency
 
-    # Convert each account balance to user's base currency
-    net_worth = Decimal('0.00')
+    # Convert balances to base currency from adapter (feature-flagged with fallback).
+    net_worth, account_base_balances = LedgerReadService.get_net_worth(request.user)
     investment_accounts_balance = Decimal('0.00')
-    account_base_balances = {}  # account.pk -> converted balance
     for acc in accounts:
-        if acc.currency == base_currency:
-            converted = acc.balance
-        else:
-            rate = get_exchange_rate(acc.currency, base_currency)
-            converted = (acc.balance * rate).quantize(Decimal('0.01'))
-        account_base_balances[acc.pk] = converted
-        net_worth += converted
         if acc.account_type in ['INVESTMENT', 'FIXED_DEPOSIT']:
-            investment_accounts_balance += converted
+            investment_accounts_balance += account_base_balances.get(acc.pk, Decimal('0.00'))
 
     # Net Worth Change Calculation (Growth this month)
     # We estimate start-of-month net worth as current net worth minus this month's net cashflow (income - expense)

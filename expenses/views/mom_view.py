@@ -9,6 +9,7 @@ from django.shortcuts import render
 from django.utils import timezone
 
 from ..models import Account, Expense, Income, Transfer
+from ..ledger_read_service import LedgerReadService
 from ..utils import get_exchange_rate
 
 
@@ -70,14 +71,7 @@ def mom_analysis_view(request):
 
 
     # 2. Net Worth Calculation (Backwards reconstruction)
-    accounts = Account.objects.filter(user=user)
-    current_net_worth = Decimal('0.00')
-    for acc in accounts:
-        if acc.currency == currency_symbol:
-            current_net_worth += acc.balance
-        else:
-            rate = get_exchange_rate(acc.currency, currency_symbol)
-            current_net_worth += (acc.balance * rate).quantize(Decimal('0.01'))
+    current_net_worth, _ = LedgerReadService.get_net_worth(user)
 
     # Helper: get net cashflow for a month from pre-fetched maps
     def get_net_cashflow_cached(year, month):

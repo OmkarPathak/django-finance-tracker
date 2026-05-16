@@ -6,6 +6,11 @@ from .models import (
     Category,
     Expense,
     Income,
+    JournalEntry,
+    JournalLine,
+    LedgerAccount,
+    LedgerPostingFailure,
+    LedgerReconciliationReport,
     Notification,
     RecurringTransaction,
     Transfer,
@@ -75,6 +80,48 @@ class TransferAdmin(admin.ModelAdmin):
     list_filter = ('date', 'from_account', 'to_account', 'user')
     search_fields = ('description', 'user__username')
     ordering = ('-date',)
+
+
+@admin.register(LedgerAccount)
+class LedgerAccountAdmin(admin.ModelAdmin):
+    list_display = ('code', 'name', 'account_type', 'currency', 'user', 'is_active')
+    list_select_related = ('user',)
+    list_filter = ('account_type', 'currency', 'is_active')
+    search_fields = ('code', 'name', 'user__username')
+
+
+@admin.register(JournalEntry)
+class JournalEntryAdmin(admin.ModelAdmin):
+    list_display = ('id', 'source_type', 'source_id', 'user', 'status', 'posted_at')
+    list_select_related = ('user',)
+    list_filter = ('source_type', 'status', 'posted_at')
+    search_fields = ('idempotency_key', 'description', 'user__username')
+    ordering = ('-posted_at',)
+
+
+@admin.register(JournalLine)
+class JournalLineAdmin(admin.ModelAdmin):
+    list_display = ('journal_entry', 'ledger_account', 'direction', 'amount', 'currency', 'base_amount')
+    list_select_related = ('journal_entry', 'ledger_account', 'account_ref')
+    list_filter = ('direction', 'currency')
+    search_fields = ('journal_entry__idempotency_key', 'ledger_account__code')
+
+
+@admin.register(LedgerPostingFailure)
+class LedgerPostingFailureAdmin(admin.ModelAdmin):
+    list_display = ('id', 'source_type', 'source_id', 'action', 'status', 'attempts', 'next_retry_at')
+    list_filter = ('source_type', 'status', 'action')
+    search_fields = ('source_id', 'error_message')
+    ordering = ('-created_at',)
+
+
+@admin.register(LedgerReconciliationReport)
+class LedgerReconciliationReportAdmin(admin.ModelAdmin):
+    list_display = ('as_of_date', 'user', 'account', 'account_balance', 'ledger_balance', 'drift_amount', 'status')
+    list_select_related = ('user', 'account')
+    list_filter = ('status', 'as_of_date')
+    search_fields = ('user__username', 'account__name')
+    ordering = ('-as_of_date', '-created_at')
 
 from .models import PaymentHistory, UserProfile
 

@@ -322,3 +322,41 @@ else:
 RECAPTCHA_PUBLIC_KEY = os.environ.get('RECAPTCHA_PUBLIC_KEY', '')
 RECAPTCHA_PRIVATE_KEY = os.environ.get('RECAPTCHA_PRIVATE_KEY', os.environ.get('RECAPTCHA_SECRET_KEY', ''))
 RECAPTCHA_REQUIRED_SCORE = 0.5  # Score threshold (0.0 = likely bot, 1.0 = likely human)
+
+
+def _env_bool(name, default=False):
+    return os.environ.get(name, str(default)).lower() in {'1', 'true', 'yes', 'on'}
+
+
+def _env_int(name, default=0):
+    try:
+        return int(os.environ.get(name, str(default)))
+    except (TypeError, ValueError):
+        return default
+
+
+def _env_int_set(name):
+    raw = os.environ.get(name, '')
+    result = set()
+    for token in raw.split(','):
+        token = token.strip()
+        if not token:
+            continue
+        try:
+            result.add(int(token))
+        except ValueError:
+            continue
+    return result
+
+
+# Ledger rollout flags (all off by default for safe rollout)
+LEDGER_WRITE_ENABLED = _env_bool('LEDGER_WRITE_ENABLED', True)
+LEDGER_RECONCILE_ENABLED = _env_bool('LEDGER_RECONCILE_ENABLED', True)
+LEDGER_READ_ENABLED = _env_bool('LEDGER_READ_ENABLED', True)
+LEDGER_ENFORCE_BALANCED_WRITE = _env_bool('LEDGER_ENFORCE_BALANCED_WRITE', False)
+LEDGER_RECONCILE_ALERT_THRESHOLD = os.environ.get('LEDGER_RECONCILE_ALERT_THRESHOLD', '10.00')
+LEDGER_READ_COMPARE_ENABLED = _env_bool('LEDGER_READ_COMPARE_ENABLED', True)
+LEDGER_READ_COMPARE_SAMPLE_RATE = float(os.environ.get('LEDGER_READ_COMPARE_SAMPLE_RATE', '1.0'))
+LEDGER_READ_COHORT_PERCENT = max(0, min(100, _env_int('LEDGER_READ_COHORT_PERCENT', 100)))
+LEDGER_READ_COHORT_USER_IDS = _env_int_set('LEDGER_READ_COHORT_USER_IDS')
+LEDGER_READ_EXCLUDE_USER_IDS = _env_int_set('LEDGER_READ_EXCLUDE_USER_IDS')

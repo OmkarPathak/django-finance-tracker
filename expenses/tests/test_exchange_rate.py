@@ -56,14 +56,13 @@ class ExchangeRateFallbackTest(TestCase):
         self.assertEqual(cache.get("xr_INR_USD"), 0.013)
 
     @patch('requests.get')
-    def test_both_fail_returns_one(self, mock_get):
-        # Mock both failing
+    def test_both_fail_raises_runtime_error(self, mock_get):
+        # Mock both APIs failing
         mock_get.side_effect = Exception("All APIs Down")
 
-        rate = get_exchange_rate('₹', '$')
-        
-        self.assertEqual(rate, Decimal('1.0'))
-        # Ensure both were called (or at least attempted)
+        with self.assertRaises(RuntimeError):
+            get_exchange_rate('₹', '$')
+        # Ensure both were called
         self.assertEqual(mock_get.call_count, 2)
         # Ensure NOT cached on total failure
         self.assertIsNone(cache.get("xr_INR_USD"))
