@@ -11,6 +11,31 @@ from django.views.generic import ListView
 from ..models import Notification
 
 
+def _cron_authorized(request):
+    secret = request.GET.get('secret')
+    return bool(secret and secret == settings.CRON_SECRET)
+
+
+def _get_int_query_param(request, key, default):
+    raw = request.GET.get(key)
+    if raw in (None, ''):
+        return default
+    try:
+        return int(raw)
+    except (TypeError, ValueError):
+        return default
+
+
+def _get_threshold_query_param(request, default):
+    raw = request.GET.get('threshold')
+    if raw in (None, ''):
+        return default
+    try:
+        return str(float(raw))
+    except (TypeError, ValueError):
+        return default
+
+
 class NotificationListView(LoginRequiredMixin, ListView):
     model = Notification
     template_name = 'expenses/notification_list.html'
@@ -116,5 +141,85 @@ def trigger_daily_reminders_view(request):
     try:
         call_command('send_daily_reminders')
         return JsonResponse({'success': True, 'message': 'Daily reminders triggered successfully'})
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+@csrf_exempt
+def trigger_ledger_retry_view(request):
+    """
+    HTTP endpoint to retry failed ledger shadow postings via external cron service.
+    Optional query params:
+    - limit (default: 200)
+    """
+    if not _cron_authorized(request):
+        return JsonResponse({'error': 'Unauthorized'}, status=403)
+
+    limit = _get_int_query_param(request, 'limit', 200)
+    try:
+        call_command('retry_ledger_shadow_failures', limit=limit)
+        return JsonResponse(
+            {
+                'success': True,
+                'message': 'Ledger retry triggered successfully',
+                'limit': limit,
+            }
+        )
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+@csrf_exempt
+def trigger_ledger_reconcile_view(request):
+    """
+    HTTP endpoint to reconcile ledger/account balances via external cron service.
+    Optional query params:
+    - threshold (default: 0.01)
+    """
+    if not _cron_authorized(request):
+        return JsonResponse({'error': 'Unauthorized'}, status=403)
+
+    threshold = _get_threshold_query_param(request, '0.01')
+    try:
+        call_command('reconcile_ledgers', threshold=threshold)
+        return JsonResponse(
+            {
+                'success': True,
+                'message': 'Ledger reconciliation triggered successfully',
+                'threshold': threshold,
+            }
+        )
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+@csrf_exempt
+def trigger_ledger_maintenance_view(request):
+    """
+    HTTP endpoint to run combined ledger maintenance via external cron service.
+    Optional query params:
+    - retry_limit (default: 200)
+    - threshold (default: 0.01)
+    """
+    if not _cron_authorized(request):
+        return JsonResponse({'error': 'Unauthorized'}, status=403)
+
+    retry_limit = _get_int_query_param(request, 'retry_limit', 200)
+    threshold = _get_threshold_query_param(request, '0.01')
+    try:
+        call_command(
+            'run_ledger_maintenance',
+            retry_limit=retry_limit,
+            reconcile=True,
+            threshold=threshold,
+        )
+        return JsonResponse(
+            {
+                'success': True,
+                'message': 'Ledger maintenance triggered successfully',
+                'retry_limit': retry_limit,
+                'threshold': threshold,
+            }
+        )
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
