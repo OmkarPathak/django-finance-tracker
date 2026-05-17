@@ -1361,12 +1361,13 @@ def home_view(request):
                 })
 
     # 4. Financial Coach Moments (Milestones)
-    # Net Worth Milestone
-    net_worth = Account.objects.filter(user=request.user, is_active=True).aggregate(Sum('balance'))['balance__sum'] or 0
+    # Net Worth Milestone (match Net Worth card logic to avoid contradictory insights)
+    milestone_net_worth, _milestone_account_balances = LedgerReadService.get_net_worth(request.user)
+    milestone_net_worth -= Decimal(str(LoanService.get_total_liabilities(request.user)))
     milestones = [100000, 500000, 1000000, 2500000, 5000000, 10000000]
     applicable_milestone = None
     for m in milestones:
-        if float(net_worth) >= m:
+        if float(milestone_net_worth) >= m:
             applicable_milestone = m
         else:
             break
@@ -1540,6 +1541,7 @@ def home_view(request):
     # This assumes all income/expense transactions affect the total net worth.
     
     total_liabilities = Decimal(str(LoanService.get_total_liabilities(request.user)))
+    net_worth_before_liabilities = net_worth
     # Subtract liabilities from the total account balances to get true net worth
     net_worth -= total_liabilities
     
@@ -1710,6 +1712,7 @@ def home_view(request):
         'accounts': accounts,
         'account_base_balances': account_base_balances,
         'total_liabilities': total_liabilities,
+        'net_worth_before_liabilities': net_worth_before_liabilities,
         'asset_allocation': asset_allocation,
         'recent_activity': recent_activity,
         'investment_accounts_balance': investment_accounts_balance,

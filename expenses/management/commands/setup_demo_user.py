@@ -4,6 +4,7 @@ from decimal import Decimal
 
 from django.contrib.auth.models import User
 from django.core.management.base import BaseCommand
+from django.db.models import Sum
 
 from expenses.models import (
     Account,
@@ -261,6 +262,51 @@ class Command(BaseCommand):
             )
         
         self.stdout.write(self.style.SUCCESS('Injected Current Day Data for ROI Visibility'))
+
+        # 5.2 Keep current-month Financial Health strong for demo consistency.
+        # Target >= 28% savings rate so the dashboard typically lands in "Excellent".
+        month_start = today.replace(day=1)
+        current_month_income = (
+            Income.objects.filter(user=user, date__gte=month_start)
+            .aggregate(total=Sum('amount'))
+            .get('total')
+            or Decimal('0.00')
+        )
+        current_month_expenses = (
+            Expense.objects.filter(user=user, date__gte=month_start)
+            .aggregate(total=Sum('amount'))
+            .get('total')
+            or Decimal('0.00')
+        )
+
+        target_savings_rate = Decimal('0.28')
+        if current_month_income > 0:
+            current_savings_rate = (current_month_income - current_month_expenses) / current_month_income
+        else:
+            current_savings_rate = Decimal('-1.00')
+
+        if current_savings_rate < target_savings_rate:
+            required_income = (
+                current_month_expenses / (Decimal('1.00') - target_savings_rate)
+                if current_month_expenses > 0
+                else Decimal('0.00')
+            )
+            top_up_income = (required_income - current_month_income + Decimal('1500.00')).quantize(Decimal('0.01'))
+
+            if top_up_income > 0:
+                Income.objects.create(
+                    user=user,
+                    source='Performance Bonus',
+                    amount=top_up_income,
+                    date=max(month_start + timedelta(days=2), today - timedelta(days=1)),
+                    description='Demo adjustment to keep financial health score stable',
+                    account=acc_main,
+                )
+                self.stdout.write(
+                    self.style.SUCCESS(
+                        f'Adjusted current-month income by {profile.currency}{top_up_income} for strong demo financial health'
+                    )
+                )
 
         # 6. Savings Goals & Contributions
         goals = [

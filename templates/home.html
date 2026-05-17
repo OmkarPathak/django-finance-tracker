@@ -1130,7 +1130,14 @@ document.addEventListener('DOMContentLoaded', function() {
                     <div class="d-flex justify-content-between align-items-end mb-1">
                         <div>
                             <h5 class="fw-bold mb-0" style="font-size: 1.1rem;">{% trans "Net Worth" %}</h5>
-                            <p class="text-muted small mb-0">{% trans "All accounts" %}</p>
+                            <!-- <p class="text-muted small mb-0">{% trans "All accounts" %}</p> -->
+                            <p class="text-muted small mb-0">
+                                {% trans "Calculated as" %}
+                                {{ currency_symbol }}{{ net_worth_before_liabilities|humanize_currency:currency_symbol|translate_digits }}
+                                -
+                                {{ currency_symbol }}{{ total_liabilities|humanize_currency:currency_symbol|translate_digits }}
+                                ({% trans "liabilities" %})
+                            </p>
                         </div>
                         <a href="{% url 'account-list' %}" class="btn btn-link btn-sm text-muted text-decoration-none fw-bold p-0">{% trans "Manage" %} →</a>
                     </div>
