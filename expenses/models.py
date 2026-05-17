@@ -1041,6 +1041,18 @@ class UserProfile(models.Model):
         if limit == -1: return True
         return self.user.savings_goals.count() < limit
 
+    @property
+    def can_track_loans(self):
+        """Checks if loan tracking feature is enabled for the user's tier."""
+        return get_limit(self.active_tier, 'loans') != 0
+
+    def can_add_loan(self):
+        """Checks loan limit based on tier."""
+        limit = get_limit(self.active_tier, 'loans')
+        if limit == -1:
+            return True
+        return self.user.loans.count() < limit
+
     def is_recurring_locked(self, obj):
         """Check if a specific recurring transaction is locked based on tier limits."""
         limit = get_limit(self.active_tier, 'recurring_transactions')

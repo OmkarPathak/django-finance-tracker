@@ -10,6 +10,8 @@ from expenses.services import LoanService
 class LoanServiceTest(TestCase):
     def setUp(self):
         self.user = User.objects.create_user(username='loan_test', password='password')
+        self.user.profile.tier = 'PLUS'
+        self.user.profile.save(update_fields=['tier'])
         self.account = Account.objects.create(
             user=self.user,
             name='Test Bank',
@@ -121,3 +123,11 @@ class LoanServiceTest(TestCase):
         self.assertContains(response, 'id="emi-preview-value"')
         self.assertContains(response, 'id="emi-preview-hint"')
         self.assertContains(response, 'function calculateEmi')
+
+    def test_free_tier_redirected_from_loan_pages(self):
+        self.user.profile.tier = 'FREE'
+        self.user.profile.save(update_fields=['tier'])
+        self.client.force_login(self.user)
+
+        response = self.client.get(reverse('loan-list'))
+        self.assertRedirects(response, reverse('pricing'))

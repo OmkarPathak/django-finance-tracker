@@ -6,13 +6,22 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
 from django.utils.translation import gettext as _
 from django.views.generic import CreateView, DeleteView, ListView, UpdateView, View
+from finance_tracker.plans import get_limit
 
 from ..forms import LoanForm, LoanInterestRateForm, LoanRepaymentForm
 from ..models import Loan, LoanInterestRate, LoanRepayment
 from ..services import LoanService
 
 
-class LoanListView(LoginRequiredMixin, ListView):
+class LoanFeatureGateMixin:
+    def dispatch(self, request, *args, **kwargs):
+        if get_limit(request.user.profile.active_tier, 'loans') == 0:
+            messages.info(request, _("Loan tracking is available on Plus and Pro plans. Please upgrade to unlock this feature."))
+            return redirect('pricing')
+        return super().dispatch(request, *args, **kwargs)
+
+
+class LoanListView(LoginRequiredMixin, LoanFeatureGateMixin, ListView):
     model = Loan
     template_name = 'expenses/loan_list.html'
     context_object_name = 'loans'
@@ -62,13 +71,18 @@ class LoanListView(LoginRequiredMixin, ListView):
         context['total_debt'] = total_debt
         return context
 
-class LoanCreateView(LoginRequiredMixin, CreateView):
+class LoanCreateView(LoginRequiredMixin, LoanFeatureGateMixin, CreateView):
     model = Loan
     form_class = LoanForm
     template_name = 'expenses/loan_form.html'
     success_url = reverse_lazy('loan-list')
 
     def form_valid(self, form):
+        if not self.request.user.profile.can_add_loan():
+            limit = get_limit(self.request.user.profile.active_tier, 'loans')
+            messages.error(self.request, _("You have reached your current plan limit of %(limit)s tracked loans. Please upgrade to add more.") % {'limit': limit})
+            return redirect('pricing')
+
         with transaction.atomic():
             form.instance.user = self.request.user
             self.object = form.save()
@@ -86,7 +100,7 @@ class LoanCreateView(LoginRequiredMixin, CreateView):
         kwargs['user'] = self.request.user
         return kwargs
 
-class LoanUpdateView(LoginRequiredMixin, UpdateView):
+class LoanUpdateView(LoginRequiredMixin, LoanFeatureGateMixin, UpdateView):
     model = Loan
     form_class = LoanForm
     template_name = 'expenses/loan_form.html'
@@ -112,7 +126,7 @@ class LoanUpdateView(LoginRequiredMixin, UpdateView):
         kwargs['user'] = self.request.user
         return kwargs
 
-class LoanDeleteView(LoginRequiredMixin, DeleteView):
+class LoanDeleteView(LoginRequiredMixin, LoanFeatureGateMixin, DeleteView):
     model = Loan
     success_url = reverse_lazy('loan-list')
 
@@ -123,7 +137,7 @@ class LoanDeleteView(LoginRequiredMixin, DeleteView):
         messages.success(self.request, _("Loan deleted successfully."))
         return super().delete(request, *args, **kwargs)
 
-class LoanDetailView(LoginRequiredMixin, View):
+class LoanDetailView(LoginRequiredMixin, LoanFeatureGateMixin, View):
     template_name = 'expenses/loan_detail.html'
 
     def get(self, request, pk):
@@ -145,7 +159,7 @@ class LoanDetailView(LoginRequiredMixin, View):
         }
         return render(request, self.template_name, context)
 
-class LoanRepaymentCreateView(LoginRequiredMixin, View):
+class LoanRepaymentCreateView(LoginRequiredMixin, LoanFeatureGateMixin, View):
     def post(self, request, pk):
         loan = get_object_or_404(Loan, pk=pk, user=request.user)
         form = LoanRepaymentForm(request.POST, user=request.user, loan=loan)
@@ -161,7 +175,7 @@ class LoanRepaymentCreateView(LoginRequiredMixin, View):
             messages.error(request, _("Error recording repayment. Please check the form."))
         return redirect('loan-detail', pk=pk)
 
-class LoanInterestRateCreateView(LoginRequiredMixin, View):
+class LoanInterestRateCreateView(LoginRequiredMixin, LoanFeatureGateMixin, View):
     def post(self, request, pk):
         loan = get_object_or_404(Loan, pk=pk, user=request.user)
         form = LoanInterestRateForm(request.POST)
@@ -173,7 +187,7 @@ class LoanInterestRateCreateView(LoginRequiredMixin, View):
         else:
             messages.error(request, _("Error updating interest rate."))
         return redirect('loan-detail', pk=pk)
-class LoanRepaymentDeleteView(LoginRequiredMixin, DeleteView):
+class LoanRepaymentDeleteView(LoginRequiredMixin, LoanFeatureGateMixin, DeleteView):
     model = LoanRepayment
 
     def get_queryset(self):

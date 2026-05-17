@@ -13,6 +13,7 @@ PLAN_DETAILS = {
         'limits': {
             'expenses_per_month': 90,
             'accounts': 2,
+            'loans': 0,
             'recurring_transactions': 2,
             'budget_categories': 5,
             'savings_goals': 1,
@@ -35,6 +36,7 @@ PLAN_DETAILS = {
         'limits': {
             'expenses_per_month': -1,  # -1 for Unlimited
             'accounts': 10,
+            'loans': 1,
             'recurring_transactions': 5,
             'budget_categories': 15,
             'savings_goals': 5,
@@ -57,6 +59,7 @@ PLAN_DETAILS = {
         'limits': {
             'expenses_per_month': -1,
             'accounts': -1,
+            'loans': -1,
             'recurring_transactions': -1,
             'budget_categories': -1,
             'savings_goals': -1,
