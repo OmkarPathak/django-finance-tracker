@@ -312,13 +312,13 @@ class Expense(models.Model):
             old_instance = None
             # Handle balance reversal for updates
             if self.pk:
-                old_instance = Expense.objects.select_related('account').select_for_update().get(pk=self.pk)
-                if old_instance.account:
+                old_instance = Expense.objects.select_for_update().get(pk=self.pk)
+                if old_instance.account_id:
                     old_account = Account.objects.select_for_update().get(pk=old_instance.account_id)
                     # Convert old amount to account currency for reversal
                     reversal_amount = old_instance.amount
-                    if old_instance.currency != old_instance.account.currency:
-                        rate = get_exchange_rate(old_instance.currency, old_instance.account.currency)
+                    if old_instance.currency != old_account.currency:
+                        rate = get_exchange_rate(old_instance.currency, old_account.currency)
                         reversal_amount = (old_instance.amount * rate).quantize(Decimal('0.01'))
                     
                     old_account.balance += reversal_amount
@@ -499,13 +499,13 @@ class Income(models.Model):
             old_instance = None
             # Handle balance reversal for updates
             if self.pk:
-                old_instance = Income.objects.select_related('account').select_for_update().get(pk=self.pk)
-                if old_instance.account:
+                old_instance = Income.objects.select_for_update().get(pk=self.pk)
+                if old_instance.account_id:
                     old_account = Account.objects.select_for_update().get(pk=old_instance.account_id)
                     # Convert to account currency for reversal
                     reversal_amount = old_instance.amount
-                    if old_instance.currency != old_instance.account.currency:
-                        rate = get_exchange_rate(old_instance.currency, old_instance.account.currency)
+                    if old_instance.currency != old_account.currency:
+                        rate = get_exchange_rate(old_instance.currency, old_account.currency)
                         reversal_amount = (old_instance.amount * rate).quantize(Decimal('0.01'))
                     
                     old_account.balance -= reversal_amount
@@ -1254,14 +1254,14 @@ class GoalContribution(models.Model):
     def save(self, *args, **kwargs):
         with transaction.atomic():
             if self.pk:
-                old_instance = GoalContribution.objects.select_related('account', 'goal').select_for_update().get(pk=self.pk)
+                old_instance = GoalContribution.objects.select_for_update().get(pk=self.pk)
                 # Revert old balance and goal amount
-                if old_instance.account:
+                if old_instance.account_id:
                     old_account = Account.objects.select_for_update().get(pk=old_instance.account_id)
                     # Convert goal currency to account currency for reversal
                     reversal_amount = old_instance.amount
-                    if old_instance.goal.currency != old_instance.account.currency:
-                        rate = get_exchange_rate(old_instance.goal.currency, old_instance.account.currency)
+                    if old_instance.goal.currency != old_account.currency:
+                        rate = get_exchange_rate(old_instance.goal.currency, old_account.currency)
                         reversal_amount = (old_instance.amount * rate).quantize(Decimal('0.01'))
                         
                     old_account.balance += reversal_amount
@@ -1407,13 +1407,13 @@ class LoanRepayment(models.Model):
             old_instance = None
             # Handle balance reversal for updates
             if self.pk:
-                old_instance = LoanRepayment.objects.select_related('from_account', 'loan').select_for_update().get(pk=self.pk)
-                if old_instance.from_account:
+                old_instance = LoanRepayment.objects.select_for_update().get(pk=self.pk)
+                if old_instance.from_account_id:
                     old_account = Account.objects.select_for_update().get(pk=old_instance.from_account_id)
                     # Convert old amount to account currency for reversal
                     reversal_amount = old_instance.amount
-                    if old_instance.loan.currency != old_instance.from_account.currency:
-                        rate = get_exchange_rate(old_instance.loan.currency, old_instance.from_account.currency)
+                    if old_instance.loan.currency != old_account.currency:
+                        rate = get_exchange_rate(old_instance.loan.currency, old_account.currency)
                         reversal_amount = (old_instance.amount * rate).quantize(Decimal('0.01'))
                     
                     old_account.balance += reversal_amount

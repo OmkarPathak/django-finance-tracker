@@ -119,6 +119,35 @@ class ExpenseCRUDTest(BaseViewTest):
         self.assertEqual(expense.amount, 200)
         self.assertEqual(expense.description, 'New')
 
+    def test_update_expense_without_account(self):
+        expense = Expense.objects.create(
+            user=self.user,
+            date=date.today(),
+            amount=100,
+            category='Food',
+            description='Old without account',
+            currency='₹',
+            account=None,
+        )
+        url = reverse('expense-edit', kwargs={'pk': expense.pk})
+        data = {
+            'date': date.today(),
+            'amount': 175,
+            'category': 'Food',
+            'description': 'Updated without account',
+            'payment_method': 'Cash',
+            'currency': '₹',
+            'account': '',
+        }
+
+        response = self.client.post(url, data)
+
+        self.assertEqual(response.status_code, 302)
+        expense.refresh_from_db()
+        self.assertEqual(expense.amount, 175)
+        self.assertEqual(expense.description, 'Updated without account')
+        self.assertIsNone(expense.account)
+
     def test_delete_expense(self):
         expense = Expense.objects.create(user=self.user, date=date.today(), amount=100, category='Food', description='Del', currency='₹')
         url = reverse('expense-delete', kwargs={'pk': expense.pk})
@@ -172,6 +201,34 @@ class IncomeCRUDTest(BaseViewTest):
         income.refresh_from_db()
         self.assertEqual(income.amount, 2000)
         self.assertEqual(income.description, 'New')
+
+    def test_update_income_without_account(self):
+        income = Income.objects.create(
+            user=self.user,
+            date=date.today(),
+            amount=1000,
+            source='Bonus',
+            description='Old without account',
+            currency='₹',
+            account=None,
+        )
+        url = reverse('income-edit', kwargs={'pk': income.pk})
+        data = {
+            'date': date.today(),
+            'amount': 2200,
+            'source': 'Bonus',
+            'description': 'Updated without account',
+            'currency': '₹',
+            'account': '',
+        }
+
+        response = self.client.post(url, data)
+
+        self.assertEqual(response.status_code, 302)
+        income.refresh_from_db()
+        self.assertEqual(income.amount, 2200)
+        self.assertEqual(income.description, 'Updated without account')
+        self.assertIsNone(income.account)
 
     def test_delete_income(self):
         income = Income.objects.create(user=self.user, date=date.today(), amount=1000, source='Bonus', currency='₹')

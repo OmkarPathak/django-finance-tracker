@@ -565,6 +565,9 @@ class LedgerPostingService:
 
     @classmethod
     def shadow_post_expense_create(cls, *, expense, version_token):
+        if expense.account_id is None:
+            return None, False
+
         idempotency_key = cls._idempotency_key("EXPENSE", expense.id, f"{version_token}-POST")
         return cls.post_expense(
             expense=expense,
@@ -579,6 +582,9 @@ class LedgerPostingService:
             idempotency_key=cls._idempotency_key("EXPENSE", expense.id, f"{version_token}-REV"),
             metadata={"shadow_action": "UPDATE_REVERSE", "version": version_token},
         )
+        if expense.account_id is None:
+            return None, False
+
         return cls.post_expense(
             expense=expense,
             idempotency_key=cls._idempotency_key("EXPENSE", expense.id, f"{version_token}-POST"),
@@ -595,6 +601,9 @@ class LedgerPostingService:
 
     @classmethod
     def shadow_post_income_create(cls, *, income, version_token):
+        if income.account_id is None:
+            return None, False
+
         idempotency_key = cls._idempotency_key("INCOME", income.id, f"{version_token}-POST")
         return cls.post_income(
             income=income,
@@ -609,6 +618,9 @@ class LedgerPostingService:
             idempotency_key=cls._idempotency_key("INCOME", income.id, f"{version_token}-REV"),
             metadata={"shadow_action": "UPDATE_REVERSE", "version": version_token},
         )
+        if income.account_id is None:
+            return None, False
+
         return cls.post_income(
             income=income,
             idempotency_key=cls._idempotency_key("INCOME", income.id, f"{version_token}-POST"),
@@ -655,6 +667,9 @@ class LedgerPostingService:
 
     @classmethod
     def shadow_post_loan_repayment_create(cls, *, repayment, version_token):
+        if repayment.from_account_id is None:
+            return None, False
+
         idempotency_key = cls._idempotency_key("LOAN_REPAYMENT", repayment.id, f"{version_token}-POST")
         return cls.post_loan_repayment(
             repayment=repayment,
@@ -669,6 +684,9 @@ class LedgerPostingService:
             idempotency_key=cls._idempotency_key("LOAN_REPAYMENT", repayment.id, f"{version_token}-REV"),
             metadata={"shadow_action": "UPDATE_REVERSE", "version": version_token},
         )
+        if repayment.from_account_id is None:
+            return None, False
+
         return cls.post_loan_repayment(
             repayment=repayment,
             idempotency_key=cls._idempotency_key("LOAN_REPAYMENT", repayment.id, f"{version_token}-POST"),

@@ -85,6 +85,25 @@ class LoanServiceTest(TestCase):
         self.account.refresh_from_db()
         self.assertEqual(self.account.balance, initial_balance)
 
+    def test_repayment_update_without_account(self):
+        repayment = LoanRepayment.objects.create(
+            loan=self.loan,
+            from_account=None,
+            amount=Decimal('4442.44'),
+            principal_portion=Decimal('3942.44'),
+            interest_portion=Decimal('500.00'),
+            date=datetime.date.today(),
+        )
+
+        repayment.amount = Decimal('4300.00')
+        repayment.principal_portion = Decimal('3800.00')
+        repayment.interest_portion = Decimal('500.00')
+        repayment.save()
+
+        repayment.refresh_from_db()
+        self.assertEqual(repayment.amount, Decimal('4300.00'))
+        self.assertIsNone(repayment.from_account)
+
     def test_floating_interest_rate(self):
         # Start loan today
         self.loan.start_date = datetime.date.today()

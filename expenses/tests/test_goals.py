@@ -57,6 +57,22 @@ class SavingsGoalTests(TestCase):
         self.goal.refresh_from_db()
         self.assertEqual(self.goal.current_amount, Decimal('300.00'))
 
+    def test_goal_contribution_update_without_account(self):
+        contribution = GoalContribution.objects.create(
+            goal=self.goal,
+            amount=Decimal('200.00'),
+            account=None,
+        )
+
+        contribution.amount = Decimal('350.00')
+        contribution.save()
+
+        contribution.refresh_from_db()
+        self.goal.refresh_from_db()
+        self.assertEqual(contribution.amount, Decimal('350.00'))
+        self.assertIsNone(contribution.account)
+        self.assertEqual(self.goal.current_amount, Decimal('350.00'))
+
     def test_savings_goal_form_validation(self):
         form = SavingsGoalForm(data={
             'name': 'Vacation',

@@ -9,6 +9,7 @@ from expenses.models import (
     Expense,
     Income,
     JournalEntry,
+    LedgerPostingFailure,
     Loan,
     LoanRepayment,
     Transfer,
@@ -74,6 +75,43 @@ class LedgerShadowWriteTest(TestCase):
         self.assertEqual(entries.filter(status="POSTED").count(), 2)
 
     @override_settings(LEDGER_WRITE_ENABLED=True, LEDGER_ENFORCE_BALANCED_WRITE=False)
+    def test_expense_without_account_skips_shadow_failure(self):
+        expense = Expense.objects.create(
+            user=self.user,
+            date=date.today(),
+            amount=Decimal("100.00"),
+            description="Cash note",
+            category="Food",
+            account=None,
+            currency="₹",
+        )
+
+        self.assertEqual(JournalEntry.objects.filter(source_type="EXPENSE", source_id=expense.id).count(), 0)
+        self.assertEqual(LedgerPostingFailure.objects.count(), 0)
+
+    @override_settings(LEDGER_WRITE_ENABLED=True, LEDGER_ENFORCE_BALANCED_WRITE=False)
+    def test_expense_update_removing_account_only_reverses_shadow_entry(self):
+        expense = Expense.objects.create(
+            user=self.user,
+            date=date.today(),
+            amount=Decimal("100.00"),
+            description="Coffee",
+            category="Food",
+            account=self.cash,
+            currency="₹",
+        )
+
+        expense.account = None
+        expense.description = "Offline cash note"
+        expense.save()
+
+        entries = JournalEntry.objects.filter(source_type="EXPENSE", source_id=expense.id)
+        self.assertEqual(entries.count(), 2)
+        self.assertEqual(entries.filter(status="REVERSED").count(), 1)
+        self.assertEqual(entries.filter(status="POSTED").count(), 1)
+        self.assertEqual(LedgerPostingFailure.objects.count(), 0)
+
+    @override_settings(LEDGER_WRITE_ENABLED=True, LEDGER_ENFORCE_BALANCED_WRITE=False)
     def test_expense_delete_creates_reversal_entry(self):
         expense = Expense.objects.create(
             user=self.user,
@@ -106,6 +144,41 @@ class LedgerShadowWriteTest(TestCase):
             JournalEntry.objects.filter(source_type="INCOME", source_id=income.id, status="POSTED").count(),
             1,
         )
+
+    @override_settings(LEDGER_WRITE_ENABLED=True, LEDGER_ENFORCE_BALANCED_WRITE=False)
+    def test_income_without_account_skips_shadow_failure(self):
+        income = Income.objects.create(
+            user=self.user,
+            date=date.today(),
+            amount=Decimal("2500.00"),
+            source="Salary",
+            account=None,
+            currency="₹",
+        )
+
+        self.assertEqual(JournalEntry.objects.filter(source_type="INCOME", source_id=income.id).count(), 0)
+        self.assertEqual(LedgerPostingFailure.objects.count(), 0)
+
+    @override_settings(LEDGER_WRITE_ENABLED=True, LEDGER_ENFORCE_BALANCED_WRITE=False)
+    def test_income_update_removing_account_only_reverses_shadow_entry(self):
+        income = Income.objects.create(
+            user=self.user,
+            date=date.today(),
+            amount=Decimal("2500.00"),
+            source="Salary",
+            account=self.bank,
+            currency="₹",
+        )
+
+        income.account = None
+        income.description = "Manual adjustment"
+        income.save()
+
+        entries = JournalEntry.objects.filter(source_type="INCOME", source_id=income.id)
+        self.assertEqual(entries.count(), 2)
+        self.assertEqual(entries.filter(status="REVERSED").count(), 1)
+        self.assertEqual(entries.filter(status="POSTED").count(), 1)
+        self.assertEqual(LedgerPostingFailure.objects.count(), 0)
 
     @override_settings(LEDGER_WRITE_ENABLED=True, LEDGER_ENFORCE_BALANCED_WRITE=False)
     def test_transfer_create_writes_shadow_entry(self):
@@ -149,3 +222,58 @@ class LedgerShadowWriteTest(TestCase):
             ).count(),
             1,
         )
+
+    @override_settings(LEDGER_WRITE_ENABLED=True, LEDGER_ENFORCE_BALANCED_WRITE=False)
+    def test_loan_repayment_without_account_skips_shadow_failure(self):
+        loan = Loan.objects.create(
+            user=self.user,
+            name="Offline Loan",
+            loan_type="PERSONAL",
+            initial_principal=Decimal("50000.00"),
+            duration_months=60,
+            start_date=date.today(),
+            currency="₹",
+        )
+        repayment = LoanRepayment.objects.create(
+            loan=loan,
+            from_account=None,
+            amount=Decimal("1200.00"),
+            principal_portion=Decimal("900.00"),
+            interest_portion=Decimal("300.00"),
+            date=date.today(),
+        )
+
+        self.assertEqual(
+            JournalEntry.objects.filter(source_type="LOAN_REPAYMENT", source_id=repayment.id).count(),
+            0,
+        )
+        self.assertEqual(LedgerPostingFailure.objects.count(), 0)
+
+    @override_settings(LEDGER_WRITE_ENABLED=True, LEDGER_ENFORCE_BALANCED_WRITE=False)
+    def test_loan_repayment_update_removing_account_only_reverses_shadow_entry(self):
+        loan = Loan.objects.create(
+            user=self.user,
+            name="Car Loan",
+            loan_type="CAR",
+            initial_principal=Decimal("50000.00"),
+            duration_months=60,
+            start_date=date.today(),
+            currency="₹",
+        )
+        repayment = LoanRepayment.objects.create(
+            loan=loan,
+            from_account=self.bank,
+            amount=Decimal("1200.00"),
+            principal_portion=Decimal("900.00"),
+            interest_portion=Decimal("300.00"),
+            date=date.today(),
+        )
+
+        repayment.from_account = None
+        repayment.save()
+
+        entries = JournalEntry.objects.filter(source_type="LOAN_REPAYMENT", source_id=repayment.id)
+        self.assertEqual(entries.count(), 2)
+        self.assertEqual(entries.filter(status="REVERSED").count(), 1)
+        self.assertEqual(entries.filter(status="POSTED").count(), 1)
+        self.assertEqual(LedgerPostingFailure.objects.count(), 0)
