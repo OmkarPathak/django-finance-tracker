@@ -1141,13 +1141,6 @@
                     <div class="feature-desc">{% trans "AI categorises your trends and shows exactly which buckets are growing month over month." %}</div>
                 </div>
             </div>
-            <!-- 2: Indian Salary Cycle -->
-            <div class="col-md-6 col-lg-4">
-                <div class="feature-card h-100">
-                    <div class="feature-title">{% trans "Your month starts when your salary hits" %}</div>
-                    <div class="feature-desc">{% trans "Not on the 1st. TrackMyRupee follows your actual salary cycle - month-end crunches and all." %}</div>
-                </div>
-            </div>
             <!-- 3: Visual Net Worth -->
             <div class="col-md-6 col-lg-4">
                 <div class="feature-card h-100">
@@ -1204,27 +1197,13 @@
                     <div class="feature-desc">{% trans "Plan before you borrow. Preview your monthly EMI instantly. Track multiple loans, manage floating rates, and visualize your amortization schedule." %}</div>
                 </div>
             </div>
-            <!-- 11: Smart Budgets & Spending Limits -->
-            <div class="col-md-6 col-lg-4">
-                <div class="feature-card h-100">
-                    <div class="feature-title">{% trans "Smart Budgets & Spending Limits" %}</div>
-                    <div class="feature-desc">{% trans "Set monthly category budgets and get real-time alerts when you're approaching limits. Visual progress bars show exactly how much you've spent vs your plan." %}</div>
-                </div>
-            </div>
-            <!-- 12: Double-Entry Ledger System -->
-            <div class="col-md-6 col-lg-4">
-                <div class="feature-card h-100">
-                    <div class="feature-title">{% trans "Balanced Double-Entry Ledger" %}</div>
-                    <div class="feature-desc">{% trans "Bank-grade accounting. Every transaction is recorded twice to ensure data integrity. Auto-reconciliation detects discrepancies and keeps your records spotless." %}</div>
-                </div>
-            </div>
-            <!-- 13: Year in Review & Monthly Reports -->
-            <div class="col-md-6 col-lg-4">
-                <div class="feature-card h-100">
-                    <div class="feature-title">{% trans "Year in Review & Monthly Reports" %}</div>
-                    <div class="feature-desc">{% trans "Automated financial storytelling. Get your annual spending wrap-up and monthly summaries delivered to your inbox. Understand your money habits at a glance." %}</div>
-                </div>
-            </div>
+        </div>
+
+        <!-- Explore All Features CTA -->
+        <div class="text-center mt-5">
+            <a href="{% url 'features' %}" class="btn-primary-landing">
+                {% trans "Explore All Features" %} <i class="bi bi-arrow-right"></i>
+            </a>
         </div>
     </div>
 </section>

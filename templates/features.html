@@ -1,0 +1,459 @@
+{% load i18n %}
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% trans "All Features" %} - TrackMyRupee</title>
+    <meta name="description" content="Explore all 13 powerful features of TrackMyRupee. EMI calculator, double-entry ledger, smart budgets, and more.">
+    <meta name="keywords" content="TrackMyRupee features, personal finance app India, EMI calculator, budget tracker, double entry ledger, expense tracker India, net worth tracker, money management app">
+    <meta name="author" content="Omkar Pathak">
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+    <meta name="googlebot" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+    <link rel="canonical" href="https://trackmyrupee.com/features/">
+
+    <link rel="alternate" hreflang="en" href="https://trackmyrupee.com/features/">
+    <link rel="alternate" hreflang="hi" href="https://trackmyrupee.com/features/">
+    <link rel="alternate" hreflang="mr" href="https://trackmyrupee.com/features/">
+    <link rel="alternate" hreflang="x-default" href="https://trackmyrupee.com/features/">
+
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="TrackMyRupee">
+    <meta property="og:url" content="https://trackmyrupee.com/features/">
+    <meta property="og:title" content="All Features - TrackMyRupee">
+    <meta property="og:description" content="Explore all TrackMyRupee features including EMI calculator, smart budgets, net worth tracking, and double-entry ledger.">
+    <meta property="og:image" content="https://trackmyrupee.com/static/img/og-preview-v2.png?v=2.0">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:locale" content="en_IN">
+
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="All Features - TrackMyRupee">
+    <meta name="twitter:description" content="See every TrackMyRupee feature: EMI calculator, smart budgets, recurring tracking, reports, and privacy-first finance tools.">
+    <meta name="twitter:image" content="https://trackmyrupee.com/static/img/og-preview-v2.png?v=2.0">
+    <meta name="twitter:url" content="https://trackmyrupee.com/features/">
+
+    <meta name="geo.region" content="IN-MH">
+    <meta name="geo.placename" content="Pune">
+    <meta name="geo.position" content="18.5204;73.8567">
+    <meta name="ICBM" content="18.5204, 73.8567">
+
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "CollectionPage",
+        "name": "TrackMyRupee Features",
+        "url": "https://trackmyrupee.com/features/",
+        "description": "Comprehensive features of TrackMyRupee including EMI calculator, smart budgets, reports, and privacy-first personal finance tools.",
+        "inLanguage": "en-IN",
+        "isPartOf": {
+            "@type": "WebSite",
+            "name": "TrackMyRupee",
+            "url": "https://trackmyrupee.com"
+        },
+        "about": {
+            "@type": "SoftwareApplication",
+            "name": "TrackMyRupee",
+            "applicationCategory": "FinanceApplication",
+            "operatingSystem": "Web"
+        }
+    }
+    </script>
+    
+    <link rel="icon" type="image/svg+xml" href="{% static 'icon.svg' %}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,200;0,300;0,400;0,500;0,600;0,700;0,800;1,300;1,400&display=swap" rel="stylesheet">
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    
+    <style>
+        :root {
+            --tmr-teal-400: #1D9E75;
+            --tmr-teal-50: #E1F5EE;
+            --tmr-teal-600: #0F6E56;
+            --tmr-surface-0: #faf9f6;
+            --tmr-surface-3: #D4D4D2;
+            --tmr-ink-900: #1A1A19;
+            --tmr-ink-600: #6B6B68;
+            --tmr-ink-400: #9E9D9A;
+            --tmr-ink-50: #F7F7F6;
+            --sans: 'Plus Jakarta Sans', system-ui, sans-serif;
+            /* Landing page color aliases */
+            --ink: var(--tmr-ink-900);
+            --ink2: var(--tmr-ink-600);
+            --paper: var(--tmr-ink-50);
+            --accent: var(--tmr-teal-400);
+            --border: var(--tmr-surface-3);
+        }
+        
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html { scroll-behavior: smooth; }
+        
+        body {
+            font-family: var(--sans);
+            color: var(--tmr-ink-900);
+            font-size: 16px;
+            line-height: 1.6;
+            background: var(--tmr-surface-0);
+        }
+        
+        /* NAV */
+        .landing-nav {
+            position: sticky; top: 0; z-index: 102;
+            background: rgba(250,249,246,0.92);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+            width: 100%;
+            display: flex; align-items: center; justify-content: center;
+            min-height: 65px;
+        }
+        .nav-logo { font-family: var(--sans); font-size: 22px; font-weight: 700; color: var(--ink); text-decoration: none; display: flex; align-items: center; gap: 8px; }
+        .nav-logo span { color: var(--accent); }
+        .nav-logo img { vertical-align: middle; }
+        .nav-links { display: flex; align-items: center; gap: 32px; list-style: none; }
+        .nav-links a { font-size: 15px; font-weight: 500; color: var(--ink2); text-decoration: none; transition: color .2s; }
+        .nav-links a:hover { color: var(--ink); }
+        .nav-cta {
+            background: var(--ink); color: var(--paper) !important;
+            padding: 10px 24px; border-radius: 99px;
+            font-size: 14px; font-weight: 500;
+            transition: background .2s, transform .15s;
+        }
+        .nav-cta:hover { background: var(--accent) !important; transform: translateY(-1px); }
+        
+        /* MOBILE NAV */
+        .mobile-nav-actions { display: none; align-items: center; gap: 16px; }
+        .hamburger {
+            background: none; border: none; cursor: pointer;
+            width: 32px; height: 32px;
+            display: flex; flex-direction: column; justify-content: center; gap: 6px;
+            padding: 4px; z-index: 101;
+            margin-right: -4px;
+        }
+        .hamburger span {
+            display: block; width: 100%; height: 2px;
+            background: var(--ink); border-radius: 2px;
+            transition: all 0.3s ease;
+        }
+        .hamburger.active span:nth-child(1) { transform: translateY(8px) rotate(45deg); }
+        .hamburger.active span:nth-child(2) { opacity: 0; }
+        .hamburger.active span:nth-child(3) { transform: translateY(-8px) rotate(-45deg); }
+
+        .mobile-menu {
+            position: fixed; top: 0; right: 0; width: 100%; height: 100%;
+            background: var(--paper); z-index: 100;
+            padding: 100px 32px;
+            transform: translateX(100%);
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            display: flex; flex-direction: column; gap: 20px;
+        }
+        .mobile-menu.active { transform: translateX(0); }
+        .mobile-menu a {
+            font-size: 20px; font-weight: 500; color: var(--ink);
+            text-decoration: none; padding-bottom: 12px; border-bottom: 1px solid var(--border);
+        }
+        .mobile-menu .nav-cta { text-align: center; margin-top: 10px; border-bottom: none; }
+        
+        /* HEADER */
+        .features-header {
+            background: var(--tmr-teal-50);
+            padding: 60px 0 40px;
+            text-align: center;
+        }
+        
+        .features-header h1 {
+            font-size: clamp(32px, 5vw, 44px);
+            font-weight: 800;
+            letter-spacing: -0.035em;
+            color: var(--tmr-ink-900);
+            margin-bottom: 12px;
+        }
+        
+        .features-header p {
+            font-size: 17px;
+            color: var(--tmr-ink-600);
+            max-width: 600px;
+            margin: 0 auto 20px;
+        }
+        
+        /* CATEGORIES */
+        .features-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 60px 5%;
+        }
+        
+        .feature-category {
+            margin-bottom: 80px;
+        }
+        
+        .category-header {
+            margin-bottom: 40px;
+            border-left: 4px solid var(--tmr-teal-400);
+            padding-left: 20px;
+        }
+        
+        .category-header h2 {
+            font-size: 28px;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            color: var(--tmr-ink-900);
+            margin-bottom: 8px;
+        }
+        
+        .category-header p {
+            font-size: 16px;
+            color: var(--tmr-ink-600);
+        }
+        
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 20px;
+        }
+        
+        .feature-item {
+            background: white;
+            border: 1px solid var(--tmr-surface-3);
+            border-radius: 12px;
+            padding: 24px;
+            transition: all .2s ease;
+        }
+        
+        .feature-item:hover {
+            border-color: var(--tmr-teal-400);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.05);
+            transform: translateY(-2px);
+        }
+        
+        .feature-item h3 {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--tmr-ink-900);
+            margin-bottom: 10px;
+            letter-spacing: -0.01em;
+        }
+        
+        .feature-item p {
+            font-size: 14px;
+            color: var(--tmr-ink-600);
+            line-height: 1.65;
+            margin-bottom: 0;
+        }
+        
+        /* CTA SECTION */
+        .cta-final {
+            text-align: center;
+            padding: 60px 5%;
+            background: var(--tmr-teal-50);
+            border-radius: 16px;
+            margin: 80px 1% 0;
+        }
+        
+        .cta-final h2 {
+            font-size: 28px;
+            font-weight: 800;
+            color: var(--tmr-ink-900);
+            margin-bottom: 20px;
+        }
+        
+        .btn-primary-cta {
+            background: var(--tmr-teal-400);
+            color: white !important;
+            padding: 12px 28px;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 700;
+            text-decoration: none;
+            display: inline-block;
+            transition: background .2s, transform .15s;
+        }
+        
+        .btn-primary-cta:hover {
+            background: var(--tmr-teal-600);
+            transform: translateY(-1px);
+        }
+        
+        /* FOOTER */
+        .landing-footer {
+            background: var(--tmr-surface-0);
+            border-top: 1px solid var(--tmr-surface-3);
+            padding: 40px 5%;
+        }
+        .footer-brand p {
+            font-size: 14px;
+            color: var(--tmr-ink-600);
+            margin-top: 10px;
+            line-height: 1.6;
+            max-width: 240px;
+        }
+        .footer-bottom {
+            font-size: 13px;
+            color: var(--tmr-ink-400);
+        }
+        
+        /* RESPONSIVE */
+                @media (max-width: 991px) {
+                    .nav-links { display: none !important; }
+                    .mobile-nav-actions { display: flex; }
+                }
+        
+        @media (max-width: 768px) {
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .features-header {
+                padding: 40px 0 30px;
+            }
+            
+            .features-content {
+                padding: 40px 5%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- NAV -->
+    <nav class="landing-nav">
+        <div class="container d-flex align-items-center justify-content-between py-3">
+            <a class="nav-logo" href="{% url 'landing' %}">
+                <img src="{% static 'icon.svg' %}" alt="TrackMyRupee Logo" width="28" height="28">
+                TrackMyRupee
+            </a>
+            <ul class="nav-links d-none d-lg-flex list-unstyled mb-0 gap-4">
+                <li><a href="{% url 'features' %}" class="text-decoration-none">{% trans "All Features" %}</a></li>
+                <li><a href="{% url 'landing' %}#pricing" class="text-decoration-none">{% trans "Pricing" %}</a></li>
+                <li><a href="{% url 'demo_login' %}" class="text-decoration-none">{% trans "Live Demo" %}</a></li>
+                <li><a href="{% url 'blog_list' %}" class="text-decoration-none">{% trans "Blog" %}</a></li>
+                <li><a href="{% url 'account_login' %}" class="text-decoration-none">{% trans "Login" %}</a></li>
+                <li><a class="nav-cta text-decoration-none" href="{% url 'account_signup' %}">{% trans "Start Free" %}</a></li>
+            </ul>
+
+            <!-- Mobile Nav Actions -->
+            <div class="mobile-nav-actions d-lg-none d-flex align-items-center gap-3">
+                <a href="{% url 'account_login' %}" class="d-lg-none" style="font-size: 14px; color: var(--ink); text-decoration: none; font-weight: 500;">{% trans "Login" %}</a>
+                <button class="hamburger" id="hamburger-btn" aria-label="Menu">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Mobile Menu Overlay -->
+    <div class="mobile-menu" id="mobile-menu">
+        <a href="{% url 'features' %}" onclick="toggleMenu()">{% trans "All Features" %}</a>
+        <a href="{% url 'landing' %}#pricing" onclick="toggleMenu()">{% trans "Pricing" %}</a>
+        <a href="{% url 'blog_list' %}">{% trans "Blog" %}</a>
+        <a href="{% url 'demo_login' %}">{% trans "Live Demo" %}</a>
+        <a href="{% url 'account_signup' %}" class="nav-cta">{% trans "Start Free" %}</a>
+    </div>
+    
+    <!-- HEADER -->
+    <header class="features-header">
+        <div style="max-width: 1200px; margin: 0 auto; padding: 0 5%;">
+            <h1>{% trans "All Features" %}</h1>
+            <p>{% trans "Comprehensive tools designed to transform your personal finance." %}</p>
+        </div>
+    </header>
+    
+    <!-- CONTENT -->
+    <div class="features-content">
+        {% for category in features %}
+        <section class="feature-category">
+            <div class="category-header">
+                <h2>{{ category.title }}</h2>
+                <p>{{ category.description }}</p>
+            </div>
+            <div class="features-grid">
+                {% for feature in category.items %}
+                <div class="feature-item">
+                    <h3>{{ feature.title }}</h3>
+                    <p>{{ feature.desc }}</p>
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+        {% endfor %}
+    </div>
+    
+    <!-- FINAL CTA -->
+    <div style="max-width: 1200px; margin: 0 auto;" class="mb-4">
+        <div class="cta-final">
+            <h2>{% trans "Ready to Take Control?" %}</h2>
+            <p style="font-size: 16px; color: var(--tmr-ink-600); margin-bottom: 24px;">{% trans "Start your free account today. No credit card required." %}</p>
+            <a href="{% url 'account_signup' %}" class="btn-primary-cta">{% trans "Create Your Account" %} <i class="bi bi-arrow-right"></i></a>
+        </div>
+    </div>
+    
+    <!-- FOOTER -->
+    <footer class="landing-footer pt-5 pb-3">
+        <div class="container">
+            <div class="row g-4 justify-content-between">
+                <div class="col-lg-4">
+                    <div class="footer-brand">
+                        <a class="nav-logo mb-3 d-inline-block text-decoration-none" href="/">TrackMyRupee</a>
+                        <p>{% blocktrans %}A privacy-first personal finance dashboard for Indian salaried professionals. Built by an indie developer in Pune.{% endblocktrans %}</p>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3 col-lg-2">
+                    <h4 style="font-size: 14px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 20px;">{% trans "Product" %}</h4>
+                    <ul class="list-unstyled d-flex flex-column gap-2" style="font-size: 14px;">
+                        <li><a href="{% url 'landing' %}#features" class="text-decoration-none text-muted">{% trans "Features" %}</a></li>
+                        <li><a href="{% url 'landing' %}#networth" class="text-decoration-none text-muted">{% trans "Net Worth" %}</a></li>
+                        <li><a href="{% url 'landing' %}#pricing" class="text-decoration-none text-muted">{% trans "Pricing" %}</a></li>
+                        <li><a href="{% url 'demo_login' %}" class="text-decoration-none text-muted">{% trans "Live Demo" %}</a></li>
+                    </ul>
+                </div>
+                <div class="col-6 col-md-3 col-lg-2">
+                    <h4 style="font-size: 14px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 20px;">{% trans "Company" %}</h4>
+                    <ul class="list-unstyled d-flex flex-column gap-2" style="font-size: 14px;">
+                        <li><a href="{% url 'about' %}" class="text-decoration-none text-muted">{% trans "About" %}</a></li>
+                        <li><a href="{% url 'contact' %}" class="text-decoration-none text-muted">{% trans "Contact" %}</a></li>
+                        <li><a href="{% url 'blog_list' %}" class="text-decoration-none text-muted">{% trans "Blog" %}</a></li>
+                        <li><a href="https://rzp.io/rzp/AP7kBG2" class="text-decoration-none text-muted">{% trans "Support Us" %}</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-6 col-lg-3">
+                    <h4 style="font-size: 14px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 20px;">{% trans "Legal" %}</h4>
+                    <ul class="list-unstyled d-flex flex-column gap-2" style="font-size: 14px;">
+                        <li><a href="{% url 'privacy-policy' %}" class="text-decoration-none text-muted">{% trans "Privacy" %}</a></li>
+                        <li><a href="{% url 'terms-of-service' %}" class="text-decoration-none text-muted">{% trans "Terms" %}</a></li>
+                        <li><a href="{% url 'security' %}" class="text-decoration-none text-muted">{% trans "Security" %}</a></li>
+                    </ul>
+                </div>
+            </div>
+            <hr class="my-4 opacity-10">
+            <div class="footer-bottom d-flex flex-column flex-md-row justify-content-between align-items-center gap-3">
+                <p class="mb-0">&copy; {% now "Y" %} TrackMyRupee. {% trans "Made with care in Pune, India." %}</p>
+                <p class="mb-0 d-flex gap-3">
+                    <span>{% trans "No SMS scraping" %}</span>
+                    <span>·</span>
+                    <span>{% trans "No bank logins" %}</span>
+                    <span>·</span>
+                    <span>{% trans "No data selling" %}</span>
+                </p>
+            </div>
+        </div>
+    </footer>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Mobile menu toggle
+        function toggleMenu() {
+            const menu = document.getElementById('mobile-menu');
+            const hamburger = document.getElementById('hamburger-btn');
+            menu.classList.toggle('active');
+            hamburger.classList.toggle('active');
+        }
+        
+        document.getElementById('hamburger-btn').addEventListener('click', toggleMenu);
+    </script>
+</body>
+</html>

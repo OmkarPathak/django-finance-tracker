@@ -7,6 +7,7 @@ from .views.mom_view import mom_analysis_view
 urlpatterns = [
     path('signup/', RedirectView.as_view(pattern_name='account_signup', permanent=True), name='signup'),
     path('', views.LandingPageView.as_view(), name='landing'),
+    path('features/', views.FeaturesPageView.as_view(), name='features'),
     path('dashboard/', views.home_view, name='home'),
     path('budget/', views.BudgetDashboardView.as_view(), name='budget'),
     path('analytics/', views.AnalyticsView.as_view(), name='analytics'),

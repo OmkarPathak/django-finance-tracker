@@ -197,6 +197,101 @@ class LandingPageView(TemplateView):
         context['plans'] = context['plans_yearly']
         return context
 
+class FeaturesPageView(TemplateView):
+    template_name = 'features.html'
+
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.is_authenticated:
+            return redirect('home')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # Feature categories for better navigation
+        context['features'] = [
+            {
+                'id': 'insights',
+                'title': 'Smart Tracking & Insights',
+                'description': 'Understand your spending patterns with AI-powered analytics.',
+                'items': [
+                    {
+                        'title': 'Spot spending leaks before they become habits',
+                        'desc': 'AI categorises your trends and shows exactly which buckets are growing month over month.'
+                    },
+                    {
+                        'title': 'Your month starts when your salary hits',
+                        'desc': 'Not on the 1st. TrackMyRupee follows your actual salary cycle - month-end crunches and all.'
+                    },
+                    {
+                        'title': 'Watch your net worth grow',
+                        'desc': 'One real-time number across savings, SIPs, and credit cards. Not a list of transactions - a trajectory.'
+                    },
+                ]
+            },
+            {
+                'id': 'planning',
+                'title': 'Planning & Goals',
+                'description': 'Plan ahead and achieve your financial milestones.',
+                'items': [
+                    {
+                        'title': 'Recurring expenses log themselves',
+                        'desc': 'Set up your SIPs, rent, and subscriptions once. Only log what changes, takes 30 seconds a day.'
+                    },
+                    {
+                        'title': 'See exactly when you\'ll hit your goals',
+                        'desc': 'Set a savings target and get a projected date based on your real saving pace - not guesswork.'
+                    },
+                    {
+                        'title': 'Loan Manager with EMI Calculator',
+                        'desc': 'Plan before you borrow. Preview your monthly EMI instantly. Track multiple loans, manage floating rates, and visualize your amortization schedule.'
+                    },
+                    {
+                        'title': 'Smart Budgets & Spending Limits',
+                        'desc': 'Set monthly category budgets and get real-time alerts when you\'re approaching limits. Visual progress bars show exactly how much you\'ve spent vs your plan.'
+                    },
+                ]
+            },
+            {
+                'id': 'trust',
+                'title': 'Trust & Control',
+                'description': 'Your data is yours. Full privacy and data sovereignty.',
+                'items': [
+                    {
+                        'title': 'Your data is never locked in',
+                        'desc': 'Export your full transaction history to CSV anytime. No permission needed, no hoops to jump through.'
+                    },
+                    {
+                        'title': 'Balanced Double-Entry Ledger',
+                        'desc': 'Bank-grade accounting. Every transaction is recorded twice to ensure data integrity. Auto-reconciliation detects discrepancies and keeps your records spotless.'
+                    },
+                ]
+            },
+            {
+                'id': 'experience',
+                'title': 'Global & Mobile',
+                'description': 'Works everywhere, feels natural in your language.',
+                'items': [
+                    {
+                        'title': 'Track in your own language',
+                        'desc': 'Fully translated in English, Hindi, and Marathi - finance that feels natural to read.'
+                    },
+                    {
+                        'title': 'Multi-currency Ready',
+                        'desc': 'Track USD, EUR, or any currency alongside ₹. Useful if you travel, freelance, or hold foreign investments.'
+                    },
+                    {
+                        'title': 'Feels like an app. No install required.',
+                        'desc': 'Add to your home screen as a PWA on Android or iPhone. Works offline. Launches in under 2 seconds.'
+                    },
+                    {
+                        'title': 'Year in Review & Monthly Reports',
+                        'desc': 'Automated financial storytelling. Get your annual spending wrap-up and monthly summaries delivered to your inbox. Understand your money habits at a glance.'
+                    },
+                ]
+            },
+        ]
+        return context
+
 def demo_login(request):
     """
     Logs in the read-only 'demo' user without password authentication.
