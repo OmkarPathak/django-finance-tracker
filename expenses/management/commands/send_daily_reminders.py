@@ -1,14 +1,14 @@
 
-import json
+import logging
+
 from django.conf import settings
-from django.templatetags.static import static
 from django.core.management.base import BaseCommand
+from django.templatetags.static import static
 from django.utils import timezone
 from webpush import send_user_notification
-from expenses.models import UserProfile, Expense, Notification
 from webpush.models import PushInformation
 
-import logging
+from expenses.models import UserProfile
 
 logger = logging.getLogger(__name__)
 

@@ -6,9 +6,8 @@ from django.urls import reverse
 
 from expenses.forms import SavingsGoalForm
 from expenses.models import GoalContribution, SavingsGoal
-
-
 from finance_tracker.plans import PLAN_DETAILS
+
 
 class SavingsGoalTests(TestCase):
     def setUp(self):

@@ -1,16 +1,14 @@
 import csv
 import io
-import re
 from datetime import date, datetime
 from unittest.mock import patch
 
 import openpyxl
 from django.contrib.auth.models import User
-from django.contrib import messages
 from django.test import Client, TestCase
 from django.urls import reverse
 
-from expenses.models import Category, Expense
+from expenses.models import Expense
 
 
 class UploadViewTest(TestCase):

@@ -1,8 +1,11 @@
 import re
 from datetime import timedelta
 from decimal import Decimal
+
 from django.utils import timezone
+
 from finance_tracker.ai_utils import predict_category_ai
+
 
 def parse_expense_nl(text, user_categories=None, user_accounts=None, user=None):
     if not text:

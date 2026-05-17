@@ -4,7 +4,15 @@ from decimal import Decimal
 from django.contrib.auth.models import User
 from django.test import TestCase, override_settings
 
-from expenses.models import Account, Expense, Income, JournalEntry, Loan, LoanRepayment, Transfer
+from expenses.models import (
+    Account,
+    Expense,
+    Income,
+    JournalEntry,
+    Loan,
+    LoanRepayment,
+    Transfer,
+)
 
 
 class LedgerShadowWriteTest(TestCase):

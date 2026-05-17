@@ -1,23 +1,24 @@
 from collections import defaultdict
+from datetime import date, timedelta
 from decimal import Decimal
 from itertools import chain
-from datetime import date, timedelta
 
 from django.contrib import messages
-from django.core.paginator import Paginator
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import ValidationError
+from django.core.paginator import Paginator
+from django.db.models import Q
 from django.http import JsonResponse
-from django.db.models import Q, Sum
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
 from django.utils.translation import gettext as _
 from django.views.generic import CreateView, DeleteView, ListView, UpdateView, View
+
 from finance_tracker.plans import get_limit
 
 from ..forms import AccountForm, TransferForm
 from ..ledger_read_service import LedgerReadService
-from ..models import Account, Expense, GoalContribution, Income, Transfer, LoanRepayment
+from ..models import Account, Expense, GoalContribution, Income, LoanRepayment, Transfer
 from ..utils import get_exchange_rate
 from .mixins import RecurringTransactionMixin
 
@@ -473,8 +474,6 @@ class AccountDetailView(LoginRequiredMixin, View):
 
     def get_all_transactions(self, account, user, start_date=None):
         """Returns a combined queryset-like of all transactions affecting account balance."""
-        from django.db.models import F, Value, CharField, DecimalField
-        from django.db.models.functions import Coalesce
         
         expenses = Expense.objects.filter(user=user, account=account)
         incomes = Income.objects.filter(user=user, account=account)

@@ -9,7 +9,7 @@ from django.core.management.base import BaseCommand
 from django.template.loader import render_to_string
 from django.utils import timezone
 
-from expenses.models import Category, Expense, Income, SubscriptionPlan
+from expenses.models import Category, Expense, Income
 
 logger = logging.getLogger(__name__)
 

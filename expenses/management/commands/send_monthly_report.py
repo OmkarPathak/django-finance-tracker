@@ -1,5 +1,4 @@
-import calendar
-from datetime import date, timedelta
+from datetime import timedelta
 from decimal import Decimal
 
 from django.conf import settings
@@ -12,9 +11,10 @@ from django.utils import timezone
 from django.utils.html import mark_safe
 from django.utils.translation import gettext as _
 
-from expenses.models import Account, Expense, Income, Transfer
-from expenses.utils import get_exchange_rate
+from expenses.models import Account, Expense, Income
 from expenses.templatetags.digit_filters import compact_amount
+from expenses.utils import get_exchange_rate
+
 
 class Command(BaseCommand):
     help = 'Sends beautiful monthly financial reports to verified users'

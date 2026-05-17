@@ -120,6 +120,7 @@ class StrictLimitEnforcementTest(TestCase):
 
     def test_recurring_transaction_update_limit_enforcement(self):
         from django.urls import reverse
+
         from expenses.models import RecurringTransaction
         
         # Clean up existing subs from setUp

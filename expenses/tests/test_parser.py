@@ -1,8 +1,10 @@
+from datetime import timedelta
+
 from django.test import TestCase
 from django.utils import timezone
+
 from expenses.parser import parse_expense_nl
-from datetime import timedelta
-from decimal import Decimal
+
 
 class ExpenseParserTest(TestCase):
     def test_simple_expense(self):

@@ -1,5 +1,5 @@
-from decimal import Decimal
 import logging
+from decimal import Decimal
 
 import requests
 from django.core.cache import cache
@@ -167,7 +167,7 @@ def generate_year_in_review_data(user, year):
         data['biggest_expense'] = None
 
     # 7. Total Invested (Transfers to INVESTMENT or FIXED_DEPOSIT)
-    from .models import Transfer, Account
+    from .models import Account, Transfer
     investments = Transfer.objects.filter(user=user, date__year=year, to_account__account_type__in=['INVESTMENT', 'FIXED_DEPOSIT'])
     data['total_invested'] = investments.aggregate(total=Sum('converted_amount'))['total'] or Decimal('0.00')
 

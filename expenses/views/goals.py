@@ -7,6 +7,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
 from django.utils.translation import gettext as _
 from django.views.generic import CreateView, DeleteView, ListView, UpdateView, View
+
 from finance_tracker.plans import get_limit
 
 from ..forms import GoalContributionForm, SavingsGoalForm

@@ -12,17 +12,21 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.cache import cache
 from django.db import IntegrityError, transaction
-from django.db.models import Sum, Count, Q
+from django.db.models import Count, Q, Sum
 from django.http import JsonResponse
 from django.shortcuts import redirect, render
 from django.utils.formats import date_format
-from django.utils import timezone
 from django.utils.translation import gettext as _
 from django.views.generic import TemplateView, View
 
 from ..forms import ContactForm
-from ..models import CURRENCY_CHOICES, Category, Expense, Income, RecurringTransaction, UserProfile, Transfer
-from ..utils import get_exchange_rate
+from ..models import (
+    CURRENCY_CHOICES,
+    Expense,
+    Income,
+    RecurringTransaction,
+    Transfer,
+)
 
 
 class CalendarView(LoginRequiredMixin, TemplateView):

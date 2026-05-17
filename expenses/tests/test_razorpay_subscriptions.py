@@ -1,16 +1,15 @@
 import json
 from datetime import timedelta
 from io import StringIO
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
-from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.management import call_command
 from django.test import Client, TestCase
 from django.urls import reverse
 from django.utils import timezone
 
-from expenses.models import PaymentHistory, SubscriptionPlan, UserProfile
+from expenses.models import PaymentHistory, SubscriptionPlan
 
 
 class RazorpaySubscriptionTest(TestCase):

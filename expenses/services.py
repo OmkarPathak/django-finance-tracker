@@ -1,9 +1,13 @@
-from datetime import date, timedelta
 import calendar
-from decimal import Decimal, ROUND_HALF_UP
-from django.db.models import Sum, Avg, Count
+from datetime import date, timedelta
+from decimal import ROUND_HALF_UP, Decimal
+
+from django.db.models import F, Sum
+from django.db.models.functions import TruncMonth
 from django.utils import timezone
-from .models import Expense, Income, Category
+
+from .models import Expense, Income, Loan, LoanRepayment
+
 
 class FinancialService:
     @staticmethod
@@ -16,7 +20,6 @@ class FinancialService:
         
         # We can optimize this by getting all data in 2 queries and grouping in Python,
         # or using TruncMonth. Let's use TruncMonth for robustness.
-        from django.db.models.functions import TruncMonth
         
         start_date = (today.replace(day=1) - timedelta(days=30 * (months - 1))).replace(day=1)
         
@@ -29,8 +32,6 @@ class FinancialService:
         ).annotate(month=TruncMonth('date')).values('month').annotate(total=Sum('base_amount'))
 
         # Include Loan Repayment interest as expense
-        from django.db.models import F
-        from .models import LoanRepayment
         
         loan_repayment_qs = LoanRepayment.objects.filter(
             loan__user=user, date__gte=start_date, date__lte=today
@@ -138,8 +139,6 @@ class FinancialService:
         Returns the number of months with positive savings out of the last N months.
         """
         today = timezone.now().date()
-        from django.db.models.functions import TruncMonth
-        from django.db.models import Case, When, F, Value, IntegerField
         
         start_date = (today.replace(day=1) - timedelta(days=30 * months)).replace(day=1)
         
@@ -204,7 +203,6 @@ class LoanService:
         """
         Returns the sum of remaining principal for all active loans.
         """
-        from .models import Loan
         active_loans = Loan.objects.filter(user=user, is_active=True)
         total = Decimal('0.00')
         for loan in active_loans:
@@ -217,7 +215,6 @@ class LoanService:
         """
         Calculates total paid and remaining principal based on actual repayments.
         """
-        from django.db.models import Sum
         repayments = loan.repayments.aggregate(
             total_principal=Sum('principal_portion'),
             total_interest=Sum('interest_portion'),
@@ -254,9 +251,12 @@ class LoanService:
         
         # Approximate remaining months based on start date and duration
         # Or better, just calculate how many months of EMI are left based on remaining principal
-        import math
-        from datetime import date
-        from dateutil.relativedelta import relativedelta
+
+        def _add_months(d, months):
+            year = d.year + (d.month - 1 + months) // 12
+            month = (d.month - 1 + months) % 12 + 1
+            day = min(d.day, calendar.monthrange(year, month)[1])
+            return date(year, month, day)
         
         today = date.today()
         # Find how many months have passed since start
@@ -274,7 +274,7 @@ class LoanService:
         emi = Decimal(str(LoanService.calculate_emi(remaining_principal, annual_rate, remaining_months)))
         
         schedule = []
-        current_date = loan.start_date + relativedelta(months=max(0, months_passed))
+        current_date = _add_months(loan.start_date, max(0, months_passed))
         balance = remaining_principal
         
         r = annual_rate / Decimal('12') / Decimal('100')
@@ -302,7 +302,7 @@ class LoanService:
                 'balance': float(abs(balance).quantize(Decimal('0.01'), rounding=ROUND_HALF_UP))
             })
             
-            current_date += relativedelta(months=1)
+            current_date = _add_months(current_date, 1)
             
         return schedule
 

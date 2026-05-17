@@ -5,15 +5,15 @@ from datetime import timedelta
 import razorpay
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import JsonResponse
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
-
-from django.contrib.auth.models import User
 from django.views.generic import ListView
-from django.contrib.auth.mixins import LoginRequiredMixin
-from .models import PaymentHistory, SubscriptionPlan, UserProfile
+
 from finance_tracker.plans import PLAN_DETAILS
+
+from .models import PaymentHistory, SubscriptionPlan, UserProfile
 
 logger = logging.getLogger(__name__)
 

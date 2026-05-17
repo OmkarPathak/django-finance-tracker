@@ -1,9 +1,12 @@
-from datetime import date, timedelta
+from datetime import date
 from decimal import Decimal
+
 from django.contrib.auth.models import User
 from django.test import TestCase
 from django.urls import reverse
+
 from expenses.models import Account, Expense, Income
+
 
 class NetWorthForecastTest(TestCase):
     def setUp(self):

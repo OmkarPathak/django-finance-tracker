@@ -15,12 +15,12 @@ import sys
 from pathlib import Path
 
 import dj_database_url
+import sentry_sdk
+from django.utils.translation import gettext_lazy as _
 from dotenv import load_dotenv
 
 # Load environment variables from .env file
 load_dotenv()
-
-import sentry_sdk
 
 if os.environ.get('SENTRY_DSN'):
     sentry_sdk.init(
@@ -188,8 +188,6 @@ AUTH_PASSWORD_VALIDATORS = [
 # https://docs.djangoproject.com/en/4.2/topics/i18n/
 
 LANGUAGE_CODE = 'en-us'
-
-from django.utils.translation import gettext_lazy as _
 
 LANGUAGES = [
     ('en', _('English')),

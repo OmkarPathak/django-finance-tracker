@@ -6,7 +6,12 @@ from django.db.models import Sum
 from django.db.models.functions import Coalesce
 from django.utils import timezone
 
-from expenses.models import Account, JournalLine, LedgerReconciliationReport, Notification
+from expenses.models import (
+    Account,
+    JournalLine,
+    LedgerReconciliationReport,
+    Notification,
+)
 
 
 class Command(BaseCommand):

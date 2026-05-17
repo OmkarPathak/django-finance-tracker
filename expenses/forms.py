@@ -3,13 +3,30 @@ from decimal import Decimal
 
 from allauth.socialaccount.models import SocialAccount
 from django import forms
+from django.conf import settings
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 from django.utils.translation import gettext_lazy as _
 from django_recaptcha.fields import ReCaptchaField
 from django_recaptcha.widgets import ReCaptchaV3
 
-from .models import Category, Expense, Income, RecurringTransaction, UserProfile
+from finance_tracker.plans import get_limit
+
+from .models import (
+    Account,
+    Category,
+    Expense,
+    GoalContribution,
+    Income,
+    Loan,
+    LoanInterestRate,
+    LoanRepayment,
+    RecurringTransaction,
+    SavingsGoal,
+    Transfer,
+    UserProfile,
+)
+from .utils import BOOTSTRAP_ICONS
 
 
 class ExpenseForm(forms.ModelForm):
@@ -38,7 +55,6 @@ class ExpenseForm(forms.ModelForm):
             
             # Enforce Tier Limits
             profile = user.profile
-            from finance_tracker.plans import get_limit
             limit = get_limit(profile.active_tier, 'budget_categories')
             if limit != -1:
                 categories = categories[:limit]
@@ -100,7 +116,6 @@ class IncomeForm(forms.ModelForm):
             
             # Enforce Tier Limits for Accounts
             all_accounts = Account.objects.filter(user=self.user, is_active=True).order_by('created_at', 'id')
-            from finance_tracker.plans import get_limit
             limit = get_limit(self.user.profile.active_tier, 'accounts')
             if limit != -1:
                 unlocked_ids = all_accounts.values_list('id', flat=True)[:limit]
@@ -150,7 +165,6 @@ class RecurringTransactionForm(forms.ModelForm):
             
             # Enforce Tier Limits for Accounts
             all_accounts = Account.objects.filter(user=user, is_active=True).order_by('created_at', 'id')
-            from finance_tracker.plans import get_limit
             limit = get_limit(user.profile.active_tier, 'accounts')
             if limit != -1:
                 unlocked_ids = all_accounts.values_list('id', flat=True)[:limit]
@@ -172,7 +186,6 @@ class RecurringTransactionForm(forms.ModelForm):
             
             # Enforce Tier Limits
             profile = user.profile
-            from finance_tracker.plans import get_limit
             limit = get_limit(profile.active_tier, 'budget_categories')
             if limit != -1:
                 categories = categories[:limit]
@@ -276,7 +289,6 @@ class CustomSignupForm(UserCreationForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        from django.conf import settings
 
         # Add reCAPTCHA field if keys are configured
         if getattr(settings, 'RECAPTCHA_PUBLIC_KEY', None) and getattr(settings, 'RECAPTCHA_PRIVATE_KEY', None):
@@ -302,13 +314,10 @@ class ContactForm(forms.Form):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        from django.conf import settings
         
         # Add reCAPTCHA field if keys are configured
         if getattr(settings, 'RECAPTCHA_PUBLIC_KEY', None) and getattr(settings, 'RECAPTCHA_PRIVATE_KEY', None):
             self.fields['captcha'] = ReCaptchaField(widget=ReCaptchaV3)
-
-from .models import GoalContribution, SavingsGoal
 
 
 class SavingsGoalForm(forms.ModelForm):
@@ -359,7 +368,6 @@ class GoalContributionForm(forms.ModelForm):
         if user:
             # Enforce Tier Limits for Accounts
             all_accounts = Account.objects.filter(user=user, is_active=True).order_by('created_at', 'id')
-            from finance_tracker.plans import get_limit
             limit = get_limit(user.profile.active_tier, 'accounts')
             if limit != -1:
                 unlocked_ids = all_accounts.values_list('id', flat=True)[:limit]
@@ -375,7 +383,6 @@ class GoalContributionForm(forms.ModelForm):
  
  
 class CategoryForm(forms.ModelForm):
-    from .utils import BOOTSTRAP_ICONS
     icon = forms.ChoiceField(choices=BOOTSTRAP_ICONS, widget=forms.Select(attrs={'class': 'form-select'}), required=False)
  
     class Meta:
@@ -394,9 +401,6 @@ class CategoryForm(forms.ModelForm):
         if user and Category.objects.filter(user=user, name__iexact=name).exclude(pk=self.instance.pk).exists():
             raise forms.ValidationError(_('A category with this name already exists.'))
         return name
-
-from .models import Account, Transfer
-
 
 class AccountForm(forms.ModelForm):
     class Meta:
@@ -446,7 +450,6 @@ class TransferForm(forms.ModelForm):
         if user:
             # Enforce Tier Limits for Accounts
             all_accounts = Account.objects.filter(user=user, is_active=True).order_by('created_at', 'id')
-            from finance_tracker.plans import get_limit
             limit = get_limit(user.profile.active_tier, 'accounts')
             if limit != -1:
                 unlocked_ids = all_accounts.values_list('id', flat=True)[:limit]
@@ -475,10 +478,6 @@ class TransferForm(forms.ModelForm):
             pass
 
         return cleaned_data
-
-
-from .models import Loan, LoanInterestRate, LoanRepayment
-
 
 class LoanForm(forms.ModelForm):
     class Meta:
@@ -544,7 +543,6 @@ class LoanRepaymentForm(forms.ModelForm):
         if user:
             # Enforce Tier Limits for Accounts
             all_accounts = Account.objects.filter(user=user, is_active=True).order_by('created_at', 'id')
-            from finance_tracker.plans import get_limit
             limit = get_limit(user.profile.active_tier, 'accounts')
             if limit != -1:
                 unlocked_ids = list(all_accounts.values_list('id', flat=True)[:limit])

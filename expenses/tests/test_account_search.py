@@ -5,7 +5,14 @@ from django.contrib.auth.models import User
 from django.test import Client, TestCase
 from django.urls import reverse
 
-from expenses.models import Account, Expense, GoalContribution, Income, SavingsGoal, Transfer
+from expenses.models import (
+    Account,
+    Expense,
+    GoalContribution,
+    Income,
+    SavingsGoal,
+    Transfer,
+)
 
 
 class AccountDetailSearchTest(TestCase):

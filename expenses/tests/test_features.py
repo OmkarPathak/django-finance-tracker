@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 from django.test import Client, TestCase
 from django.urls import reverse
 
-from expenses.models import Category, Expense
+from expenses.models import Category, Expense, Notification, RecurringTransaction
 
 
 class BaseFeatureTest(TestCase):
@@ -71,9 +71,6 @@ class FeatureViewTest(BaseFeatureTest):
         self.assertIn('Food', content)
         self.assertIn('100', content)
 
-from expenses.models import RecurringTransaction
-
-
 class RecurringCRUDTest(BaseFeatureTest):
     def test_create_recurring(self):
         # Upgrade user to Pro for unlimited recurring transactions
@@ -134,9 +131,6 @@ class RecurringCRUDTest(BaseFeatureTest):
         response = self.client.post(url)
         self.assertEqual(response.status_code, 302)
         self.assertEqual(RecurringTransaction.objects.count(), 0)
-
-from expenses.models import Notification
-
 
 class NotificationViewTest(BaseFeatureTest):
     def test_notification_list(self):

@@ -7,8 +7,8 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Q
-from django.http import HttpResponse, HttpResponseForbidden
-from django.shortcuts import redirect, render
+from django.http import HttpResponse
+from django.shortcuts import redirect
 from django.utils.translation import gettext as _
 from django.views.generic import TemplateView
 

@@ -8,9 +8,8 @@ from django.db.models import Sum
 from django.shortcuts import render
 from django.utils import timezone
 
-from ..models import Account, Expense, Income, Transfer
 from ..ledger_read_service import LedgerReadService
-from ..utils import get_exchange_rate
+from ..models import Expense, Income, Transfer
 
 
 @login_required

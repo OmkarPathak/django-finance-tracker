@@ -9,14 +9,11 @@ from django.test import TestCase, override_settings
 from expenses.models import (
     Account,
     Expense,
-    Income,
     JournalEntry,
     LedgerPostingFailure,
     LedgerReconciliationReport,
     Loan,
-    LoanRepayment,
     Notification,
-    Transfer,
 )
 
 

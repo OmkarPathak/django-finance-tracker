@@ -5,7 +5,7 @@ from decimal import Decimal
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.db.models import Avg, Count, Sum, F
+from django.db.models import Avg, Count, F, Sum
 from django.db.models.functions import ExtractWeekDay, TruncDay, TruncMonth
 from django.http import JsonResponse
 from django.shortcuts import redirect, render
@@ -16,6 +16,7 @@ from django.utils.html import escape, format_html, format_html_join, mark_safe
 from django.utils.translation import gettext as _
 from django.views.generic import TemplateView
 
+from ..ledger_read_service import LedgerReadService
 from ..models import (
     Account,
     Category,
@@ -28,10 +29,13 @@ from ..models import (
     Transfer,
     UserProfile,
 )
-from ..templatetags.digit_filters import compact_amount
-from ..utils import format_indian_number, generate_year_in_review_data, get_exchange_rate
-from ..ledger_read_service import LedgerReadService
 from ..services import FinancialService, LoanService
+from ..templatetags.digit_filters import compact_amount
+from ..utils import (
+    format_indian_number,
+    generate_year_in_review_data,
+    get_exchange_rate,
+)
 from .mixins import process_user_recurring_transactions
 
 

@@ -1,9 +1,12 @@
+from allauth.account.models import EmailAddress
 from django.contrib import admin
-from .models import SubscriptionPlan
+from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
+from django.contrib.auth.models import User
 
 from .models import (
     Account,
     Category,
+    EmailLog,
     Expense,
     Income,
     JournalEntry,
@@ -12,9 +15,11 @@ from .models import (
     LedgerPostingFailure,
     LedgerReconciliationReport,
     Notification,
+    PaymentHistory,
     RecurringTransaction,
+    SubscriptionPlan,
     Transfer,
-    EmailLog,
+    UserProfile,
 )
 
 
@@ -123,9 +128,6 @@ class LedgerReconciliationReportAdmin(admin.ModelAdmin):
     search_fields = ('user__username', 'account__name')
     ordering = ('-as_of_date', '-created_at')
 
-from .models import PaymentHistory, UserProfile
-
-
 @admin.register(UserProfile)
 class UserProfileAdmin(admin.ModelAdmin):
     list_display = ('user', 'tier', 'subscription_end_date', 'cancel_at_cycle_end', 'subscription_expired', 'is_lifetime', 'is_pro', 'razorpay_subscription_id', 'email_verified')
@@ -134,7 +136,6 @@ class UserProfileAdmin(admin.ModelAdmin):
     search_fields = ('user__username', 'user__email')
 
     def email_verified(self, obj):
-        from allauth.account.models import EmailAddress
         try:
             email_address = EmailAddress.objects.get(user=obj.user, primary=True)
             return email_address.verified
@@ -167,11 +168,6 @@ class SubscriptionPlanAdmin(admin.ModelAdmin):
     ordering = ('tier', 'price')
 
 # Re-register User Admin to include Email Verification inline
-from allauth.account.models import EmailAddress
-from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
-from django.contrib.auth.models import User
-
-
 class EmailAddressInline(admin.StackedInline):
     model = EmailAddress
     extra = 0

@@ -1,6 +1,6 @@
+import logging
 from datetime import date
 from decimal import Decimal
-import logging
 
 from ..models import Expense, Income, RecurringTransaction, Transfer, UserProfile
 from ..utils import get_exchange_rate

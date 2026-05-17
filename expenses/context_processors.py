@@ -1,11 +1,11 @@
 import calendar
+from datetime import timedelta
 
 from django.conf import settings
-
-from datetime import timedelta
 from django.utils import timezone
 from django.utils.translation import gettext as _
-from .models import Notification, UserProfile, SavingsGoal, RecurringTransaction
+
+from .models import Notification, RecurringTransaction, SavingsGoal, UserProfile
 from .utils import translate_digits as ud
 
 

@@ -1,14 +1,13 @@
 import calendar
 from datetime import datetime
-from itertools import chain
 
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.db.models import F, Value, CharField, Q, Sum
+from django.db.models import CharField, F, Q, Sum, Value
 from django.db.models.functions import Concat
 from django.views.generic import ListView
-from django.utils.translation import gettext as _
 
-from ..models import Expense, Income, Transfer, Category
+from ..models import Expense, Income, Transfer
+
 
 class AllTransactionsListView(LoginRequiredMixin, ListView):
     template_name = 'expenses/all_transactions.html'

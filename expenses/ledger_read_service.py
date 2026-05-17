@@ -1,13 +1,12 @@
-from decimal import Decimal
 import logging
 import random
+from decimal import Decimal
 
 from django.conf import settings
 
 from .ledger_rollout import is_user_in_read_cohort
 from .models import JournalEntry, JournalLine
 from .utils import get_exchange_rate
-
 
 logger = logging.getLogger(__name__)
 

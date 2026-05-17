@@ -1,7 +1,7 @@
 from django import template
-from ..utils import format_indian_number
 from django.contrib.humanize.templatetags.humanize import intcomma
-from django.utils.translation import get_language
+
+from ..utils import format_indian_number
 from ..utils import translate_digits as utils_translate_digits
 
 register = template.Library()

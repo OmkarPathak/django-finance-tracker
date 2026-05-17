@@ -1,11 +1,13 @@
-from datetime import date, timedelta
+from datetime import timedelta
+
 from django.contrib.auth.models import User
 from django.test import Client, TestCase
 from django.urls import reverse
 from django.utils import timezone
-from expenses.models import Account, UserProfile, Expense
-from finance_tracker.plans import PLAN_DETAILS
+
 from expenses.forms import ExpenseForm
+from expenses.models import Account, UserProfile
+
 
 class AccountLockingTest(TestCase):
     def setUp(self):

@@ -7,7 +7,7 @@ from django.test import Client, TestCase
 from django.urls import reverse
 
 from expenses.models import Category, RecurringTransaction, UserProfile
-from finance_tracker.plans import PLAN_DETAILS, get_limit
+from finance_tracker.plans import PLAN_DETAILS
 
 
 class SubscriptionTierTest(TestCase):

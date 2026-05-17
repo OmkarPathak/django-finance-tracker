@@ -23,8 +23,8 @@ from expenses.models import (
     RecurringTransaction,
     Transfer,
 )
-from finance_tracker.plans import PLAN_DETAILS
 from expenses.views.mixins import process_user_recurring_transactions
+from finance_tracker.plans import PLAN_DETAILS
 
 # ---------------------------------------------------------------------------
 # Shared helpers

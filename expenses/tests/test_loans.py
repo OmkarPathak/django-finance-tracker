@@ -1,11 +1,13 @@
 import datetime
 from decimal import Decimal
-from django.test import TestCase
-from django.utils import timezone
+
 from django.contrib.auth.models import User
+from django.test import TestCase
 from django.urls import reverse
+
 from expenses.models import Account, Loan, LoanInterestRate, LoanRepayment
 from expenses.services import LoanService
+
 
 class LoanServiceTest(TestCase):
     def setUp(self):

@@ -1,19 +1,25 @@
 
-import json
 from datetime import timedelta
 from decimal import Decimal
 
 from django.conf import settings
-from django.templatetags.static import static
 from django.core.mail import EmailMultiAlternatives
 from django.core.management.base import BaseCommand
-from django.template.loader import render_to_string
-from django.utils import timezone
 from django.db.models import Sum
+from django.template.loader import render_to_string
+from django.templatetags.static import static
+from django.utils import timezone
 from webpush import send_user_notification
 from webpush.models import PushInformation
 
-from expenses.models import Notification, RecurringTransaction, UserProfile, SavingsGoal, Expense, Category
+from expenses.models import (
+    Category,
+    Expense,
+    Notification,
+    RecurringTransaction,
+    SavingsGoal,
+    UserProfile,
+)
 from finance_tracker.plans import PLAN_DETAILS, get_limit
 
 

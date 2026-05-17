@@ -1,8 +1,10 @@
 import razorpay
 from django.conf import settings
 from django.core.management.base import BaseCommand
+
 from expenses.models import SubscriptionPlan
 from finance_tracker.plans import PLAN_DETAILS
+
 
 class Command(BaseCommand):
     help = 'Sync plans from finance_tracker/plans.py to Razorpay and local database'

@@ -14,10 +14,14 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+import os
+
 from django.conf import settings
 from django.contrib import admin
 from django.contrib.sitemaps.views import sitemap
+from django.http import HttpResponse
 from django.urls import include, path
+from django.views.decorators.http import require_GET
 from django.views.generic import TemplateView
 from django.views.generic.base import RedirectView
 
@@ -28,9 +32,6 @@ sitemaps = {
     'static': StaticViewSitemap,
     'blog': BlogSitemap,
 }
-
-from django.http import HttpResponse
-from django.views.decorators.http import require_GET
 
 
 @require_GET
@@ -48,7 +49,6 @@ def robots_txt(request):
 
 @require_GET
 def llms_txt(request):
-    import os
     file_path = os.path.join(settings.BASE_DIR, 'llms.txt')
     if os.path.exists(file_path):
         with open(file_path) as f:

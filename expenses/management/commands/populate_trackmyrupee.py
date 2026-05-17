@@ -1,14 +1,20 @@
 import random
-from datetime import timedelta, date
+from datetime import date
 from decimal import Decimal
 
-from django.core.management.base import BaseCommand
 from django.contrib.auth.models import User
+from django.core.management.base import BaseCommand
 from django.utils import timezone
 
 from expenses.models import (
-    Account, Expense, Income, Category, Notification, UserProfile
+    Account,
+    Category,
+    Expense,
+    Income,
+    Notification,
+    UserProfile,
 )
+
 
 class Command(BaseCommand):
     help = 'Populates trackmyrupee user with meaningful data for the last 12 months'
