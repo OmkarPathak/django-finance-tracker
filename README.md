@@ -56,6 +56,23 @@ Stop being the product. Most "free" finance apps profit by selling your spending
 *   **Year in Review**: A wrap-up of your annual spending story.
 *   **Automated Reports**: Get monthly financial summaries delivered straight to your inbox.
 
+### 🏦 Loan Management
+*   **EMI Calculator**: Preview your monthly EMI before taking a loan.
+*   **Multiple Loans**: Track home, car, personal, education, and business loans.
+*   **Floating Interest Rates**: Update rates as loan terms change.
+*   **Amortization Schedule**: Visual breakdown of principal vs interest for each payment.
+*   **Repayment Logging**: Track actual payments and monitor remaining principal.
+
+### 💼 Smart Budgeting
+*   **Category Budgets**: Set monthly spending limits for each expense category.
+*   **Real-Time Alerts**: Get notifications when you're approaching budget limits.
+*   **Budget Variance Analysis**: Compare actual vs planned spending to optimize.
+
+### 🔐 Bank-Grade Accounting
+*   **Double-Entry Ledger**: Every transaction recorded twice for data integrity.
+*   **Auto-Reconciliation**: Detects and flags discrepancies in real-time.
+*   **Audit Trail**: Complete history of all transactions with verification.
+
 ---
 
 ## 🚀 Quick Start

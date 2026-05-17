@@ -3,6 +3,7 @@ from decimal import Decimal
 from django.test import TestCase
 from django.utils import timezone
 from django.contrib.auth.models import User
+from django.urls import reverse
 from expenses.models import Account, Loan, LoanInterestRate, LoanRepayment
 from expenses.services import LoanService
 
@@ -111,3 +112,12 @@ class LoanServiceTest(TestCase):
         # Expected remaining principal: 50000 - 3942.44 = 46057.56
         total = LoanService.get_total_liabilities(self.user)
         self.assertAlmostEqual(float(total), 46057.56, places=1)
+
+    def test_loan_create_page_shows_emi_preview_calculator(self):
+        self.client.force_login(self.user)
+        response = self.client.get(reverse('loan-create'))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'id="emi-preview-value"')
+        self.assertContains(response, 'id="emi-preview-hint"')
+        self.assertContains(response, 'function calculateEmi')

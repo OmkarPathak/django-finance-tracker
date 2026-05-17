@@ -66,51 +66,11 @@
     <div class="row g-4">
         <!-- Main Content: Schedule & History -->
         <div class="col-lg-8">
-            <!-- Amortization Schedule -->
+            <!-- Repayment History -->
             <div class="card border-0 shadow-sm rounded-4 mb-4">
                 <div class="card-header bg-transparent border-0 p-4 pb-0">
-                    <h5 class="fw-bold mb-0">{% trans "Amortization Schedule" %}</h5>
-                    <p class="text-muted small">{% trans "Planned payments for the remaining term." %}</p>
-                </div>
-                <div class="card-body p-0">
-                    <div class="table-responsive">
-                        <table class="table table-hover align-middle mb-0">
-                            <thead class="bg-light">
-                                <tr>
-                                    <th class="ps-4 border-0">{% trans "Month" %}</th>
-                                    <th class="border-0 text-end">{% trans "EMI" %}</th>
-                                    <th class="border-0 text-end d-none d-md-table-cell">{% trans "Principal" %}</th>
-                                    <th class="border-0 text-end d-none d-md-table-cell">{% trans "Interest" %}</th>
-                                    <th class="pe-4 border-0 text-end">{% trans "Balance" %}</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for item in schedule %}
-                                <tr>
-                                    <td class="ps-4 fw-medium">{{ item.month }}</td>
-                                    <td class="text-end fw-bold">{{ loan.currency }}{{ item.emi|compact_amount:loan.currency|translate_digits }}</td>
-                                    <td class="text-end d-none d-md-table-cell text-success">{{ loan.currency }}{{ item.principal|compact_amount:loan.currency|translate_digits }}</td>
-                                    <td class="text-end d-none d-md-table-cell text-warning">{{ loan.currency }}{{ item.interest|compact_amount:loan.currency|translate_digits }}</td>
-                                    <td class="pe-4 text-end text-muted">{{ loan.currency }}{{ item.balance|compact_amount:loan.currency|translate_digits }}</td>
-                                </tr>
-                                {% empty %}
-                                <tr>
-                                    <td colspan="5" class="text-center py-4 text-muted">
-                                        <i class="bi bi-check-circle-fill text-success d-block fs-2 mb-2"></i>
-                                        {% trans "This loan is fully paid off!" %}
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Repayment History -->
-            <div class="card border-0 shadow-sm rounded-4">
-                <div class="card-header bg-transparent border-0 p-4 pb-0">
                     <h5 class="fw-bold mb-0">{% trans "Repayment History" %}</h5>
+                    <p class="text-muted small">{% trans "A record of all repayments made towards this loan." %}</p>
                 </div>
                 <div class="card-body p-0">
                     <div class="table-responsive">
@@ -153,11 +113,52 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Amortization Schedule -->
+            <div class="card border-0 shadow-sm rounded-4 mb-4">
+                <div class="card-header bg-transparent border-0 p-4 pb-0">
+                    <h5 class="fw-bold mb-0">{% trans "Amortization Schedule" %}</h5>
+                    <p class="text-muted small">{% trans "Planned payments for the remaining term." %}</p>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th class="ps-4 border-0">{% trans "Month" %}</th>
+                                    <th class="border-0 text-end">{% trans "EMI" %}</th>
+                                    <th class="border-0 text-end d-none d-md-table-cell">{% trans "Principal" %}</th>
+                                    <th class="border-0 text-end d-none d-md-table-cell">{% trans "Interest" %}</th>
+                                    <th class="pe-4 border-0 text-end">{% trans "Balance" %}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in schedule %}
+                                <tr>
+                                    <td class="ps-4 fw-medium">{{ item.month }}</td>
+                                    <td class="text-end fw-bold">{{ loan.currency }}{{ item.emi|compact_amount:loan.currency|translate_digits }}</td>
+                                    <td class="text-end d-none d-md-table-cell text-success">{{ loan.currency }}{{ item.principal|compact_amount:loan.currency|translate_digits }}</td>
+                                    <td class="text-end d-none d-md-table-cell text-warning">{{ loan.currency }}{{ item.interest|compact_amount:loan.currency|translate_digits }}</td>
+                                    <td class="pe-4 text-end text-muted">{{ loan.currency }}{{ item.balance|compact_amount:loan.currency|translate_digits }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="5" class="text-center py-4 text-muted">
+                                        <i class="bi bi-check-circle-fill text-success d-block fs-2 mb-2"></i>
+                                        {% trans "This loan is fully paid off!" %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- Sidebar Info -->
         <div class="col-lg-4">
-            <div class="card border-0 shadow-sm rounded-4 bg-primary text-white mb-4">
+            <div class="card border-0 shadow-sm rounded-4 loan-summary mb-4">
                 <div class="card-body p-4">
                     <h5 class="fw-bold mb-3">{% trans "Loan Summary" %}</h5>
                     <div class="d-flex justify-content-between mb-2">
@@ -335,6 +336,33 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
+}
+.loan-summary {
+    background: linear-gradient(135deg, rgba(15, 112, 87, 0.08), rgba(25, 135, 84, 0.14));
+}
+
+/* Remove all borders from cards and tables */
+.table {
+    border-bottom: none !important;
+}
+.table th,
+.table td {
+    border-bottom: none !important;
+}
+.table tbody tr {
+    border-bottom: none !important;
+}
+.table tbody tr:last-child td {
+    border-bottom: none !important;
+}
+.table thead th {
+    border-bottom: none !important;
+}
+.list-group-item {
+    border-bottom: none !important;
+}
+table {
+    border-bottom: none !important;
 }
 </style>
 {% endblock %}

@@ -7,7 +7,7 @@
         <div class="card border-0 shadow-sm rounded-4">
             <div class="card-body p-4">
                 <div class="d-flex align-items-center mb-4">
-                    <a href="{% url 'loan-list' %}" class="btn btn-outline-secondary btn-sm rounded-circle me-3 icon-btn">
+                    <a href="{% url 'loan-list' %}" class="btn btn-sm me-3 icon-btn">
                         <i class="bi bi-arrow-left"></i>
                     </a>
                     <h4 class="fw-bold mb-0">
@@ -67,6 +67,14 @@
                         </div>
                     </div>
 
+                    <div class="emi-preview card border-0 rounded-3 mb-3">
+                        <div class="card-body py-3 px-3">
+                            <p class="fw-bold small text-uppercase text-muted mb-1">{% trans "Estimated Monthly EMI" %}</p>
+                            <h5 class="fw-bold mb-1" id="emi-preview-value">--</h5>
+                            <p class="small text-muted mb-0" id="emi-preview-hint">{% trans "Enter principal, interest rate, and duration to preview EMI." %}</p>
+                        </div>
+                    </div>
+
                     <div class="d-grid gap-2 mt-4">
                         <button type="submit" class="btn btn-primary py-2 fw-bold shadow-sm rounded-3">
                             {% if form.instance.pk %}
@@ -75,7 +83,7 @@
                                 {% trans "Create Loan" %}
                             {% endif %}
                         </button>
-                        <a href="{% url 'loan-list' %}" class="btn btn-light py-2 fw-bold rounded-3">{% trans "Cancel" %}</a>
+                        <a href="{% url 'loan-list' %}" class="btn btn-outline-primary py-2 fw-bold rounded-3">{% trans "Cancel" %}</a>
                     </div>
                 </form>
             </div>
@@ -92,5 +100,76 @@
     align-items: center;
     justify-content: center;
 }
+
+.emi-preview {
+    background: linear-gradient(135deg, rgba(15, 112, 87, 0.08), rgba(25, 135, 84, 0.14));
+}
 </style>
+
+<script>
+(function () {
+    const principalInput = document.getElementById('id_initial_principal');
+    const rateInput = document.getElementById('id_interest_rate');
+    const durationInput = document.getElementById('id_duration_months');
+    const currencySelect = document.getElementById('id_currency');
+    const emiPreviewValue = document.getElementById('emi-preview-value');
+    const emiPreviewHint = document.getElementById('emi-preview-hint');
+
+    if (!principalInput || !rateInput || !durationInput || !emiPreviewValue || !emiPreviewHint) {
+        return;
+    }
+
+    function calculateEmi(principal, annualRate, months) {
+        if (principal <= 0 || months <= 0) {
+            return 0;
+        }
+
+        const monthlyRate = annualRate / 12 / 100;
+        if (monthlyRate === 0) {
+            return principal / months;
+        }
+
+        const factor = Math.pow(1 + monthlyRate, months);
+        return (principal * monthlyRate * factor) / (factor - 1);
+    }
+
+    function formatAmount(amount, currency) {
+        return `${currency}${amount.toLocaleString(undefined, {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+        })}`;
+    }
+
+    function updateEmiPreview() {
+        const principal = Number.parseFloat(principalInput.value);
+        const annualRate = Number.parseFloat(rateInput.value);
+        const months = Number.parseInt(durationInput.value, 10);
+        const currency = currencySelect ? (currencySelect.value || '') : '';
+
+        if (!Number.isFinite(principal) || !Number.isFinite(annualRate) || !Number.isFinite(months) || principal <= 0 || months <= 0 || annualRate < 0) {
+            emiPreviewValue.textContent = '--';
+            emiPreviewHint.textContent = "{% trans 'Enter principal, interest rate, and duration to preview EMI.' %}";
+            return;
+        }
+
+        const emi = calculateEmi(principal, annualRate, months);
+        const totalPayout = emi * months;
+        const totalInterest = totalPayout - principal;
+
+        emiPreviewValue.textContent = formatAmount(emi, currency);
+        emiPreviewHint.textContent = `${"{% trans 'Total payout:' %}"} ${formatAmount(totalPayout, currency)} | ${"{% trans 'Interest:' %}"} ${formatAmount(totalInterest, currency)}`;
+    }
+
+    ['input', 'change'].forEach(function (eventName) {
+        principalInput.addEventListener(eventName, updateEmiPreview);
+        rateInput.addEventListener(eventName, updateEmiPreview);
+        durationInput.addEventListener(eventName, updateEmiPreview);
+        if (currencySelect) {
+            currencySelect.addEventListener(eventName, updateEmiPreview);
+        }
+    });
+
+    updateEmiPreview();
+})();
+</script>
 {% endblock %}

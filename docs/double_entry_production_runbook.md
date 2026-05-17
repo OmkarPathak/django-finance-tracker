@@ -32,7 +32,7 @@ Set these in production:
 
 ```bash
 LEDGER_WRITE_ENABLED=true
-LEDGER_ENFORCE_BALANCED_WRITE=true
+LEDGER_ENFORCE_BALANCED_WRITE=false
 LEDGER_READ_ENABLED=true
 LEDGER_READ_COHORT_PERCENT=100
 LEDGER_READ_COHORT_USER_IDS=
@@ -45,6 +45,8 @@ LEDGER_READ_COMPARE_SAMPLE_RATE=1.0
 
 Notes:
 - Keep `LEDGER_READ_COHORT_USER_IDS` and `LEDGER_READ_EXCLUDE_USER_IDS` empty for full rollout.
+- Keep `LEDGER_ENFORCE_BALANCED_WRITE=false` during initial cutover and backfill.
+- Enable `LEDGER_ENFORCE_BALANCED_WRITE=true` only after backfill and reconciliation checks are healthy.
 - If urgent rollback is needed, disable read/enforcement first (see rollback section).
 
 ---
@@ -94,6 +96,16 @@ Expected outcomes:
 3. real `backfill_ledger_opening_balances` creates adjustment entries.
 4. `ledger_rollout_status` should show near 100% cohort coverage.
 5. `run_ledger_maintenance` processes retries + writes reconciliation reports.
+
+### 5.1 Enable Strict Enforcement (After Verification)
+
+Only after section 5 completes successfully and reconciliation drift is acceptable:
+
+```bash
+LEDGER_ENFORCE_BALANCED_WRITE=true
+```
+
+Then restart/redeploy app processes so the new setting takes effect.
 
 ---
 
