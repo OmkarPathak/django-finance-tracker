@@ -1419,6 +1419,7 @@ def home_view(request):
         'EXPENSE': {'items': [], 'total': Decimal('0.00'), 'icon': '💸', 'label': _('Expenses')},
         'INVESTMENT': {'items': [], 'total': Decimal('0.00'), 'icon': '📈', 'label': _('Investments')},
         'TRANSFER': {'items': [], 'total': Decimal('0.00'), 'icon': '🔄', 'label': _('Transfers')},
+        'LOAN': {'items': [], 'total': Decimal('0.00'), 'icon': '🏦', 'label': _('Loan Repayments')},
     }
     
     total_recurring_commitment = Decimal('0.00')
@@ -1465,7 +1466,7 @@ def home_view(request):
         group['items'].sort(key=lambda x: x['date'])
 
     # Calculate Net Recurring Balance (Positive if surplus, Negative if deficit)
-    recurring_net_balance = recurring_groups['INCOME']['total'] - recurring_groups['EXPENSE']['total'] - recurring_groups['INVESTMENT']['total']
+    recurring_net_balance = recurring_groups['INCOME']['total'] - recurring_groups['EXPENSE']['total'] - recurring_groups['INVESTMENT']['total'] - recurring_groups['LOAN']['total']
 
     # --- Expense Projection Chart Logic ---
     proj_labels = []
