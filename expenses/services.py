@@ -306,3 +306,64 @@ class LoanService:
             
         return schedule
 
+    @staticmethod
+    def calculate_extra_emi_savings(loan):
+        """
+        Calculates interest saved and months reduced by paying one extra EMI per year
+        applied entirely toward principal reduction.
+        """
+        summary = LoanService.get_loan_summary(loan)
+        remaining_principal = Decimal(str(summary['remaining_principal']))
+
+        if remaining_principal <= 0:
+            return None
+
+        latest_rate_obj = loan.interest_rates.order_by('-effective_date').first()
+        annual_rate = Decimal(str(latest_rate_obj.interest_rate)) if latest_rate_obj else Decimal('0.00')
+
+        from datetime import date
+        today = date.today()
+        months_passed = (today.year - loan.start_date.year) * 12 + today.month - loan.start_date.month
+        remaining_months = loan.duration_months - months_passed
+
+        if remaining_months <= 0:
+            return None
+
+        r = annual_rate / Decimal('12') / Decimal('100')
+        emi = Decimal(str(LoanService.calculate_emi(remaining_principal, annual_rate, remaining_months)))
+
+        def _simulate(balance, emi, r, with_extra_emi):
+            total_interest = Decimal('0')
+            month = 0
+            while balance > Decimal('0.01') and month < 1200:  # cap at 100 years
+                month += 1
+                interest_payment = balance * r
+                principal_payment = emi - interest_payment
+                if principal_payment <= 0:
+                    break
+                if principal_payment > balance:
+                    principal_payment = balance
+                total_interest += interest_payment
+                balance -= principal_payment
+                # Apply one extra EMI as pure principal at the end of each 12-month cycle
+                if with_extra_emi and month % 12 == 0 and balance > 0:
+                    extra = min(emi, balance)
+                    balance -= extra
+            return month, float(total_interest.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP))
+
+        normal_months, normal_interest = _simulate(remaining_principal, emi, r, with_extra_emi=False)
+        extra_months, extra_interest = _simulate(remaining_principal, emi, r, with_extra_emi=True)
+
+        months_saved = normal_months - extra_months
+        interest_saved = normal_interest - extra_interest
+
+        return {
+            'emi': float(emi.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)),
+            'normal_months': normal_months,
+            'extra_months': extra_months,
+            'months_saved': months_saved,
+            'years_saved': round(months_saved / 12, 1),
+            'interest_saved': round(interest_saved, 2),
+            'normal_interest': round(normal_interest, 2),
+        }
+

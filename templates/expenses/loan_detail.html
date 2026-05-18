@@ -186,6 +186,45 @@
                 </div>
             </div>
 
+            <!-- Extra EMI Savings Insight -->
+            {% if extra_emi_savings and extra_emi_savings.months_saved > 0 %}
+            <div class="card border-0 shadow-sm rounded-4 mb-4" style="background: linear-gradient(135deg, rgba(13,110,253,0.06), rgba(111,66,193,0.10));">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center mb-2">
+                        <span class="fs-4 me-2">💡</span>
+                        <h6 class="fw-bold mb-0">{% trans "Pay 1 Extra EMI/Year" %}</h6>
+                    </div>
+                    <p class="text-muted small mb-3">{% trans "If you pay one additional EMI every year (applied to principal), here's what you save:" %}</p>
+
+                    <div class="d-flex justify-content-between align-items-center mb-2 p-2 rounded-3 bg-white bg-opacity-50">
+                        <span class="small text-muted">{% trans "Interest Saved" %}</span>
+                        <span class="fw-bold text-success fs-6">{{ loan.currency }}{{ extra_emi_savings.interest_saved|floatformat:0|intcomma }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mb-2 p-2 rounded-3 bg-white bg-opacity-50">
+                        <span class="small text-muted">{% trans "Time Saved" %}</span>
+                        <span class="fw-bold text-primary">{{ extra_emi_savings.months_saved }} {% trans "months" %}
+                            {% if extra_emi_savings.years_saved >= 1 %}
+                            <span class="text-muted small">(~{{ extra_emi_savings.years_saved }} {% trans "yrs" %})</span>
+                            {% endif %}
+                        </span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center p-2 rounded-3 bg-white bg-opacity-50">
+                        <span class="small text-muted">{% trans "Extra amount/year" %}</span>
+                        <span class="fw-bold">{{ loan.currency }}{{ extra_emi_savings.emi|floatformat:0|intcomma }}</span>
+                    </div>
+
+                    <div class="mt-3 p-2 rounded-3 border border-success border-opacity-25 bg-success bg-opacity-10">
+                        <p class="mb-0 small text-success fw-medium">
+                            <i class="bi bi-graph-down-arrow me-1"></i>
+                            {% blocktrans with interest=extra_emi_savings.interest_saved|floatformat:0 months=extra_emi_savings.months_saved currency=loan.currency %}
+                                You'd save {{ currency }}{{ interest }} in interest and close the loan {{ months }} months earlier!
+                            {% endblocktrans %}
+                        </p>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
             <!-- Floating Rate Info -->
             <div class="card border-0 shadow-sm rounded-4">
                 <div class="card-header bg-transparent border-0 p-4 pb-0">

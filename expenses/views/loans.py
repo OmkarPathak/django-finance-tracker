@@ -150,6 +150,7 @@ class LoanDetailView(LoginRequiredMixin, LoanFeatureGateMixin, View):
         
         repayment_form = LoanRepaymentForm(user=request.user, loan=loan)
         rate_form = LoanInterestRateForm()
+        extra_emi_savings = LoanService.calculate_extra_emi_savings(loan)
         
         context = {
             'loan': loan,
@@ -158,6 +159,7 @@ class LoanDetailView(LoginRequiredMixin, LoanFeatureGateMixin, View):
             'repayments': repayments,
             'repayment_form': repayment_form,
             'rate_form': rate_form,
+            'extra_emi_savings': extra_emi_savings,
         }
         return render(request, self.template_name, context)
 
