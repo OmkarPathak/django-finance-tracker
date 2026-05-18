@@ -1,12 +1,12 @@
 import json
-from datetime import date
+from datetime import date, timedelta
 from unittest.mock import patch
 
 from django.contrib.auth.models import User
 from django.test import Client, TestCase
 from django.urls import reverse
 
-from expenses.models import Category, RecurringTransaction, UserProfile
+from expenses.models import Account, Category, Loan, LoanInterestRate, LoanRepayment, RecurringTransaction, UserProfile
 from finance_tracker.plans import PLAN_DETAILS
 
 
@@ -217,3 +217,138 @@ class SubscriptionTierTest(TestCase):
                 else:
                     self.assertEqual(response.status_code, 403)
                     self.assertEqual(response.json()['error'], 'AI Insights is a paid feature.')
+
+    def test_recurring_create_form_shows_loan_type(self):
+        """Loan Repayment type should be available when creating a recurring transaction."""
+        self.setup_tier('PLUS')
+        response = self.client.get(reverse('recurring-create'))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'value="LOAN"')
+
+    def test_recurring_expense_edit_still_works(self):
+        """Editing recurring EXPENSE should keep working after LOAN type support."""
+        self.setup_tier('PLUS')
+
+        category1 = Category.objects.create(user=self.user, name='Food')
+        category2 = Category.objects.create(user=self.user, name='Utilities')
+        account = Account.objects.create(user=self.user, name='Cash Box', account_type='CASH', balance=10000, currency='₹')
+
+        rt = RecurringTransaction.objects.create(
+            user=self.user,
+            transaction_type='EXPENSE',
+            amount=100,
+            currency='₹',
+            account=account,
+            category=category1.name,
+            frequency='MONTHLY',
+            start_date=date.today(),
+            description='Monthly test expense',
+            payment_method='Cash',
+            is_active=True,
+        )
+
+        response = self.client.post(reverse('recurring-edit', kwargs={'pk': rt.pk}), {
+            'transaction_type': 'EXPENSE',
+            'amount': '250.00',
+            'currency': '₹',
+            'account': account.pk,
+            'category': category2.name,
+            'source': '',
+            'from_account': '',
+            'to_account': '',
+            'loan': '',
+            'frequency': 'WEEKLY',
+            'start_date': date.today().isoformat(),
+            'description': 'Updated recurring expense',
+            'is_active': 'on',
+            'payment_method': 'UPI',
+        })
+
+        self.assertEqual(response.status_code, 302)
+        rt.refresh_from_db()
+        self.assertEqual(rt.transaction_type, 'EXPENSE')
+        self.assertEqual(float(rt.amount), 250.0)
+        self.assertEqual(rt.category, category2.name)
+        self.assertEqual(rt.frequency, 'WEEKLY')
+        self.assertEqual(rt.description, 'Updated recurring expense')
+        self.assertEqual(rt.payment_method, 'UPI')
+
+    def test_recurring_loan_repayment_uses_configured_amount(self):
+        """Recurring loan repayment should post the configured amount, not a recalculated EMI."""
+        self.setup_tier('PLUS')
+
+        account = Account.objects.create(
+            user=self.user,
+            name='Main Bank',
+            account_type='BANK',
+            balance=1000000,
+            currency='₹',
+        )
+        loan = Loan.objects.create(
+            user=self.user,
+            name='Home',
+            loan_type='HOME',
+            initial_principal=8000000,
+            duration_months=240,
+            start_date=date.today().replace(day=1),
+            currency='₹',
+        )
+        LoanInterestRate.objects.create(loan=loan, interest_rate=8.8, effective_date=loan.start_date)
+
+        RecurringTransaction.objects.create(
+            user=self.user,
+            transaction_type='LOAN',
+            amount=10000,
+            currency='₹',
+            account=account,
+            loan=loan,
+            frequency='DAILY',
+            start_date=date.today() - timedelta(days=17),
+            description='Daily loan repayment',
+            is_active=True,
+        )
+
+        from expenses.views import process_user_recurring_transactions
+
+        process_user_recurring_transactions(self.user)
+
+        repayments = LoanRepayment.objects.filter(loan=loan).order_by('date')
+        self.assertEqual(repayments.count(), 18)
+        self.assertTrue(all(float(r.amount) == 10000.0 for r in repayments))
+        self.assertLess(sum(float(r.interest_portion) for r in repayments), 50000.0)
+        self.assertGreater(sum(float(r.principal_portion) for r in repayments), 130000.0)
+
+    def test_loan_repayment_create_view_posts_successfully(self):
+        """The direct loan repayment create view should save repayments without loan validation errors."""
+        self.setup_tier('PLUS')
+
+        account = Account.objects.create(
+            user=self.user,
+            name='Main Bank',
+            account_type='BANK',
+            balance=500000,
+            currency='₹',
+        )
+        loan = Loan.objects.create(
+            user=self.user,
+            name='Home',
+            loan_type='HOME',
+            initial_principal=8000000,
+            duration_months=240,
+            start_date=date.today().replace(day=1),
+            currency='₹',
+        )
+        LoanInterestRate.objects.create(loan=loan, interest_rate=8.8, effective_date=loan.start_date)
+
+        response = self.client.post(reverse('loan-repayment-create', kwargs={'pk': loan.pk}), {
+            'from_account': account.pk,
+            'amount': '10000.00',
+            'principal_portion': '9000.00',
+            'interest_portion': '1000.00',
+            'date': date.today().isoformat(),
+        })
+
+        self.assertEqual(response.status_code, 302)
+        repayment = LoanRepayment.objects.get(loan=loan)
+        self.assertEqual(float(repayment.amount), 10000.0)
+        self.assertEqual(repayment.loan_id, loan.pk)

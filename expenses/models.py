@@ -826,6 +826,7 @@ class RecurringTransaction(models.Model):
         ('EXPENSE', _('Expense')),
         ('INCOME', _('Income')),
         ('TRANSFER', _('Transfer')),
+        ('LOAN', _('Loan Repayment')),
     ]
 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -842,6 +843,7 @@ class RecurringTransaction(models.Model):
     base_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0.0, verbose_name=_('Amount in Base Currency'))
 
     account = models.ForeignKey(Account, on_delete=models.SET_NULL, null=True, blank=True, verbose_name=_('Account'))
+    loan = models.ForeignKey('Loan', on_delete=models.CASCADE, null=True, blank=True, related_name='recurring_schedules', verbose_name=_('Loan'))
 
     # Transfer-specific fields
     from_account = models.ForeignKey(Account, on_delete=models.SET_NULL, null=True, blank=True, related_name='recurring_transfers_out', verbose_name=_('From Account'))
@@ -1376,7 +1378,8 @@ class LoanRepayment(models.Model):
         ordering = ['date']
 
     def __str__(self):
-        return f"{self.loan.name} Repayment - {self.amount} on {self.date}"
+        loan_name = getattr(self, 'loan_id', None) and getattr(self.loan, 'name', _('Loan')) or _('Loan')
+        return f"{loan_name} Repayment - {self.amount} on {self.date}"
 
     def clean(self):
         if self.amount is None or self.amount <= 0:

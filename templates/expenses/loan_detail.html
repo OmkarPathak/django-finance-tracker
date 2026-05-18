@@ -85,7 +85,7 @@
                             </thead>
                             <tbody>
                                 {% for r in repayments %}
-                                <tr>
+                                <tr{% if forloop.counter > 10 %} class="repayment-extra d-none"{% endif %}>
                                     <td class="ps-4">{{ r.date|date:"M d, Y" }}</td>
                                     <td>
                                         <span class="badge bg-body-tertiary text-dark border shadow-sm">
@@ -111,6 +111,13 @@
                             </tbody>
                         </table>
                     </div>
+                    {% if repayments|length > 10 %}
+                    <div class="p-3 text-center border-top">
+                        <button type="button" id="toggleRepaymentRows" class="btn btn-outline-primary btn-sm rounded-pill px-3" aria-expanded="false">
+                            {% trans "Show more repayments" %} ({{ repayments|length|add:-10 }})
+                        </button>
+                    </div>
+                    {% endif %}
                 </div>
             </div>
 
@@ -227,6 +234,9 @@
                                 You'd save {{ currency }}{{ interest }} in interest and close the loan {{ months }} months earlier!
                             {% endblocktrans %}
                         </p>
+                        <p class="mb-0 small text-muted mt-2">
+                            {% trans "This is an estimate based on the current remaining balance and latest interest rate. Actual savings can change if the rate, balance, or repayment timing changes." %}
+                        </p>
                     </div>
                 </div>
             </div>
@@ -262,7 +272,7 @@
 {% block modals %}
     {{ block.super }}
     <!-- Repayment Modal -->
-    <div class="modal fade" id="repaymentModal" tabindex="-1" aria-hidden="true">
+    <div class="modal fade" id="repaymentModal" tabindex="-1" aria-hidden="true" data-remaining-principal="{{ summary.remaining_principal|default:0 }}" data-annual-rate="{{ loan.interest_rates.first.interest_rate|default:0 }}">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content border-0 rounded-4 shadow">
                 <div class="modal-header border-0 p-4 pb-0">
@@ -277,7 +287,7 @@
                             {{ repayment_form.from_account }}
                         </div>
                         <div class="mb-3">
-                            <label class="form-label fw-bold small text-uppercase text-muted">{% trans "Total Amount (EMI)" %}</label>
+                            <label class="form-label fw-bold small text-uppercase text-muted">{% trans "Total Amount" %}</label>
                             {{ repayment_form.amount }}
                         </div>
                         <div class="row">
@@ -293,6 +303,23 @@
                         <div class="mb-0">
                             <label class="form-label fw-bold small text-uppercase text-muted">{% trans "Payment Date" %}</label>
                             {{ repayment_form.date }}
+                        </div>
+
+                        <p class="small text-muted mt-3 mb-0">
+                            {% trans "You can enter any repayment amount here. We will automatically estimate the interest portion from the current loan balance and interest rate, then use the rest as principal. If you enable recurring mode, the same amount will be reused for each occurrence." %}
+                        </p>
+
+                        <div class="mt-3 mb-2">
+                            <div class="form-check form-switch">
+                                {{ repayment_form.add_to_recurring }}
+                                <label class="form-check-label fw-bold small text-muted text-uppercase" for="{{ repayment_form.add_to_recurring.id_for_label }}">
+                                    {% trans "Make this a recurring loan repayment" %}
+                                </label>
+                            </div>
+                        </div>
+                        <div id="repayment-frequency-container" class="mb-0" style="display: none;">
+                            <label class="form-label fw-bold small text-uppercase text-muted" for="{{ repayment_form.recurring_frequency.id_for_label }}">{% trans "Frequency" %}</label>
+                            {{ repayment_form.recurring_frequency }}
                         </div>
                     </div>
                     <div class="modal-footer border-0 p-4 pt-0">
@@ -342,8 +369,27 @@
             // Recalculate portions (stub for future logic)
             function recalculatePortions() {
                 const amountInput = document.getElementById('id_amount');
-                if (!amountInput) return;
-                // Add logic if needed
+                const principalInput = document.getElementById('id_principal_portion');
+                const interestInput = document.getElementById('id_interest_portion');
+                const loanModal = document.getElementById('repaymentModal');
+                if (!amountInput || !principalInput || !interestInput || !loanModal) return;
+
+                const amount = parseFloat(amountInput.value);
+                const remainingPrincipal = parseFloat(loanModal.dataset.remainingPrincipal || '0');
+                const annualRate = parseFloat(loanModal.dataset.annualRate || '0');
+
+                if (Number.isNaN(amount) || amount <= 0) {
+                    principalInput.value = '';
+                    interestInput.value = '';
+                    return;
+                }
+
+                const estimatedInterest = remainingPrincipal * (annualRate / 12.0 / 100.0);
+                const interest = Math.min(amount, estimatedInterest);
+                const principal = Math.max(0, amount - interest);
+
+                principalInput.value = principal.toFixed(2);
+                interestInput.value = interest.toFixed(2);
             }
 
             // Centralized focus logic following base.html pattern
@@ -371,6 +417,12 @@
                 }
             });
 
+            const amountInput = document.getElementById('id_amount');
+            if (amountInput) {
+                amountInput.addEventListener('input', recalculatePortions);
+                recalculatePortions();
+            }
+
             // Collapse long amortization schedules and allow expansion on demand.
             const toggleScheduleBtn = document.getElementById('toggleScheduleRows');
             if (toggleScheduleBtn) {
@@ -384,6 +436,30 @@
                     this.setAttribute('aria-expanded', expanded ? 'false' : 'true');
                     this.textContent = expanded ? `${showLabel} (${hiddenRows.length} {% trans 'months' %})` : hideLabel;
                 });
+            }
+
+            const toggleRepaymentBtn = document.getElementById('toggleRepaymentRows');
+            if (toggleRepaymentBtn) {
+                const hiddenRows = Array.from(document.querySelectorAll('.repayment-extra'));
+                const showLabel = "{% trans 'Show more repayments' %}";
+                const hideLabel = "{% trans 'Show less' %}";
+
+                toggleRepaymentBtn.addEventListener('click', function() {
+                    const expanded = this.getAttribute('aria-expanded') === 'true';
+                    hiddenRows.forEach(row => row.classList.toggle('d-none', expanded));
+                    this.setAttribute('aria-expanded', expanded ? 'false' : 'true');
+                    this.textContent = expanded ? `${showLabel} (${hiddenRows.length})` : hideLabel;
+                });
+            }
+
+            const recurringToggle = document.getElementById('{{ repayment_form.add_to_recurring.id_for_label }}');
+            const recurringFrequencyContainer = document.getElementById('repayment-frequency-container');
+            if (recurringToggle && recurringFrequencyContainer) {
+                const syncRecurringVisibility = () => {
+                    recurringFrequencyContainer.style.display = recurringToggle.checked ? 'block' : 'none';
+                };
+                syncRecurringVisibility();
+                recurringToggle.addEventListener('change', syncRecurringVisibility);
             }
         });
     </script>

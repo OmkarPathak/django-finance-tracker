@@ -43,6 +43,8 @@
                             <td>
                                 {% if sub.transaction_type == 'EXPENSE' %}
                                     <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill">{% trans "Expense" %}</span>
+                                {% elif sub.transaction_type == 'LOAN' %}
+                                    <span class="badge bg-warning-subtle text-warning border border-warning-subtle rounded-pill">{% trans "Loan" %}</span>
                                 {% elif sub.transaction_type == 'TRANSFER' %}
                                     <span class="badge bg-info-subtle text-info border border-info-subtle rounded-pill">{% trans "Transfer" %}</span>
                                 {% else %}
@@ -95,6 +97,8 @@
                             <td>
                                 {% if sub.transaction_type == 'EXPENSE' %}
                                     <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle rounded-pill">{% trans "Expense" %}</span>
+                                {% elif sub.transaction_type == 'LOAN' %}
+                                    <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle rounded-pill">{% trans "Loan" %}</span>
                                 {% elif sub.transaction_type == 'TRANSFER' %}
                                     <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle rounded-pill">{% trans "Transfer" %}</span>
                                 {% else %}

@@ -70,6 +70,16 @@
                         <div class="text-danger small">{{ form.account.errors|first }}</div>
                     {% endif %}
                 </div>
+                <div class="col-6" id="loanGroup" style="display: none;">
+                    <label class="form-label">{% trans "Loan" %}</label>
+                    {{ form.loan }}
+                    {% if form.loan.errors %}
+                        <div class="text-danger small">{{ form.loan.errors|first }}</div>
+                    {% endif %}
+                    <p class="small text-muted mt-2 mb-0">
+                        {% trans "For loan repayments, the amount you enter is used as-is for every occurrence. We calculate the principal and interest split at the time each repayment is posted so the values stay aligned with the current loan balance." %}
+                    </p>
+                </div>
 
                 <!-- Transfer Account Fields -->
                 <div class="col-6" id="fromAccountGroup" style="display: none;">
@@ -169,6 +179,7 @@
         const sourceGroup = document.getElementById('sourceGroup');
         const paymentMethodGroup = document.getElementById('paymentMethodGroup');
         const accountGroup = document.getElementById('accountGroup');
+        const loanGroup = document.getElementById('loanGroup');
         const fromAccountGroup = document.getElementById('fromAccountGroup');
         const toAccountGroup = document.getElementById('toAccountGroup');
 
@@ -177,6 +188,15 @@
             paymentMethodGroup.style.display = 'block';
             sourceGroup.style.display = 'none';
             accountGroup.style.display = 'block';
+            loanGroup.style.display = 'none';
+            fromAccountGroup.style.display = 'none';
+            toAccountGroup.style.display = 'none';
+        } else if (typeSelect.value === 'LOAN') {
+            categoryGroup.style.display = 'none';
+            paymentMethodGroup.style.display = 'none';
+            sourceGroup.style.display = 'none';
+            accountGroup.style.display = 'block';
+            loanGroup.style.display = 'block';
             fromAccountGroup.style.display = 'none';
             toAccountGroup.style.display = 'none';
         } else if (typeSelect.value === 'TRANSFER') {
@@ -184,6 +204,7 @@
             paymentMethodGroup.style.display = 'none';
             sourceGroup.style.display = 'none';
             accountGroup.style.display = 'none';
+            loanGroup.style.display = 'none';
             fromAccountGroup.style.display = 'block';
             toAccountGroup.style.display = 'block';
         } else {
@@ -191,6 +212,7 @@
             paymentMethodGroup.style.display = 'none';
             sourceGroup.style.display = 'block';
             accountGroup.style.display = 'block';
+            loanGroup.style.display = 'none';
             fromAccountGroup.style.display = 'none';
             toAccountGroup.style.display = 'none';
         }

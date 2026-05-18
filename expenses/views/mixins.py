@@ -1,8 +1,9 @@
 import logging
 from datetime import date
-from decimal import Decimal
+from decimal import Decimal, ROUND_HALF_UP
 
-from ..models import Expense, Income, RecurringTransaction, Transfer, UserProfile
+from ..models import Expense, Income, LoanRepayment, RecurringTransaction, Transfer, UserProfile
+from ..services import LoanService
 from ..utils import get_exchange_rate
 
 logger = logging.getLogger(__name__)
@@ -23,7 +24,7 @@ def process_user_recurring_transactions(user):
         return
     today = date.today()
     profile = user.profile
-    recurring_txs = RecurringTransaction.objects.filter(user=user, is_active=True).select_related('account', 'from_account', 'to_account').order_by('created_at')
+    recurring_txs = RecurringTransaction.objects.filter(user=user, is_active=True).select_related('account', 'from_account', 'to_account', 'loan').order_by('created_at')
     
     # Enforce Tier Limits for processing
     from finance_tracker.plans import get_limit
@@ -99,6 +100,60 @@ def process_user_recurring_transactions(user):
                             break 
                     else:
                         posted_successfully = True
+
+            elif rt.transaction_type == 'LOAN':
+                if rt.loan and rt.account:
+                    summary = LoanService.get_loan_summary(rt.loan)
+                    remaining_principal = Decimal(str(summary['remaining_principal']))
+                    if remaining_principal <= 0:
+                        posted_successfully = True
+                    else:
+                        latest_rate_obj = rt.loan.interest_rates.order_by('-effective_date').first()
+                        annual_rate = Decimal(str(latest_rate_obj.interest_rate)) if latest_rate_obj else Decimal('0.00')
+
+                        period_days_map = {
+                            'DAILY': Decimal('1'),
+                            'WEEKLY': Decimal('7'),
+                            'MONTHLY': Decimal('30'),
+                            'YEARLY': Decimal('365'),
+                        }
+                        period_days = period_days_map.get(rt.frequency, Decimal('30'))
+                        interest_payment = (
+                            remaining_principal * annual_rate * period_days / Decimal('36500')
+                        ).quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
+
+                        repayment_amount = Decimal(str(rt.amount)).quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
+                        principal_payment = (repayment_amount - interest_payment).quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
+
+                        if principal_payment <= 0:
+                            logger.warning("Recurring loan repayment amount is too low to cover interest for loan %s", rt.loan_id)
+                            break
+
+                        if principal_payment > remaining_principal:
+                            principal_payment = remaining_principal.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
+                            repayment_amount = (principal_payment + interest_payment).quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
+
+                        exists = LoanRepayment.objects.filter(
+                            loan=rt.loan,
+                            date=current_date,
+                            from_account=rt.account,
+                        ).exists()
+                        if not exists:
+                            try:
+                                LoanRepayment.objects.create(
+                                    loan=rt.loan,
+                                    from_account=rt.account,
+                                    date=current_date,
+                                    amount=repayment_amount,
+                                    principal_portion=principal_payment,
+                                    interest_portion=interest_payment,
+                                )
+                                posted_successfully = True
+                            except Exception as exc:
+                                logger.warning("Recurring loan repayment posting failed", exc_info=exc)
+                                break
+                        else:
+                            posted_successfully = True
 
             else:
                 source = rt.source or 'Other'

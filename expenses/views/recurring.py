@@ -23,7 +23,7 @@ class RecurringTransactionListView(LoginRequiredMixin, RecurringTransactionMixin
             return RecurringTransaction.objects.none()
         queryset = RecurringTransaction.objects.filter(user=self.request.user)
         if self.filter_expenses_only:
-            queryset = queryset.filter(transaction_type__in=['EXPENSE', 'TRANSFER'])
+            queryset = queryset.filter(transaction_type__in=['EXPENSE', 'TRANSFER', 'LOAN'])
         queryset = queryset.order_by('-created_at')
         
         # Filter by Category

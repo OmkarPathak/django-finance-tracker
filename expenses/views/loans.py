@@ -10,7 +10,7 @@ from django.views.generic import CreateView, DeleteView, ListView, UpdateView, V
 from finance_tracker.plans import get_limit
 
 from ..forms import LoanForm, LoanInterestRateForm, LoanRepaymentForm
-from ..models import Loan, LoanInterestRate, LoanRepayment
+from ..models import Loan, LoanInterestRate, LoanRepayment, RecurringTransaction
 from ..services import LoanService
 
 
@@ -172,6 +172,36 @@ class LoanRepaymentCreateView(LoginRequiredMixin, LoanFeatureGateMixin, View):
                 repayment = form.save(commit=False)
                 repayment.loan = loan
                 repayment.save()
+
+                if form.cleaned_data.get('add_to_recurring'):
+                    recurring_defaults = {
+                        'amount': repayment.amount,
+                        'currency': loan.currency,
+                        'account': repayment.from_account,
+                        'loan': loan,
+                        'frequency': form.cleaned_data.get('recurring_frequency') or 'MONTHLY',
+                        'start_date': repayment.date,
+                        'last_processed_date': repayment.date,
+                        'description': _("Loan EMI: %(name)s") % {'name': loan.name},
+                        'is_active': True,
+                    }
+
+                    rt, created = RecurringTransaction.objects.get_or_create(
+                        user=request.user,
+                        transaction_type='LOAN',
+                        loan=loan,
+                        is_active=True,
+                        defaults=recurring_defaults,
+                    )
+
+                    if not created:
+                        for key, value in recurring_defaults.items():
+                            setattr(rt, key, value)
+                        rt.save()
+                        messages.info(request, _("Recurring loan repayment updated."))
+                    else:
+                        messages.info(request, _("Recurring loan repayment created."))
+
                 messages.success(request, _("Repayment recorded successfully!"))
             except (RuntimeError, ValidationError):
                 messages.error(request, _("Unable to record repayment because currency conversion failed or repayment data is invalid."))

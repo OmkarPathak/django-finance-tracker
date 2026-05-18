@@ -139,6 +139,7 @@ class RecurringTransactionForm(forms.ModelForm):
     class Meta:
         model = RecurringTransaction
         fields = ['transaction_type', 'amount', 'currency', 'account', 'category', 'source',
+                  'loan',
                   'from_account', 'to_account',
                   'frequency', 'start_date', 'description', 'is_active', 'payment_method']
         widgets = {
@@ -146,6 +147,7 @@ class RecurringTransactionForm(forms.ModelForm):
             'amount': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
             'currency': forms.Select(attrs={'class': 'form-select'}),
             'account': forms.Select(attrs={'class': 'form-select searchable-select'}),
+            'loan': forms.Select(attrs={'class': 'form-select'}),
             'category': forms.Select(attrs={'class': 'form-select'}),
             'source': forms.TextInput(attrs={'class': 'form-control', 'placeholder': _('e.g. Salary, Rent')}),
             'from_account': forms.Select(attrs={'class': 'form-select searchable-select'}),
@@ -160,6 +162,17 @@ class RecurringTransactionForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
+
+        allowed_types = [
+            ('EXPENSE', _('Expense')),
+            ('INCOME', _('Income')),
+            ('TRANSFER', _('Transfer')),
+            ('LOAN', _('Loan Repayment')),
+        ]
+        self.fields['transaction_type'].choices = allowed_types
+        if self.instance and self.instance.pk and self.instance.transaction_type == 'LOAN':
+            self.fields['transaction_type'].disabled = True
+
         if user:
             self.fields['currency'].initial = user.profile.currency
             
@@ -175,10 +188,12 @@ class RecurringTransactionForm(forms.ModelForm):
             self.fields['account'].queryset = accounts_qs
             self.fields['from_account'].queryset = accounts_qs
             self.fields['to_account'].queryset = accounts_qs
+            self.fields['loan'].queryset = Loan.objects.filter(user=user, is_active=True).order_by('-created_at')
         else:
             self.fields['account'].queryset = Account.objects.none()
             self.fields['from_account'].queryset = Account.objects.none()
             self.fields['to_account'].queryset = Account.objects.none()
+            self.fields['loan'].queryset = Loan.objects.none()
         
         # Category field as Select for Expenses
         if user:
@@ -202,12 +217,16 @@ class RecurringTransactionForm(forms.ModelForm):
         self.fields['source'].required = False
         self.fields['from_account'].required = False
         self.fields['to_account'].required = False
+        self.fields['loan'].required = False
 
     def clean(self):
         cleaned_data = super().clean()
+        if self.instance and self.instance.pk and self.instance.transaction_type == 'LOAN':
+            cleaned_data['transaction_type'] = 'LOAN'
         transaction_type = cleaned_data.get('transaction_type')
         category = cleaned_data.get('category')
         source = cleaned_data.get('source')
+        loan = cleaned_data.get('loan')
 
         if transaction_type == 'EXPENSE' and not category:
             self.add_error('category', _('Category is required for expenses.'))
@@ -224,6 +243,13 @@ class RecurringTransactionForm(forms.ModelForm):
                 self.add_error('to_account', _('To account is required for transfers.'))
             if from_account and to_account and from_account == to_account:
                 self.add_error('to_account', _('Source and destination accounts must be different.'))
+
+        if transaction_type == 'LOAN':
+            account = cleaned_data.get('account')
+            if not loan:
+                self.add_error('loan', _('Loan is required for recurring loan repayments.'))
+            if not account:
+                self.add_error('account', _('Account is required for recurring loan repayments.'))
 
         return cleaned_data
 
@@ -523,6 +549,15 @@ class LoanInterestRateForm(forms.ModelForm):
         self.fields['effective_date'].initial = date.today
 
 class LoanRepaymentForm(forms.ModelForm):
+    add_to_recurring = forms.BooleanField(required=False, label=_("Make this a recurring loan repayment"))
+    recurring_frequency = forms.ChoiceField(
+        choices=RecurringTransaction.FREQUENCY_CHOICES,
+        required=False,
+        initial='MONTHLY',
+        label=_("Frequency"),
+        widget=forms.Select(attrs={'class': 'form-select'})
+    )
+
     class Meta:
         model = LoanRepayment
         fields = ['from_account', 'amount', 'principal_portion', 'interest_portion', 'date']
@@ -538,6 +573,9 @@ class LoanRepaymentForm(forms.ModelForm):
         user = kwargs.pop('user', None)
         loan = kwargs.pop('loan', None)
         super().__init__(*args, **kwargs)
+        self.loan = loan
+        if loan:
+            self.instance.loan = loan
         self.fields['date'].initial = date.today
         
         if user:
@@ -556,43 +594,70 @@ class LoanRepaymentForm(forms.ModelForm):
                 self.fields['from_account'].initial = default_account
         
         if loan:
-            # Pre-calculate suggested EMI breakdown
-            from .services import LoanService
-            summary = LoanService.get_loan_summary(loan)
-            latest_rate_obj = loan.interest_rates.order_by('-effective_date').first()
-            annual_rate = float(latest_rate_obj.interest_rate) if latest_rate_obj else 0.0
-            
-            # Approximate remaining months
-            today = date.today()
-            months_passed = (today.year - loan.start_date.year) * 12 + today.month - loan.start_date.month
-            remaining_months = max(1, loan.duration_months - months_passed)
-            
-            emi = LoanService.calculate_emi(summary['remaining_principal'], annual_rate, remaining_months)
-            interest_portion = summary['remaining_principal'] * (annual_rate / 12.0 / 100.0)
-            principal_portion = emi - interest_portion
-            
-            self.fields['amount'].initial = round(emi, 2)
-            self.fields['principal_portion'].initial = round(principal_portion, 2)
-            self.fields['interest_portion'].initial = round(interest_portion, 2)
+            # Pre-calculate a suggested split, but the amount can be changed freely.
+            breakdown = self._calculate_repayment_breakdown(Decimal('0.00'), loan, use_initial_preview=True)
+            if breakdown:
+                self.fields['amount'].initial = breakdown['suggested_amount']
+                self.fields['principal_portion'].initial = breakdown['principal_portion']
+                self.fields['interest_portion'].initial = breakdown['interest_portion']
+
+        self.fields['principal_portion'].required = False
+        self.fields['interest_portion'].required = False
+
+    def _calculate_repayment_breakdown(self, amount, loan, use_initial_preview=False):
+        from .services import LoanService
+
+        summary = LoanService.get_loan_summary(loan)
+        latest_rate_obj = loan.interest_rates.order_by('-effective_date').first()
+        annual_rate = float(latest_rate_obj.interest_rate) if latest_rate_obj else 0.0
+
+        # EMI suggestion is useful for the initial preview only.
+        today = date.today()
+        months_passed = (today.year - loan.start_date.year) * 12 + today.month - loan.start_date.month
+        remaining_months = max(1, loan.duration_months - months_passed)
+
+        suggested_amount = LoanService.calculate_emi(summary['remaining_principal'], annual_rate, remaining_months)
+        estimated_interest = summary['remaining_principal'] * (annual_rate / 12.0 / 100.0)
+
+        if use_initial_preview:
+            return {
+                'suggested_amount': round(suggested_amount, 2),
+                'principal_portion': round(suggested_amount - estimated_interest, 2),
+                'interest_portion': round(estimated_interest, 2),
+            }
+
+        try:
+            amount_value = Decimal(str(amount))
+        except Exception:
+            return None
+
+        interest_portion = min(amount_value, Decimal(str(estimated_interest))).quantize(Decimal('0.01'))
+        principal_portion = (amount_value - interest_portion).quantize(Decimal('0.01'))
+        return {
+            'amount': amount_value.quantize(Decimal('0.01')),
+            'principal_portion': principal_portion,
+            'interest_portion': interest_portion,
+        }
 
     def clean(self):
         cleaned_data = super().clean()
         amount = cleaned_data.get('amount')
-        principal = cleaned_data.get('principal_portion')
-        interest = cleaned_data.get('interest_portion')
+        add_to_recurring = cleaned_data.get('add_to_recurring')
+        recurring_frequency = cleaned_data.get('recurring_frequency')
+        loan = self.loan
 
         if amount is not None and amount <= 0:
             self.add_error('amount', _("Repayment amount must be greater than zero."))
 
-        if principal is not None and principal < 0:
-            self.add_error('principal_portion', _("Principal portion cannot be negative."))
+        if loan and amount is not None:
+            breakdown = self._calculate_repayment_breakdown(amount, loan)
+            if breakdown:
+                cleaned_data['amount'] = breakdown['amount']
+                cleaned_data['principal_portion'] = breakdown['principal_portion']
+                cleaned_data['interest_portion'] = breakdown['interest_portion']
 
-        if interest is not None and interest < 0:
-            self.add_error('interest_portion', _("Interest portion cannot be negative."))
-
-        if amount is not None and principal is not None and interest is not None:
-            if (principal + interest).quantize(Decimal('0.01')) != amount.quantize(Decimal('0.01')):
-                self.add_error(None, _("Repayment amount must equal principal plus interest."))
+        if add_to_recurring and not recurring_frequency:
+            self.add_error('recurring_frequency', _("Please select a recurring frequency."))
 
         return cleaned_data
 
