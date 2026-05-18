@@ -3,6 +3,7 @@ from datetime import datetime
 
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import CharField, F, Q, Sum, Value
+from django.db.models.functions import Cast
 from django.db.models.functions import Concat
 from django.views.generic import ListView
 
@@ -55,7 +56,7 @@ class AllTransactionsListView(LoginRequiredMixin, ListView):
             acc=F('from_account__name'),
             unified_amount=F('base_amount'),
             tx_description=Concat(Value('Loan repayment - '), F('loan__name'), output_field=CharField()),
-            loan_pk=F('loan_id'),
+            loan_pk=Cast(F('loan_id'), output_field=CharField()),
         ).values('pk', 'date', 'tx_description', 'type', 'cat', 'acc', 'unified_amount', 'loan_pk')
 
         # Handle filtering
