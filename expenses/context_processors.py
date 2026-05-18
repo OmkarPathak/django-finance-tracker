@@ -5,7 +5,7 @@ from django.conf import settings
 from django.utils import timezone
 from django.utils.translation import gettext as _
 
-from .models import Notification, RecurringTransaction, SavingsGoal, UserProfile
+from .models import Loan, Notification, RecurringTransaction, SavingsGoal, UserProfile
 from .utils import translate_digits as ud
 
 
@@ -82,10 +82,14 @@ def sidebar_badges(request):
     # We could also include other items if available.
     calendar_this_week_count = upcoming_subscriptions_count
 
+    # 4. Loans: Active loans count
+    active_loans_count = Loan.objects.filter(user=request.user, is_active=True).count()
+
     return {
         'active_goals_count': active_goals_count,
         'upcoming_subscriptions_count': upcoming_subscriptions_count,
         'calendar_this_week_count': calendar_this_week_count,
+        'active_loans_count': active_loans_count,
     }
 
 def personalization(request):

@@ -7,7 +7,7 @@
     <div class="row align-items-center mb-4">
         <div class="col-md-8">
             <div class="d-flex align-items-center mb-2">
-                <a href="{% url 'loan-list' %}" class="btn btn-outline-secondary btn-sm rounded-circle me-3 icon-btn">
+                <a href="{% url 'loan-list' %}" class="btn me-3 icon-btn">
                     <i class="bi bi-arrow-left"></i>
                 </a>
                 <h1 class="h3 fw-bold mb-0">{{ loan.name }}</h1>
@@ -28,7 +28,7 @@
             <div class="card border-0 shadow-sm rounded-4 h-100">
                 <div class="card-body p-3">
                     <p class="text-muted small mb-1">{% trans "Remaining Principal" %}</p>
-                    <h4 class="fw-bold mb-0 text-danger">{{ loan.currency }}{{ summary.remaining_principal|compact_amount:loan.currency|translate_digits }}</h4>
+                    <h4 class="fw-bold mb-0 text-danger">{{ loan.currency }}{{ summary.remaining_principal|ind_comma:loan.currency|translate_digits }}</h4>
                 </div>
             </div>
         </div>
@@ -36,7 +36,7 @@
             <div class="card border-0 shadow-sm rounded-4 h-100">
                 <div class="card-body p-3">
                     <p class="text-muted small mb-1">{% trans "Principal Paid" %}</p>
-                    <h4 class="fw-bold mb-0 text-success">{{ loan.currency }}{{ summary.principal_paid|compact_amount:loan.currency|translate_digits }}</h4>
+                    <h4 class="fw-bold mb-0 text-success">{{ loan.currency }}{{ summary.principal_paid|ind_comma:loan.currency|translate_digits }}</h4>
                 </div>
             </div>
         </div>
@@ -44,7 +44,7 @@
             <div class="card border-0 shadow-sm rounded-4 h-100">
                 <div class="card-body p-3">
                     <p class="text-muted small mb-1">{% trans "Interest Paid" %}</p>
-                    <h4 class="fw-bold mb-0 text-warning">{{ loan.currency }}{{ summary.interest_paid|compact_amount:loan.currency|translate_digits }}</h4>
+                    <h4 class="fw-bold mb-0 text-warning">{{ loan.currency }}{{ summary.interest_paid|ind_comma:loan.currency|translate_digits }}</h4>
                 </div>
             </div>
         </div>
@@ -65,7 +65,7 @@
 
     <div class="row g-4">
         <!-- Main Content: Schedule & History -->
-        <div class="col-lg-8">
+        <div class="col-lg-8 order-2 order-lg-1">
             <!-- Repayment History -->
             <div class="card border-0 shadow-sm rounded-4 mb-4">
                 <div class="card-header bg-transparent border-0 p-4 pb-0">
@@ -92,7 +92,7 @@
                                             <i class="bi bi-wallet2 me-1"></i> {{ r.from_account.name }}
                                         </span>
                                     </td>
-                                    <td class="text-end fw-bold">{{ loan.currency }}{{ r.amount|compact_amount:loan.currency|translate_digits }}</td>
+                                    <td class="text-end fw-bold">{{ loan.currency }}{{ r.amount|ind_comma:loan.currency|translate_digits }}</td>
                                     <td class="pe-4 text-end">
                                         <!-- No edit for now to keep it simple, just delete and re-log if error -->
                                         <button type="button" class="btn btn-outline-danger btn-sm rounded-circle icon-btn" 
@@ -134,12 +134,12 @@
                             </thead>
                             <tbody>
                                 {% for item in schedule %}
-                                <tr>
+                                <tr{% if forloop.counter > 24 %} class="schedule-extra d-none"{% endif %}>
                                     <td class="ps-4 fw-medium">{{ item.month }}</td>
-                                    <td class="text-end fw-bold">{{ loan.currency }}{{ item.emi|compact_amount:loan.currency|translate_digits }}</td>
-                                    <td class="text-end d-none d-md-table-cell text-success">{{ loan.currency }}{{ item.principal|compact_amount:loan.currency|translate_digits }}</td>
-                                    <td class="text-end d-none d-md-table-cell text-warning">{{ loan.currency }}{{ item.interest|compact_amount:loan.currency|translate_digits }}</td>
-                                    <td class="pe-4 text-end text-muted">{{ loan.currency }}{{ item.balance|compact_amount:loan.currency|translate_digits }}</td>
+                                    <td class="text-end fw-bold">{{ loan.currency }}{{ item.emi|ind_comma:loan.currency|translate_digits }}</td>
+                                    <td class="text-end d-none d-md-table-cell text-success">{{ loan.currency }}{{ item.principal|ind_comma:loan.currency|translate_digits }}</td>
+                                    <td class="text-end d-none d-md-table-cell text-warning">{{ loan.currency }}{{ item.interest|ind_comma:loan.currency|translate_digits }}</td>
+                                    <td class="pe-4 text-end text-muted">{{ loan.currency }}{{ item.balance|ind_comma:loan.currency|translate_digits }}</td>
                                 </tr>
                                 {% empty %}
                                 <tr>
@@ -152,18 +152,25 @@
                             </tbody>
                         </table>
                     </div>
+                    {% if schedule|length > 24 %}
+                    <div class="p-3 text-center border-top">
+                        <button type="button" id="toggleScheduleRows" class="btn btn-outline-primary btn-sm rounded-pill px-3" aria-expanded="false">
+                            {% trans "Show remaining schedule" %} ({{ schedule|length|add:-24 }} {% trans "months" %})
+                        </button>
+                    </div>
+                    {% endif %}
                 </div>
             </div>
         </div>
 
         <!-- Sidebar Info -->
-        <div class="col-lg-4">
+        <div class="col-lg-4 order-1 order-lg-2">
             <div class="card border-0 shadow-sm rounded-4 loan-summary mb-4">
                 <div class="card-body p-4">
                     <h5 class="fw-bold mb-3">{% trans "Loan Summary" %}</h5>
                     <div class="d-flex justify-content-between mb-2">
                         <span class="opacity-75">{% trans "Initial Principal" %}</span>
-                        <span class="fw-bold">{{ loan.currency }}{{ loan.initial_principal|compact_amount:loan.currency|translate_digits }}</span>
+                        <span class="fw-bold">{{ loan.currency }}{{ loan.initial_principal|ind_comma:loan.currency|translate_digits }}</span>
                     </div>
                     <div class="d-flex justify-content-between mb-2">
                         <span class="opacity-75">{% trans "Duration" %}</span>
@@ -177,7 +184,7 @@
                         <span class="opacity-75">{% trans "Monthly EMI (Approx)" %}</span>
                         <span class="fw-bold fs-5">
                             {% if schedule %}
-                                {{ loan.currency }}{{ schedule.0.emi|compact_amount:loan.currency|translate_digits }}
+                                {{ loan.currency }}{{ schedule.0.emi|ind_comma:loan.currency|translate_digits }}
                             {% else %}
                                 {{ loan.currency }}0
                             {% endif %}
@@ -198,7 +205,7 @@
 
                     <div class="d-flex justify-content-between align-items-center mb-2 p-2 rounded-3 bg-white bg-opacity-50">
                         <span class="small text-muted">{% trans "Interest Saved" %}</span>
-                        <span class="fw-bold text-success fs-6">{{ loan.currency }}{{ extra_emi_savings.interest_saved|floatformat:0|intcomma }}</span>
+                        <span class="fw-bold text-success fs-6">{{ loan.currency }}{{ extra_emi_savings.interest_saved|ind_comma:loan.currency|translate_digits }}</span>
                     </div>
                     <div class="d-flex justify-content-between align-items-center mb-2 p-2 rounded-3 bg-white bg-opacity-50">
                         <span class="small text-muted">{% trans "Time Saved" %}</span>
@@ -210,13 +217,13 @@
                     </div>
                     <div class="d-flex justify-content-between align-items-center p-2 rounded-3 bg-white bg-opacity-50">
                         <span class="small text-muted">{% trans "Extra amount/year" %}</span>
-                        <span class="fw-bold">{{ loan.currency }}{{ extra_emi_savings.emi|floatformat:0|intcomma }}</span>
+                        <span class="fw-bold">{{ loan.currency }}{{ extra_emi_savings.emi|ind_comma:loan.currency|translate_digits }}</span>
                     </div>
 
                     <div class="mt-3 p-2 rounded-3 border border-success border-opacity-25 bg-success bg-opacity-10">
                         <p class="mb-0 small text-success fw-medium">
                             <i class="bi bi-graph-down-arrow me-1"></i>
-                            {% blocktrans with interest=extra_emi_savings.interest_saved|floatformat:0 months=extra_emi_savings.months_saved currency=loan.currency %}
+                            {% blocktrans with interest=extra_emi_savings.interest_saved|ind_comma:loan.currency|translate_digits months=extra_emi_savings.months_saved currency=loan.currency %}
                                 You'd save {{ currency }}{{ interest }} in interest and close the loan {{ months }} months earlier!
                             {% endblocktrans %}
                         </p>
@@ -363,6 +370,21 @@
                     });
                 }
             });
+
+            // Collapse long amortization schedules and allow expansion on demand.
+            const toggleScheduleBtn = document.getElementById('toggleScheduleRows');
+            if (toggleScheduleBtn) {
+                const hiddenRows = Array.from(document.querySelectorAll('.schedule-extra'));
+                const showLabel = "{% trans 'Show remaining schedule' %}";
+                const hideLabel = "{% trans 'Show less' %}";
+
+                toggleScheduleBtn.addEventListener('click', function() {
+                    const expanded = this.getAttribute('aria-expanded') === 'true';
+                    hiddenRows.forEach(row => row.classList.toggle('d-none', expanded));
+                    this.setAttribute('aria-expanded', expanded ? 'false' : 'true');
+                    this.textContent = expanded ? `${showLabel} (${hiddenRows.length} {% trans 'months' %})` : hideLabel;
+                });
+            }
         });
     </script>
 

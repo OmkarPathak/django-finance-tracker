@@ -123,6 +123,11 @@
                 <a href="{% url 'loan-list' %}" class="nav-link d-flex align-items-center gap-3 rounded-3 flex-grow-1 {% if 'loan' in request.resolver_match.url_name %}active{% endif %}" title="{% trans 'Loans' %}">
                     <i class="bi bi-shield-lock fs-5"></i>
                     <span class="nav-text">{% trans "Loans" %}</span>
+                    {% if active_loans_count > 0 %}
+                    <span class="badge badge-soft-success ms-auto nav-text" style="font-size: 0.65rem;">
+                        {{ active_loans_count }} {% trans "active" %}
+                    </span>
+                    {% endif %}
                 </a>
                 <a href="{% url 'loan-create' %}" class="btn-sidebar-add nav-text me-2" title="{% trans 'Add Loan' %}">
                     <i class="bi bi-plus-lg"></i>
