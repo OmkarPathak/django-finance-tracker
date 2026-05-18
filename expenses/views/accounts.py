@@ -3,6 +3,7 @@ from datetime import date, timedelta
 from decimal import Decimal
 from itertools import chain
 
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import ValidationError
@@ -18,7 +19,7 @@ from finance_tracker.plans import get_limit
 
 from ..forms import AccountForm, TransferForm
 from ..ledger_read_service import LedgerReadService
-from ..models import Account, Expense, GoalContribution, Income, LoanRepayment, Transfer
+from ..models import Account, Expense, GoalContribution, Income, LoanRepayment, Transfer, _run_ledger_shadow
 from ..utils import get_exchange_rate
 from .mixins import RecurringTransactionMixin
 
@@ -104,8 +105,50 @@ class AccountUpdateView(LoginRequiredMixin, UpdateView):
         return super().dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):
+        old_balance = self.get_object().balance
         messages.success(self.request, _("Account updated successfully!"))
-        return super().form_valid(form)
+        response = super().form_valid(form)
+
+        # Manual balance edits must produce a matching ledger adjustment to avoid drift.
+        balance_delta = (self.object.balance - old_balance).quantize(Decimal('0.01'))
+        if balance_delta != Decimal('0.00') and getattr(settings, 'LEDGER_WRITE_ENABLED', False):
+            from ..ledger_service import LedgerPostingService
+
+            version_token = f"ACCOUNT_BALANCE_EDIT-{int(self.object.updated_at.timestamp() * 1000000)}"
+
+            def _post_shadow_entry():
+                LedgerPostingService.post_account_balance_adjustment(
+                    account=self.object,
+                    delta=balance_delta,
+                    version_token=version_token,
+                    metadata={
+                        'kind': 'MANUAL_BALANCE_EDIT',
+                        'actor_user_id': self.request.user.id,
+                        'old_balance': str(old_balance),
+                        'new_balance': str(self.object.balance),
+                    },
+                )
+
+            _run_ledger_shadow(
+                _post_shadow_entry,
+                source_type='ADJUSTMENT',
+                source_id=self.object.id,
+                action='ACCOUNT_BALANCE_EDIT',
+                payload={
+                    'handler': 'account_balance_edit',
+                    'version_token': version_token,
+                    'account': {
+                        'account_id': self.object.id,
+                        'user_id': self.object.user_id,
+                        'currency': self.object.currency,
+                        'old_balance': str(old_balance),
+                        'new_balance': str(self.object.balance),
+                        'delta': str(balance_delta),
+                    },
+                },
+            )
+
+        return response
 
 class AccountDeleteView(LoginRequiredMixin, DeleteView):
     model = Account

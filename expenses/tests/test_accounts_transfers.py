@@ -2,10 +2,10 @@ from datetime import date
 from decimal import Decimal
 
 from django.contrib.auth.models import User
-from django.test import Client, TestCase
+from django.test import Client, TestCase, override_settings
 from django.urls import reverse
 
-from expenses.models import Account, Category, Expense, Income, Transfer
+from expenses.models import Account, Category, Expense, Income, JournalEntry, Transfer
 
 
 class AccountTransferTest(TestCase):
@@ -162,6 +162,53 @@ class AccountTransferTest(TestCase):
         self.assertEqual(response.status_code, 302)
         self.assertFalse(Account.objects.filter(name='Updated Wallet', is_active=True).exists())
         self.assertTrue(Account.objects.filter(name='Updated Wallet', is_active=False).exists())
+
+    @override_settings(LEDGER_WRITE_ENABLED=True, LEDGER_ENFORCE_BALANCED_WRITE=False)
+    def test_account_balance_edit_creates_adjustment_entry(self):
+        account = Account.objects.create(
+            user=self.user,
+            name='Adjustment Wallet',
+            account_type='CASH',
+            balance=Decimal('0.00'),
+            currency='₹',
+        )
+
+        response = self.client.post(reverse('account-edit', kwargs={'pk': account.pk}), {
+            'name': 'Adjustment Wallet',
+            'account_type': 'CASH',
+            'balance': '200.00',
+            'currency': '₹',
+        })
+
+        self.assertEqual(response.status_code, 302)
+        entries = JournalEntry.objects.filter(source_type='ADJUSTMENT', source_id=account.id)
+        self.assertEqual(entries.count(), 1)
+        entry = entries.first()
+        self.assertEqual(entry.status, 'POSTED')
+        self.assertEqual(entry.metadata.get('kind'), 'MANUAL_BALANCE_EDIT')
+
+    @override_settings(LEDGER_WRITE_ENABLED=True, LEDGER_ENFORCE_BALANCED_WRITE=False)
+    def test_account_edit_without_balance_change_creates_no_adjustment_entry(self):
+        account = Account.objects.create(
+            user=self.user,
+            name='No Delta Wallet',
+            account_type='CASH',
+            balance=Decimal('200.00'),
+            currency='₹',
+        )
+
+        response = self.client.post(reverse('account-edit', kwargs={'pk': account.pk}), {
+            'name': 'No Delta Wallet Renamed',
+            'account_type': 'CASH',
+            'balance': '200.00',
+            'currency': '₹',
+        })
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(
+            JournalEntry.objects.filter(source_type='ADJUSTMENT', source_id=account.id).count(),
+            0,
+        )
 
     def test_view_transfer_crud(self):
         # Create via view

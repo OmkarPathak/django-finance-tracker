@@ -10,7 +10,6 @@ from expenses.models import (
     Account,
     JournalLine,
     LedgerReconciliationReport,
-    Notification,
 )
 
 
@@ -29,7 +28,6 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         threshold = Decimal(options["threshold"])
-        alert_threshold = Decimal(options["alert_threshold"])
         accounts = Account.objects.filter(is_active=True).select_related("user")
         if options.get("user_id"):
             accounts = accounts.filter(user_id=options["user_id"])
@@ -65,26 +63,6 @@ class Command(BaseCommand):
             status = "MATCH" if abs(drift_amount) <= threshold else "DRIFT"
             if status == "DRIFT":
                 drifts += 1
-
-            if status == "DRIFT" and abs(drift_amount) >= alert_threshold:
-                slug = f"ledger-drift-{account.id}-{as_of_date.isoformat()}"
-                if not Notification.objects.filter(user=account.user, slug=slug).exists():
-                    Notification.objects.create(
-                        user=account.user,
-                        title="Balance mismatch detected",
-                        message=(
-                            f"We found a balance mismatch in {account.name}. "
-                            f"Drift: {account.currency}{drift_amount}"
-                        ),
-                        notification_type="SYSTEM",
-                        slug=slug,
-                        link="/accounts/",
-                        metadata={
-                            "account_id": account.id,
-                            "drift_amount": str(drift_amount),
-                            "alert_threshold": str(alert_threshold),
-                        },
-                    )
 
             LedgerReconciliationReport.objects.create(
                 user=account.user,

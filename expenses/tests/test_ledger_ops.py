@@ -5,6 +5,7 @@ from unittest.mock import patch
 from django.contrib.auth.models import User
 from django.core.management import call_command
 from django.test import TestCase, override_settings
+from django.urls import reverse
 
 from expenses.models import (
     Account,
@@ -13,13 +14,13 @@ from expenses.models import (
     LedgerPostingFailure,
     LedgerReconciliationReport,
     Loan,
-    Notification,
 )
 
 
 class LedgerOpsTest(TestCase):
     def setUp(self):
         self.user = User.objects.create_user(username="ops_user", password="password")
+        self.client.force_login(self.user)
         self.user.profile.currency = "₹"
         self.user.profile.save(update_fields=["currency"])
         self.cash = Account.objects.create(
@@ -103,9 +104,36 @@ class LedgerOpsTest(TestCase):
         self.assertIsNotNone(report)
         self.assertIn(report.status, ["MATCH", "DRIFT"])
 
-    def test_reconcile_command_creates_alert_notification_on_large_drift(self):
+    @override_settings(LEDGER_WRITE_ENABLED=True, LEDGER_ENFORCE_BALANCED_WRITE=False)
+    def test_manual_account_balance_edit_reconciles_as_match(self):
+        account = Account.objects.create(
+            user=self.user,
+            name="Manual Edit Account",
+            account_type="BANK",
+            balance=Decimal("0.00"),
+            currency="₹",
+        )
+
+        response = self.client.post(reverse("account-edit", kwargs={"pk": account.pk}), {
+            "name": "Manual Edit Account",
+            "account_type": "BANK",
+            "balance": "250.00",
+            "currency": "₹",
+        })
+        self.assertEqual(response.status_code, 302)
+
+        call_command("reconcile_ledgers", user_id=self.user.id, threshold="0.01")
+
+        report = LedgerReconciliationReport.objects.filter(user=self.user, account=account).latest("created_at")
+        self.assertEqual(report.status, "MATCH")
+        self.assertEqual(report.drift_amount, Decimal("0.00"))
+
+    def test_reconcile_command_does_not_create_drift_notifications(self):
         call_command("reconcile_ledgers", user_id=self.user.id, threshold="0.01", alert_threshold="0.01")
-        self.assertEqual(Notification.objects.filter(user=self.user, slug__startswith="ledger-drift-").count(), 2)
+        self.assertEqual(
+            LedgerReconciliationReport.objects.filter(user=self.user, status="DRIFT").count(),
+            2,
+        )
 
     def test_retry_income_update_handler(self):
         failure = LedgerPostingFailure.objects.create(

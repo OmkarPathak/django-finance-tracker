@@ -23,6 +23,13 @@ class LedgerPostingService:
     """Creates balanced journal entries with idempotent writes."""
 
     @staticmethod
+    def _has_fk(obj, fk_name):
+        fk_id = getattr(obj, f"{fk_name}_id", None)
+        if fk_id is not None:
+            return True
+        return getattr(obj, fk_name, None) is not None
+
+    @staticmethod
     def _to_base_amount(user, amount, currency):
         try:
             base_currency = user.profile.currency
@@ -393,6 +400,74 @@ class LedgerPostingService:
         )
 
     @classmethod
+    def post_account_balance_adjustment(cls, *, account, delta, version_token, metadata=None):
+        """Posts an ADJUSTMENT entry when an account balance is manually edited."""
+        user = account.user
+        delta = Decimal(str(delta)).quantize(Decimal("0.01"))
+        if delta == Decimal("0.00"):
+            return None, False
+
+        amount = abs(delta)
+        asset_ledger = cls._get_or_create_account_ledger(user, account)
+        equity_ledger, _ = LedgerAccount.objects.get_or_create(
+            code=f"USR:{user.id}:EQUITY:MANUAL_BALANCE_ADJUSTMENT",
+            defaults={
+                "user": user,
+                "name": "Manual Balance Adjustment Equity",
+                "account_type": "EQUITY",
+                "currency": account.currency,
+                "is_active": True,
+            },
+        )
+
+        # Positive delta means asset increased (debit asset, credit equity).
+        if delta > 0:
+            debit_ledger, credit_ledger = asset_ledger, equity_ledger
+        else:
+            debit_ledger, credit_ledger = equity_ledger, asset_ledger
+
+        lines = [
+            cls._build_line(
+                entry=None,
+                ledger_account=debit_ledger,
+                direction="DEBIT",
+                amount=amount,
+                currency=account.currency,
+                user=user,
+                account_ref=account if debit_ledger == asset_ledger else None,
+            ),
+            cls._build_line(
+                entry=None,
+                ledger_account=credit_ledger,
+                direction="CREDIT",
+                amount=amount,
+                currency=account.currency,
+                user=user,
+                account_ref=account if credit_ledger == asset_ledger else None,
+            ),
+        ]
+
+        payload = {
+            "kind": "MANUAL_BALANCE_EDIT",
+            "account_id": account.id,
+            "currency": account.currency,
+            "delta": str(delta),
+            "version": version_token,
+        }
+        if metadata:
+            payload.update(metadata)
+
+        return cls._create_entry(
+            user=user,
+            source_type="ADJUSTMENT",
+            source_id=account.id,
+            idempotency_key=cls._idempotency_key("ADJUSTMENT", account.id, version_token),
+            description=f"Manual balance adjustment for {account.name}",
+            metadata=payload,
+            lines=lines,
+        )
+
+    @classmethod
     def _post_expense_reversal(cls, *, expense, idempotency_key, metadata=None):
         user = expense.user
         if expense.account is None:
@@ -565,7 +640,7 @@ class LedgerPostingService:
 
     @classmethod
     def shadow_post_expense_create(cls, *, expense, version_token):
-        if expense.account_id is None:
+        if not cls._has_fk(expense, "account"):
             return None, False
 
         idempotency_key = cls._idempotency_key("EXPENSE", expense.id, f"{version_token}-POST")
@@ -582,7 +657,7 @@ class LedgerPostingService:
             idempotency_key=cls._idempotency_key("EXPENSE", expense.id, f"{version_token}-REV"),
             metadata={"shadow_action": "UPDATE_REVERSE", "version": version_token},
         )
-        if expense.account_id is None:
+        if not cls._has_fk(expense, "account"):
             return None, False
 
         return cls.post_expense(
@@ -601,7 +676,7 @@ class LedgerPostingService:
 
     @classmethod
     def shadow_post_income_create(cls, *, income, version_token):
-        if income.account_id is None:
+        if not cls._has_fk(income, "account"):
             return None, False
 
         idempotency_key = cls._idempotency_key("INCOME", income.id, f"{version_token}-POST")
@@ -618,7 +693,7 @@ class LedgerPostingService:
             idempotency_key=cls._idempotency_key("INCOME", income.id, f"{version_token}-REV"),
             metadata={"shadow_action": "UPDATE_REVERSE", "version": version_token},
         )
-        if income.account_id is None:
+        if not cls._has_fk(income, "account"):
             return None, False
 
         return cls.post_income(
@@ -667,7 +742,7 @@ class LedgerPostingService:
 
     @classmethod
     def shadow_post_loan_repayment_create(cls, *, repayment, version_token):
-        if repayment.from_account_id is None:
+        if not cls._has_fk(repayment, "from_account"):
             return None, False
 
         idempotency_key = cls._idempotency_key("LOAN_REPAYMENT", repayment.id, f"{version_token}-POST")
@@ -684,7 +759,7 @@ class LedgerPostingService:
             idempotency_key=cls._idempotency_key("LOAN_REPAYMENT", repayment.id, f"{version_token}-REV"),
             metadata={"shadow_action": "UPDATE_REVERSE", "version": version_token},
         )
-        if repayment.from_account_id is None:
+        if not cls._has_fk(repayment, "from_account"):
             return None, False
 
         return cls.post_loan_repayment(
