@@ -99,10 +99,12 @@
     .type-expense { background-color: rgba(224, 92, 69, 0.1); color: #E05C45; }
     .type-income { background-color: rgba(29, 158, 117, 0.1); color: #1D9E75; }
     .type-transfer { background-color: rgba(55, 138, 221, 0.1); color: #378ADD; }
+    .type-loan { background-color: rgba(245, 158, 11, 0.12); color: #B45309; }
 
     .amount-expense { color: #E05C45; }
     .amount-income { color: #1D9E75; }
     .amount-transfer { color: #378ADD; }
+    .amount-loan { color: #B45309; }
 
     /* Empty State */
     .empty-state-container {
@@ -190,6 +192,10 @@
             <span class="text-nowrap">
                 <span class="fw-bold text-success">{{ income_count|translate_digits }}</span> {% trans "incomes" %}
             </span>
+            <span class="opacity-50 d-none d-sm-inline">•</span>
+            <span class="text-nowrap">
+                <span class="fw-bold text-warning">{{ loan_count|translate_digits }}</span> {% trans "loan repayments" %}
+            </span>
         </div>
     </div>
 
@@ -207,6 +213,7 @@
                         <option value="EXPENSE" {% if 'EXPENSE' in selected_types %}selected{% endif %}>{% trans "Expense" %}</option>
                         <option value="INCOME" {% if 'INCOME' in selected_types %}selected{% endif %}>{% trans "Income" %}</option>
                         <option value="TRANSFER" {% if 'TRANSFER' in selected_types %}selected{% endif %}>{% trans "Transfer" %}</option>
+                        <option value="LOAN" {% if 'LOAN' in selected_types %}selected{% endif %}>{% trans "Loan Repayment" %}</option>
                     </select>
                 </div>
                 <div class="col-6 col-md-2">
@@ -258,22 +265,25 @@
                                 <span class="type-badge type-{{ tx.type|lower }}">
                                     {% if tx.type == 'EXPENSE' %}{% trans "Expense" %}
                                     {% elif tx.type == 'INCOME' %}{% trans "Income" %}
+                                    {% elif tx.type == 'LOAN' %}{% trans "Loan Repayment" %}
                                     {% else %}{% trans "Transfer" %}{% endif %}
                                 </span>
                             </td>
-                            <td>{{ tx.description|default:"-"|truncatechars:40 }}</td>
+                            <td>{{ tx.tx_description|default:"-"|truncatechars:40 }}</td>
                             <td>
                                 {% if tx.type == 'EXPENSE' %}
                                     <span class="badge-soft badge-soft-danger"><i class="bi {% category_icon tx.cat user %} me-1"></i>{{ tx.cat }}</span>
                                 {% elif tx.type == 'INCOME' %}
                                     <span class="badge-soft badge-soft-success"><i class="bi bi-wallet2 me-1"></i>{{ tx.cat }}</span>
+                                {% elif tx.type == 'LOAN' %}
+                                    <span class="badge bg-warning-subtle text-warning-emphasis"><i class="bi bi-shield-lock me-1"></i>{{ tx.cat }}</span>
                                 {% else %}
                                     <span class="badge-soft badge-soft-primary"><i class="bi bi-arrow-left-right me-1"></i>{% trans "Transfer" %}</span>
                                 {% endif %}
                             </td>
                             <td class="small text-muted">{{ tx.acc }}</td>
                             <td class="text-end fw-bold amount-{{ tx.type|lower }}">
-                                {% if tx.type == 'EXPENSE' %}-{% elif tx.type == 'INCOME' %}+{% endif %}
+                                {% if tx.type == 'EXPENSE' or tx.type == 'LOAN' %}-{% elif tx.type == 'INCOME' %}+{% endif %}
                                 {{ user.profile.currency }}{{ tx.unified_amount|compact_amount:user.profile.currency|translate_digits }}
                             </td>
                             <td class="text-end pe-4">
@@ -288,6 +298,9 @@
                                         {% elif tx.type == 'INCOME' %}
                                             <li><a class="dropdown-item py-2" href="{% url 'income-edit' tx.pk %}?next={{ request.get_full_path|urlencode }}"><i class="bi bi-pencil-square me-2 text-primary"></i>{% trans "Edit" %}</a></li>
                                             <li><button class="dropdown-item py-2 text-danger" data-bs-toggle="modal" data-bs-target="#deleteModal" data-url="{% url 'income-delete' tx.pk %}?next={{ request.get_full_path|urlencode }}" data-message="{% trans 'Are you sure you want to delete this income?' %}"><i class="bi bi-trash me-2"></i>{% trans "Delete" %}</button></li>
+                                        {% elif tx.type == 'LOAN' %}
+                                            <li><a class="dropdown-item py-2" href="{% url 'loan-detail' tx.loan_pk %}"><i class="bi bi-eye me-2 text-primary"></i>{% trans "View Loan" %}</a></li>
+                                            <li><button class="dropdown-item py-2 text-danger" data-bs-toggle="modal" data-bs-target="#deleteModal" data-url="{% url 'loan-repayment-delete' tx.pk %}?next={{ request.get_full_path|urlencode }}" data-message="{% trans 'Are you sure you want to delete this loan repayment?' %}"><i class="bi bi-trash me-2"></i>{% trans "Delete" %}</button></li>
                                         {% else %}
                                             <li><a class="dropdown-item py-2" href="{% url 'transfer-edit' tx.pk %}?next={{ request.get_full_path|urlencode }}"><i class="bi bi-pencil-square me-2 text-primary"></i>{% trans "Edit" %}</a></li>
                                             <li><button class="dropdown-item py-2 text-danger" data-bs-toggle="modal" data-bs-target="#deleteModal" data-url="{% url 'transfer-delete' tx.pk %}?next={{ request.get_full_path|urlencode }}" data-message="{% trans 'Are you sure you want to delete this transfer?' %}"><i class="bi bi-trash me-2"></i>{% trans "Delete" %}</button></li>
@@ -312,10 +325,11 @@
                                     <div class="category-icon-container">
                                         {% if tx.type == 'EXPENSE' %}<i class="bi {% category_icon tx.cat user %}"></i>
                                         {% elif tx.type == 'INCOME' %}<i class="bi bi-plus-circle"></i>
+                                        {% elif tx.type == 'LOAN' %}<i class="bi bi-shield-lock"></i>
                                         {% else %}<i class="bi bi-arrow-left-right"></i>{% endif %}
                                     </div>
                                     <div class="flex-grow-1 min-width-0">
-                                        <div class="fw-semibold text-truncate">{{ tx.description|default:tx.cat }}</div>
+                                        <div class="fw-semibold text-truncate">{{ tx.tx_description|default:tx.cat }}</div>
                                         <div class="text-muted d-flex align-items-center gap-1">
                                             <span style="font-size: 0.7rem;">{{ tx.date|date:"d M 'y"|translate_digits }}</span>
                                             <span class="opacity-50 flex-shrink-0">|</span>
@@ -325,7 +339,7 @@
                                     </div>
                                     <div class="text-end d-flex align-items-center gap-2">
                                         <div class="fw-bold fs-5 amount-{{ tx.type|lower }}">
-                                            {% if tx.type == 'EXPENSE' %}-{% elif tx.type == 'INCOME' %}+{% endif %}
+                                            {% if tx.type == 'EXPENSE' or tx.type == 'LOAN' %}-{% elif tx.type == 'INCOME' %}+{% endif %}
                                             {{ user.profile.currency }}{{ tx.unified_amount|compact_amount:user.profile.currency|translate_digits }}
                                         </div>
                                         <div class="dropdown">
@@ -339,6 +353,9 @@
                                                     {% elif tx.type == 'INCOME' %}
                                                         <li><a class="dropdown-item py-2" href="{% url 'income-edit' tx.pk %}?next={{ request.get_full_path|urlencode }}"><i class="bi bi-pencil-square me-2 text-primary"></i>{% trans "Edit" %}</a></li>
                                                         <li><button class="dropdown-item py-2 text-danger" data-bs-toggle="modal" data-bs-target="#deleteModal" data-url="{% url 'income-delete' tx.pk %}?next={{ request.get_full_path|urlencode }}" data-message="{% trans 'Are you sure you want to delete this income?' %}"><i class="bi bi-trash me-2"></i>{% trans "Delete" %}</button></li>
+                                                    {% elif tx.type == 'LOAN' %}
+                                                        <li><a class="dropdown-item py-2" href="{% url 'loan-detail' tx.loan_pk %}"><i class="bi bi-eye me-2 text-primary"></i>{% trans "View Loan" %}</a></li>
+                                                        <li><button class="dropdown-item py-2 text-danger" data-bs-toggle="modal" data-bs-target="#deleteModal" data-url="{% url 'loan-repayment-delete' tx.pk %}?next={{ request.get_full_path|urlencode }}" data-message="{% trans 'Are you sure you want to delete this loan repayment?' %}"><i class="bi bi-trash me-2"></i>{% trans "Delete" %}</button></li>
                                                     {% else %}
                                                         <li><a class="dropdown-item py-2" href="{% url 'transfer-edit' tx.pk %}?next={{ request.get_full_path|urlencode }}"><i class="bi bi-pencil-square me-2 text-primary"></i>{% trans "Edit" %}</a></li>
                                                         <li><button class="dropdown-item py-2 text-danger" data-bs-toggle="modal" data-bs-target="#deleteModal" data-url="{% url 'transfer-delete' tx.pk %}?next={{ request.get_full_path|urlencode }}" data-message="{% trans 'Are you sure you want to delete this transfer?' %}"><i class="bi bi-trash me-2"></i>{% trans "Delete" %}</button></li>
@@ -367,15 +384,16 @@
                                 <div class="category-icon-container" style="width: 40px; height: 40px; font-size: 1rem;">
                                     {% if tx.type == 'EXPENSE' %}<i class="bi {% category_icon tx.cat user %}"></i>
                                     {% elif tx.type == 'INCOME' %}<i class="bi bi-plus-circle"></i>
+                                    {% elif tx.type == 'LOAN' %}<i class="bi bi-shield-lock"></i>
                                     {% else %}<i class="bi bi-arrow-left-right"></i>{% endif %}
                                 </div>
                                 <div class="flex-grow-1 min-width-0">
-                                    <div class="fw-semibold mb-1">{{ tx.description|default:tx.cat }}</div>
+                                    <div class="fw-semibold mb-1">{{ tx.tx_description|default:tx.cat }}</div>
                                     <div class="text-muted" style="font-size: 0.65rem;">{{ tx.acc|truncatechars:40 }}</div>
                                 </div>
                                 <div class="text-end d-flex align-items-center gap-2">
                                     <div class="fw-bold amount-{{ tx.type|lower }}">
-                                        {% if tx.type == 'EXPENSE' %}-{% elif tx.type == 'INCOME' %}+{% endif %}
+                                        {% if tx.type == 'EXPENSE' or tx.type == 'LOAN' %}-{% elif tx.type == 'INCOME' %}+{% endif %}
                                         {{ user.profile.currency }}{{ tx.unified_amount|compact_amount:user.profile.currency|translate_digits }}
                                     </div>
                                     <div class="dropdown">
@@ -389,6 +407,9 @@
                                             {% elif tx.type == 'INCOME' %}
                                                 <li><a class="dropdown-item py-2" href="{% url 'income-edit' tx.pk %}?next={{ request.get_full_path|urlencode }}"><i class="bi bi-pencil-square me-2 text-primary"></i>{% trans "Edit" %}</a></li>
                                                 <li><button class="dropdown-item py-2 text-danger" data-bs-toggle="modal" data-bs-target="#deleteModal" data-url="{% url 'income-delete' tx.pk %}?next={{ request.get_full_path|urlencode }}" data-message="{% trans 'Are you sure you want to delete this income?' %}"><i class="bi bi-trash me-2"></i>{% trans "Delete" %}</button></li>
+                                            {% elif tx.type == 'LOAN' %}
+                                                <li><a class="dropdown-item py-2" href="{% url 'loan-detail' tx.loan_pk %}"><i class="bi bi-eye me-2 text-primary"></i>{% trans "View Loan" %}</a></li>
+                                                <li><button class="dropdown-item py-2 text-danger" data-bs-toggle="modal" data-bs-target="#deleteModal" data-url="{% url 'loan-repayment-delete' tx.pk %}?next={{ request.get_full_path|urlencode }}" data-message="{% trans 'Are you sure you want to delete this loan repayment?' %}"><i class="bi bi-trash me-2"></i>{% trans "Delete" %}</button></li>
                                             {% else %}
                                                 <li><a class="dropdown-item py-2" href="{% url 'transfer-edit' tx.pk %}?next={{ request.get_full_path|urlencode }}"><i class="bi bi-pencil-square me-2 text-primary"></i>{% trans "Edit" %}</a></li>
                                                 <li><button class="dropdown-item py-2 text-danger" data-bs-toggle="modal" data-bs-target="#deleteModal" data-url="{% url 'transfer-delete' tx.pk %}?next={{ request.get_full_path|urlencode }}" data-message="{% trans 'Are you sure you want to delete this transfer?' %}"><i class="bi bi-trash me-2"></i>{% trans "Delete" %}</button></li>

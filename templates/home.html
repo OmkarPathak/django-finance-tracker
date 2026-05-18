@@ -1075,6 +1075,99 @@ document.addEventListener('DOMContentLoaded', function() {
         align-items: center;
         gap: 3px;
     }
+
+    /* Typography normalization for the 3 metric cards */
+    .hero-metric-card .card-header {
+        min-height: 52px;
+        padding-top: 0.72rem;
+        padding-bottom: 0.72rem;
+    }
+    .hero-metric-card .card-title-text {
+        font-size: 1.08rem;
+        font-weight: 700;
+        line-height: 1.28;
+        letter-spacing: -0.01em;
+    }
+    .hero-metric-card .card-header .badge {
+        font-size: 0.74rem;
+        font-weight: 700;
+        line-height: 1;
+        letter-spacing: 0.01em;
+    }
+    .hero-metric-card .metric-hero-number {
+        font-size: clamp(2rem, 2.8vw, 2.35rem);
+        line-height: 1.05;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+    }
+    .hero-metric-card .metric-secondary-number {
+        font-size: 1.3rem;
+        line-height: 1.1;
+        font-weight: 700;
+        letter-spacing: -0.01em;
+    }
+    .hero-metric-card .metric-value {
+        font-size: 0.98rem;
+        line-height: 1.35;
+        font-weight: 700;
+    }
+    .hero-metric-card .metric-label {
+        font-size: 0.72rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        font-weight: 700;
+        line-height: 1.2;
+    }
+    .hero-metric-card .metric-support {
+        font-size: 0.8rem;
+        line-height: 1.35;
+    }
+    .hero-metric-card .metric-footnote {
+        font-size: 0.75rem;
+        line-height: 1.35;
+    }
+    .hero-metric-card .metric-chip {
+        font-size: 0.78rem !important;
+        line-height: 1.2;
+        font-weight: 700;
+    }
+    .hero-metric-card .metric-chip .subtext {
+        font-weight: 500;
+        opacity: 0.8;
+    }
+    .asset-allocation-card .allocation-center-value {
+        font-size: 2rem;
+        line-height: 1;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+    }
+    .asset-allocation-card .allocation-center-label {
+        font-size: 0.76rem;
+        line-height: 1.3;
+    }
+    .asset-allocation-card .allocation-legend-label {
+        font-size: 0.83rem;
+        line-height: 1.25;
+    }
+    .asset-allocation-card .allocation-legend-value {
+        font-size: 1.02rem;
+        line-height: 1.2;
+        font-weight: 700;
+    }
+    .financial-health-card .progress-caption {
+        font-size: 0.92rem;
+        line-height: 1.35;
+        font-weight: 700;
+    }
+
+    @media (max-width: 575.98px) {
+        .hero-metric-card .card-title-text {
+            font-size: 1rem;
+        }
+        .hero-metric-card .metric-hero-number {
+            font-size: 1.9rem;
+        }
+    }
 </style>
 
 <!-- LAYER 2: FINANCIAL HEALTH & SPENDING PACE -->
@@ -1254,7 +1347,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     <!-- Spending Pace Card -->
     <div class="col-12 col-lg-4">
-        <div class="card shadow-lg border-0 h-100 rounded-4">
+        <div class="card shadow-lg border-0 h-100 rounded-4 hero-metric-card spending-pace-card">
             <div class="card-header bg-transparent border-bottom d-flex justify-content-between align-items-center fw-bold">
                 <div class="d-inline-flex align-items-center">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="me-1 text-muted flex-shrink-0">
@@ -1262,7 +1355,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         <circle cx="12" cy="12" r="10" opacity="0.2"/>
                         <path d="M12 12l3-3" class="anim-speedometer"/>
                     </svg>
-                    <span class="cursor-pointer" data-bs-toggle="tooltip" data-bs-placement="top" 
+                      <span class="cursor-pointer card-title-text" data-bs-toggle="tooltip" data-bs-placement="top" 
                           title="{% trans 'Tracks how fast you are spending your budget relative to the days passed in the month.' %}">
                         {% trans "Spending Pace" %}
                     </span>
@@ -1290,32 +1383,32 @@ document.addEventListener('DOMContentLoaded', function() {
                     {% if salary_breakdown.spending_pace.budget_diff > 0 %}
                         <div class="d-inline-flex align-items-center gap-2 bg-success bg-opacity-10 rounded-pill px-3 py-2">
                             <i class="bi bi-arrow-down-circle-fill text-success"></i>
-                            <span class="fw-bold text-success" style="font-size: 0.95rem;">{{ currency_symbol }}{{ salary_breakdown.spending_pace.budget_diff|floatformat:0|humanize_currency:currency_symbol|translate_digits }} {% trans "under budget" %}</span>
+                            <span class="fw-bold text-success metric-value">{{ currency_symbol }}{{ salary_breakdown.spending_pace.budget_diff|floatformat:0|humanize_currency:currency_symbol|translate_digits }} {% trans "under budget" %}</span>
                         </div>
                     {% elif salary_breakdown.spending_pace.budget_diff < 0 %}
                         <div class="d-inline-flex align-items-center gap-2 bg-danger bg-opacity-10 rounded-pill px-3 py-2">
                             <i class="bi bi-arrow-up-circle-fill text-danger"></i>
-                            <span class="fw-bold text-danger" style="font-size: 0.95rem;">{{ currency_symbol }}{{ salary_breakdown.spending_pace.budget_diff|floatformat:0|cut:"-"|humanize_currency:currency_symbol|translate_digits }} {% trans "over budget" %}</span>
+                            <span class="fw-bold text-danger metric-value">{{ currency_symbol }}{{ salary_breakdown.spending_pace.budget_diff|floatformat:0|cut:"-"|humanize_currency:currency_symbol|translate_digits }} {% trans "over budget" %}</span>
                         </div>
                     {% else %}
                         <div class="d-inline-flex align-items-center gap-2 bg-info bg-opacity-10 rounded-pill px-3 py-2">
                             <i class="bi bi-check-circle-fill text-info"></i>
-                            <span class="fw-bold text-info" style="font-size: 0.95rem;">{% trans "Exactly on budget" %}</span>
+                            <span class="fw-bold text-info metric-value">{% trans "Exactly on budget" %}</span>
                         </div>
                     {% endif %}
-                    <div class="text-muted mt-1" style="font-size: 0.7rem;">{% trans "vs ideal pace" %} ({{ salary_breakdown.spending_pace.days_elapsed|translate_digits }}/{{ salary_breakdown.spending_pace.num_days|translate_digits }})</div>
+                    <div class="text-muted mt-1 metric-footnote">{% trans "vs ideal pace" %} ({{ salary_breakdown.spending_pace.days_elapsed|translate_digits }}/{{ salary_breakdown.spending_pace.num_days|translate_digits }})</div>
                 </div>
                 {% endif %}
 
                 <!-- Daily Spend Hero -->
                 {% if salary_breakdown.spending_pace.daily_spending_pace > 0 %}
                 <div class="text-center mb-3">
-                    <h2 class="fw-black mb-0 p-0 text-body-emphasis" style="font-size: 1.5rem;">{{ currency_symbol }}{{ salary_breakdown.spending_pace.daily_spending_pace|compact_amount:currency_symbol|translate_digits }} <span class="fs-6 fw-normal text-muted">/ {% trans "day" %}</span></h2>
-                    <small class="text-muted text-uppercase fw-bold opacity-75" style="letter-spacing: 0.5px; font-size: 0.65rem;">{% trans "Burn Rate" %}</small>
+                    <h2 class="mb-0 p-0 text-body-emphasis metric-hero-number">{{ currency_symbol }}{{ salary_breakdown.spending_pace.daily_spending_pace|compact_amount:currency_symbol|translate_digits }} <span class="fs-6 fw-normal text-muted">/ {% trans "day" %}</span></h2>
+                    <small class="text-muted opacity-75 metric-label">{% trans "Burn Rate" %}</small>
                     {% if salary_breakdown.spending_pace.burn_diff_pct is not None %}
                     <div class="mt-2">
-                        <span class="badge {% if salary_breakdown.spending_pace.burn_diff_pct > 0 %}bg-danger{% else %}bg-success{% endif %} bg-opacity-10 {% if salary_breakdown.spending_pace.burn_diff_pct > 0 %}text-danger{% else %}text-success{% endif %} rounded-pill px-2 py-1" style="font-size: 0.75rem;">
-                            {% if salary_breakdown.spending_pace.burn_diff_pct > 0 %}↑{% else %}↓{% endif %} {{ salary_breakdown.spending_pace.burn_diff_pct_abs|floatformat:0|translate_digits }}% <span class="opacity-75 fw-normal">{% trans "vs last month" %}</span>
+                        <span class="badge metric-chip {% if salary_breakdown.spending_pace.burn_diff_pct > 0 %}bg-danger{% else %}bg-success{% endif %} bg-opacity-10 {% if salary_breakdown.spending_pace.burn_diff_pct > 0 %}text-danger{% else %}text-success{% endif %} rounded-pill px-2 py-1">
+                            {% if salary_breakdown.spending_pace.burn_diff_pct > 0 %}↑{% else %}↓{% endif %} {{ salary_breakdown.spending_pace.burn_diff_pct_abs|floatformat:0|translate_digits }}% <span class="subtext">{% trans "vs last month" %}</span>
                         </span>
                     </div>
                     {% endif %}
@@ -1327,8 +1420,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 <div class="bg-secondary bg-opacity-10 rounded-4 p-3 mb-2">
                     <!-- Budget progress bar -->
                     <div class="d-flex justify-content-between align-items-baseline mb-2">
-                        <small class="text-muted fw-bold text-uppercase" style="font-size: 0.65rem; letter-spacing: 0.5px;">{% trans "Budget Used" %}</small>
-                        <small class="fw-bold {% if salary_breakdown.spending_pace.spent_percent > 100 %}text-danger{% elif salary_breakdown.spending_pace.spent_percent > 80 %}{% else %}text-success{% endif %}" style="font-size: 0.8rem;{% if salary_breakdown.spending_pace.spent_percent > 80 and salary_breakdown.spending_pace.spent_percent <= 100 %} color: #D4831A;{% endif %}">{{ salary_breakdown.spending_pace.spent_percent|floatformat:0|translate_digits }}%</small>
+                        <small class="text-muted metric-label">{% trans "Budget Used" %}</small>
+                        <small class="metric-value {% if salary_breakdown.spending_pace.spent_percent > 100 %}text-danger{% elif salary_breakdown.spending_pace.spent_percent > 80 %}{% else %}text-success{% endif %}" style="{% if salary_breakdown.spending_pace.spent_percent > 80 and salary_breakdown.spending_pace.spent_percent <= 100 %} color: #D4831A;{% endif %}">{{ salary_breakdown.spending_pace.spent_percent|floatformat:0|translate_digits }}%</small>
                     </div>
                     <div class="position-relative" style="height: 10px;">
                         <div class="rounded-pill w-100 h-100" style="background: var(--bs-tertiary-bg);"></div>
@@ -1339,14 +1432,14 @@ document.addEventListener('DOMContentLoaded', function() {
                              style="width: {% if salary_breakdown.spending_pace.spent_percent > 100 %}100{% else %}{{ salary_breakdown.spending_pace.spent_percent|floatformat:1 }}{% endif %}%; transition: width 1.5s ease-in-out; z-index: 1;"></div>
                     </div>
                     <div class="d-flex justify-content-between mt-2">
-                        <small class="text-muted" style="font-size: 0.7rem;">{{ currency_symbol }}{{ hero_metrics.spent|floatformat:0|humanize_currency:currency_symbol|translate_digits }} {% trans "spent" %}</small>
-                        <small class="text-muted" style="font-size: 0.7rem;">{{ currency_symbol }}{{ salary_breakdown.total_monthly_budget|floatformat:0|humanize_currency:currency_symbol|translate_digits }}</small>
+                        <small class="text-muted metric-footnote">{{ currency_symbol }}{{ hero_metrics.spent|floatformat:0|humanize_currency:currency_symbol|translate_digits }} {% trans "spent" %}</small>
+                        <small class="text-muted metric-footnote">{{ currency_symbol }}{{ salary_breakdown.total_monthly_budget|floatformat:0|humanize_currency:currency_symbol|translate_digits }}</small>
                     </div>
 
                     <!-- Projected line -->
                     <div class="text-center mt-3 pt-2 border-top border-secondary border-opacity-10">
-                        <small class="text-muted text-uppercase fw-bold" style="font-size: 0.65rem; letter-spacing: 0.5px;">{% trans "Projected" %}</small>
-                        <div class="fw-bold text-body-emphasis" style="font-size: 1.1rem;">{{ currency_symbol }}{{ salary_breakdown.spending_pace.projected_month_spend|floatformat:0|humanize_currency:currency_symbol|translate_digits }}</div>
+                        <small class="text-muted metric-label">{% trans "Projected" %}</small>
+                        <div class="text-body-emphasis metric-secondary-number">{{ currency_symbol }}{{ salary_breakdown.spending_pace.projected_month_spend|floatformat:0|humanize_currency:currency_symbol|translate_digits }}</div>
                         {% if salary_breakdown.spending_pace.status == 'over_budget' %}
                             <small class="text-danger fw-bold d-inline-flex align-items-center"><i class="bi bi-exclamation-triangle-fill me-1"></i>{{ salary_breakdown.spending_pace.budget_multiplier|translate_digits }}× {% trans "over budget" %}</small>
                         {% elif salary_breakdown.spending_pace.status == 'near_limit' %}
@@ -1359,8 +1452,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 {% elif salary_breakdown.spending_pace.daily_spending_pace > 0 %}
                 <!-- No budget set but have spending data -->
                 <div class="bg-secondary bg-opacity-10 rounded-4 p-3 mb-2 text-center">
-                    <small class="text-muted text-uppercase fw-bold d-block mb-1" style="letter-spacing: 0.5px; font-size: 0.65rem;">{% trans "Projected Monthly Spend" %}</small>
-                    <div class="fw-black mb-1 text-body-emphasis lh-1" style="font-size: 1.3rem;">{{ currency_symbol }}{{ salary_breakdown.spending_pace.projected_month_spend|floatformat:0|humanize_currency:currency_symbol|translate_digits }}</div>
+                    <small class="text-muted metric-label d-block mb-1">{% trans "Projected Monthly Spend" %}</small>
+                    <div class="mb-1 text-body-emphasis lh-1 metric-secondary-number">{{ currency_symbol }}{{ salary_breakdown.spending_pace.projected_month_spend|floatformat:0|humanize_currency:currency_symbol|translate_digits }}</div>
                     <a href="{% url 'budget' %}" class="text-primary small text-decoration-none fw-bold d-inline-flex align-items-center"><i class="bi bi-plus-circle me-1"></i>{% trans "Set budget to track pace" %}</a>
                 </div>
                 {% else %}
@@ -1391,7 +1484,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     <!-- Income vs Expenses Breakdown Card -->
     <div class="col-12 col-lg-4">
-        <div class="card shadow-lg border-0 h-100  rounded-4">
+        <div class="card shadow-lg border-0 h-100 rounded-4 hero-metric-card asset-allocation-card">
             <div class="card-header bg-transparent border-bottom d-flex justify-content-between align-items-center fw-bold">
                 <div class="d-inline-flex align-items-center">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="me-1 text-muted flex-shrink-0">
@@ -1399,7 +1492,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         <line x1="7" y1="21" x2="17" y2="21"/>
                         <line x1="12" y1="17" x2="12" y2="21"/>
                     </svg>
-                    <span class="cursor-pointer" data-bs-toggle="tooltip" data-bs-placement="top" 
+                      <span class="cursor-pointer card-title-text" data-bs-toggle="tooltip" data-bs-placement="top" 
                           title="{% trans 'Distribution of your total wealth across different account types like Cash, Bank, and Investments.' %}">
                         {% trans "Asset Allocation" %}
                     </span>
@@ -1420,8 +1513,8 @@ document.addEventListener('DOMContentLoaded', function() {
                         {% endfor %}
                     </svg>
                     <div class="position-absolute top-50 start-50 translate-middle text-center">
-                        <span class="fw-black text-body-emphasis" style="font-size: 1.4rem;">{{ asset_allocation.0.percent|translate_digits }}%</span>
-                        <span class="d-block text-muted" style="font-size: 0.75rem; margin-top: -2px;">{{ asset_allocation.0.type }}</span>
+                        <span class="text-body-emphasis allocation-center-value">{{ asset_allocation.0.percent|translate_digits }}%</span>
+                        <span class="d-block text-muted allocation-center-label" style="margin-top: -2px;">{{ asset_allocation.0.type }}</span>
                     </div>
                 </div>
 
@@ -1448,8 +1541,8 @@ document.addEventListener('DOMContentLoaded', function() {
                             <div class="d-flex align-items-start gap-2">
                                 <span class="rounded-circle d-inline-block mt-1" style="width: 10px; height: 10px; background-color: {% if item.type_key == 'CASH' %}#5DCAA5{% elif item.type_key == 'BANK' %}#1D9E75{% elif item.type_key == 'CREDIT_CARD' %}#E05C45{% elif item.type_key == 'INVESTMENT' or item.type_key == 'FIXED_DEPOSIT' %}#378ADD{% else %}#9E9D9A{% endif %}; flex-shrink: 0;"></span>
                                 <div>
-                                    <div class="fw-bold small text-body-emphasis lh-sm">{{ item.type }}</div>
-                                    <div class="text-muted small mt-1" style="font-size: 0.8rem;">{{ item.percent|translate_digits }}%</div>
+                                    <div class="small text-body-emphasis lh-sm fw-bold allocation-legend-label">{{ item.type }}</div>
+                                    <div class="text-muted small mt-1 allocation-legend-value">{{ item.percent|translate_digits }}%</div>
                                 </div>
                             </div>
                         </div>
@@ -1463,9 +1556,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     <div class="text-center px-1">
                         <div class="d-flex align-items-center justify-content-center gap-1 mb-1">
                             <span class="rounded-circle d-inline-block flex-shrink-0" style="width: 10px; height: 10px; background-color: {% if item.type_key == 'CASH' %}#5DCAA5{% elif item.type_key == 'BANK' %}#1D9E75{% elif item.type_key == 'CREDIT_CARD' %}#E05C45{% elif item.type_key == 'INVESTMENT' or item.type_key == 'FIXED_DEPOSIT' %}#378ADD{% else %}#9E9D9A{% endif %};"></span>
-                            <span class="text-muted" style="font-size: 0.8rem;">{{ item.type }}</span>
+                            <span class="text-muted allocation-legend-label">{{ item.type }}</span>
                         </div>
-                        <div class="fw-bold" style="font-size: 0.9rem;">{{ item.percent|translate_digits }}%</div>
+                        <div class="allocation-legend-value">{{ item.percent|translate_digits }}%</div>
                     </div>
                     {% endfor %}
                 </div>
@@ -1486,13 +1579,13 @@ document.addEventListener('DOMContentLoaded', function() {
 
     <!-- Financial Health Card -->
     <div class="col-lg-4">
-        <div class="card shadow-lg border-0 rounded-4 h-100 overflow-hidden transition-all">
+        <div class="card shadow-lg border-0 rounded-4 h-100 overflow-hidden transition-all hero-metric-card financial-health-card">
             <div class="card-header bg-transparent border-bottom d-flex justify-content-between align-items-center px-4 fw-bold">
                 <div class="d-inline-flex align-items-center" style="line-height: 1;">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="me-2 text-muted flex-shrink-0" style="vertical-align: middle;">
                         <path d="M22 12h-4l-3 9L9 3l-3 9H2" class="anim-heartbeat"/>
                     </svg>
-                    <span class="cursor-pointer" data-bs-toggle="tooltip" data-bs-placement="top" 
+                      <span class="cursor-pointer card-title-text" data-bs-toggle="tooltip" data-bs-placement="top" 
                           title="{% trans 'A summary of your savings rate and overall financial performance for the period.' %}">
                         {% trans "Financial Health" %} ({% if salary_breakdown.month_name %}{{ salary_breakdown.month_name }}{% else %}Custom Range{% endif %})
                     </span>
@@ -1512,10 +1605,10 @@ document.addEventListener('DOMContentLoaded', function() {
             <div class="card-body px-4 py-3 text-center">
                 <!-- Savings Rate Hero -->
                 <div class="mb-4 mt-2 px-3 text-center">
-                    <h1 class="fw-black mb-2 text-body-emphasis" style="font-family: 'DM Sans', 'Inter', sans-serif; font-size: 2rem; letter-spacing: -1px;">
+                    <h1 class="mb-2 text-body-emphasis metric-hero-number">
                         {{ hero_metrics.savings_rate|translate_digits }}<span class="fs-4 text-muted fw-bold">%</span>
                     </h1>
-                    <p class="text-muted small text-uppercase mb-2" style="letter-spacing: 0.5px;">{% trans "Savings Rate" %}</p>
+                    <p class="text-muted small mb-2 metric-label">{% trans "Savings Rate" %}</p>
                     <div class="mx-auto mb-3" style="max-width: 300px;">
                         <div class="progress rounded-pill bg-secondary bg-opacity-10 mb-2 progress-animate" style="height: 10px;">
                             <div class="progress-bar rounded-pill {% if hero_metrics.savings_rate >= 20 %}bg-success{% elif hero_metrics.savings_rate > 0 %}bg-primary{% else %}bg-danger{% endif %}" 
@@ -1524,11 +1617,11 @@ document.addEventListener('DOMContentLoaded', function() {
                                  aria-valuenow="{{ hero_metrics.savings_rate|floatformat:1 }}" aria-valuemin="0" aria-valuemax="100">
                             </div>
                         </div>
-                        <div class="d-flex justify-content-between text-muted fw-bold px-1" style="font-size: 0.9rem;">
+                        <div class="d-flex justify-content-between text-muted fw-bold px-1 progress-caption">
                             <div class="d-flex flex-column align-items-start text-start">
                                 <span>{{ currency_symbol }}{{ hero_metrics.saved|humanize_currency:currency_symbol|translate_digits }} {% trans "saved" %}</span>
                                 {% if hero_metrics.savings_diff_pct %}
-                                <span class="{% if hero_metrics.savings_diff_pct > 0 %}text-success{% else %}text-danger{% endif %} mt-1 cursor-help" style="font-size: 0.65rem;"
+                                <span class="{% if hero_metrics.savings_diff_pct > 0 %}text-success{% else %}text-danger{% endif %} mt-1 cursor-help metric-footnote"
                                       data-bs-toggle="tooltip" 
                                       title="{% trans 'The actual amount of currency saved compared to last month.' %}">
                                     {% if hero_metrics.savings_diff_pct > 0 %}↑{% else %}↓{% endif %} {{ hero_metrics.savings_diff_pct_abs|translate_digits|floatformat:1 }}% 
@@ -1541,7 +1634,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     </div>
                     <div class="mt-3 text-center">
                         {% if hero_metrics.trend_text %}
-                            <span class="badge {% if hero_metrics.trend_type == 'positive' %}bg-success{% elif hero_metrics.trend_type == 'negative' %}bg-danger{% else %}bg-secondary{% endif %} bg-opacity-10 {% if hero_metrics.trend_type == 'positive' %}text-success{% elif hero_metrics.trend_type == 'negative' %}text-danger{% else %}text-secondary{% endif %} rounded-pill px-3 py-1 fw-bold" style="font-size: 0.75rem;">
+                            <span class="badge metric-chip {% if hero_metrics.trend_type == 'positive' %}bg-success{% elif hero_metrics.trend_type == 'negative' %}bg-danger{% else %}bg-secondary{% endif %} bg-opacity-10 {% if hero_metrics.trend_type == 'positive' %}text-success{% elif hero_metrics.trend_type == 'negative' %}text-danger{% else %}text-secondary{% endif %} rounded-pill px-3 py-1 fw-bold">
                                 {{ hero_metrics.trend_text }}
                             </span>
                         {% endif %}
@@ -1551,14 +1644,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 <!-- Stats Row -->
                 <div class="row g-0 py-3 border-top border-bottom">
                     <a href="{% url 'income-list' %}?{% url_replace %}" class="col-6 border-end px-2 text-decoration-none transition-all">
-                        <small class="text-muted text-uppercase fw-bold d-block mb-1" style="font-size: 0.65rem; letter-spacing: 0.5px;" 
+                           <small class="text-muted metric-label d-block mb-1" 
                                data-bs-toggle="tooltip" data-bs-placement="top" title="{% trans 'Total money received during the selected period.' %}">
                             {% trans "Total Income" %}
                             <i class="bi bi-info-circle ms-1" style="font-size: 0.6rem; opacity: 0.6;"></i>
                         </small>
-                        <div class="fw-bold mb-0 text-body text-truncate" style="font-size: 0.95rem;">{{ currency_symbol }}{{ total_income|floatformat:0|humanize_currency:currency_symbol|translate_digits }}</div>
+                        <div class="fw-bold mb-0 text-body text-truncate metric-value">{{ currency_symbol }}{{ total_income|floatformat:0|humanize_currency:currency_symbol|translate_digits }}</div>
                         {% if prev_month_data.income_pct %}
-                            <div class="mt-1 d-flex align-items-center justify-content-center gap-1" style="font-size: 0.65rem;">
+                            <div class="mt-1 d-flex align-items-center justify-content-center gap-1 metric-footnote">
                                 <span class="{% if prev_month_data.income_pct > 0 %}text-success{% elif prev_month_data.income_pct < 0 %}text-danger{% else %}text-muted{% endif %} fw-bold">
                                     {% if prev_month_data.income_pct > 0 %}↑{% elif prev_month_data.income_pct < 0 %}↓{% endif %} {{ prev_month_data.income_pct_abs|floatformat:0|translate_digits }}%
                                 </span>
@@ -1567,14 +1660,21 @@ document.addEventListener('DOMContentLoaded', function() {
                         {% endif %}
                     </a>
                     <a href="{% url 'expense-list' %}?{% url_replace is_investment='false' %}" class="col-6 px-2 text-decoration-none transition-all">
-                        <small class="text-muted text-uppercase fw-bold d-block mb-1" style="font-size: 0.65rem; letter-spacing: 0.5px;"
+                           <small class="text-muted metric-label d-block mb-1"
                                data-bs-toggle="tooltip" data-bs-placement="top" title="{% trans 'Total daily living expenses, excluding investments and transfers.' %}">
                             {% trans "Operating Spend" %}
                             <i class="bi bi-info-circle ms-1" style="font-size: 0.6rem; opacity: 0.6;"></i>
                         </small>
-                        <div class="fw-bold mb-0 text-body text-truncate" style="font-size: 0.95rem;">{{ currency_symbol }}{{ hero_metrics.spent|floatformat:0|humanize_currency:currency_symbol|translate_digits }}</div>
+                        <div class="fw-bold mb-0 text-body text-truncate metric-value">{{ currency_symbol }}{{ hero_metrics.spent|floatformat:0|humanize_currency:currency_symbol|translate_digits }}</div>
+                        {% if total_loan_interest > 0 %}
+                            <div class="text-muted mt-1 metric-footnote" style="line-height: 1.2;">
+                                <span class="text-nowrap">{{ currency_symbol }}{{ total_expenses_base|floatformat:0|humanize_currency:currency_symbol|translate_digits }} {% trans "expenses" %}</span>
+                                <span class="opacity-50"> + </span>
+                                <span class="text-nowrap">{{ currency_symbol }}{{ total_loan_interest|floatformat:0|humanize_currency:currency_symbol|translate_digits }} {% trans "interest" %}</span>
+                            </div>
+                        {% endif %}
                         {% if prev_month_data.expense_pct %}
-                            <div class="mt-1 d-flex align-items-center justify-content-center gap-1" style="font-size: 0.65rem;">
+                            <div class="mt-1 d-flex align-items-center justify-content-center gap-1 metric-footnote">
                                 <span class="{% if prev_month_data.expense_pct < 0 %}text-success{% elif prev_month_data.expense_pct > 0 %}text-danger{% else %}text-muted{% endif %} fw-bold">
                                     {% if prev_month_data.expense_pct > 0 %}↑{% elif prev_month_data.expense_pct < 0 %}↓{% endif %} {{ prev_month_data.expense_pct_abs|floatformat:0|translate_digits }}%
                                 </span>
@@ -1589,7 +1689,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 <div class="mt-3 px-3">
                     <a href="{% url 'transfer-list' %}" class="d-flex align-items-center gap-2 text-decoration-none bg-info bg-opacity-10 rounded-pill py-1 px-3" style="transition: opacity 0.15s;">
                         <i class="bi bi-arrow-left-right text-info" style="font-size: 0.6rem;"></i>
-                        <span class="small" style="font-size: 0.8rem;">
+                        <span class="small metric-support">
                             {{ currency_symbol }}{{ total_transfers|floatformat:0|humanize_currency:currency_symbol|translate_digits }}
                             {% trans "moved between accounts" %}
                             <br>
@@ -1597,7 +1697,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         </span>
                         <i class="bi bi-chevron-right text-muted ms-auto" style="font-size: 0.65rem;"></i>
                     </a>
-                    <div class="text-muted text-center mt-1" style="font-size: 0.7rem;">{% trans "Internal transfers excluded from income/expenses" %}</div>
+                    <div class="text-muted text-center mt-1 metric-footnote">{% trans "Internal transfers excluded from income/expenses" %}</div>
                 </div>
                 {% endif %}
             </div>

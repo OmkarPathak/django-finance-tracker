@@ -176,19 +176,19 @@
                 <div class="card-body p-4">
                     <h5 class="fw-bold mb-3">{% trans "Loan Summary" %}</h5>
                     <div class="d-flex justify-content-between mb-2">
-                        <span class="opacity-75">{% trans "Initial Principal" %}</span>
+                        <span class="opacity-75 small">{% trans "Initial Principal" %}</span>
                         <span class="fw-bold">{{ loan.currency }}{{ loan.initial_principal|ind_comma:loan.currency|translate_digits }}</span>
                     </div>
                     <div class="d-flex justify-content-between mb-2">
-                        <span class="opacity-75">{% trans "Duration" %}</span>
+                        <span class="opacity-75 small">{% trans "Duration" %}</span>
                         <span class="fw-bold">{{ loan.duration_months }} {% trans "Months" %}</span>
                     </div>
                     <div class="d-flex justify-content-between mb-2">
-                        <span class="opacity-75">{% trans "Interest Rate" %}</span>
+                        <span class="opacity-75 small">{% trans "Interest Rate" %}</span>
                         <span class="fw-bold">{{ loan.interest_rates.first.interest_rate|translate_digits }}%</span>
                     </div>
                     <div class="d-flex justify-content-between">
-                        <span class="opacity-75">{% trans "Monthly EMI (Approx)" %}</span>
+                        <span class="opacity-75 small">{% trans "Monthly EMI (Approx)" %}</span>
                         <span class="fw-bold fs-5">
                             {% if schedule %}
                                 {{ loan.currency }}{{ schedule.0.emi|ind_comma:loan.currency|translate_digits }}

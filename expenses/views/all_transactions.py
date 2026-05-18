@@ -6,7 +6,7 @@ from django.db.models import CharField, F, Q, Sum, Value
 from django.db.models.functions import Concat
 from django.views.generic import ListView
 
-from ..models import Expense, Income, Transfer
+from ..models import Expense, Income, LoanRepayment, Transfer
 
 
 class AllTransactionsListView(LoginRequiredMixin, ListView):
@@ -16,30 +16,47 @@ class AllTransactionsListView(LoginRequiredMixin, ListView):
 
     def get_queryset(self):
         user = self.request.user
+        loan_pk_field = Value(None, output_field=CharField())
         
         # 1. Normalize Expenses
         expenses = Expense.objects.filter(user=user).annotate(
             type=Value('EXPENSE', output_field=CharField()),
             cat=F('category'),
             acc=F('account__name'),
-            unified_amount=F('base_amount')
-        ).values('pk', 'date', 'unified_amount', 'description', 'type', 'cat', 'acc', 'currency', 'amount')
+            unified_amount=F('base_amount'),
+            tx_description=F('description'),
+            loan_pk=loan_pk_field,
+        ).values('pk', 'date', 'tx_description', 'type', 'cat', 'acc', 'unified_amount', 'loan_pk')
 
         # 2. Normalize Incomes
         incomes = Income.objects.filter(user=user).annotate(
             type=Value('INCOME', output_field=CharField()),
             cat=F('source'),
             acc=F('account__name'),
-            unified_amount=F('base_amount')
-        ).values('pk', 'date', 'unified_amount', 'description', 'type', 'cat', 'acc', 'currency', 'amount')
+            unified_amount=F('base_amount'),
+            tx_description=F('description'),
+            loan_pk=loan_pk_field,
+        ).values('pk', 'date', 'tx_description', 'type', 'cat', 'acc', 'unified_amount', 'loan_pk')
 
         # 3. Normalize Transfers
         transfers = Transfer.objects.filter(user=user).annotate(
             type=Value('TRANSFER', output_field=CharField()),
             cat=Value('Transfer', output_field=CharField()),
             acc=Concat(F('from_account__name'), Value(' → '), F('to_account__name'), output_field=CharField()),
-            unified_amount=F('converted_amount')
-        ).values('pk', 'date', 'unified_amount', 'description', 'type', 'cat', 'acc')
+            unified_amount=F('converted_amount'),
+            tx_description=F('description'),
+            loan_pk=loan_pk_field,
+        ).values('pk', 'date', 'tx_description', 'type', 'cat', 'acc', 'unified_amount', 'loan_pk')
+
+        # 4. Normalize Loan Repayments
+        loan_repayments = LoanRepayment.objects.filter(loan__user=user).annotate(
+            type=Value('LOAN', output_field=CharField()),
+            cat=F('loan__name'),
+            acc=F('from_account__name'),
+            unified_amount=F('base_amount'),
+            tx_description=Concat(Value('Loan repayment - '), F('loan__name'), output_field=CharField()),
+            loan_pk=F('loan_id'),
+        ).values('pk', 'date', 'tx_description', 'type', 'cat', 'acc', 'unified_amount', 'loan_pk')
 
         # Handle filtering
         search_query = self.request.GET.get('search')
@@ -55,15 +72,18 @@ class AllTransactionsListView(LoginRequiredMixin, ListView):
             expenses = expenses.filter(Q(description__icontains=search_query) | Q(category__icontains=search_query))
             incomes = incomes.filter(Q(description__icontains=search_query) | Q(source__icontains=search_query))
             transfers = transfers.filter(description__icontains=search_query)
+            loan_repayments = loan_repayments.filter(loan__name__icontains=search_query)
 
         if start_date:
             expenses = expenses.filter(date__gte=start_date)
             incomes = incomes.filter(date__gte=start_date)
             transfers = transfers.filter(date__gte=start_date)
+            loan_repayments = loan_repayments.filter(date__gte=start_date)
         if end_date:
             expenses = expenses.filter(date__lte=end_date)
             incomes = incomes.filter(date__lte=end_date)
             transfers = transfers.filter(date__lte=end_date)
+            loan_repayments = loan_repayments.filter(date__lte=end_date)
 
         if not (start_date or end_date):
             if not (selected_years or selected_months or search_query):
@@ -74,19 +94,22 @@ class AllTransactionsListView(LoginRequiredMixin, ListView):
                 expenses = expenses.filter(date__year__in=selected_years)
                 incomes = incomes.filter(date__year__in=selected_years)
                 transfers = transfers.filter(date__year__in=selected_years)
+                loan_repayments = loan_repayments.filter(date__year__in=selected_years)
             if selected_months:
                 expenses = expenses.filter(date__month__in=selected_months)
                 incomes = incomes.filter(date__month__in=selected_months)
                 transfers = transfers.filter(date__month__in=selected_months)
+                loan_repayments = loan_repayments.filter(date__month__in=selected_months)
 
         # Filter by Transaction Type
         active_qs = []
         if not selected_types:
-            active_qs = [expenses, incomes, transfers]
+            active_qs = [expenses, incomes, transfers, loan_repayments]
         else:
             if 'EXPENSE' in selected_types: active_qs.append(expenses)
             if 'INCOME' in selected_types: active_qs.append(incomes)
             if 'TRANSFER' in selected_types: active_qs.append(transfers)
+            if 'LOAN' in selected_types: active_qs.append(loan_repayments)
 
         if not active_qs:
             return Expense.objects.none()
@@ -94,10 +117,11 @@ class AllTransactionsListView(LoginRequiredMixin, ListView):
         # Combine using Union
         # Django union() requires all querysets to have exactly the same fields in the same order.
         # Let's ensure the fields list in values() is identical.
-        fields = ('pk', 'date', 'unified_amount', 'description', 'type', 'cat', 'acc')
+        fields = ('pk', 'date', 'tx_description', 'type', 'cat', 'acc', 'unified_amount', 'loan_pk')
         
         # Re-apply values to ensure order and fields match perfectly
-        normalized_qs = [qs.values(*fields) for qs in active_qs]
+        # SQLite disallows ORDER BY inside UNION subqueries, so clear ordering first.
+        normalized_qs = [qs.values(*fields).order_by() for qs in active_qs]
         
         queryset = normalized_qs[0].union(*normalized_qs[1:]).order_by('-date')
         
@@ -119,20 +143,24 @@ class AllTransactionsListView(LoginRequiredMixin, ListView):
         expenses = Expense.objects.filter(user=user)
         incomes = Income.objects.filter(user=user)
         transfers = Transfer.objects.filter(user=user)
+        loan_repayments = LoanRepayment.objects.filter(loan__user=user)
 
         if search_query:
             expenses = expenses.filter(Q(description__icontains=search_query) | Q(category__icontains=search_query))
             incomes = incomes.filter(Q(description__icontains=search_query) | Q(source__icontains=search_query))
             transfers = transfers.filter(description__icontains=search_query)
+            loan_repayments = loan_repayments.filter(loan__name__icontains=search_query)
 
         if start_date:
             expenses = expenses.filter(date__gte=start_date)
             incomes = incomes.filter(date__gte=start_date)
             transfers = transfers.filter(date__gte=start_date)
+            loan_repayments = loan_repayments.filter(date__gte=start_date)
         if end_date:
             expenses = expenses.filter(date__lte=end_date)
             incomes = incomes.filter(date__lte=end_date)
             transfers = transfers.filter(date__lte=end_date)
+            loan_repayments = loan_repayments.filter(date__lte=end_date)
 
         if not (start_date or end_date):
             if not (selected_years or selected_months or search_query):
@@ -143,27 +171,34 @@ class AllTransactionsListView(LoginRequiredMixin, ListView):
                 expenses = expenses.filter(date__year__in=selected_years)
                 incomes = incomes.filter(date__year__in=selected_years)
                 transfers = transfers.filter(date__year__in=selected_years)
+                loan_repayments = loan_repayments.filter(date__year__in=selected_years)
             if selected_months:
                 expenses = expenses.filter(date__month__in=selected_months)
                 incomes = incomes.filter(date__month__in=selected_months)
                 transfers = transfers.filter(date__month__in=selected_months)
+                loan_repayments = loan_repayments.filter(date__month__in=selected_months)
 
         context['expense_count'] = expenses.count()
         context['income_count'] = incomes.count()
         context['transfer_count'] = transfers.count()
-        context['filtered_count'] = context['expense_count'] + context['income_count'] + context['transfer_count']
+        context['loan_count'] = loan_repayments.count()
+        context['filtered_count'] = context['expense_count'] + context['income_count'] + context['transfer_count'] + context['loan_count']
 
         # Total amount (Base Currency)
         context['filtered_amount'] = (
             (expenses.aggregate(Sum('base_amount'))['base_amount__sum'] or 0) +
             (incomes.aggregate(Sum('base_amount'))['base_amount__sum'] or 0) +
-            (transfers.aggregate(Sum('converted_amount'))['converted_amount__sum'] or 0)
+            (transfers.aggregate(Sum('converted_amount'))['converted_amount__sum'] or 0) +
+            (loan_repayments.aggregate(Sum('base_amount'))['base_amount__sum'] or 0)
         )
 
         # Filter options
-        user_expenses = Expense.objects.filter(user=user)
-        years_dates = user_expenses.dates('date', 'year', order='DESC')
-        context['years'] = sorted(list(set([d.year for d in years_dates] + [datetime.now().year])), reverse=True)
+        expense_years = {d.year for d in Expense.objects.filter(user=user).dates('date', 'year', order='DESC')}
+        income_years = {d.year for d in Income.objects.filter(user=user).dates('date', 'year', order='DESC')}
+        transfer_years = {d.year for d in Transfer.objects.filter(user=user).dates('date', 'year', order='DESC')}
+        loan_years = {d.year for d in LoanRepayment.objects.filter(loan__user=user).dates('date', 'year', order='DESC')}
+        all_years = expense_years.union(income_years).union(transfer_years).union(loan_years)
+        context['years'] = sorted(list(all_years.union({datetime.now().year})), reverse=True)
         context['months_list'] = [(i, calendar.month_name[i]) for i in range(1, 13)]
         
         # Selected values

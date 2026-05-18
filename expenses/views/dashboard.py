@@ -416,9 +416,9 @@ def home_view(request):
     total_expenses = total_expenses_base + total_loan_interest
     transaction_count = expenses.count() + loan_repayments_selected.count()
     
-    # Real savings (cashflow) = Income - Expenses - Principal_Repayment
-    # Principal_Repayment = total_loan_emi - total_loan_interest
-    savings = total_income - total_expenses - total_loan_principal
+    # Savings for display = Income - Operating Expenses - Interest Paid
+    # (Does NOT include principal repayment, since principal is returning borrowed money, not spending)
+    savings = total_income - total_expenses
     
     # Calculate MoM Changes ONLY if exactly one year and one month are selected
     prev_month_data = None
@@ -456,7 +456,7 @@ def home_view(request):
             prev_loan_emi = prev_loan_stats['total_emi'] or 0
             prev_loan_principal = prev_loan_emi - prev_loan_interest
             prev_expenses_total = prev_expenses_op + prev_loan_interest
-            prev_savings = prev_income - prev_expenses_total - prev_loan_principal
+            prev_savings = prev_income - prev_expenses_total
 
             def calc_pct(current, previous):
                 if previous == 0:
@@ -1724,6 +1724,8 @@ def home_view(request):
         'monthly_story': monthly_story,
         'total_income': total_income,
         'total_expenses': total_expenses,
+        'total_expenses_base': total_expenses_base,
+        'total_loan_interest': total_loan_interest,
         'savings': savings,
         'recent_activity': recent_activity,
         'categories': categories,
